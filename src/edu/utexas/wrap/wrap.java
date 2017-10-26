@@ -1,9 +1,9 @@
-package edu.utexas.algorithmB;
+package edu.utexas.wrap;
 
-/** Algorithm B implementation
+/** wrap: an Algorithm B implementation
  * @author William E. Alexander
- * @author Adam Nodjomian
  * @author Rahul Patel
+ * @author Adam Nodjomian
  * @author Prashanth Venkatraman
  * 
  * This project will implement Algorithm B, as presented 
@@ -74,7 +74,7 @@ package edu.utexas.algorithmB;
  *   |    HOOK 'EM HORNS!    |
  *   
  */
-public class algorithmB{
+public class wrap{
 	public static void main(String[] args) {
 		// The very first line of code!
 		System.out.println("Hello, World!");
