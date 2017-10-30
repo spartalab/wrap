@@ -4,13 +4,41 @@ import java.util.List;
 
 public class Node {
 
-	List<Link> incomingLinks;
-	List<Link> outgoingLinks;
+	private int id;
+	private double latitude;
+	private double longitude;
+	private List<Link> incomingLinks;
+	private List<Link> outgoingLinks;
 	
-	public Node(List<Link> incomingLinks, List<Link> outgoingLinks) {
+	public Node(int id, double latitude, double longitude) {
 		super();
-		this.incomingLinks = incomingLinks;
-		this.outgoingLinks = outgoingLinks;
+		this.id = id;
+		this.latitude = latitude;
+		this.longitude = longitude;
+	}
+
+	public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public double getLatitude() {
+		return latitude;
+	}
+
+	public void setLatitude(double latitude) {
+		this.latitude = latitude;
+	}
+
+	public double getLongitude() {
+		return longitude;
+	}
+
+	public void setLongitude(double longitude) {
+		this.longitude = longitude;
 	}
 
 	public List<Link> getIncomingLinks() {

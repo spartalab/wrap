@@ -1,14 +1,11 @@
 package edu.utexas.wrap;
 
-import java.util.List;
-
 public class Origin extends Node{
 	private Bush bush;
 	private int[] demandVector;
 	
-	public Origin(List<Link> incomingLinks, List<Link> outgoingLinks, Bush bush, int[] demandVector) {
-		super(incomingLinks, outgoingLinks);
-		this.bush = bush;
+	public Origin(int id, int latitude, int longitude, int[] demandVector) {
+		super(id, latitude, longitude);
 		this.demandVector = demandVector;
 	}
 

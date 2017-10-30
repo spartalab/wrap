@@ -1,13 +1,16 @@
 package edu.utexas.wrap;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.List;
+import java.util.Scanner;
 
 public class Network {
 
 	private List<Link> links;
 	private List<Node> nodes;
 	private List<Origin> origins;
+	private Scanner in;
 	
 	public List<Link> getLinks() {
 		return links;
@@ -29,8 +32,18 @@ public class Network {
 	}
 	
 	
-	public void readNodes(File f){
-		//TODO
+	public void readNodes(File f) throws FileNotFoundException{
+		in = new Scanner(f);
+		in.nextLine();
+		while(in.hasNext()){
+			int id = in.nextInt();
+			double latitude = in.nextDouble();
+			double longitude = in.nextDouble();
+			in.next();
+			
+			Node n = new Node(id, latitude, longitude);
+			nodes.add(n);
+		}
 	}
 	
 	public void readLinks(File f){
@@ -38,7 +51,7 @@ public class Network {
 	}
 	
 	public void readStaticOD(File f){
-		//TODO
+		
 	}
 	
 	public float tstt(){

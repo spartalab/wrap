@@ -1,6 +1,7 @@
 package edu.utexas.wrap;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 
 /** wrap: an Algorithm B implementation
  * @author William E. Alexander
@@ -82,7 +83,7 @@ public class wrap{
 	public static String linksFile = "";
 	public static String staticODFile = "";
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws FileNotFoundException {
 		// The very first line of code!
 		System.out.println("Hello, World!");
 		
