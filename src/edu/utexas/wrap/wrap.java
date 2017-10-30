@@ -1,5 +1,7 @@
 package edu.utexas.wrap;
 
+import java.io.File;
+
 /** wrap: an Algorithm B implementation
  * @author William E. Alexander
  * @author Rahul Patel
@@ -75,9 +77,22 @@ package edu.utexas.wrap;
  *   
  */
 public class wrap{
+	
+	public static String nodesFile = "";
+	public static String linksFile = "";
+	public static String staticODFile = "";
+	
 	public static void main(String[] args) {
 		// The very first line of code!
 		System.out.println("Hello, World!");
+		
+		Network network = new Network();
+		network.readNodes(new File(nodesFile));
+		network.readLinks(new File(linksFile));
+		network.readStaticOD(new File(staticODFile));
+		
+		Optimizer opt = new Optimizer(network);
+		opt.optimize();
 	}
 }
 
