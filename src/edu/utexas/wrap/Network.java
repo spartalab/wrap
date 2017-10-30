@@ -1,6 +1,5 @@
 package edu.utexas.wrap;
 
-import java.io.File;
 import java.util.List;
 
 public class Network {
@@ -9,42 +8,38 @@ public class Network {
 	private List<Node> nodes;
 	private List<Origin> origins;
 	
+	
+	public Network(List<Node> nodes, List<Link> links, List<Origin> origins) {
+		setNodes(nodes);
+		setLinks(links);
+		setOrigins(origins);
+	}
+	
 	public List<Link> getLinks() {
 		return links;
 	}
-	public void setLinks(List<Link> links) {
+	private void setLinks(List<Link> links) {
 		this.links = links;
 	}
 	public List<Node> getNodes() {
 		return nodes;
 	}
-	public void setNodes(List<Node> nodes) {
+	private void setNodes(List<Node> nodes) {
 		this.nodes = nodes;
 	}
 	public List<Origin> getOrigins() {
 		return origins;
 	}
-	public void setOrigins(List<Origin> origins) {
+	private void setOrigins(List<Origin> origins) {
 		this.origins = origins;
 	}
 	
 	
-	public void readNodes(File f){
-		//TODO
-	}
-	
-	public void readLinks(File f){
-		//TODO
-	}
-	
-	public void readStaticOD(File f){
-		//TODO
-	}
-	
-	public float tstt(){
-		float tstt = 0;
+	public Double tstt(){
+		Double tstt = 0.0;
+		
 		for(Link l:links){
-			tstt= tstt + l.getBprValue()*l.getCapacity();
+			tstt += l.getBprValue()*l.getCapacity();
 		}
 		return tstt;
 	}

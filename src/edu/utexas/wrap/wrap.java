@@ -1,6 +1,7 @@
 package edu.utexas.wrap;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 
 /** wrap: an Algorithm B implementation
  * @author William E. Alexander
@@ -78,21 +79,24 @@ import java.io.File;
  */
 public class wrap{
 	
-	public static String nodesFile = "";
-	public static String linksFile = "";
-	public static String staticODFile = "";
-	
 	public static void main(String[] args) {
 		// The very first line of code!
 		System.out.println("Hello, World!");
 		
-		Network network = new Network();
-		network.readNodes(new File(nodesFile));
-		network.readLinks(new File(linksFile));
-		network.readStaticOD(new File(staticODFile));
+		File nodes = new File("");
+		File links = new File("");
+		File odMatrix = new File("");
+		Network network;
+		try {
+			network = NetworkConstructor.construct(nodes, links, odMatrix);
+			Optimizer opt = new Optimizer(network);
+			opt.optimize();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
-		Optimizer opt = new Optimizer(network);
-		opt.optimize();
+		
 	}
 }
 
