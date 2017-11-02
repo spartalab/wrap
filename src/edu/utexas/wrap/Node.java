@@ -7,8 +7,7 @@ public class Node {
 	List<Link> incomingLinks;
 	List<Link> outgoingLinks;
 	
-	public Node(List<Link> incomingLinks, List<Link> outgoingLinks) {
-		super();
+	public Node(List<Link> incomingLinks, List<Link> outgoingLinks, Integer ID) {
 		this.incomingLinks = incomingLinks;
 		this.outgoingLinks = outgoingLinks;
 	}
