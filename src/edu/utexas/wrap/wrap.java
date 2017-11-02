@@ -79,7 +79,7 @@ import java.io.FileNotFoundException;
  */
 public class wrap{
 	
-	public static String nodesFile = "";
+	public static String nodesFile = "/Users/prashanthvenkatraman/git/wrap/projects/SiouxFallsNodes.txt";
 	public static String linksFile = "";
 	public static String staticODFile = "";
 	
@@ -89,11 +89,12 @@ public class wrap{
 		
 		Network network = new Network();
 		network.readNodes(new File(nodesFile));
-		network.readLinks(new File(linksFile));
-		network.readStaticOD(new File(staticODFile));
+		network.printNodes();
+//		network.readLinks(new File(linksFile));
+//		network.readStaticOD(new File(staticODFile));
 		
-		Optimizer opt = new Optimizer(network);
-		opt.optimize();
+//		Optimizer opt = new Optimizer(network);
+//		opt.optimize();
 	}
 }
 

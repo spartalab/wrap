@@ -2,6 +2,7 @@ package edu.utexas.wrap;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
@@ -34,6 +35,7 @@ public class Network {
 	
 	public void readNodes(File f) throws FileNotFoundException{
 		in = new Scanner(f);
+		nodes = new ArrayList<Node>();
 		in.nextLine();
 		while(in.hasNext()){
 			int id = in.nextInt();
@@ -43,6 +45,12 @@ public class Network {
 			
 			Node n = new Node(id, latitude, longitude);
 			nodes.add(n);
+		}
+	}
+	
+	public void printNodes(){
+		for(Node n:nodes){
+			System.out.println("Node " + n.getId() + " latitude: " + n.getLatitude() + " longitude: " + n.getLongitude());
 		}
 	}
 	
