@@ -1,7 +1,6 @@
 package edu.utexas.wrap;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /** wrap: an Algorithm B implementation
@@ -85,8 +84,8 @@ public class wrap{
 		System.out.println("Hello, World!");
 		
 		//File nodes = new File("");
-		File links = new File("");
-		File odMatrix = new File("");
+		File links = new File(args[0]);
+		File odMatrix = new File(args[1]);
 		Network network;
 		try {
 			network = Network.fromFiles(links, odMatrix);

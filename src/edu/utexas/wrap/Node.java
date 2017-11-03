@@ -4,12 +4,19 @@ import java.util.List;
 
 public class Node {
 
-	List<Link> incomingLinks;
-	List<Link> outgoingLinks;
+	private List<Link> incomingLinks;
+	private List<Link> outgoingLinks;
+	private Integer ID;
 	
 	public Node(List<Link> incomingLinks, List<Link> outgoingLinks, Integer ID) {
 		this.incomingLinks = incomingLinks;
 		this.outgoingLinks = outgoingLinks;
+		this.ID = ID;
+	}
+
+	
+	public Node(Integer ID) {
+		this.ID = ID;
 	}
 
 	public List<Link> getIncomingLinks() {
@@ -28,7 +35,12 @@ public class Node {
 		this.outgoingLinks = outgoingLinks;
 	}
 	
-	
-	
+	public boolean equals(Node n) {
+		return n.getID() == this.ID;
+	}
+
+	public Integer getID() {
+		return ID;
+	}
 	
 }

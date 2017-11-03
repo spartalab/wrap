@@ -21,6 +21,11 @@ public class Link {
 	}
 	
 	
+	public Link(Node tail, Node head, Integer capacity, Integer length, Double fftime, Double b, Integer power) {
+		// TODO Auto-generated constructor stub
+	}
+
+
 	public float getBprValue() {
 		return bprValue;
 	}
@@ -56,6 +61,12 @@ public class Link {
 	}
 	public void setTail(Node tail) {
 		this.tail = tail;
+	}
+
+
+	public Double getTravelTime() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 	
 	

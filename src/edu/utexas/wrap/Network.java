@@ -2,7 +2,6 @@ package edu.utexas.wrap;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,15 +24,17 @@ public class Network {
 	}
 	
 	public static Network fromFiles(File linkFile, File odMatrix) throws IOException {
-		// TODO Auto-generated method stub
+		// Initialization
 		Map<Integer,Node> nodes = new HashMap<Integer, Node>();
 		List<Link> links = new ArrayList<Link>();
 		List<Origin> origins = new ArrayList<Origin>();
-		
-		//BufferedReader nf = new BufferedReader(new FileReader(nodes));
+		// Open the files for reading
 		BufferedReader lf = new BufferedReader(new FileReader(linkFile));
 		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
 		
+		//////////////////////////////////////////////
+		// Read links and build corresponding nodes
+		//////////////////////////////////////////////
 		String line;
 		do { //Move past headers in the file
 			line = lf.readLine();
@@ -60,9 +61,12 @@ public class Network {
 			//Construct new link and add to the list
 			links.add(new Link(nodes.get(orig), nodes.get(dest), capacity, length, fftime, B, power));
 		}
+		lf.close();
 		
-		//TODO: Read OD Matrix and assign flows
-		do { //Move past headers in the file
+		/////////////////////////////////////
+		// Read OD Matrix and assign flows
+		/////////////////////////////////////
+		do { // Move past headers in the file
 			line = of.readLine();
 		} while (!line.startsWith("Origin"));
 		
@@ -85,12 +89,13 @@ public class Network {
 					dests.put(destID, demand);
 				}
 			}
-			Origin o = new Origin(origID, dests); 	// Construct an origin to replace it
+			Origin o = new Origin(old, dests); 	// Construct an origin to replace it
 			nodes.put(origID, o); // Replace the node with its origin equivalent
 			
 			line = of.readLine(); // Read in the origin header
 			if (line.trim().equals("")) break; // If the origin header is empty, we've reached the end of the list
 		}
+		of.close();
 		return new Network(nodes, links, origins);
 		
 	}
