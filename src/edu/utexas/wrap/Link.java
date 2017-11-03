@@ -1,36 +1,45 @@
 package edu.utexas.wrap;
 
+/**
+ * @author rahulpatel
+ *
+ */
 public class Link {
-	private float bprValue;
+
 	private int capacity;
-	private int currentVolume;
-	private float ffSpeed;
 	private Node head;
 	private Node tail;
-	
-	
-	
-	public Link(float bprValue, int capacity, int currentVolume, float ffSpeed, Node head, Node tail) {
-		super();
-		this.setBprValue(bprValue);
-		this.capacity = capacity;
-		this.currentVolume = currentVolume;
-		this.ffSpeed = ffSpeed;
-		this.head = head;
-		this.tail = tail;
-	}
+	private int length;
+	private double fftime;
+	private double b;
+	private int power;
+	private double flow;
+
 	
 	
 	public Link(Node tail, Node head, Integer capacity, Integer length, Double fftime, Double b, Integer power) {
-		// TODO Auto-generated constructor stub
+		this.tail = tail;
+		this.head = head;
+		this.capacity = capacity;
+		this.length = length;
+		this.fftime = fftime;
+		this.b = b;
+		this.power = power;
+		this.flow = 0.0;
 	}
 
-
-	public float getBprValue() {
-		return bprValue;
+	//B and power are empirical constants in the BPR function
+	public double getBValue() {
+		return this.b;
 	}
-	public void setBprValue(float bprValue) {
-		this.bprValue = bprValue;
+	public void setBValue(double bvalue) {
+		this.b = bvalue;
+	}
+	public double getPower() {
+		return power;
+	}
+	public void setPower(int power) {
+		this.power = power;
 	}
 	public int getCapacity() {
 		return capacity;
@@ -38,17 +47,11 @@ public class Link {
 	public void setCapacity(int capacity) {
 		this.capacity = capacity;
 	}
-	public int getCurrentVolume() {
-		return currentVolume;
+	public double getFfTime() {
+		return fftime;
 	}
-	public void setCurrentVolume(int currentVolume) {
-		this.currentVolume = currentVolume;
-	}
-	public float getFfSpeed() {
-		return ffSpeed;
-	}
-	public void setFfSpeed(float ffSpeed) {
-		this.ffSpeed = ffSpeed;
+	public void setFfTime(float fftime) {
+		this.fftime = fftime;
 	}
 	public Node getHead() {
 		return head;
@@ -62,11 +65,31 @@ public class Link {
 	public void setTail(Node tail) {
 		this.tail = tail;
 	}
+	public int getLength() {
+		return length;
+	}
+	public void setLength(int length) {
+		this.length = length;
+	}
+	public double getFlow() {
+		return this.flow;
+	}
+	public void setFlow(double flow) {
+		this.flow = flow;
+	}
+	//Used to add deltaflow to current link flow
+	public void addFlow(double deltaflow) {
+		this.flow += deltaflow;
+	}
 
-
+	/**BPR Function
+	 * A link performance function using empirical constants (b and power) and 
+	 * link characteristics (current flow, capacity, & free flow travel time)
+	 * @return travel time for the link at current flow
+	 */
 	public Double getTravelTime() {
-		// TODO Auto-generated method stub
-		return null;
+		Double tt = getFfTime()*(1.0 + getBValue()*Math.pow(getFlow()/getCapacity(), getPower()));
+		return tt;
 	}
 	
 	
