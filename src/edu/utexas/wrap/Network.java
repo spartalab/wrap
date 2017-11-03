@@ -12,13 +12,13 @@ import java.util.Map;
 
 public class Network {
 
-	private Map<Integer, Node> nodes;
+	//private Map<Integer, Node> nodes;
 	private List<Link> links;
 	private List<Origin> origins;
 	
 	
-	public Network(Map<Integer, Node> nodes, List<Link> links, List<Origin> origins) {
-		setNodes(nodes);
+	public Network(/*Map<Integer, Node> nodes,*/ List<Link> links, List<Origin> origins) {
+		//setNodes(nodes);
 		setLinks(links);
 		setOrigins(origins);
 	}
@@ -45,21 +45,21 @@ public class Network {
 			if (line.equals("")) break;	// End of link list reached
 			
 			String[] cols = line.split("\t");
-			Integer orig = Integer.parseInt(cols[0]);
-			Integer dest = Integer.parseInt(cols[1]);
+			Integer tail = Integer.parseInt(cols[0]);
+			Integer head = Integer.parseInt(cols[1]);
 			Integer capacity = Integer.parseInt(cols[2]);
 			Integer length = Integer.parseInt(cols[3]);
 			Double fftime = Double.parseDouble(cols[4]);
 			Double B = Double.parseDouble(cols[5]);
 			Integer power = Integer.parseInt(cols[6]);
-			System.out.println(""+orig.toString());
+			//System.out.println(""+orig.toString());
 			
 			//Create new node(s) if new, then add to map
-			if (!nodes.containsKey(orig)) nodes.put(orig,new Node(orig));
-			if (!nodes.containsKey(dest)) nodes.put(dest,new Node(dest));
+			if (!nodes.containsKey(tail)) nodes.put(tail,new Node(tail));
+			if (!nodes.containsKey(head)) nodes.put(head,new Node(head));
 			
 			//Construct new link and add to the list
-			links.add(new Link(nodes.get(orig), nodes.get(dest), capacity, length, fftime, B, power));
+			links.add(new Link(nodes.get(tail), nodes.get(head), capacity, length, fftime, B, power));
 		}
 		lf.close();
 		
@@ -73,7 +73,6 @@ public class Network {
 		while (true) { //While more Origins to read
 			Integer origID = Integer.parseInt(line.trim().split(" ")[1]);
 			Node old = nodes.get(origID);	// Retrieve the existing node with that ID
-			
 			
 			String[] entries;
 			HashMap<Integer, Double> dests = new HashMap<Integer, Double>();
@@ -90,13 +89,14 @@ public class Network {
 				}
 			}
 			Origin o = new Origin(old, dests); 	// Construct an origin to replace it
-			nodes.put(origID, o); // Replace the node with its origin equivalent
+			//nodes.put(origID, o); // Replace the node with its origin equivalent
+			origins.add(o);
 			
 			line = of.readLine(); // Read in the origin header
 			if (line.trim().equals("")) break; // If the origin header is empty, we've reached the end of the list
 		}
 		of.close();
-		return new Network(nodes, links, origins);
+		return new Network(/*nodes,*/ links, origins);
 		
 	}
 	
@@ -106,12 +106,12 @@ public class Network {
 	private void setLinks(List<Link> links) {
 		this.links = links;
 	}
-	public Collection<Node> getNodes() {
-		return nodes.values();
-	}
-	private void setNodes(Map<Integer, Node> nodes2) {
-		this.nodes = nodes2;
-	}
+//	public Collection<Node> getNodes() {
+//		return nodes.values();
+//	}
+//	private void setNodes(Map<Integer, Node> nodes2) {
+//		this.nodes = nodes2;
+//	}
 	public List<Origin> getOrigins() {
 		return origins;
 	}

@@ -7,7 +7,7 @@ public class Bush extends Network{
 	private Origin origin;
 	
 	public Bush(Map<Integer,Node> nodes, List<Link> links, List<Origin> origin) {
-		super(nodes,links,origin);
+		super(/*nodes,*/links,origin);
 		this.origin = origin.get(0);
 	}
 }

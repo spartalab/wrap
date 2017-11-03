@@ -4,8 +4,8 @@ import java.util.HashMap;
 
 public class Origin extends Node{
 	private Bush bush;
-	private int[] demandVector;
-	
+	private HashMap<Integer, Double> destinations;
+
 //	public Origin(List<Link> incomingLinks, List<Link> outgoingLinks, Bush bush, int[] demandVector) {
 //		super(incomingLinks, outgoingLinks);
 //		this.bush = bush;
@@ -13,8 +13,14 @@ public class Origin extends Node{
 //	}
 
 	public Origin(Node self, HashMap<Integer, Double> dests) {
-		// TODO Auto-generated constructor stub - How to handle 
 		super(self.getIncomingLinks(), self.getOutgoingLinks(), self.getID());
+		destinations = dests;	// store demand HashMap
+		bush = createInitialBush();
+	}
+
+	private Bush createInitialBush() {
+		// TODO: create initial bush using Dijkstra's shortest path algorithm (at free flow)
+		return null;
 	}
 
 	public Bush getBush() {
@@ -25,12 +31,5 @@ public class Origin extends Node{
 		this.bush = bush;
 	}
 
-	public int[] getdemandVector() {
-		return demandVector;
-	}
 
-	public void setdVector(int[] dVector) {
-		this.demandVector = dVector;
-	}
-	
 }

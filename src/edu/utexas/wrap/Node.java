@@ -6,7 +6,7 @@ public class Node {
 
 	private List<Link> incomingLinks;
 	private List<Link> outgoingLinks;
-	private Integer ID;
+	private final Integer ID;
 	
 	public Node(List<Link> incomingLinks, List<Link> outgoingLinks, Integer ID) {
 		this.incomingLinks = incomingLinks;
