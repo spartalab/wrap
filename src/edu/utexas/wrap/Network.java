@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,13 +12,20 @@ import java.util.Map;
 public class Network {
 
 	//private Map<Integer, Node> nodes;
-	private List<Link> links;
-	private List<Origin> origins;
+	protected List<Link> links;
+	protected List<Origin> origins;
 	
 	
 	public Network(/*Map<Integer, Node> nodes,*/ List<Link> links, List<Origin> origins) {
 		//setNodes(nodes);
 		setLinks(links);
+		setOrigins(origins);
+	}
+	
+	public Network(List<Link> links, Origin origin) {
+		setLinks(links);
+		List<Origin> origins = new ArrayList<Origin>();
+		origins.add(origin);
 		setOrigins(origins);
 	}
 	
@@ -75,7 +81,7 @@ public class Network {
 			Node old = nodes.get(origID);	// Retrieve the existing node with that ID
 			
 			String[] entries;
-			HashMap<Integer, Double> dests = new HashMap<Integer, Double>();
+			HashMap<Node, Double> dests = new HashMap<Node, Double>();
 			while (true) {
 				line = of.readLine();
 				if (line.trim().equals("")) break; // If we've reached the gap, move to the next origin
@@ -84,12 +90,14 @@ public class Network {
 				for (String entry : entries) {	// For each entry on this line
 					String[] cols = entry.split(":");	// Get its values
 					Integer destID = Integer.parseInt(cols[0].trim());
+					Node dest = nodes.get(destID);
 					Double demand = Double.parseDouble(cols[1].trim());
-					dests.put(destID, demand);
+					dests.put(dest, demand);
 				}
 			}
 			Origin o = new Origin(old, dests); 	// Construct an origin to replace it
-			//nodes.put(origID, o); // Replace the node with its origin equivalent
+			o.buildBush(links, nodes);
+			nodes.put(origID, o); // Replace the node with its origin equivalent
 			origins.add(o);
 			
 			line = of.readLine(); // Read in the origin header
