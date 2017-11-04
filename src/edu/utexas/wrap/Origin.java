@@ -8,6 +8,7 @@ import java.util.Set;
 
 public class Origin extends Node{
 	private Bush bush;
+	private Set<Node> destinations;
 	private Map<Node, Double> destDemand;
 	private Map<Link, Double> linkFlows;
 	private Map<Node, Double> nodeL;
@@ -25,13 +26,9 @@ public class Origin extends Node{
 	public Origin(Node self, HashMap<Node, Double> dests) {
 		super(self.getIncomingLinks(), self.getOutgoingLinks(), self.getID());
 		destDemand = dests;	// store demand HashMap
-		bush = createInitialBush();
+		destinations = dests.keySet();
 	}
 
-	private Bush createInitialBush() {
-		// TODO: create initial bush using Dijkstra's shortest path algorithm (at free flow)
-		return null;
-	}
 
 	public Bush getBush() {
 		return bush;
@@ -42,9 +39,9 @@ public class Origin extends Node{
 	}
 
 	private Set<Node> getDests() {
-		return destDemand.keySet();
+		return destinations;
 	}
-	public void buildBush(List<Link> links, Map<Integer, Node> nodes) {
+	public void buildBush(Set<Link> links, Map<Integer, Node> nodes) {
 		////////////////////////////////////////////////
 		// PART 0: Dijkstra's algorithm (to all nodes)
 		////////////////////////////////////////////////
