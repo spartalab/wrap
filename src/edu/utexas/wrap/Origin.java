@@ -8,8 +8,8 @@ import java.util.Set;
 
 public class Origin extends Node{
 	private Bush bush;
-	private Set<Node> destinations;
-	private Map<Node, Double> destDemand;
+	private final Set<Node> destinations;
+	private final Map<Node, Double> destDemand;
 	private Map<Link, Double> linkFlows;
 	private Map<Node, Double> nodeL;
 	private Map<Node, Double> nodeU;
@@ -41,6 +41,18 @@ public class Origin extends Node{
 	private Set<Node> getDests() {
 		return destinations;
 	}
+	
+	
+	/** Build the origin's initial bush using Dijkstra's algorithm
+	 * 
+	 * Create from the full network an initial bush by finding the
+	 * shortest path to each node in the network from the origin, 
+	 * then selecting the paths which lead to destinations to which
+	 * the origin has demand.
+	 * 
+	 * @param links all links in the network
+	 * @param nodes all nodes in the network
+	 */
 	public void buildBush(Set<Link> links, Map<Integer, Node> nodes) {
 		////////////////////////////////////////////////
 		// PART 0: Dijkstra's algorithm (to all nodes)
@@ -120,7 +132,7 @@ public class Origin extends Node{
 		 * We now have the set of links and nodes in the bush
 		 */
 		
-		// TODO: So how do we want to store this in the bush???
+		// TODO: So how do we want to store this in the bush??? Do we actually need a bush class?
 	}
 
 
