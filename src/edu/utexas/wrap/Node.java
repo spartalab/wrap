@@ -1,14 +1,14 @@
 package edu.utexas.wrap;
 
-import java.util.List;
+import java.util.Set;
 
 public class Node {
 
-	private List<Link> incomingLinks;
-	private List<Link> outgoingLinks;
+	private Set<Link> incomingLinks;
+	private Set<Link> outgoingLinks;
 	private final Integer ID;
 	
-	public Node(List<Link> incomingLinks, List<Link> outgoingLinks, Integer ID) {
+	public Node(Set<Link> incomingLinks, Set<Link> outgoingLinks, Integer ID) {
 		this.incomingLinks = incomingLinks;
 		this.outgoingLinks = outgoingLinks;
 		this.ID = ID;
@@ -19,19 +19,19 @@ public class Node {
 		this.ID = ID;
 	}
 
-	public List<Link> getIncomingLinks() {
+	public Set<Link> getIncomingLinks() {
 		return incomingLinks;
 	}
 
-	public void setIncomingLinks(List<Link> incomingLinks) {
+	public void setIncomingLinks(Set<Link> incomingLinks) {
 		this.incomingLinks = incomingLinks;
 	}
 
-	public List<Link> getOutgoingLinks() {
+	public Set<Link> getOutgoingLinks() {
 		return outgoingLinks;
 	}
 
-	public void setOutgoingLinks(List<Link> outgoingLinks) {
+	public void setOutgoingLinks(Set<Link> outgoingLinks) {
 		this.outgoingLinks = outgoingLinks;
 	}
 	

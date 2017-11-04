@@ -4,27 +4,27 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class Network {
 
 	//private Map<Integer, Node> nodes;
-	protected List<Link> links;
-	protected List<Origin> origins;
+	protected Set<Link> links;
+	protected Set<Origin> origins;
 	
 	
-	public Network(/*Map<Integer, Node> nodes,*/ List<Link> links, List<Origin> origins) {
+	public Network(/*Map<Integer, Node> nodes,*/ Set<Link> links, Set<Origin> origins) {
 		//setNodes(nodes);
 		setLinks(links);
 		setOrigins(origins);
 	}
 	
-	public Network(List<Link> links, Origin origin) {
+	public Network(Set<Link> links, Origin origin) {
 		setLinks(links);
-		List<Origin> origins = new ArrayList<Origin>();
+		Set<Origin> origins = new HashSet<Origin>();
 		origins.add(origin);
 		setOrigins(origins);
 	}
@@ -32,8 +32,8 @@ public class Network {
 	public static Network fromFiles(File linkFile, File odMatrix) throws IOException {
 		// Initialization
 		Map<Integer,Node> nodes = new HashMap<Integer, Node>();
-		List<Link> links = new ArrayList<Link>();
-		List<Origin> origins = new ArrayList<Origin>();
+		Set<Link> links = new HashSet<Link>();
+		Set<Origin> origins = new HashSet<Origin>();
 		// Open the files for reading
 		BufferedReader lf = new BufferedReader(new FileReader(linkFile));
 		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
@@ -104,14 +104,14 @@ public class Network {
 			if (line.trim().equals("")) break; // If the origin header is empty, we've reached the end of the list
 		}
 		of.close();
-		return new Network(/*nodes,*/ links, origins);
+		return new Network(links, origins);
 		
 	}
 	
-	public List<Link> getLinks() {
+	public Set<Link> getLinks() {
 		return links;
 	}
-	private void setLinks(List<Link> links) {
+	private void setLinks(Set<Link> links) {
 		this.links = links;
 	}
 //	public Collection<Node> getNodes() {
@@ -120,10 +120,10 @@ public class Network {
 //	private void setNodes(Map<Integer, Node> nodes2) {
 //		this.nodes = nodes2;
 //	}
-	public List<Origin> getOrigins() {
+	public Set<Origin> getOrigins() {
 		return origins;
 	}
-	private void setOrigins(List<Origin> origins) {
+	private void setOrigins(Set<Origin> origins) {
 		this.origins = origins;
 	}
 	
