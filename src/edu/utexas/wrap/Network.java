@@ -4,30 +4,36 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 public class Network {
 
-	private Map<Integer, Node> nodes;
-	private List<Link> links;
-	private List<Origin> origins;
+	//private Map<Integer, Node> nodes;
+	protected Set<Link> links;
+	protected Set<Origin> origins;
 	
 	
-	public Network(Map<Integer, Node> nodes, List<Link> links, List<Origin> origins) {
-		setNodes(nodes);
+	public Network(/*Map<Integer, Node> nodes,*/ Set<Link> links, Set<Origin> origins) {
+		//setNodes(nodes);
 		setLinks(links);
+		setOrigins(origins);
+	}
+	
+	public Network(Set<Link> links, Origin origin) {
+		setLinks(links);
+		Set<Origin> origins = new HashSet<Origin>();
+		origins.add(origin);
 		setOrigins(origins);
 	}
 	
 	public static Network fromFiles(File linkFile, File odMatrix) throws IOException {
 		// Initialization
 		Map<Integer,Node> nodes = new HashMap<Integer, Node>();
-		List<Link> links = new ArrayList<Link>();
-		List<Origin> origins = new ArrayList<Origin>();
+		Set<Link> links = new HashSet<Link>();
+		Set<Origin> origins = new HashSet<Origin>();
 		// Open the files for reading
 		BufferedReader lf = new BufferedReader(new FileReader(linkFile));
 		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
@@ -45,21 +51,21 @@ public class Network {
 			if (line.equals("")) break;	// End of link list reached
 			
 			String[] cols = line.split("\t");
-			Integer orig = Integer.parseInt(cols[0]);
-			Integer dest = Integer.parseInt(cols[1]);
+			Integer tail = Integer.parseInt(cols[0]);
+			Integer head = Integer.parseInt(cols[1]);
 			Integer capacity = Integer.parseInt(cols[2]);
 			Integer length = Integer.parseInt(cols[3]);
 			Double fftime = Double.parseDouble(cols[4]);
 			Double B = Double.parseDouble(cols[5]);
 			Integer power = Integer.parseInt(cols[6]);
-			System.out.println(""+orig.toString());
+			//System.out.println(""+orig.toString());
 			
 			//Create new node(s) if new, then add to map
-			if (!nodes.containsKey(orig)) nodes.put(orig,new Node(orig));
-			if (!nodes.containsKey(dest)) nodes.put(dest,new Node(dest));
+			if (!nodes.containsKey(tail)) nodes.put(tail,new Node(tail));
+			if (!nodes.containsKey(head)) nodes.put(head,new Node(head));
 			
 			//Construct new link and add to the list
-			links.add(new Link(nodes.get(orig), nodes.get(dest), capacity, length, fftime, B, power));
+			links.add(new Link(nodes.get(tail), nodes.get(head), capacity, length, fftime, B, power));
 		}
 		lf.close();
 		
@@ -74,9 +80,8 @@ public class Network {
 			Integer origID = Integer.parseInt(line.trim().split(" ")[1]);
 			Node old = nodes.get(origID);	// Retrieve the existing node with that ID
 			
-			
 			String[] entries;
-			HashMap<Integer, Double> dests = new HashMap<Integer, Double>();
+			HashMap<Node, Double> dests = new HashMap<Node, Double>();
 			while (true) {
 				line = of.readLine();
 				if (line.trim().equals("")) break; // If we've reached the gap, move to the next origin
@@ -85,37 +90,40 @@ public class Network {
 				for (String entry : entries) {	// For each entry on this line
 					String[] cols = entry.split(":");	// Get its values
 					Integer destID = Integer.parseInt(cols[0].trim());
+					Node dest = nodes.get(destID);
 					Double demand = Double.parseDouble(cols[1].trim());
-					dests.put(destID, demand);
+					dests.put(dest, demand);
 				}
 			}
 			Origin o = new Origin(old, dests); 	// Construct an origin to replace it
+			o.buildBush(links, nodes);
 			nodes.put(origID, o); // Replace the node with its origin equivalent
+			origins.add(o);
 			
 			line = of.readLine(); // Read in the origin header
 			if (line.trim().equals("")) break; // If the origin header is empty, we've reached the end of the list
 		}
 		of.close();
-		return new Network(nodes, links, origins);
+		return new Network(links, origins);
 		
 	}
 	
-	public List<Link> getLinks() {
+	public Set<Link> getLinks() {
 		return links;
 	}
-	private void setLinks(List<Link> links) {
+	private void setLinks(Set<Link> links) {
 		this.links = links;
 	}
-	public Collection<Node> getNodes() {
-		return nodes.values();
-	}
-	private void setNodes(Map<Integer, Node> nodes2) {
-		this.nodes = nodes2;
-	}
-	public List<Origin> getOrigins() {
+//	public Collection<Node> getNodes() {
+//		return nodes.values();
+//	}
+//	private void setNodes(Map<Integer, Node> nodes2) {
+//		this.nodes = nodes2;
+//	}
+	public Set<Origin> getOrigins() {
 		return origins;
 	}
-	private void setOrigins(List<Origin> origins) {
+	private void setOrigins(Set<Origin> origins) {
 		this.origins = origins;
 	}
 	
