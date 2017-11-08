@@ -1,8 +1,7 @@
 package edu.utexas.wrap;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -10,18 +9,7 @@ public class Origin extends Node{
 	private Bush bush;
 	private final Set<Node> destinations;
 	private final Map<Node, Double> destDemand;
-	private Map<Link, Double> linkFlows;
-	private Map<Node, Double> nodeL;
-	private Map<Node, Double> nodeU;
-	private Map<Node, Link> qShort;
-	private Map<Node, Link> qLong;
 	
-
-//	public Origin(List<Link> incomingLinks, List<Link> outgoingLinks, Bush bush, int[] demandVector) {
-//		super(incomingLinks, outgoingLinks);
-//		this.bush = bush;
-//		this.demandVector = demandVector;
-//	}
 
 	public Origin(Node self, HashMap<Node, Double> dests) {
 		super(self.getIncomingLinks(), self.getOutgoingLinks(), self.getID());
@@ -111,28 +99,46 @@ public class Origin extends Node{
 		// Part 1: Collect shortest-path used links
 		/////////////////////////////////////////////
 		// Create nodeL and qShort mappings
-		nodeL = new HashMap<Node, Double>();
-		qShort = new HashMap<Node, Link>();
+		Map<Node, Double> nodeL = new HashMap<Node, Double>();
+		Map<Node, Link> qShort = new HashMap<Node, Link>();
+		Set<Node> bushNodes = new HashSet<Node>();
+		Set<Link> activeLinks = new HashSet<Link>();
+		Set<Link> inactiveLinks = new HashSet<Link>();
+		
 		// Set the origin node values
 		nodeL.put(this, new Double(0.0));
 		qShort.put(this, null);
+		bushNodes.add(this);
 		
 		// For each destination
 		for (Node node : getDests()) {
 			// While trace hasn't encountered a stored node
-			while (!nodeL.containsKey(node)) {
+			while (!bushNodes.contains(node)) {
 				// Store the node and trace up the tree
+				bushNodes.add(node);					// Nodes in Bush
+				nodeL.put(node, tempNodeL.get(node));	// Li Labels
 				Link backLink = tempBackMap.get(node);
-				nodeL.put(node, tempNodeL.get(node));
-				qShort.put(node, backLink);
-				node = backLink.getTail();
+				qShort.put(node, backLink);				// q pointers
+				activeLinks.add(backLink);				// Active links
+				node = backLink.getTail();				
 			}
 		}
-		/*
-		 * We now have the set of links and nodes in the bush
-		 */
 		
-		// TODO: So how do we want to store this in the bush??? Do we actually need a bush class?
+		for (Node node : getDests()) { 
+			for (Link link : node.getOutgoingLinks()) {
+				if (bushNodes.contains(link.getHead()) && !activeLinks.contains(link)) {
+					inactiveLinks.add(link);
+				}
+			}
+		}
+		
+		/*
+		 * We now have the set of active and inactive links and nodes in the bush
+		 */
+		Bush bush = new Bush(this, activeLinks, inactiveLinks);
+		bush.setqShort(qShort);
+		bush.setNodeL(nodeL);
+		setBush(bush);
 	}
 
 
