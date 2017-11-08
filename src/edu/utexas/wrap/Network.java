@@ -65,7 +65,10 @@ public class Network {
 			if (!nodes.containsKey(head)) nodes.put(head,new Node(head));
 			
 			//Construct new link and add to the list
-			links.add(new Link(nodes.get(tail), nodes.get(head), capacity, length, fftime, B, power));
+			Link link = new Link(nodes.get(tail), nodes.get(head), capacity, length, fftime, B, power);
+			nodes.get(tail).addOutgoing(link);
+			nodes.get(head).addIncoming(link);
+			links.add(link);
 		}
 		lf.close();
 		

@@ -51,24 +51,24 @@ public class Origin extends Node{
 		// eligible nodes to contain this origin only, and the 
 		// back-link mapping to be empty
 		Map<Node, Double> tempNodeL	 = new HashMap<Node, Double>();
-		Map<Node, Boolean> finalized = new HashMap<Node, Boolean>();
-		Map<Node, Boolean> eligible  = new HashMap<Node, Boolean>();
+		Set<Node> finalized = new HashSet<Node>();
+		Set<Node> eligible  = new HashSet<Node>();
 		Map<Node, Link> tempBackMap  = new HashMap<Node, Link>();
 		tempNodeL.put(this, new Double(0.0));
-		eligible.put(this,true);
+		eligible.add(this);
 		
 		// While not all nodes have been reached
 		while (true) {
 			// Find eligible node of minimal nodeL
 			Node i = null;
-			for (Node node : eligible.keySet()) {
+			for (Node node : eligible) {
 				if ( i == null || tempNodeL.get(node) < tempNodeL.get(i) ) {
 					i = node;
 				}
 			}
 			
 			// Finalize node by adding to finalized
-			finalized.put(i, true);
+			finalized.add(i);
 			// And remove from eligible
 			eligible.remove(i);
 			
@@ -86,6 +86,7 @@ public class Origin extends Node{
 					tempNodeL.put(j, Licij);
 					tempBackMap.put(j, link);
 				}
+				eligible.add(i);
 			}
 		}
 		

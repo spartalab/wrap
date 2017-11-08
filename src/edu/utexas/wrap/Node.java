@@ -1,5 +1,6 @@
 package edu.utexas.wrap;
 
+import java.util.HashSet;
 import java.util.Set;
 
 public class Node {
@@ -17,13 +18,15 @@ public class Node {
 	
 	public Node(Integer ID) {
 		this.ID = ID;
+		incomingLinks = new HashSet<Link>();
+		outgoingLinks = new HashSet<Link>();
 	}
 
 	public Set<Link> getIncomingLinks() {
 		return incomingLinks;
 	}
 
-	public void setIncomingLinks(Set<Link> incomingLinks) {
+	protected void setIncomingLinks(Set<Link> incomingLinks) {
 		this.incomingLinks = incomingLinks;
 	}
 
@@ -31,7 +34,7 @@ public class Node {
 		return outgoingLinks;
 	}
 
-	public void setOutgoingLinks(Set<Link> outgoingLinks) {
+	protected void setOutgoingLinks(Set<Link> outgoingLinks) {
 		this.outgoingLinks = outgoingLinks;
 	}
 	
@@ -41,6 +44,16 @@ public class Node {
 
 	public Integer getID() {
 		return ID;
+	}
+
+
+	public void addIncoming(Link link) {
+		incomingLinks.add(link);
+	}
+
+
+	public void addOutgoing(Link link) {
+		outgoingLinks.add(link);
 	}
 	
 }
