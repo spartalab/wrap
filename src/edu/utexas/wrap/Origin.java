@@ -50,27 +50,29 @@ public class Origin extends Node{
 		// Initialize the empty map of finalized nodes, the map of 
 		// eligible nodes to contain this origin only, and the 
 		// back-link mapping to be empty
-		Map<Node, Double> tempNodeL	 = new HashMap<Node, Double>();
-		Set<Node> finalized = new HashSet<Node>();
-		Set<Node> eligible  = new HashSet<Node>();
-		Map<Node, Link> tempBackMap  = new HashMap<Node, Link>();
-		tempNodeL.put(this, new Double(0.0));
-		eligible.add(this);
+		Map<Integer, Double> tempNodeL	 = new HashMap<Integer, Double>();
+		Map<Integer, Link> tempBackMap  = new HashMap<Integer, Link>();
+		Set<Integer> finalized = new HashSet<Integer>();
+		Set<Integer> eligible  = new HashSet<Integer>();
+
+		tempNodeL.put(this.getID(), new Double(0.0));
+		eligible.add(this.getID());
 		
 		// While not all nodes have been reached
 		while (true) {
 			// Find eligible node of minimal nodeL
 			Node i = null;
-			for (Node node : eligible) {
-				if ( i == null || tempNodeL.get(node) < tempNodeL.get(i) ) {
+			for (Integer nodeID : eligible) {
+				Node node = nodes.get(nodeID);
+				if ( i == null || tempNodeL.get(node.getID()) < tempNodeL.get(i.getID()) ) {
 					i = node;
 				}
 			}
 			
 			// Finalize node by adding to finalized
-			finalized.add(i);
+			finalized.add(i.getID());
 			// And remove from eligible
-			eligible.remove(i);
+			eligible.remove(i.getID());
 			
 			// If all nodes finalized, terminate
 			if (finalized.size() >= nodes.size()) break;
@@ -80,13 +82,13 @@ public class Origin extends Node{
 				Node j = link.getHead();
 				
 				// nodeL(j) = min( nodeL(j), nodeL(i)+c(ij) )
-				Double Lj    = tempNodeL.get(j);
-				Double Licij = tempNodeL.get(i)+link.getTravelTime();
+				Double Lj    = tempNodeL.get(j.getID());
+				Double Licij = tempNodeL.get(i.getID())+link.getTravelTime();
 				if (Lj == null || Licij < Lj) {
-					tempNodeL.put(j, Licij);
-					tempBackMap.put(j, link);
+					tempNodeL.put(j.getID(), Licij);
+					tempBackMap.put(j.getID(), link);
 				}
-				eligible.add(i);
+				if (!finalized.contains(j.getID())) eligible.add(j.getID());
 			}
 		}
 		
@@ -111,16 +113,21 @@ public class Origin extends Node{
 		qShort.put(this, null);
 		bushNodes.add(this);
 		
+		/* I think the below code is suboptimal but don't have time to look
+		 * at it further.
+		 */
+		
 		// For each destination
 		for (Node node : getDests()) {
 			// While trace hasn't encountered a stored node
 			while (!bushNodes.contains(node)) {
 				// Store the node and trace up the tree
 				bushNodes.add(node);					// Nodes in Bush
-				nodeL.put(node, tempNodeL.get(node));	// Li Labels
-				Link backLink = tempBackMap.get(node);
+				nodeL.put(node, tempNodeL.get(node.getID()));	// Li Labels
+				Link backLink = tempBackMap.get(node.getID());
 				qShort.put(node, backLink);				// q pointers
 				activeLinks.add(backLink);				// Active links
+				if (node.getID() == this.getID()) break;
 				node = backLink.getTail();				
 			}
 		}

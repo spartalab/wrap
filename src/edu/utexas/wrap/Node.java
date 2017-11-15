@@ -56,4 +56,7 @@ public class Node {
 		outgoingLinks.add(link);
 	}
 	
+	public String toString() {
+		return "Node " + this.ID.toString();
+	}
 }

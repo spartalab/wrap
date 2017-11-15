@@ -6,7 +6,7 @@ package edu.utexas.wrap;
  */
 public class Link {
 
-	private int capacity;
+	private Double capacity;
 	private Node head;
 	private Node tail;
 	private int length;
@@ -17,7 +17,7 @@ public class Link {
 
 	
 	
-	public Link(Node tail, Node head, Integer capacity, Integer length, Double fftime, Double b, Integer power) {
+	public Link(Node tail, Node head, Double capacity, Integer length, Double fftime, Double b, Integer power) {
 		this.tail = tail;
 		this.head = head;
 		this.capacity = capacity;
@@ -41,10 +41,10 @@ public class Link {
 	public void setPower(int power) {
 		this.power = power;
 	}
-	public int getCapacity() {
+	public Double getCapacity() {
 		return capacity;
 	}
-	public void setCapacity(int capacity) {
+	public void setCapacity(Double capacity) {
 		this.capacity = capacity;
 	}
 	public double getFfTime() {
@@ -92,5 +92,8 @@ public class Link {
 		return tt;
 	}
 	
+	public String toString() {
+		return this.tail.toString() + " -> " + this.head.toString();
+	}
 	
 }

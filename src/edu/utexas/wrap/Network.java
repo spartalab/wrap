@@ -47,13 +47,13 @@ public class Network {
 		} while (!line.startsWith("~"));
 		
 		while (true) { //Iterate through each link (row)
-			line = lf.readLine().trim();
-			if (line.equals("")) break;	// End of link list reached
-			
+			line = lf.readLine();
+			if (line == null || line.equals("")) break;	// End of link list reached
+			line = line.trim();
 			String[] cols = line.split("\t");
 			Integer tail = Integer.parseInt(cols[0]);
 			Integer head = Integer.parseInt(cols[1]);
-			Integer capacity = Integer.parseInt(cols[2]);
+			Double capacity = Double.parseDouble(cols[2]);
 			Integer length = Integer.parseInt(cols[3]);
 			Double fftime = Double.parseDouble(cols[4]);
 			Double B = Double.parseDouble(cols[5]);
@@ -80,7 +80,7 @@ public class Network {
 		} while (!line.startsWith("Origin"));
 		
 		while (true) { //While more Origins to read
-			Integer origID = Integer.parseInt(line.trim().split(" ")[1]);
+			Integer origID = Integer.parseInt(line.trim().split("\\s+")[1]);
 			Node old = nodes.get(origID);	// Retrieve the existing node with that ID
 			
 			String[] entries;
@@ -88,7 +88,7 @@ public class Network {
 			while (true) {
 				line = of.readLine();
 				if (line.trim().equals("")) break; // If we've reached the gap, move to the next origin
-				entries = line.split(";");
+				entries = line.trim().split(";");
 				
 				for (String entry : entries) {	// For each entry on this line
 					String[] cols = entry.split(":");	// Get its values
