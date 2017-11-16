@@ -48,16 +48,17 @@ public class Network {
 		
 		while (true) { //Iterate through each link (row)
 			line = lf.readLine();
-			if (line == null || line.equals("")) break;	// End of link list reached
+			if (line == null) break;	// End of link list reached
+			if (line.startsWith("~") || line.trim().equals("")) continue;
 			line = line.trim();
-			String[] cols = line.split("\t");
-			Integer tail = Integer.parseInt(cols[0]);
-			Integer head = Integer.parseInt(cols[1]);
+			String[] cols 	= line.split("\t");
+			Integer tail 	= Integer.parseInt(cols[0]);
+			Integer head 	= Integer.parseInt(cols[1]);
 			Double capacity = Double.parseDouble(cols[2]);
-			Integer length = Integer.parseInt(cols[3]);
-			Double fftime = Double.parseDouble(cols[4]);
-			Double B = Double.parseDouble(cols[5]);
-			Integer power = Integer.parseInt(cols[6]);
+			Double length 	= Double.parseDouble(cols[3]);
+			Double fftime 	= Double.parseDouble(cols[4]);
+			Double B 		= Double.parseDouble(cols[5]);
+			Double power 	= Double.parseDouble(cols[6]);
 			//System.out.println(""+orig.toString());
 			
 			//Create new node(s) if new, then add to map
@@ -87,7 +88,7 @@ public class Network {
 			HashMap<Node, Double> dests = new HashMap<Node, Double>();
 			while (true) {
 				line = of.readLine();
-				if (line.trim().equals("")) break; // If we've reached the gap, move to the next origin
+				if (line.trim().startsWith("O") || line.trim().equals("")) break; // If we've reached the gap, move to the next origin
 				entries = line.trim().split(";");
 				
 				for (String entry : entries) {	// For each entry on this line
@@ -103,8 +104,8 @@ public class Network {
 			nodes.put(origID, o); // Replace the node with its origin equivalent
 			origins.add(o);
 			
-			line = of.readLine(); // Read in the origin header
-			if (line.trim().equals("")) break; // If the origin header is empty, we've reached the end of the list
+			while (line != null && !line.startsWith("O")) line = of.readLine(); // Read in the origin header
+			if (line == null || line.trim().equals("")) break; // If the origin header is empty, we've reached the end of the list
 		}
 		of.close();
 		return new Network(links, origins);

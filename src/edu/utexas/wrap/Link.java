@@ -9,15 +9,15 @@ public class Link {
 	private Double capacity;
 	private Node head;
 	private Node tail;
-	private int length;
+	private Double length;
 	private double fftime;
 	private double b;
-	private int power;
+	private Double power;
 	private double flow;
 
 	
 	
-	public Link(Node tail, Node head, Double capacity, Integer length, Double fftime, Double b, Integer power) {
+	public Link(Node tail, Node head, Double capacity, Double length, Double fftime, Double b, Double power) {
 		this.tail = tail;
 		this.head = head;
 		this.capacity = capacity;
@@ -38,7 +38,7 @@ public class Link {
 	public double getPower() {
 		return power;
 	}
-	public void setPower(int power) {
+	public void setPower(Double power) {
 		this.power = power;
 	}
 	public Double getCapacity() {
@@ -65,10 +65,10 @@ public class Link {
 	public void setTail(Node tail) {
 		this.tail = tail;
 	}
-	public int getLength() {
+	public Double getLength() {
 		return length;
 	}
-	public void setLength(int length) {
+	public void setLength(Double length) {
 		this.length = length;
 	}
 	public double getFlow() {

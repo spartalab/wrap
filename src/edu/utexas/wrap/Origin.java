@@ -69,6 +69,10 @@ public class Origin extends Node{
 				}
 			}
 			
+			//DEBUG CODE BELOW
+			if (i == null) break;
+			//DEBUG CODE ABOVE
+			
 			// Finalize node by adding to finalized
 			finalized.add(i.getID());
 			// And remove from eligible
@@ -113,8 +117,8 @@ public class Origin extends Node{
 		qShort.put(this, null);
 		bushNodes.add(this);
 		
-		/* I think the below code is suboptimal but don't have time to look
-		 * at it further.
+		/* I think the below code is sub-optimal,
+		 * but don't have time to look at it further.
 		 */
 		
 		// For each destination
