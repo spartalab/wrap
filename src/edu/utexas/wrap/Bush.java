@@ -1,5 +1,6 @@
 package edu.utexas.wrap;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
@@ -15,11 +16,11 @@ public class Bush {
 	private Set<Link> inactiveLinks;
 	
 	// Labels (for solving)
-	private Map<Node, Double> 	nodeL;
-	private Map<Node, Double>	nodeU;
-	private Map<Node, Link> 	qShort;
-	private Map<Node, Link>		qLong;
-	private Map<Link, Double> 	flow;
+	private Map<Integer, Double> 	nodeL;
+	private Map<Integer, Double>	nodeU;
+	private Map<Integer, Link> 		qShort;
+	private Map<Integer, Link>		qLong;
+	private Map<Link, Double> 		flow;
 
 	
 	public Bush(
@@ -86,15 +87,64 @@ public class Bush {
 	}
 
 
-	public void setqShort(Map<Node, Link> qShort) {
+	public void setqShort(Map<Integer, Link> qShort) {
 		this.qShort = qShort;
 	}
 
 
-	public void setNodeL(Map<Node, Double> nodeL) {
+	public void setNodeL(Map<Integer, Double> nodeL) {
 		this.nodeL = nodeL;
 	}
 	
+	public void runDijkstras(Boolean longest) {
+		// Initialize every nodeL to infinity except this, the origin
+				// Initialize the empty map of finalized nodes, the map of 
+				// eligible nodes to contain this origin only, and the 
+				// back-link mapping to be empty
+				Set<Integer> finalized = new HashSet<Integer>();
+				Set<Integer> eligible  = new HashSet<Integer>();
+
+				nodeL.put(origin.getID(), new Double(0.0));
+				eligible.add(origin.getID());
+				
+				// While not all nodes have been reached
+				while (true) {
+					// Find eligible node of minimal nodeL
+					Node i = null;
+					for (Integer nodeID : eligible) {
+						Node node = bushNodes.get(nodeID);
+						if ( i == null || nodeL.get(node.getID()) < nodeL.get(i.getID()) ) {
+							i = node;
+						}
+					}
+					
+					//DEBUG CODE BELOW
+					if (i == null) break;
+					//DEBUG CODE ABOVE
+					
+					// Finalize node by adding to finalized
+					finalized.add(i.getID());
+					// And remove from eligible
+					eligible.remove(i.getID());
+					
+					// If all nodes finalized, terminate
+					if (finalized.size() >= bushNodes.size()) break;
+					
+					// Update labels and backnodes for links leaving node i
+					for (Link link : i.getOutgoingLinks()) {
+						Node j = link.getHead();
+						
+						// nodeL(j) = min( nodeL(j), nodeL(i)+c(ij) )
+						Double Lj    = nodeL.get(j.getID());
+						Double Licij = nodeL.get(i.getID())+link.getTravelTime();
+						if (Lj == null || Licij < Lj) {
+							nodeL.put(j.getID(), Licij);
+							qShort.put(j.getID(), link);
+						}
+						if (!finalized.contains(j.getID())) eligible.add(j.getID());
+					}
+				}
+	}
 	
 	
 }
