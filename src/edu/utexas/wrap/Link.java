@@ -6,18 +6,18 @@ package edu.utexas.wrap;
  */
 public class Link {
 
-	private Double capacity;
+	private float capacity;
 	private Node head;
 	private Node tail;
-	private Double length;
-	private double fftime;
-	private double b;
-	private Double power;
-	private double flow;
+	private float length;
+	private float fftime;
+	private float b;
+	private float power;
+	private float flow;
 
 	
 	
-	public Link(Node tail, Node head, Double capacity, Double length, Double fftime, Double b, Double power) {
+	public Link(Node tail, Node head, float capacity, float length, float fftime, float b, float power) {
 		this.tail = tail;
 		this.head = head;
 		this.capacity = capacity;
@@ -25,29 +25,29 @@ public class Link {
 		this.fftime = fftime;
 		this.b = b;
 		this.power = power;
-		this.flow = 0.0;
+		this.flow = 0.0f;
 	}
 
 	//B and power are empirical constants in the BPR function
-	public double getBValue() {
+	public float getBValue() {
 		return this.b;
 	}
-	public void setBValue(double bvalue) {
+	public void setBValue(float bvalue) {
 		this.b = bvalue;
 	}
-	public double getPower() {
+	public float getPower() {
 		return power;
 	}
-	public void setPower(Double power) {
+	public void setPower(float power) {
 		this.power = power;
 	}
-	public Double getCapacity() {
+	public float getCapacity() {
 		return capacity;
 	}
-	public void setCapacity(Double capacity) {
+	public void setCapacity(float capacity) {
 		this.capacity = capacity;
 	}
-	public double getFfTime() {
+	public float getFfTime() {
 		return fftime;
 	}
 	public void setFfTime(float fftime) {
@@ -65,20 +65,20 @@ public class Link {
 	public void setTail(Node tail) {
 		this.tail = tail;
 	}
-	public Double getLength() {
+	public float getLength() {
 		return length;
 	}
-	public void setLength(Double length) {
+	public void setLength(float length) {
 		this.length = length;
 	}
-	public double getFlow() {
+	public float getFlow() {
 		return this.flow;
 	}
-	public void setFlow(double flow) {
+	public void setFlow(float flow) {
 		this.flow = flow;
 	}
 	//Used to add deltaflow to current link flow
-	public void addFlow(double deltaflow) {
+	public void addFlow(float deltaflow) {
 		this.flow += deltaflow;
 	}
 
@@ -87,8 +87,8 @@ public class Link {
 	 * link characteristics (current flow, capacity, & free flow travel time)
 	 * @return travel time for the link at current flow
 	 */
-	public Double getTravelTime() {
-		Double tt = getFfTime()*(1.0 + getBValue()*Math.pow(getFlow()/getCapacity(), getPower()));
+	public float getTravelTime() {
+		float tt = (float) (getFfTime()*(1.0 + getBValue()*Math.pow(getFlow()/getCapacity(), getPower())));
 		return tt;
 	}
 	

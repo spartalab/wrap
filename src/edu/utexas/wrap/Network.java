@@ -54,11 +54,11 @@ public class Network {
 			String[] cols 	= line.split("\t");
 			Integer tail 	= Integer.parseInt(cols[0]);
 			Integer head 	= Integer.parseInt(cols[1]);
-			Double capacity = Double.parseDouble(cols[2]);
-			Double length 	= Double.parseDouble(cols[3]);
-			Double fftime 	= Double.parseDouble(cols[4]);
-			Double B 		= Double.parseDouble(cols[5]);
-			Double power 	= Double.parseDouble(cols[6]);
+			Float capacity = Float.parseFloat(cols[2]);
+			Float length 	= Float.parseFloat(cols[3]);
+			Float fftime 	= Float.parseFloat(cols[4]);
+			Float B 		= Float.parseFloat(cols[5]);
+			Float power 	= Float.parseFloat(cols[6]);
 			//System.out.println(""+orig.toString());
 			
 			//Create new node(s) if new, then add to map
@@ -85,7 +85,7 @@ public class Network {
 			Node old = nodes.get(origID);	// Retrieve the existing node with that ID
 			
 			String[] entries;
-			HashMap<Node, Double> dests = new HashMap<Node, Double>();
+			HashMap<Node, Float> dests = new HashMap<Node, Float>();
 			while (true) {
 				line = of.readLine();
 				if (line.trim().startsWith("O") || line.trim().equals("")) break; // If we've reached the gap, move to the next origin
@@ -95,7 +95,7 @@ public class Network {
 					String[] cols = entry.split(":");	// Get its values
 					Integer destID = Integer.parseInt(cols[0].trim());
 					Node dest = nodes.get(destID);
-					Double demand = Double.parseDouble(cols[1].trim());
+					Float demand = Float.parseFloat(cols[1].trim());
 					dests.put(dest, demand);
 				}
 			}
@@ -132,8 +132,8 @@ public class Network {
 	}
 	
 	
-	public Double tstt(){
-		Double tstt = 0.0;
+	public Float tstt(){
+		Float tstt = 0.0f;
 		
 		for(Link l:links){
 			tstt += l.getTravelTime();
