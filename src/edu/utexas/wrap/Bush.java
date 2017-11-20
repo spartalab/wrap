@@ -22,19 +22,26 @@ public class Bush {
 	private Map<Link, Double> 	flow;
 
 	
-	public Bush(
-			Origin origin,  
-			Set<Link> activeLinks,
-			Set<Link> inactiveLinks) 
+	public Bush(Origin origin, Set<Node> nodes, Set<Link> links) 
 	{
-		super();
-		this.origin 		= origin;
-		this.activeLinks 	= activeLinks;
-		this.inactiveLinks	= inactiveLinks;
-		this.bushNodes 		= getTopologicalOrder();
+		this.origin = origin;
+		this.activeLinks = links;
+		this.inactiveLinks = null;
+		this.nodeL = null;
+		this.nodeU = null;
+		this.qShort = null;
+		this.qLong = null;
+		//TODO Insert Dijkstra's here
+		//TODO Insert trim method here to return new activeLinks and inactiveLinks sets
+		this.bushNodes = getTopologicalOrder();
+		
 
 	}
 
+	
+	private void trim() {
+		
+	}
 	
 	/** Calculate a topological order using Kahn's algorithm
 	 * 
