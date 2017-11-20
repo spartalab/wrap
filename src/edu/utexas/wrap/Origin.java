@@ -8,10 +8,10 @@ import java.util.Set;
 public class Origin extends Node{
 	private Bush bush;
 	private final Set<Node> destinations;
-	private final Map<Node, Double> destDemand;
+	private final Map<Node, Float> destDemand;
 	
 
-	public Origin(Node self, HashMap<Node, Double> dests) {
+	public Origin(Node self, HashMap<Node, Float> dests) {
 		super(self.getIncomingLinks(), self.getOutgoingLinks(), self.getID());
 		destDemand = dests;	// store demand HashMap
 		destinations = dests.keySet();
@@ -46,62 +46,21 @@ public class Origin extends Node{
 		// PART 0: Dijkstra's algorithm (to all nodes)
 		////////////////////////////////////////////////
 		
-		// Initialize every nodeL to infinity except this, the origin
-		// Initialize the empty map of finalized nodes, the map of 
-		// eligible nodes to contain this origin only, and the 
-		// back-link mapping to be empty
-		Map<Integer, Double> tempNodeL	 = new HashMap<Integer, Double>();
-		Map<Integer, Link> tempBackMap  = new HashMap<Integer, Link>();
-		Set<Integer> finalized = new HashSet<Integer>();
-		Set<Integer> eligible  = new HashSet<Integer>();
-
-		tempNodeL.put(this.getID(), new Double(0.0));
-		eligible.add(this.getID());
 		
-		// While not all nodes have been reached
-		while (true) {
-			// Find eligible node of minimal nodeL
-			Node i = null;
-			for (Integer nodeID : eligible) {
-				Node node = nodes.get(nodeID);
-				if ( i == null || tempNodeL.get(node.getID()) < tempNodeL.get(i.getID()) ) {
-					i = node;
-				}
-			}
-			
-			//DEBUG CODE BELOW
-			if (i == null) break;
-			//DEBUG CODE ABOVE
-			
-			// Finalize node by adding to finalized
-			finalized.add(i.getID());
-			// And remove from eligible
-			eligible.remove(i.getID());
-			
-			// If all nodes finalized, terminate
-			if (finalized.size() >= nodes.size()) break;
-			
-			// Update labels and backnodes for links leaving node i
-			for (Link link : i.getOutgoingLinks()) {
-				Node j = link.getHead();
-				
-				// nodeL(j) = min( nodeL(j), nodeL(i)+c(ij) )
-				Double Lj    = tempNodeL.get(j.getID());
-				Double Licij = tempNodeL.get(i.getID())+link.getTravelTime();
-				if (Lj == null || Licij < Lj) {
-					tempNodeL.put(j.getID(), Licij);
-					tempBackMap.put(j.getID(), link);
-				}
-				if (!finalized.contains(j.getID())) eligible.add(j.getID());
-			}
-		}
 		
 		/* 
 		 * We have now determined the shortest paths to all nodes in the network
 		 * The next step is to reduce this down by selecting only the paths leading
 		 * to the destinations for which this origin has demand.
 		 */
-		
+		/*
+		 * 
+		 * 
+		 * This whole block of code will stop being used and be replaced with the Bush.trim() method
+		 * 
+		 * 
+		 * 
+		 * 
 		/////////////////////////////////////////////
 		// Part 1: Collect shortest-path used links
 		/////////////////////////////////////////////
@@ -119,7 +78,7 @@ public class Origin extends Node{
 		
 		/* I think the below code is sub-optimal,
 		 * but don't have time to look at it further.
-		 */
+		 
 		
 		// For each destination
 		for (Node node : getDests()) {
@@ -146,11 +105,11 @@ public class Origin extends Node{
 		
 		/*
 		 * We now have the set of active and inactive links and nodes in the bush
-		 */
+		 
 		Bush bush = new Bush(this, activeLinks, inactiveLinks);
 		bush.setqShort(qShort);
 		bush.setNodeL(nodeL);
-		setBush(bush);
+		setBush(bush);*/
 	}
 
 
