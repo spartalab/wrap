@@ -1,11 +1,10 @@
 package edu.utexas.wrap;
 
-public class Optimizer {
+public abstract class Optimizer {
 
 	private Network network;
 	
 	public Optimizer(Network network) {
-		super();
 		this.network = network;
 	}
 
@@ -17,9 +16,7 @@ public class Optimizer {
 		this.network = network;
 	}
 
-	public void optimize(){
-		//TODO
-	}
+	public abstract void optimize();
 	
 	public void getResults(){
 		//TODO

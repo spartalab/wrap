@@ -89,7 +89,7 @@ public class wrap{
 		Network network;
 		try {
 			network = Network.fromFiles(links, odMatrix);
-			Optimizer opt = new Optimizer(network);
+			Optimizer opt = new AlgorithmBOptimizer(network);
 			opt.optimize();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

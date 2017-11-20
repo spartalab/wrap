@@ -11,7 +11,7 @@ public class Bush {
 	// Bush structure
 	private final Origin origin;
 	//This needs to have a topological order
-	private final LinkedList<Node> bushNodes; 
+	private Map<Integer, Node> activeNodes; 
 	private Set<Link> activeLinks;
 	private Set<Link> inactiveLinks;
 	
@@ -20,13 +20,14 @@ public class Bush {
 	private Map<Integer, Float>		nodeU;
 	private Map<Integer, Link> 		qShort;
 	private Map<Integer, Link>		qLong;
-	private Map<Link, Double> 		flow;
+	private Map<Link, Float> 		flow;
 
 	
-	public Bush(Origin origin, Set<Node> nodes, Set<Link> links) 
+	public Bush(Origin origin, Map<Integer,Node> nodes, Set<Link> links) 
 	{
 		this.origin = origin;
 		this.activeLinks = links;
+		this.activeNodes = nodes;
 		this.inactiveLinks = null;
 		this.nodeL = null;
 		this.nodeU = null;
@@ -34,7 +35,7 @@ public class Bush {
 		this.qLong = null;
 		//TODO Insert Dijkstra's here
 		//TODO Insert trim method here to return new activeLinks and inactiveLinks sets
-		this.bushNodes = getTopologicalOrder();
+		//this.activeNodes = getTopologicalOrder();
 		
 
 	}
@@ -51,7 +52,7 @@ public class Bush {
 	 * attach
 	 * @return a topological ordering of this bush's nodes
 	 */
-	private LinkedList<Node> getTopologicalOrder() {
+	public LinkedList<Node> getTopologicalOrder() {
 		// Start with a set of all bush edges
 		Set<Link> links = new HashSet<Link>(activeLinks);
 		LinkedList<Node> to = new LinkedList<Node>();
@@ -122,13 +123,13 @@ public class Bush {
 			for (Integer nodeID : eligible) {
 				if (!longest) {	//Calculating shortest paths
 
-					Node node = bushNodes.get(nodeID);
+					Node node = activeNodes.get(nodeID);
 					if ( tail == null || nodeL.get(node.getID()) < nodeL.get(tail.getID()) ) {
 						tail = node;
 					}
 
 				} else {		//Calculating longest paths
-					Node node = bushNodes.get(nodeID);
+					Node node = activeNodes.get(nodeID);
 					if ( tail == null || nodeU.get(node.getID()) > nodeU.get(tail.getID()) ) {
 						tail = node;
 					}
@@ -178,5 +179,11 @@ public class Bush {
 		}
 	}
 
-
+	public Link getqShort(Node n) {
+		return qShort.get(n.getID());
+	}
+	
+	public Link getqLong(Node n) {
+		return qLong.get(n.getID());
+	}
 }
