@@ -54,7 +54,7 @@ public class Network {
 			String[] cols 	= line.split("\t");
 			Integer tail 	= Integer.parseInt(cols[0]);
 			Integer head 	= Integer.parseInt(cols[1]);
-			Float capacity = Float.parseFloat(cols[2]);
+			Float capacity 	= Float.parseFloat(cols[2]);
 			Float length 	= Float.parseFloat(cols[3]);
 			Float fftime 	= Float.parseFloat(cols[4]);
 			Float B 		= Float.parseFloat(cols[5]);

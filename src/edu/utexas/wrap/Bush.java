@@ -16,8 +16,8 @@ public class Bush {
 	private Set<Link> inactiveLinks;
 	
 	// Labels (for solving)
-	private Map<Integer, Double> 	nodeL;
-	private Map<Integer, Double>	nodeU;
+	private Map<Integer, Float> 	nodeL;
+	private Map<Integer, Float>		nodeU;
 	private Map<Integer, Link> 		qShort;
 	private Map<Integer, Link>		qLong;
 	private Map<Link, Double> 		flow;
@@ -92,7 +92,7 @@ public class Bush {
 	}
 
 
-	public void setNodeL(Map<Integer, Double> nodeL) {
+	public void setNodeL(Map<Integer, Float> nodeL) {
 		this.nodeL = nodeL;
 	}
 	
@@ -104,7 +104,7 @@ public class Bush {
 				Set<Integer> finalized = new HashSet<Integer>();
 				Set<Integer> eligible  = new HashSet<Integer>();
 
-				nodeL.put(origin.getID(), new Double(0.0));
+				nodeL.put(origin.getID(), new Float(0.0));
 				eligible.add(origin.getID());
 				
 				// While not all nodes have been reached
@@ -112,12 +112,20 @@ public class Bush {
 					// Find eligible node of minimal nodeL
 					Node i = null;
 					for (Integer nodeID : eligible) {
-						Node node = bushNodes.get(nodeID);
-						if ( i == null || nodeL.get(node.getID()) < nodeL.get(i.getID()) ) {
-							i = node;
+						if (!longest) {	//Calculating shortest paths
+
+							Node node = bushNodes.get(nodeID);
+							if ( i == null || nodeL.get(node.getID()) < nodeL.get(i.getID()) ) {
+								i = node;
+							}
+
+						} else {		//Calculating longest paths
+							Node node = bushNodes.get(nodeID);
+							if ( i == null || nodeU.get(node.getID()) > nodeU.get(i.getID()) ) {
+								i = node;
+							}
 						}
 					}
-					
 					//DEBUG CODE BELOW
 					if (i == null) break;
 					//DEBUG CODE ABOVE
@@ -133,13 +141,28 @@ public class Bush {
 					// Update labels and backnodes for links leaving node i
 					for (Link link : i.getOutgoingLinks()) {
 						Node j = link.getHead();
-						
-						// nodeL(j) = min( nodeL(j), nodeL(i)+c(ij) )
-						Double Lj    = nodeL.get(j.getID());
-						Double Licij = nodeL.get(i.getID())+link.getTravelTime();
-						if (Lj == null || Licij < Lj) {
-							nodeL.put(j.getID(), Licij);
-							qShort.put(j.getID(), link);
+						//TODO: We need some sort of control structure so that the algorithm
+						// only looks at the links in the active set when doing bush optimization
+						if (longest) {	//Longest paths search
+							// This must only be done on a bush
+							
+							//TODO: How do we ensure this?
+							
+							// nodeU(j) = max( nodeU(j), nodeU(i)+c(ij) )
+							Float Uj    = nodeU.get(j.getID());
+							Float Uicij = nodeU.get(i.getID())+link.getTravelTime();
+							if (Uj == null || Uicij > Uj) {
+								nodeU.put(j.getID(), Uicij);
+								qLong.put(j.getID(), link);
+							}
+						} else {		//Shortest paths search
+							// nodeL(j) = min( nodeL(j), nodeL(i)+c(ij) )
+							Float Lj    = nodeL.get(j.getID());
+							Float Licij = nodeL.get(i.getID())+link.getTravelTime();
+							if (Lj == null || Licij < Lj) {
+								nodeL.put(j.getID(), Licij);
+								qShort.put(j.getID(), link);
+							}
 						}
 						if (!finalized.contains(j.getID())) eligible.add(j.getID());
 					}
