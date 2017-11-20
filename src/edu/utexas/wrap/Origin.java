@@ -26,7 +26,7 @@ public class Origin extends Node{
 		this.bush = bush;
 	}
 
-	private Set<Node> getDests() {
+	public Set<Node> getDests() {
 		return destinations;
 	}
 	

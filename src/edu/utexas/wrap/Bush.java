@@ -40,9 +40,25 @@ public class Bush {
 
 	}
 
-	
 	private void trim() {
+		Set<Link> newActiveLinks = new HashSet<>();
 		
+		for(Link l : qShort.values()) {
+			newActiveLinks.add(l);
+			activeLinks.remove(l);
+		}
+		
+		for(Link l : qShort.values()) {
+			if(newActiveLinks.contains(l)){
+				continue;
+			}
+			else{
+				newActiveLinks.add(l);
+				activeLinks.remove(l);
+			}
+		}
+		inactiveLinks = activeLinks;
+		activeLinks = newActiveLinks;
 	}
 	
 	/** Calculate a topological order using Kahn's algorithm
