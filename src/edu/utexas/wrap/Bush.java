@@ -188,4 +188,18 @@ public class Bush {
 	Link getqLong(Node n) {
 		return qLong.get(n.getID());
 	}
+	
+	Float getU(Node n) {
+		return nodeU.get(n.getID());
+	}
+	
+	Float getL(Node n) {
+		return nodeL.get(n.getID());
+	}
+	
+	Float getBushFlow(Link l) {
+		return flow.get(l);
+	}
+	
+	
 }
