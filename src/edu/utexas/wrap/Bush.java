@@ -11,9 +11,8 @@ public class Bush {
 	// Bush structure
 	private final Origin origin;
 	//This needs to have a topological order
-	private Map<Integer, Node> activeNodes; 
-	private Set<Link> activeLinks;
-	private Set<Link> inactiveLinks;
+	private Map<Integer, Node> nodes; 
+	private Map<Link, Boolean> links;
 	
 	// Labels (for solving)
 	private Map<Integer, Float> 	nodeL;
@@ -26,39 +25,32 @@ public class Bush {
 	public Bush(Origin origin, Map<Integer,Node> nodes, Set<Link> links) 
 	{
 		this.origin = origin;
-		this.activeLinks = links;
-		this.activeNodes = nodes;
-		this.inactiveLinks = null;
+		this.links = new HashMap<Link,Boolean>();
+		for (Link l : links) this.links.put(l, false);
+		this.nodes = nodes;
 		this.nodeL = null;
 		this.nodeU = null;
 		this.qShort = null;
 		this.qLong = null;
 		//TODO Insert Dijkstra's here
-		//TODO Insert trim method here to return new activeLinks and inactiveLinks sets
+		runDijkstras(false);
+		dumpFlow();
 		//this.activeNodes = getTopologicalOrder();
 		
 
 	}
 
-	private void trim() {
-		Set<Link> newActiveLinks = new HashSet<>();
-		
-		for(Link l : qShort.values()) {
-			newActiveLinks.add(l);
-			activeLinks.remove(l);
+	private void dumpFlow() {
+		for (Integer dest : origin.getDests()) {
+			Float demand = origin.getDemand(dest);
+			do {
+				Link back = qShort.get(dest);
+				flow.put(back, flow.get(back) + demand);
+				links.put(back, true);
+				dest = back.getTail().getID();
+			} while (dest != origin.getID());
 		}
-		
-		for(Link l : qShort.values()) {
-			if(newActiveLinks.contains(l)){
-				continue;
-			}
-			else{
-				newActiveLinks.add(l);
-				activeLinks.remove(l);
-			}
-		}
-		inactiveLinks = activeLinks;
-		activeLinks = newActiveLinks;
+
 	}
 	
 	/** Calculate a topological order using Kahn's algorithm
@@ -70,7 +62,10 @@ public class Bush {
 	 */
 	public LinkedList<Node> getTopologicalOrder() {
 		// Start with a set of all bush edges
-		Set<Link> links = new HashSet<Link>(activeLinks);
+		Set<Link> currentLinks = new HashSet<Link>();
+		for (Link l : links.keySet()) {
+			if (links.get(l)) currentLinks.add(l);
+		}
 		LinkedList<Node> to = new LinkedList<Node>();
 		LinkedList<Node> S = new LinkedList<Node>();
 		// "start nodes"
@@ -83,17 +78,17 @@ public class Bush {
 			
 			// for each active edge out of this node
 			for (Link l : n.getOutgoingLinks()) {
-				if (links.contains(l)) {
+				if (currentLinks.contains(l)) {
 					
 					// remove the links from the set
-					links.remove(l);
+					currentLinks.remove(l);
 					// the node on the other end
 					Node m = l.getHead();
 					
 					// see if this node has no other incoming active links
 					boolean mHasIncoming = false;
 					for (Link e : m.getIncomingLinks()) {
-						if (links.contains(e)) {
+						if (currentLinks.contains(e)) {
 							mHasIncoming = true;
 							break;
 						}
@@ -103,7 +98,7 @@ public class Bush {
 				}
 			}
 		}
-		if (!links.isEmpty()) {
+		if (!currentLinks.isEmpty()) {
 			//throw new Exception();
 			return null;
 		}
@@ -111,15 +106,6 @@ public class Bush {
 	}
 
 
-	public void setqShort(Map<Integer, Link> qShort) {
-		this.qShort = qShort;
-	}
-
-
-	public void setNodeL(Map<Integer, Float> nodeL) {
-		this.nodeL = nodeL;
-	}
-	
 	public void runDijkstras(Boolean longest) {
 		// Initialize every nodeL to infinity except this, the origin
 		// Initialize the empty map of finalized nodes, the map of 
@@ -139,13 +125,13 @@ public class Bush {
 			for (Integer nodeID : eligible) {
 				if (!longest) {	//Calculating shortest paths
 
-					Node node = activeNodes.get(nodeID);
+					Node node = nodes.get(nodeID);
 					if ( tail == null || nodeL.get(node.getID()) < nodeL.get(tail.getID()) ) {
 						tail = node;
 					}
 
 				} else {		//Calculating longest paths
-					Node node = activeNodes.get(nodeID);
+					Node node = nodes.get(nodeID);
 					if ( tail == null || nodeU.get(node.getID()) > nodeU.get(tail.getID()) ) {
 						tail = node;
 					}
@@ -170,8 +156,8 @@ public class Bush {
 				//TODO: We need some sort of control structure so that the algorithm
 				// only looks at the links in the active set when doing bush optimization
 				if (longest) {	//Longest paths search
-					// This must only be done on a bush
-					if (!activeLinks.contains(link)) continue;
+					// This must only be done on bush links
+					if (!links.get(link)) continue;
 					// We ensure this by skipping outgoing links that are inactive
 
 					// nodeU(j) = max( nodeU(j), nodeU(i)+c(ij) )
@@ -195,11 +181,11 @@ public class Bush {
 		}
 	}
 
-	public Link getqShort(Node n) {
+	Link getqShort(Node n) {
 		return qShort.get(n.getID());
 	}
 	
-	public Link getqLong(Node n) {
+	Link getqLong(Node n) {
 		return qLong.get(n.getID());
 	}
 }

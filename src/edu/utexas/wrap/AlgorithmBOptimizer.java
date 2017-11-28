@@ -23,7 +23,6 @@ public class AlgorithmBOptimizer extends Optimizer{
 			
 			while (topOrder.hasNext()) {
 				Node cur = topOrder.next();
-				Node diverge;
 				Link shortLink = b.getqShort(cur);
 				Link longLink = b.getqLong(cur);
 				Set<Node> shortNodes = new HashSet<Node>();
@@ -56,7 +55,6 @@ public class AlgorithmBOptimizer extends Optimizer{
 						uPath.addFirst(longLink);
 						longLink = b.getqLong(m);
 					} while (!shortNodes.contains(m));
-					diverge = m;
 					
 					//Reiterate through shortest path to build path up to divergence node
 					shortLink = b.getqShort(cur);

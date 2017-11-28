@@ -1,17 +1,16 @@
 package edu.utexas.wrap;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 public class Origin extends Node{
 	private Bush bush;
-	private final Set<Node> destinations;
-	private final Map<Node, Float> destDemand;
+	private final Set<Integer> destinations;
+	private final Map<Integer, Float> destDemand;
 	
 
-	public Origin(Node self, HashMap<Node, Float> dests) {
+	public Origin(Node self, HashMap<Integer, Float> dests) {
 		super(self.getIncomingLinks(), self.getOutgoingLinks(), self.getID());
 		destDemand = dests;	// store demand HashMap
 		destinations = dests.keySet();
@@ -22,14 +21,14 @@ public class Origin extends Node{
 		return bush;
 	}
 
-	private void setBush(Bush bush) {
-		this.bush = bush;
-	}
+	Set<Integer> getDests() {
 
-	public Set<Node> getDests() {
 		return destinations;
 	}
 	
+	Float getDemand(Integer n) {
+		return destDemand.get(n);
+	}
 	
 	/** Build the origin's initial bush using Dijkstra's algorithm
 	 * 

@@ -85,7 +85,7 @@ public class Network {
 			Node old = nodes.get(origID);	// Retrieve the existing node with that ID
 			
 			String[] entries;
-			HashMap<Node, Float> dests = new HashMap<Node, Float>();
+			HashMap<Integer, Float> dests = new HashMap<Integer, Float>();
 			while (true) {
 				line = of.readLine();
 				if (line.trim().startsWith("O") || line.trim().equals("")) break; // If we've reached the gap, move to the next origin
@@ -94,9 +94,8 @@ public class Network {
 				for (String entry : entries) {	// For each entry on this line
 					String[] cols = entry.split(":");	// Get its values
 					Integer destID = Integer.parseInt(cols[0].trim());
-					Node dest = nodes.get(destID);
 					Float demand = Float.parseFloat(cols[1].trim());
-					dests.put(dest, demand);
+					dests.put(destID, demand);
 				}
 			}
 			Origin o = new Origin(old, dests); 	// Construct an origin to replace it
