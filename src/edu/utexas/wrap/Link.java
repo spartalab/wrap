@@ -88,12 +88,20 @@ public class Link {
 	 * @return travel time for the link at current flow
 	 */
 	public float getTravelTime() {
-		float tt = (float) (getFfTime()*(1.0 + getBValue()*Math.pow(getFlow()/getCapacity(), getPower())));
-		return tt;
+		return (float) (getFfTime()*(1.0 + getBValue()*Math.pow(getFlow()/getCapacity(), getPower())));
 	}
 	
 	public String toString() {
 		return this.tail.toString() + " -> " + this.head.toString();
+	}
+
+	/**Derivative of {@link getTravelTime} formula
+	 * Calculate the derivative of the BPR function with respect to the flow
+	 * @return t': the derivative of the BPR function
+	 */
+	public Float tPrime() {
+		// Return (a*b*t*(v/c)^a)/v
+		return (float) (getPower()*getBValue()*getFfTime()*Math.pow(getFlow()/getCapacity(), getPower())/getFlow());
 	}
 	
 }

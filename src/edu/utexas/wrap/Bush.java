@@ -27,28 +27,49 @@ public class Bush {
 		this.origin = origin;
 		this.links = new HashMap<Link,Boolean>();
 		for (Link l : links) this.links.put(l, false);
-		this.nodes = nodes;
-		this.nodeL = null;
-		this.nodeU = null;
-		this.qShort = null;
-		this.qLong = null;
-		//TODO Insert Dijkstra's here
+		this.nodes	= nodes;
+		nodeL	= new HashMap<Integer, Float>();
+		nodeU	= new HashMap<Integer, Float>();
+		qShort	= new HashMap<Integer, Link>();
+		qLong	= new HashMap<Integer, Link>();
+		flow	= new HashMap<Link, Float>();
 		runDijkstras(false);
 		dumpFlow();
-		//this.activeNodes = getTopologicalOrder();
-		
 
 	}
 
+	/**Add to the bush's flow on a link
+	 * @param l the link for which flow should be added
+	 * @param f the amount of flow to add to the link
+	 */
+	void addFlow(Link l, Float f) {
+		Float x0 = flow.get(l);
+		if (x0 != null) flow.put(l, x0 + f);
+		else flow.put(l, f);
+	}
+	
+	/**Subtract from the bush's flow on a link and mark inactive if needed
+	 * @param l the link for which flow should be removed
+	 * @param f the amount of flow to subtract from the link
+	 */
+	void subtractFlow(Link l, Float f) {
+		Float newFlow = flow.get(l) - f;
+		flow.put(l, newFlow);
+		if (newFlow <= 0) links.put(l, false);
+	}
+	
 	private void dumpFlow() {
 		for (Integer dest : origin.getDests()) {
-			Float demand = origin.getDemand(dest);
-			do {
+			Float x = origin.getDemand(dest);
+			while (!dest.equals(origin.getID())) {
+				
 				Link back = qShort.get(dest);
-				flow.put(back, flow.get(back) + demand);
+				Float x0 = flow.get(back);
+				if (x0 != null) flow.put(back, x + x0);
+				else flow.put(back, x);
 				links.put(back, true);
 				dest = back.getTail().getID();
-			} while (dest != origin.getID());
+			} 
 		}
 
 	}
@@ -137,9 +158,7 @@ public class Bush {
 					}
 				}
 			}
-			//DEBUG CODE BELOW
 			if (tail == null) break;
-			//DEBUG CODE ABOVE
 
 			// Finalize node by adding to finalized
 			finalized.add(tail.getID());
