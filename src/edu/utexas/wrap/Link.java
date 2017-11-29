@@ -81,6 +81,11 @@ public class Link {
 	public void addFlow(float deltaflow) {
 		this.flow += deltaflow;
 	}
+	
+	public void subtractFlow(float deltaFlow) {
+		this.flow -= deltaFlow;
+		this.flow = (float) Math.max(flow, 0.0);
+	}
 
 	/**BPR Function
 	 * A link performance function using empirical constants (b and power) and 

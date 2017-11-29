@@ -17,18 +17,28 @@ public class AlgorithmBOptimizer extends Optimizer{
 		// A single general step iteration
 		for (Origin o : getNetwork().getOrigins()) {
 			// Step i: Build min- and max-path trees
-			o.getBush().runDijkstras(false);
-			o.getBush().runDijkstras(true);
-			
-			// Step ii: Equilibrate bush
-			equilibrateBush(o);
-			
-			// TODO Step iii: Improve bush
-			
-			// TODO Step iv: Reiterate
-			
+			Boolean altered = false;
+			do{
+				o.getBush().runDijkstras(false);
+				o.getBush().runDijkstras(true);
 
+				// Step ii: Equilibrate bush
+				equilibrateBush(o);
+
+				// TODO Step iii: Improve bush
+				altered = improveBush(o);
+
+				// Step iv: Reiterate if bush changed
+			} while (altered);
 		}
+	}
+
+	private Boolean improveBush(Origin o) {
+		// TODO Auto-generated method stub
+		Boolean modified = false;
+		
+		
+		return modified;
 	}
 
 	/**
@@ -113,6 +123,5 @@ public class AlgorithmBOptimizer extends Optimizer{
 				b.subtractFlow(l, deltaH);
 			}
 		}
-		// TODO: commit flow to links
 	}
 }

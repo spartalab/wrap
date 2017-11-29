@@ -46,28 +46,32 @@ public class Bush {
 		Float x0 = flow.get(l);
 		if (x0 != null) flow.put(l, x0 + f);
 		else flow.put(l, f);
+		if (f > 0) links.put(l, true);
+		l.addFlow(f);
 	}
 	
 	/**Subtract from the bush's flow on a link and mark inactive if needed
+	 * 
 	 * @param l the link for which flow should be removed
 	 * @param f the amount of flow to subtract from the link
 	 */
 	void subtractFlow(Link l, Float f) {
 		Float newFlow = flow.get(l) - f;
-		flow.put(l, newFlow);
-		if (newFlow <= 0) links.put(l, false);
+		flow.put(l, newFlow); // Keep track of new value of flow from bush
+		if (newFlow <= 0) links.put(l, false);	// deactivate link in bush if no flow left
+		l.subtractFlow(f); // Subtract flow from the link itself (which keeps track of overall flow)
 	}
 	
+	/**Initialize demand flow on shortest paths
+	 * Add each destination's demand to the shortest path to that destination
+	 * */
 	private void dumpFlow() {
 		for (Integer dest : origin.getDests()) {
 			Float x = origin.getDemand(dest);
 			while (!dest.equals(origin.getID())) {
 				
 				Link back = qShort.get(dest);
-				Float x0 = flow.get(back);
-				if (x0 != null) flow.put(back, x + x0);
-				else flow.put(back, x);
-				links.put(back, true);
+				addFlow(back, x);
 				dest = back.getTail().getID();
 			} 
 		}
@@ -172,11 +176,9 @@ public class Bush {
 			for (Link link : tail.getOutgoingLinks()) {
 
 				Node head = link.getHead();
-				//TODO: We need some sort of control structure so that the algorithm
-				// only looks at the links in the active set when doing bush optimization
 				if (longest) {	//Longest paths search
 					// This must only be done on bush links
-					if (!links.get(link)) continue;
+					if (!links.get(link)) continue; //So skip this link if it is inactive in the bush
 					// We ensure this by skipping outgoing links that are inactive
 
 					// nodeU(j) = max( nodeU(j), nodeU(i)+c(ij) )
