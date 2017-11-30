@@ -5,53 +5,23 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Set;
 
-public class AlgorithmBOptimizer extends Optimizer{
+public class AlgorithmBOptimizer extends BushBasedOptimizer{
 
 	public AlgorithmBOptimizer(Network network) {
 		super(network);
-		// TODO Auto-generated constructor stub
-	}
-
-	@Override
-	public void optimize() {
-		// A single general step iteration
-		for (Origin o : getNetwork().getOrigins()) {
-			// Step i: Build min- and max-path trees
-			Boolean altered = false;
-			do{
-				o.getBush().runDijkstras(false);
-				o.getBush().runDijkstras(true);
-
-				// Step ii: Equilibrate bush
-				equilibrateBush(o);
-
-				// TODO Step iii: Improve bush
-				altered = improveBush(o);
-
-				// Step iv: Reiterate if bush changed
-			} while (altered);
-		}
-	}
-
-	private Boolean improveBush(Origin o) {
-		// TODO Auto-generated method stub
-		Boolean modified = false;
-		
-		
-		return modified;
 	}
 
 	/**
-	 * @param o
+	 * @param b
 	 */
-	private void equilibrateBush(Origin o) {
-		Bush b = o.getBush();
+	protected void equilibrateBush(Bush b) {
+
 		Iterator<Node> topOrder = b.getTopologicalOrder().descendingIterator();
 		
 		
 		while (topOrder.hasNext()) {
 			Node cur = topOrder.next();
-			if (cur.equals(o)) continue;
+			if (cur.equals(b.getOrigin())) continue;
 			Link shortLink = b.getqShort(cur);
 			Link longLink = b.getqLong(cur);
 			Set<Node> shortNodes = new HashSet<Node>();

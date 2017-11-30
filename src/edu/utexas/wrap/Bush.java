@@ -66,13 +66,15 @@ public class Bush {
 	 * Add each destination's demand to the shortest path to that destination
 	 * */
 	private void dumpFlow() {
-		for (Integer dest : origin.getDests()) {
-			Float x = origin.getDemand(dest);
-			while (!dest.equals(origin.getID())) {
+		//TODO: How to ensure a path always exists to every node? Can we assume the smallest possible amount of demand?
+		for (Integer node : nodes.keySet()) {
+			Float x = origin.getDemand(node);
+			if (x == null) x = Float.MIN_VALUE;
+			while (!node.equals(origin.getID())) {
 				
-				Link back = qShort.get(dest);
+				Link back = qShort.get(node);
 				addFlow(back, x);
-				dest = back.getTail().getID();
+				node = back.getTail().getID();
 			} 
 		}
 
@@ -221,6 +223,13 @@ public class Bush {
 	Float getBushFlow(Link l) {
 		return flow.get(l);
 	}
+
+	public Node getOrigin() {
+		return origin;
+	}
 	
+	public Map<Link, Boolean> getLinks(){
+		return links;
+	}
 	
 }

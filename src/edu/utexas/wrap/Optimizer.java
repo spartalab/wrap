@@ -2,7 +2,7 @@ package edu.utexas.wrap;
 
 public abstract class Optimizer {
 
-	private Network network;
+	protected Network network;
 	
 	public Optimizer(Network network) {
 		this.network = network;
