@@ -78,25 +78,38 @@ import java.io.IOException;
  *   
  */
 public class wrap{
+	static Integer iteration = 0;
+	static Integer maxIterations = 5;
 	
 	public static void main(String[] args) {
 		// The very first line of code!
-		System.out.println("Hello, World!");
 		
-		//File nodes = new File("");
 		File links = new File(args[0]);
 		File odMatrix = new File(args[1]);
 		Network network;
 		try {
+			System.out.println("Reading network...");
 			network = Network.fromFiles(links, odMatrix);
+			System.out.println("Initializing optimizer...");
 			Optimizer opt = new AlgorithmBOptimizer(network);
-			opt.optimize();
+			
+			
+			
+			System.out.println("Starting " + opt.toString() + "...");
+			System.out.println(opt.getResults());
+			while (!converged()) {
+				System.out.println("Iteration "+iteration);
+				opt.optimize();
+				System.out.println(opt.getResults());
+				iteration ++;
+			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		
+	}
+
+	private static Boolean converged() {
+		return iteration > maxIterations;
 	}
 }
 
