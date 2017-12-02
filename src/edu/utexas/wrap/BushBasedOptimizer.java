@@ -25,7 +25,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 				// Step iib: Recalculate U labels
 				b.runDijkstras(true);
 				
-				// TODO Step iii: Improve bush
+				// Step iii: Improve bush
 				altered = improveBush(b);
 
 				// Step iv: Reiterate if bush changed
@@ -36,7 +36,6 @@ public abstract class BushBasedOptimizer extends Optimizer {
 	protected abstract void equilibrateBush(Bush b);
 	
 	protected Boolean improveBush(Bush b) {
-		// TODO Auto-generated method stub
 		Boolean modified = false;
 		Map<Link, Boolean> links = b.getLinks();
 		for (Link l : links.keySet()) {
@@ -52,6 +51,15 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		}
 		
 		return modified;
+	}
+	
+	public String getResults() {
+		//TODO: Improve this method
+		for (Origin o : network.getOrigins()) {
+			o.getBush().runDijkstras(false);
+		}
+		return network.AEC().toString();
+		
 	}
 	
 }

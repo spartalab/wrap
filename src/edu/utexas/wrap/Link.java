@@ -106,7 +106,14 @@ public class Link {
 	 */
 	public Float tPrime() {
 		// Return (a*b*t*(v/c)^a)/v
-		return (float) (getPower()*getBValue()*getFfTime()*Math.pow(getFlow()/getCapacity(), getPower())/getFlow());
+		Float a = getPower();
+		Float b = getBValue();
+		Float t = getFfTime();
+		Float v = getFlow();
+		Float c = getCapacity();
+		if (v <= 0) return new Float(1); //TODO: Remove this kludge
+		Float vca = (float) Math.pow(v/c, a);
+		return (a*b*t*vca/v);
 	}
 	
 }

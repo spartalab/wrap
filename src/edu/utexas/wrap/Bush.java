@@ -1,5 +1,6 @@
 package edu.utexas.wrap;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -35,7 +36,7 @@ public class Bush {
 		flow	= new HashMap<Link, Float>();
 		runDijkstras(false);
 		dumpFlow();
-
+		nodeL	= new HashMap<Integer, Float>();
 	}
 
 	/**Add to the bush's flow on a link
@@ -46,7 +47,7 @@ public class Bush {
 		Float x0 = flow.get(l);
 		if (x0 != null) flow.put(l, x0 + f);
 		else flow.put(l, f);
-		if (f > 0) links.put(l, true);
+		links.put(l, true);
 		l.addFlow(f);
 	}
 	
@@ -58,7 +59,17 @@ public class Bush {
 	void subtractFlow(Link l, Float f) {
 		Float newFlow = flow.get(l) - f;
 		flow.put(l, newFlow); // Keep track of new value of flow from bush
-		if (newFlow <= 0) links.put(l, false);	// deactivate link in bush if no flow left
+		if (newFlow <= 0) {
+			// Check to see if this link is needed for connectivity
+			Boolean needed = true;
+			for (Link i : l.getHead().getIncomingLinks()) {
+				if (!i.equals(l) && links.get(i)) {
+					needed = false;
+					break;
+				}
+			}
+			if (!needed) links.put(l, false);	// deactivate link in bush if no flow left
+		}
 		l.subtractFlow(f); // Subtract flow from the link itself (which keeps track of overall flow)
 	}
 	
@@ -66,10 +77,10 @@ public class Bush {
 	 * Add each destination's demand to the shortest path to that destination
 	 * */
 	private void dumpFlow() {
-		//TODO: How to ensure a path always exists to every node? Can we assume the smallest possible amount of demand?
 		for (Integer node : nodes.keySet()) {
 			Float x = origin.getDemand(node);
-			if (x == null) x = Float.MIN_VALUE;
+			if (x == null) x = new Float(0);
+			if (nodes.get(node).getIncomingLinks().isEmpty()) continue;
 			while (!node.equals(origin.getID())) {
 				
 				Link back = qShort.get(node);
@@ -140,7 +151,14 @@ public class Bush {
 		// back-link mapping to be empty
 		Set<Integer> finalized = new HashSet<Integer>();
 		Set<Integer> eligible  = new HashSet<Integer>();
-
+		if (!longest) {
+			nodeL = new HashMap<Integer, Float>();
+			qShort = new HashMap<Integer, Link>();
+		}
+		else {
+			nodeU = new HashMap<Integer, Float>();
+			qLong = new HashMap<Integer, Link>();
+		}
 		nodeL.put(origin.getID(), new Float(0.0));
 		nodeU.put(origin.getID(), new Float(0.0));
 		eligible.add(origin.getID());
@@ -186,7 +204,7 @@ public class Bush {
 					// nodeU(j) = max( nodeU(j), nodeU(i)+c(ij) )
 					Float Uj    = nodeU.get(head.getID());
 					Float Uicij = nodeU.get(tail.getID())+link.getTravelTime();
-					if (Uj == null || Uicij > Uj) {
+					if (Uj == null || Uicij >= Uj) {
 						nodeU.put(head.getID(), Uicij);
 						qLong.put(head.getID(), link);
 					}
@@ -194,7 +212,7 @@ public class Bush {
 					// nodeL(j) = min( nodeL(j), nodeL(i)+c(ij) )
 					Float Lj    = nodeL.get(head.getID());
 					Float Licij = nodeL.get(tail.getID())+link.getTravelTime();
-					if (Lj == null || Licij < Lj) {
+					if (Lj == null || Licij <= Lj) {
 						nodeL.put(head.getID(), Licij);
 						qShort.put(head.getID(), link);
 					}
@@ -230,6 +248,10 @@ public class Bush {
 	
 	public Map<Link, Boolean> getLinks(){
 		return links;
+	}
+
+	public Collection<Node> getNodes() {
+		return nodes.values();
 	}
 	
 }

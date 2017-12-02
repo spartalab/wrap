@@ -18,9 +18,8 @@ public abstract class Optimizer {
 
 	public abstract void optimize();
 	
-	public void getResults(){
-		//TODO
-	}
+	public abstract String getResults();
 	
-	
+	public abstract String toString();
+		
 }

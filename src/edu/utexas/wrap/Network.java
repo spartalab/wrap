@@ -16,16 +16,8 @@ public class Network {
 	protected Set<Origin> origins;
 	
 	
-	public Network(/*Map<Integer, Node> nodes,*/ Set<Link> links, Set<Origin> origins) {
-		//setNodes(nodes);
+	public Network(Set<Link> links, Set<Origin> origins) {
 		setLinks(links);
-		setOrigins(origins);
-	}
-	
-	public Network(Set<Link> links, Origin origin) {
-		setLinks(links);
-		Set<Origin> origins = new HashSet<Origin>();
-		origins.add(origin);
 		setOrigins(origins);
 	}
 	
@@ -37,7 +29,7 @@ public class Network {
 		// Open the files for reading
 		BufferedReader lf = new BufferedReader(new FileReader(linkFile));
 		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
-		
+		HashMap<Integer, Float> dests = new HashMap<Integer, Float>();
 		//////////////////////////////////////////////
 		// Read links and build corresponding nodes
 		//////////////////////////////////////////////
@@ -51,7 +43,7 @@ public class Network {
 			if (line == null) break;	// End of link list reached
 			if (line.startsWith("~") || line.trim().equals("")) continue;
 			line = line.trim();
-			String[] cols 	= line.split("\t");
+			String[] cols 	= line.split("\\s+");
 			Integer tail 	= Integer.parseInt(cols[0]);
 			Integer head 	= Integer.parseInt(cols[1]);
 			Float capacity 	= Float.parseFloat(cols[2]);
@@ -59,11 +51,16 @@ public class Network {
 			Float fftime 	= Float.parseFloat(cols[4]);
 			Float B 		= Float.parseFloat(cols[5]);
 			Float power 	= Float.parseFloat(cols[6]);
-			//System.out.println(""+orig.toString());
 			
 			//Create new node(s) if new, then add to map
-			if (!nodes.containsKey(tail)) nodes.put(tail,new Node(tail));
-			if (!nodes.containsKey(head)) nodes.put(head,new Node(head));
+			if (!nodes.containsKey(tail)) {
+				nodes.put(tail,new Node(tail));
+				dests.put(tail, new Float(0));
+			}
+			if (!nodes.containsKey(head)) {
+				nodes.put(head,new Node(head));
+				dests.put(head,new Float(0));
+			}
 			
 			//Construct new link and add to the list
 			Link link = new Link(nodes.get(tail), nodes.get(head), capacity, length, fftime, B, power);
@@ -85,7 +82,7 @@ public class Network {
 			Node old = nodes.get(origID);	// Retrieve the existing node with that ID
 			
 			String[] entries;
-			HashMap<Integer, Float> dests = new HashMap<Integer, Float>();
+			
 			while (true) {
 				line = of.readLine();
 				if (line.trim().startsWith("O") || line.trim().equals("")) break; // If we've reached the gap, move to the next origin
@@ -117,12 +114,8 @@ public class Network {
 	private void setLinks(Set<Link> links) {
 		this.links = links;
 	}
-//	public Collection<Node> getNodes() {
-//		return nodes.values();
-//	}
-//	private void setNodes(Map<Integer, Node> nodes2) {
-//		this.nodes = nodes2;
-//	}
+
+
 	public Set<Origin> getOrigins() {
 		return origins;
 	}
@@ -139,4 +132,39 @@ public class Network {
 		}
 		return tstt;
 	}
+	
+	public Float relativeGap() {
+		Float numerator = new Float(0);
+		Float denominator = new Float(0);
+		
+		for (Link l : links) {
+			numerator += l.getTravelTime() * l.getFlow();
+		}
+		
+		for (Origin o : origins) {
+			for (Node d : o.getBush().getNodes()) {
+				denominator += o.getBush().getL(d) * o.getDemand(d.getID());
+			}
+		}
+		
+		return (numerator/denominator) - 1;
+	}
+	
+	public Float AEC() {
+		Float numerator = new Float(0);
+		Float denominator = new Float(0);
+		
+		for (Link l : links) {
+			numerator += l.getFlow() * l.getTravelTime();
+		}
+		for (Origin o : origins) {
+			for (Node d : o.getBush().getNodes()) {
+				numerator -= o.getBush().getL(d) * o.getDemand(d.getID());
+				denominator += o.getDemand(d.getID());
+			}
+		}
+		
+		return numerator/denominator;
+	}
+
 }

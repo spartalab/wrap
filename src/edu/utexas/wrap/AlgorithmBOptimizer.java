@@ -1,7 +1,6 @@
 package edu.utexas.wrap;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Set;
 
@@ -15,12 +14,12 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 	 * @param b
 	 */
 	protected void equilibrateBush(Bush b) {
-
-		Iterator<Node> topOrder = b.getTopologicalOrder().descendingIterator();
-		
-		
-		while (topOrder.hasNext()) {
-			Node cur = topOrder.next();
+		LinkedList<Node> to = b.getTopologicalOrder();
+		Integer index = to.size() - 1;
+		Node cur;
+		while (index >= 0) {
+			cur = to.get(index);
+			index --;
 			if (cur.equals(b.getOrigin())) continue;
 			Link shortLink = b.getqShort(cur);
 			Link longLink = b.getqLong(cur);
@@ -81,7 +80,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			for (Link l : uPath) {
 				denominator += l.tPrime();
 			}
-			Float deltaH = Float.max(maxDelta,
+			Float deltaH = Float.min(maxDelta,
 					( (b.getU(cur)-b.getU(m)) - (b.getL(cur)-b.getL(m)) ) / denominator );
 
 			//add delta h to all x values in pi_L
@@ -92,6 +91,12 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			for (Link l : uPath) {
 				b.subtractFlow(l, deltaH);
 			}
+			
 		}
+	}
+
+	@Override
+	public String toString() {
+		return "Algorithm B Optimizer";
 	}
 }
