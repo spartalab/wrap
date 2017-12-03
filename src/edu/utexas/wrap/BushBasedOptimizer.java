@@ -25,6 +25,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 				equilibrateBush(b);
 
 				// Step iib: Recalculate U labels
+				b.runDijkstras(Bush.DijkCases.EQUILIBRATE_SHORTEST);
 				b.runDijkstras(Bush.DijkCases.LONGEST);
 				
 				// Step iii: Improve bush
@@ -46,7 +47,20 @@ public abstract class BushBasedOptimizer extends Optimizer {
 				int z = 0;
 				z++;
 			}
-			if (links.get(l)) continue;
+			if (links.get(l)) {
+				if (b.getBushFlow(l) <= 0) {
+					// Check to see if this link is needed for connectivity
+					Boolean needed = true;
+					for (Link i : l.getHead().getIncomingLinks()) {
+						if (!i.equals(l) && links.get(i)) {
+							needed = false;
+							break;
+						}
+					}
+					if (!needed) links.put(l, false);	// deactivate link in bush if no flow left
+					modified = true;
+				}
+			}
 
 			// Else if Ui + tij < Uj
 			else if (b.getU(l.getTail())

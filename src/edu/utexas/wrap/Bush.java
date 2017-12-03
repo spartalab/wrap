@@ -64,17 +64,8 @@ public class Bush {
 	void subtractFlow(Link l, Float f) {
 		Float newFlow = flow.get(l) - f;
 		flow.put(l, newFlow); // Keep track of new value of flow from bush
-		if (newFlow <= 0) {
-			// Check to see if this link is needed for connectivity
-			Boolean needed = true;
-			for (Link i : l.getHead().getIncomingLinks()) {
-				if (!i.equals(l) && links.get(i)) {
-					needed = false;
-					break;
-				}
-			}
-			if (!needed) links.put(l, false);	// deactivate link in bush if no flow left
-		}
+
+		
 	}
 	
 	/**Initialize demand flow on shortest paths
@@ -205,18 +196,18 @@ public class Bush {
 				// This must only be done on bush links
 				if (type != DijkCases.INITIAL && !links.get(link)) continue; //So skip this link if it is inactive in the bush
 				Node head = link.getHead();
-				if (origin.getID().equals(23) && head.getID().equals(19)) {
-					int z = 0;
-					z++;
-				}
+//				if (origin.getID().equals(23) && head.getID().equals(19)) {
+//					int z = 0;
+//					z++;
+//				}
 				if (type == DijkCases.LONGEST) {	//Longest paths search
 
 					// We ensure this by skipping outgoing links that are inactive
 
 					// nodeU(j) = max( nodeU(j), nodeU(i)+c(ij) )
 					Float Uj    = nodeU.get(head.getID());
-					Float Uicij = nodeU.get(tail.getID())+link.getTravelTime();
-					if (Uj == null || Uicij > Uj) {
+					Float Uicij = nodeU.get(tail.getID())-link.getTravelTime();
+					if (Uj == null || Uicij < Uj) {
 						nodeU.put(head.getID(), Uicij);
 						qLong.put(head.getID(), link);
 					}
@@ -232,8 +223,11 @@ public class Bush {
 				if (!finalized.contains(head.getID())) eligible.add(head.getID());
 			}
 		}
+		if (type == DijkCases.LONGEST) {
+			for (Integer node : nodeU.keySet()) nodeU.put(node, -nodeU.get(node));
+		}
 	}
-
+ 
 	Link getqShort(Node n) {
 		return qShort.get(n.getID());
 	}
