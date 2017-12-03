@@ -147,67 +147,62 @@ public class Bush {
 		// Initialize the empty map of finalized nodes, the map of 
 		// eligible nodes to contain this origin only, and the 
 		// back-link mapping to be empty
-		Set<Integer> finalized = new HashSet<Integer>();
 		Set<Integer> eligible  = new HashSet<Integer>();
 		if (type != DijkCases.LONGEST) {
 			nodeL = new HashMap<Integer, Float>();
 			qShort = new HashMap<Integer, Link>();
+			for (Integer l : this.nodes.keySet()) {
+				nodeL.put(l, Float.MAX_VALUE);
+				eligible.add(l);
+			}
+			nodeL.put(origin.getID(), new Float(0.0));
 		}
 		else {
 			nodeU = new HashMap<Integer, Float>();
 			qLong = new HashMap<Integer, Link>();
+			for (Integer l : this.nodes.keySet()) {
+				nodeU.put(l, Float.MAX_VALUE);
+				eligible.add(l);
+			}
+			nodeU.put(origin.getID(), new Float(0.0));
 		}
-		nodeL.put(origin.getID(), new Float(0.0));
-		nodeU.put(origin.getID(), new Float(0.0));
-		eligible.add(origin.getID());
-
+		
 		// While not all nodes have been reached
 		while (true) {
 			// Find eligible node of minimal nodeL
 			Node tail = null;
 			for (Integer nodeID : eligible) {
+				Node node = nodes.get(nodeID);
 				if (type != DijkCases.LONGEST) {	//Calculating shortest paths
-
-					Node node = nodes.get(nodeID);
-					if ( tail == null || nodeL.get(node.getID()) < nodeL.get(tail.getID()) ) {
+					if ( tail == null || 
+							nodeL.get(node.getID()) < nodeL.get(tail.getID()) ) 
 						tail = node;
-					}
+					
 
 				} else {		//Calculating longest paths
-					Node node = nodes.get(nodeID);
-					if ( tail == null || nodeU.get(node.getID()) < nodeU.get(tail.getID()) ) {
+					if ( tail == null || 
+							nodeU.get(node.getID()) < nodeU.get(tail.getID()) ) 
 						tail = node;
-					}
+					
 				}
 			}
 			if (tail == null) break;
-
 			
 			// Finalize node by adding to finalized
-			finalized.add(tail.getID());
 			// And remove from eligible
 			eligible.remove(tail.getID());
-
-			// If all nodes finalized, terminate
-			//if (finalized.size() >= bushNodes.size()) break;
 
 			// Update labels and backnodes for links leaving node i
 			for (Link link : tail.getOutgoingLinks()) {
 				// This must only be done on bush links
 				if (type != DijkCases.INITIAL && !links.get(link)) continue; //So skip this link if it is inactive in the bush
 				Node head = link.getHead();
-//				if (origin.getID().equals(23) && head.getID().equals(19)) {
-//					int z = 0;
-//					z++;
-//				}
+
 				if (type == DijkCases.LONGEST) {	//Longest paths search
-
-					// We ensure this by skipping outgoing links that are inactive
-
 					// nodeU(j) = max( nodeU(j), nodeU(i)+c(ij) )
 					Float Uj    = nodeU.get(head.getID());
 					Float Uicij = nodeU.get(tail.getID())-link.getTravelTime();
-					if (Uj == null || Uicij < Uj) {
+					if (Uicij < Uj) {
 						nodeU.put(head.getID(), Uicij);
 						qLong.put(head.getID(), link);
 					}
@@ -215,12 +210,11 @@ public class Bush {
 					// nodeL(j) = min( nodeL(j), nodeL(i)+c(ij) )
 					Float Lj    = nodeL.get(head.getID());
 					Float Licij = nodeL.get(tail.getID())+link.getTravelTime();
-					if (Lj == null || Licij < Lj) {
+					if (Licij < Lj) {
 						nodeL.put(head.getID(), Licij);
 						qShort.put(head.getID(), link);
 					}
 				}
-				if (!finalized.contains(head.getID())) eligible.add(head.getID());
 			}
 		}
 		if (type == DijkCases.LONGEST) {

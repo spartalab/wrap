@@ -2,8 +2,6 @@ package edu.utexas.wrap;
 
 import java.util.Map;
 
-import edu.utexas.wrap.Bush.DijkCases;
-
 public abstract class BushBasedOptimizer extends Optimizer {
 
 	public BushBasedOptimizer(Network network) {
@@ -17,6 +15,10 @@ public abstract class BushBasedOptimizer extends Optimizer {
 			Boolean altered;
 			do{
 				Bush b = o.getBush();
+				if (o.getID().equals(16)) {
+					int z = 0;
+					z++;
+				}
 				// Step i: Build min- and max-path trees
 				b.runDijkstras(Bush.DijkCases.EQUILIBRATE_SHORTEST);
 				b.runDijkstras(Bush.DijkCases.LONGEST);
@@ -43,10 +45,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		Map<Link, Boolean> links = b.getLinks();
 		for (Link l : links.keySet()) {
 			// If link is active, do nothing (removing flow should mark as inactive)
-			if (l.getTail().getID().equals(17) && l.getHead().getID().equals(16)) {
-				int z = 0;
-				z++;
-			}
+
 			if (links.get(l)) {
 				if (b.getBushFlow(l) <= 0) {
 					// Check to see if this link is needed for connectivity
@@ -57,8 +56,10 @@ public abstract class BushBasedOptimizer extends Optimizer {
 							break;
 						}
 					}
-					if (!needed) links.put(l, false);	// deactivate link in bush if no flow left
-					modified = true;
+					if (!needed) {
+						links.put(l, false);	// deactivate link in bush if no flow left
+						modified = true;
+					}
 				}
 			}
 
