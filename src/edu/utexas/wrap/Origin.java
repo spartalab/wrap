@@ -6,8 +6,8 @@ import java.util.Set;
 
 public class Origin extends Node{
 	private Bush bush;
-	private final Set<Integer> destinations;
-	private final Map<Integer, Float> destDemand;
+	private Set<Integer> destinations;
+	private Map<Integer, Float> destDemand;
 	
 
 	public Origin(Node self, HashMap<Integer, Float> dests) {

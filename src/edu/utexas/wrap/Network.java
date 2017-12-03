@@ -29,7 +29,7 @@ public class Network {
 		// Open the files for reading
 		BufferedReader lf = new BufferedReader(new FileReader(linkFile));
 		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
-		HashMap<Integer, Float> dests = new HashMap<Integer, Float>();
+		HashMap<Integer, Float> dest = new HashMap<Integer, Float>();
 		//////////////////////////////////////////////
 		// Read links and build corresponding nodes
 		//////////////////////////////////////////////
@@ -55,11 +55,11 @@ public class Network {
 			//Create new node(s) if new, then add to map
 			if (!nodes.containsKey(tail)) {
 				nodes.put(tail,new Node(tail));
-				dests.put(tail, new Float(0));
+				dest.put(tail, new Float(0));
 			}
 			if (!nodes.containsKey(head)) {
 				nodes.put(head,new Node(head));
-				dests.put(head,new Float(0));
+				dest.put(head,new Float(0));
 			}
 			
 			//Construct new link and add to the list
@@ -80,7 +80,7 @@ public class Network {
 		while (true) { //While more Origins to read
 			Integer origID = Integer.parseInt(line.trim().split("\\s+")[1]);
 			Node old = nodes.get(origID);	// Retrieve the existing node with that ID
-			
+			HashMap<Integer, Float> dests = new HashMap<Integer, Float>(dest);
 			String[] entries;
 			
 			while (true) {

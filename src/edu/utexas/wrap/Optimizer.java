@@ -16,7 +16,7 @@ public abstract class Optimizer {
 		this.network = network;
 	}
 
-	public abstract void optimize();
+	public abstract void optimize() throws Exception;
 	
 	public abstract String getResults();
 	

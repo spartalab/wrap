@@ -79,7 +79,7 @@ import java.io.IOException;
  */
 public class wrap{
 	static Integer iteration = 0;
-	static Integer maxIterations = 5;
+	static Integer maxIterations = 25;
 	
 	public static void main(String[] args) {
 		// The very first line of code!
@@ -104,6 +104,8 @@ public class wrap{
 				iteration ++;
 			}
 		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}

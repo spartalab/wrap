@@ -21,22 +21,29 @@ public class Bush {
 	private Map<Integer, Link> 		qShort;
 	private Map<Integer, Link>		qLong;
 	private Map<Link, Float> 		flow;
+	
+	enum DijkCases {LONGEST, INITIAL, EQUILIBRATE_SHORTEST};
 
 	
 	public Bush(Origin origin, Map<Integer,Node> nodes, Set<Link> links) 
 	{
 		this.origin = origin;
 		this.links = new HashMap<Link,Boolean>();
-		for (Link l : links) this.links.put(l, false);
+		flow	= new HashMap<Link, Float>();
+		for (Link l : links) {
+			this.links.put(l, false);
+			flow.put(l, new Float(0));
+		}
 		this.nodes	= nodes;
 		nodeL	= new HashMap<Integer, Float>();
 		nodeU	= new HashMap<Integer, Float>();
 		qShort	= new HashMap<Integer, Link>();
 		qLong	= new HashMap<Integer, Link>();
-		flow	= new HashMap<Link, Float>();
-		runDijkstras(false);
+		
+		runDijkstras(DijkCases.INITIAL);
 		dumpFlow();
-		nodeL	= new HashMap<Integer, Float>();
+		runDijkstras(DijkCases.EQUILIBRATE_SHORTEST);
+		//nodeL	= new HashMap<Integer, Float>();
 	}
 
 	/**Add to the bush's flow on a link
@@ -47,8 +54,6 @@ public class Bush {
 		Float x0 = flow.get(l);
 		if (x0 != null) flow.put(l, x0 + f);
 		else flow.put(l, f);
-		links.put(l, true);
-		l.addFlow(f);
 	}
 	
 	/**Subtract from the bush's flow on a link and mark inactive if needed
@@ -70,7 +75,6 @@ public class Bush {
 			}
 			if (!needed) links.put(l, false);	// deactivate link in bush if no flow left
 		}
-		l.subtractFlow(f); // Subtract flow from the link itself (which keeps track of overall flow)
 	}
 	
 	/**Initialize demand flow on shortest paths
@@ -85,6 +89,8 @@ public class Bush {
 				
 				Link back = qShort.get(node);
 				addFlow(back, x);
+				links.put(back, true);
+				back.addFlow(x);
 				node = back.getTail().getID();
 			} 
 		}
@@ -97,8 +103,9 @@ public class Bush {
 	 * and determine a topological order for the nodes that they
 	 * attach
 	 * @return a topological ordering of this bush's nodes
+	 * @throws Exception 
 	 */
-	public LinkedList<Node> getTopologicalOrder() {
+	public LinkedList<Node> getTopologicalOrder() throws Exception {
 		// Start with a set of all bush edges
 		Set<Link> currentLinks = new HashSet<Link>();
 		for (Link l : links.keySet()) {
@@ -109,7 +116,7 @@ public class Bush {
 		// "start nodes"
 		S.add(origin);
 		Node n;
-		
+
 		while (!S.isEmpty()) {
 			n = S.pop();// remove node from S
 			to.add(n); 	// append node to L
@@ -137,21 +144,21 @@ public class Bush {
 			}
 		}
 		if (!currentLinks.isEmpty()) {
-			//throw new Exception();
-			return null;
+			throw new Exception();
+			//return null;
 		}
 		else return to;
 	}
 
 
-	public void runDijkstras(Boolean longest) {
+	public void runDijkstras(DijkCases type) {
 		// Initialize every nodeL to infinity except this, the origin
 		// Initialize the empty map of finalized nodes, the map of 
 		// eligible nodes to contain this origin only, and the 
 		// back-link mapping to be empty
 		Set<Integer> finalized = new HashSet<Integer>();
 		Set<Integer> eligible  = new HashSet<Integer>();
-		if (!longest) {
+		if (type != DijkCases.LONGEST) {
 			nodeL = new HashMap<Integer, Float>();
 			qShort = new HashMap<Integer, Link>();
 		}
@@ -168,7 +175,7 @@ public class Bush {
 			// Find eligible node of minimal nodeL
 			Node tail = null;
 			for (Integer nodeID : eligible) {
-				if (!longest) {	//Calculating shortest paths
+				if (type != DijkCases.LONGEST) {	//Calculating shortest paths
 
 					Node node = nodes.get(nodeID);
 					if ( tail == null || nodeL.get(node.getID()) < nodeL.get(tail.getID()) ) {
@@ -177,13 +184,14 @@ public class Bush {
 
 				} else {		//Calculating longest paths
 					Node node = nodes.get(nodeID);
-					if ( tail == null || nodeU.get(node.getID()) > nodeU.get(tail.getID()) ) {
+					if ( tail == null || nodeU.get(node.getID()) < nodeU.get(tail.getID()) ) {
 						tail = node;
 					}
 				}
 			}
 			if (tail == null) break;
 
+			
 			// Finalize node by adding to finalized
 			finalized.add(tail.getID());
 			// And remove from eligible
@@ -194,17 +202,21 @@ public class Bush {
 
 			// Update labels and backnodes for links leaving node i
 			for (Link link : tail.getOutgoingLinks()) {
-
+				// This must only be done on bush links
+				if (type != DijkCases.INITIAL && !links.get(link)) continue; //So skip this link if it is inactive in the bush
 				Node head = link.getHead();
-				if (longest) {	//Longest paths search
-					// This must only be done on bush links
-					if (!links.get(link)) continue; //So skip this link if it is inactive in the bush
+				if (origin.getID().equals(23) && head.getID().equals(19)) {
+					int z = 0;
+					z++;
+				}
+				if (type == DijkCases.LONGEST) {	//Longest paths search
+
 					// We ensure this by skipping outgoing links that are inactive
 
 					// nodeU(j) = max( nodeU(j), nodeU(i)+c(ij) )
 					Float Uj    = nodeU.get(head.getID());
 					Float Uicij = nodeU.get(tail.getID())+link.getTravelTime();
-					if (Uj == null || Uicij >= Uj) {
+					if (Uj == null || Uicij > Uj) {
 						nodeU.put(head.getID(), Uicij);
 						qLong.put(head.getID(), link);
 					}
@@ -212,7 +224,7 @@ public class Bush {
 					// nodeL(j) = min( nodeL(j), nodeL(i)+c(ij) )
 					Float Lj    = nodeL.get(head.getID());
 					Float Licij = nodeL.get(tail.getID())+link.getTravelTime();
-					if (Lj == null || Licij <= Lj) {
+					if (Lj == null || Licij < Lj) {
 						nodeL.put(head.getID(), Licij);
 						qShort.put(head.getID(), link);
 					}

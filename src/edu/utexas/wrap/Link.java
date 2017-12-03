@@ -80,6 +80,7 @@ public class Link {
 	//Used to add deltaflow to current link flow
 	public void addFlow(float deltaflow) {
 		this.flow += deltaflow;
+		this.flow = (float) Math.max(flow, 0.0);
 	}
 	
 	public void subtractFlow(float deltaFlow) {
@@ -111,7 +112,14 @@ public class Link {
 		Float t = getFfTime();
 		Float v = getFlow();
 		Float c = getCapacity();
-		if (v <= 0) return new Float(1); //TODO: Remove this kludge
+		if (v <= 0) {
+			if (b == 0) {
+				return t*a/c;
+			}
+			else {
+				return new Float(0);
+			}
+		}
 		Float vca = (float) Math.pow(v/c, a);
 		return (a*b*t*vca/v);
 	}

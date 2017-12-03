@@ -1,5 +1,6 @@
 package edu.utexas.wrap;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -12,11 +13,16 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 
 	/**
 	 * @param b
+	 * @throws Exception 
 	 */
-	protected void equilibrateBush(Bush b) {
+	protected void equilibrateBush(Bush b) throws Exception {
 		LinkedList<Node> to = b.getTopologicalOrder();
 		Integer index = to.size() - 1;
 		Node cur;
+		HashMap<Link, Float> deltaX = new HashMap<Link, Float>();
+		for (Link z : b.getLinks().keySet()) {
+			deltaX.put(z, new Float(0));
+		}
 		while (index >= 0) {
 			cur = to.get(index);
 			index --;
@@ -26,7 +32,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			Set<Node> shortNodes = new HashSet<Node>();
 			
 			// If there is no divergence node, move on to the next topological node
-			if (longLink.equals(shortLink)) {
+			if (longLink.equals(shortLink) || b.getL(cur).equals(b.getU(cur))) {
 				continue;
 			}
 			//Else calculate divergence node
@@ -86,13 +92,15 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			//add delta h to all x values in pi_L
 			for (Link l : lPath) {
 				b.addFlow(l, deltaH);
+				deltaX.put(l, deltaX.get(l) + deltaH);
 			}
 			//subtract delta h from all x values in pi_U
 			for (Link l : uPath) {
 				b.subtractFlow(l, deltaH);
+				deltaX.put(l, deltaX.get(l) - deltaH);
 			}
-			
 		}
+		for (Link z : deltaX.keySet()) z.addFlow(deltaX.get(z));
 	}
 
 	@Override
