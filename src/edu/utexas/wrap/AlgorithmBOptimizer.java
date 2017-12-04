@@ -16,8 +16,8 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 	 * @param b
 	 * @throws Exception 
 	 */
-	protected void equilibrateBush(Bush b) throws Exception {
-		LinkedList<Node> to = b.getTopologicalOrder();
+	protected void equilibrateBush(Bush b, LinkedList<Node> to) throws Exception {
+//		LinkedList<Node> to = b.getTopologicalOrder();
 		//TODO b.getLongestPaths(to);
 		Integer index = to.size() - 1;
 		Node cur;
@@ -33,7 +33,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			Set<Node> shortNodes = new HashSet<Node>();
 			
 			// If there is no divergence node, move on to the next topological node
-			if (longLink.equals(shortLink) || b.getL(cur).equals(b.getU(cur))) {
+			if (longLink.equals(shortLink)) {// || b.getL(cur).equals(b.getU(cur))) {
 				continue;
 			}
 			//Else calculate divergence node
@@ -103,26 +103,26 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 		}
 		for (Link z : new HashSet<Link>(deltaX.keySet())) z.addFlow(deltaX.get(z));
 		
-		this.removedLinks = new ArrayList<>();
-		for (Link l : new HashSet<Link>(b.getLinks().keySet())){
-			if(b.getLinks().get(l)){
-				if(b.getBushFlow(l)<=0){
-					// Check to see if this link is needed for connectivity
-					Boolean needed = true;
-					for (Link i : l.getHead().getIncomingLinks()) {
-						if (!i.equals(l) && b.getLinks().get(i)) {
-							needed = false;
-							break;
-						}
-					}
-					if (!needed) {
-						b.getLinks().put(l, false);	// deactivate link in bush if no flow left
-						removedLinks.add(l);
-					}
-				}
-				
-			}
-		}
+//		this.removedLinks = new ArrayList<>();
+//		for (Link l : new HashSet<Link>(b.getLinks().keySet())){
+//			if(b.getLinks().get(l)){
+//				if(b.getBushFlow(l)<=0){
+//					// Check to see if this link is needed for connectivity
+//					Boolean needed = true;
+//					for (Link i : l.getHead().getIncomingLinks()) {
+//						if (!i.equals(l) && b.getLinks().get(i)) {
+//							needed = false;
+//							break;
+//						}
+//					}
+//					if (!needed) {
+//						b.getLinks().put(l, false);	// deactivate link in bush if no flow left
+//						removedLinks.add(l);
+//					}
+//				}
+//				
+//			}
+//		}
 	}
 
 	@Override

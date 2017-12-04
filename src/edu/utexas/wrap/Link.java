@@ -71,7 +71,8 @@ public class Link {
 	public void setLength(float length) {
 		this.length = length;
 	}
-	public float getFlow() {
+	public float getFlow() throws Exception {
+		if(this.flow < 0) throw new Exception();
 		return this.flow;
 	}
 	public void setFlow(float flow) {
@@ -92,8 +93,9 @@ public class Link {
 	 * A link performance function using empirical constants (b and power) and 
 	 * link characteristics (current flow, capacity, & free flow travel time)
 	 * @return travel time for the link at current flow
+	 * @throws Exception 
 	 */
-	public float getTravelTime() {
+	public float getTravelTime() throws Exception {
 		return (float) (getFfTime()*(1.0 + getBValue()*Math.pow(getFlow()/getCapacity(), getPower())));
 	}
 	
@@ -104,8 +106,9 @@ public class Link {
 	/**Derivative of {@link getTravelTime} formula
 	 * Calculate the derivative of the BPR function with respect to the flow
 	 * @return t': the derivative of the BPR function
+	 * @throws Exception 
 	 */
-	public Float tPrime() {
+	public Float tPrime() throws Exception {
 		// Return (a*b*t*(v/c)^a)/v
 		Float a = getPower();
 		Float b = getBValue();

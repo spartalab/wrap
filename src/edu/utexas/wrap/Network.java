@@ -21,7 +21,7 @@ public class Network {
 		setOrigins(origins);
 	}
 	
-	public static Network fromFiles(File linkFile, File odMatrix) throws IOException {
+	public static Network fromFiles(File linkFile, File odMatrix) throws Exception {
 		// Initialization
 		Map<Integer,Node> nodes = new HashMap<Integer, Node>();
 		Set<Link> links = new HashSet<Link>();
@@ -124,16 +124,16 @@ public class Network {
 	}
 	
 	
-	public Float tstt(){
+	public Float tstt() throws Exception{
 		Float tstt = 0.0f;
 		
 		for(Link l:links){
-			tstt += l.getTravelTime();
+			tstt += l.getFlow() * l.getTravelTime();
 		}
 		return tstt;
 	}
 	
-	public Float relativeGap() {
+	public Float relativeGap() throws Exception {
 		Float numerator = new Float(0);
 		Float denominator = new Float(0);
 		
@@ -150,13 +150,10 @@ public class Network {
 		return (numerator/denominator) - 1;
 	}
 	
-	public Float AEC() {
-		Float numerator = new Float(0);
+	public Float AEC() throws Exception {
+		Float numerator = tstt();
 		Float denominator = new Float(0);
 		
-		for (Link l : links) {
-			numerator += l.getFlow() * l.getTravelTime();
-		}
 		for (Origin o : origins) {
 			for (Node d : o.getBush().getNodes()) {
 				numerator -= o.getBush().getL(d) * o.getDemand(d.getID());

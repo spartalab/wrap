@@ -7,8 +7,8 @@ import java.util.Set;
 
 public class Origin extends Node{
 	private Bush bush;
-	private Set<Integer> destinations;
-	private Map<Integer, Float> destDemand;
+	private final Set<Integer> destinations;
+	private final Map<Integer, Float> destDemand;
 	
 
 	public Origin(Node self, HashMap<Integer, Float> dests) {
@@ -40,8 +40,9 @@ public class Origin extends Node{
 	 * 
 	 * @param links all links in the network
 	 * @param nodes all nodes in the network
+	 * @throws Exception 
 	 */
-	public void buildBush(Set<Link> links, Map<Integer, Node> nodes) {
+	public void buildBush(Set<Link> links, Map<Integer, Node> nodes) throws Exception {
 		bush = new Bush(this, nodes, links);
 	}
 }

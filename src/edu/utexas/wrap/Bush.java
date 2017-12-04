@@ -25,7 +25,7 @@ public class Bush {
 	enum DijkCases {LONGEST, INITIAL, EQUILIBRATE_SHORTEST};
 
 	
-	public Bush(Origin origin, Map<Integer,Node> nodes, Set<Link> links) 
+	public Bush(Origin origin, Map<Integer,Node> nodes, Set<Link> links) throws Exception 
 	{
 		this.origin = origin;
 		this.links = new HashMap<Link,Boolean>();
@@ -42,7 +42,6 @@ public class Bush {
 		
 		runDijkstras(DijkCases.INITIAL);
 		dumpFlow();
-		runDijkstras(DijkCases.EQUILIBRATE_SHORTEST);
 		//nodeL	= new HashMap<Integer, Float>();
 	}
 
@@ -141,7 +140,7 @@ public class Bush {
 	}
 
 
-	public void runDijkstras(DijkCases type) {
+	public void runDijkstras(DijkCases type) throws Exception {
 		// Initialize every nodeL to infinity except this, the origin
 		// Initialize the empty map of finalized nodes, the map of 
 		// eligible nodes to contain this origin only, and the 
@@ -191,36 +190,61 @@ public class Bush {
 			}
 		}
 	}
-	
 	//Getting nodeU and qLong (longest paths) using Depth First Search algorithm
-	public void getLongestPaths(LinkedList<Node> to) {
+	public void topoSearch(DijkCases type, LinkedList<Node> to) throws Exception {
 		// Initialize all nodeU values as 0 and all nodes as not visited
-		qLong = new HashMap<>();
+//		qShort = new HashMap<>();
+//		qLong = new HashMap<>();
+
 		for (Integer i : new HashSet<Integer>(nodes.keySet())) {
-			nodeU.put(i, Float.NEGATIVE_INFINITY);
+			if(type == DijkCases.EQUILIBRATE_SHORTEST) {
+				nodeL.put(i, Float.POSITIVE_INFINITY);
+			}
+			else if(type == DijkCases.LONGEST) {
+				nodeU.put(i, Float.NEGATIVE_INFINITY);
+			}
 			// visited.put(i, false);
 		}
-		nodeU.put(origin.getID(), 0.0f);
+		if(type == DijkCases.EQUILIBRATE_SHORTEST) 		nodeL.put(origin.getID(), 0.0f);
+		if(type == DijkCases.LONGEST) 		nodeU.put(origin.getID(), 0.0f);
+
 
 		for (Node d : to) {
 
-			if (nodeU.get(d.getID()) == Float.NEGATIVE_INFINITY)
-				continue;
+			if(type == DijkCases.EQUILIBRATE_SHORTEST) {
+				if (nodeL.get(d.getID()) == Float.POSITIVE_INFINITY)
+					continue;
+	
+				for (Link l : d.getOutgoingLinks()) {
+					if (links.get(l)) {
+						Float Licij = l.getTravelTime() + nodeL.get(d.getID());
+	
+						if (Licij < nodeL.get(l.getHead().getID())) {
+							nodeL.put(l.getHead().getID(), Licij);
+							qShort.put(l.getHead().getID(), l);
+						}
+					}
+				}
+			}
+			
+			else if(type == DijkCases.LONGEST) {
+				if (nodeU.get(d.getID()) == Float.NEGATIVE_INFINITY)
+					continue;
 
-			for (Link l : d.getOutgoingLinks()) {
-				if (links.get(l)) {
-					Float Uicij = l.getTravelTime() + nodeU.get(d.getID());
+				for (Link l : d.getOutgoingLinks()) {
+					if (links.get(l)) {
+						Float Uicij = l.getTravelTime() + nodeU.get(d.getID());
 
-					if (Uicij > nodeU.get(l.getHead().getID())) {
-						nodeU.put(l.getHead().getID(), Uicij);
-						qLong.put(l.getHead().getID(), l);
+						if (Uicij > nodeU.get(l.getHead().getID())) {
+							nodeU.put(l.getHead().getID(), Uicij);
+							qLong.put(l.getHead().getID(), l);
+						}
 					}
 				}
 			}
 		}
 
 	}
-	
  
 	Link getqShort(Node n) {
 		return qShort.get(n.getID());
@@ -230,15 +254,18 @@ public class Bush {
 		return qLong.get(n.getID());
 	}
 	
-	Float getU(Node n) {
+	Float getU(Node n) throws Exception {
+		if(nodeU.get(n.getID()) < 0) throw new Exception();
 		return nodeU.get(n.getID());
 	}
 	
-	Float getL(Node n) {
+	Float getL(Node n) throws Exception {
+		if(nodeL.get(n.getID()) < 0) throw new Exception();
 		return nodeL.get(n.getID());
 	}
 	
-	Float getBushFlow(Link l) {
+	Float getBushFlow(Link l) throws Exception{
+		if(flow.get(l) < 0) throw new Exception();
 		return flow.get(l);
 	}
 

@@ -78,14 +78,21 @@ import java.io.IOException;
  *   
  */
 public class wrap{
-	static Integer iteration = 0;
-	static Integer maxIterations = 100;
+	static Integer iteration = 1;
+	static Integer maxIterations = 25;
 	
 	public static void main(String[] args) {
 		// The very first line of code!
+		Long start = System.currentTimeMillis();
 		
-		File links = new File(args[0]);
-		File odMatrix = new File(args[1]);
+		//Sioux Falls Network
+//		File links = new File(args[0]);
+//		File odMatrix = new File(args[1]);
+		
+		//Anaheim Network
+		File links = new File(args[2]);
+		File odMatrix = new File(args[3]);
+		
 		Network network;
 		try {
 			System.out.println("Reading network...");
@@ -93,16 +100,21 @@ public class wrap{
 			System.out.println("Initializing optimizer...");
 			Optimizer opt = new AlgorithmBOptimizer(network);
 			
-			
-			
 			System.out.println("Starting " + opt.toString() + "...");
-			System.out.println(opt.getResults());
+			System.out.println();
+			System.out.println("ITERATION #\tAEC\t        TSTT");
+			System.out.println("--------------------------------------------------");
+//			System.out.println(opt.getResults());
 			while (!converged()) {
-				System.out.println("Iteration "+iteration);
+//				System.out.println("Iteration "+iteration+"\t");
 				opt.optimize();
-				System.out.println(opt.getResults());
+				System.out.println("Iteration "+iteration+"\t"+opt.getResults().get(0) + "\t" + opt.getResults().get(1));
 				iteration ++;
 			}
+			Long end = System.currentTimeMillis();
+			Double runtime = (end - start)/1000.0;
+			System.out.println("Runtime "+runtime+" seconds");
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
