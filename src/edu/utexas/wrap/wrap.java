@@ -79,19 +79,14 @@ import java.io.IOException;
  */
 public class wrap{
 	static Integer iteration = 1;
-	static Integer maxIterations = 25;
+	static Integer maxIterations = 100;
 	
 	public static void main(String[] args) {
 		// The very first line of code!
 		Long start = System.currentTimeMillis();
 		
-		//Sioux Falls Network
-//		File links = new File(args[0]);
-//		File odMatrix = new File(args[1]);
-		
-		//Anaheim Network
-		File links = new File(args[2]);
-		File odMatrix = new File(args[3]);
+		File links = new File(args[0]);
+		File odMatrix = new File(args[1]);
 		
 		Network network;
 		try {

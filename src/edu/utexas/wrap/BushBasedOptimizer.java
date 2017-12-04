@@ -7,6 +7,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import edu.utexas.wrap.Bush.DijkCases;
+
 public abstract class BushBasedOptimizer extends Optimizer {
 	
 	protected List<Link> removedLinks;
@@ -24,8 +26,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 				Bush b = o.getBush();
 
 				// Step i: Build min- and max-path trees
-				LinkedList<Node> to = new LinkedList<Node>();
-				to = b.getTopologicalOrder();
+				LinkedList<Node> to = b.getTopologicalOrder();
 				//b.runDijkstras(Bush.DijkCases.EQUILIBRATE_SHORTEST);
 				b.topoSearch(Bush.DijkCases.EQUILIBRATE_SHORTEST, to);
 				b.topoSearch(Bush.DijkCases.LONGEST, to);
@@ -52,6 +53,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 	protected abstract void equilibrateBush(Bush b, LinkedList<Node> to) throws Exception;
 	
 	protected Boolean improveBush(Bush b) throws Exception {
+		boolean modified = false;
 		Map<Link, Boolean> links = b.getLinks();
 		this.removedLinks = new ArrayList<>();
 		int counter = 0;
@@ -62,7 +64,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 					// Check to see if this link is needed for connectivity
 					Boolean needed = true;
 					for (Link i : l.getHead().getIncomingLinks()) {
-						if (!i.equals(l) && b.getLinks().get(i)) {
+						if (!i.equals(l) && b.getLinks().get(i) && !removedLinks.contains(i)) {
 							needed = false;
 							break;
 						}
@@ -70,10 +72,9 @@ public abstract class BushBasedOptimizer extends Optimizer {
 					if (!needed) {
 						b.getLinks().put(l, false);	// deactivate link in bush if no flow left
 						removedLinks.add(l);
-						counter++;
+//						counter++;
 					}
 				}
-				
 			}
 		}
 		
@@ -103,22 +104,24 @@ public abstract class BushBasedOptimizer extends Optimizer {
 //			}
 
 			// Else if Ui + tij < Uj
-			if (b.getU(l.getTail())
-					+ l.getTravelTime() 
-					< b.getU(l.getHead())) {
+			if (b.getU(l.getTail()) + l.getTravelTime() < b.getU(l.getHead())) {
 				links.put(l, true);
-				if(this.removedLinks.contains(l)) counter--;
-				else counter++;
+				if(!this.removedLinks.contains(l)) modified = true;
+//				else counter++;
 			}
 		}
 		}
 		
-		return counter>0;
+		return modified;
 	}
 
 	public List<Float> getResults() throws Exception {
 		//TODO: Improve this method
 	    List<Float> results = new ArrayList<>();
+	    for(Origin o : network.getOrigins()) {
+	    		LinkedList<Node> to = o.getBush().getTopologicalOrder();
+	    		o.getBush().topoSearch(DijkCases.EQUILIBRATE_SHORTEST, to);
+	    }
 
 	    results.add(network.AEC());
 	    results.add(network.tstt());

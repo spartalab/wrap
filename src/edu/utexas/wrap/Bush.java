@@ -16,7 +16,7 @@ public class Bush {
 	private Map<Link, Boolean> links;
 	
 	// Labels (for solving)
-	private Map<Integer, Float> 	nodeL;
+	private Map<Integer, Float> 		nodeL;
 	private Map<Integer, Float>		nodeU;
 	private Map<Integer, Link> 		qShort;
 	private Map<Integer, Link>		qLong;
@@ -193,25 +193,17 @@ public class Bush {
 	//Getting nodeU and qLong (longest paths) using Depth First Search algorithm
 	public void topoSearch(DijkCases type, LinkedList<Node> to) throws Exception {
 		// Initialize all nodeU values as 0 and all nodes as not visited
-//		qShort = new HashMap<>();
-//		qLong = new HashMap<>();
 
-		for (Integer i : new HashSet<Integer>(nodes.keySet())) {
-			if(type == DijkCases.EQUILIBRATE_SHORTEST) {
+		//SHORTEST PATHS
+		if(type == DijkCases.EQUILIBRATE_SHORTEST) {
+			qShort = new HashMap<Integer, Link>();
+			nodeL = new HashMap<Integer, Float>();
+			for (Integer i : new HashSet<Integer>(nodes.keySet())) {
 				nodeL.put(i, Float.POSITIVE_INFINITY);
 			}
-			else if(type == DijkCases.LONGEST) {
-				nodeU.put(i, Float.NEGATIVE_INFINITY);
-			}
-			// visited.put(i, false);
-		}
-		if(type == DijkCases.EQUILIBRATE_SHORTEST) 		nodeL.put(origin.getID(), 0.0f);
-		if(type == DijkCases.LONGEST) 		nodeU.put(origin.getID(), 0.0f);
-
-
-		for (Node d : to) {
-
-			if(type == DijkCases.EQUILIBRATE_SHORTEST) {
+			nodeL.put(origin.getID(), 0.0f);
+			
+			for (Node d : to) {
 				if (nodeL.get(d.getID()) == Float.POSITIVE_INFINITY)
 					continue;
 	
@@ -226,8 +218,18 @@ public class Bush {
 					}
 				}
 			}
+		}
+		
+		//LONGEST PATHS
+		else if(type == DijkCases.LONGEST) {
+			qLong = new HashMap<Integer, Link>();
+			nodeU = new HashMap<Integer, Float>();
+			for (Integer i : new HashSet<Integer>(nodes.keySet())) {
+				nodeU.put(i, Float.NEGATIVE_INFINITY);
+			}
+			nodeU.put(origin.getID(), 0.0f);
 			
-			else if(type == DijkCases.LONGEST) {
+			for (Node d : to) {
 				if (nodeU.get(d.getID()) == Float.NEGATIVE_INFINITY)
 					continue;
 
@@ -243,6 +245,55 @@ public class Bush {
 				}
 			}
 		}
+		
+		
+//		for (Integer i : new HashSet<Integer>(nodes.keySet())) {
+//			if(type == DijkCases.EQUILIBRATE_SHORTEST) {
+//				nodeL.put(i, Float.POSITIVE_INFINITY);
+//			}
+//			else if(type == DijkCases.LONGEST) {
+//				nodeU.put(i, Float.NEGATIVE_INFINITY);
+//			}
+//			// visited.put(i, false);
+//		}
+//		if(type == DijkCases.EQUILIBRATE_SHORTEST) 		nodeL.put(origin.getID(), 0.0f);
+//		if(type == DijkCases.LONGEST) 		nodeU.put(origin.getID(), 0.0f);
+//
+//
+//		for (Node d : to) {
+//
+//			if(type == DijkCases.EQUILIBRATE_SHORTEST) {
+//				if (nodeL.get(d.getID()) == Float.POSITIVE_INFINITY)
+//					continue;
+//	
+//				for (Link l : d.getOutgoingLinks()) {
+//					if (links.get(l)) {
+//						Float Licij = l.getTravelTime() + nodeL.get(d.getID());
+//	
+//						if (Licij < nodeL.get(l.getHead().getID())) {
+//							nodeL.put(l.getHead().getID(), Licij);
+//							qShort.put(l.getHead().getID(), l);
+//						}
+//					}
+//				}
+//			}
+//			
+//			else if(type == DijkCases.LONGEST) {
+//				if (nodeU.get(d.getID()) == Float.NEGATIVE_INFINITY)
+//					continue;
+//
+//				for (Link l : d.getOutgoingLinks()) {
+//					if (links.get(l)) {
+//						Float Uicij = l.getTravelTime() + nodeU.get(d.getID());
+//
+//						if (Uicij > nodeU.get(l.getHead().getID())) {
+//							nodeU.put(l.getHead().getID(), Uicij);
+//							qLong.put(l.getHead().getID(), l);
+//						}
+//					}
+//				}
+//			}
+//		}
 
 	}
  
