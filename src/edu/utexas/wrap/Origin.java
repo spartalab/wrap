@@ -8,10 +8,10 @@ import java.util.Set;
 public class Origin extends Node{
 	private Bush bush;
 	private final Set<Integer> destinations;
-	private final Map<Integer, Float> destDemand;
+	private final Map<Integer, Double> destDemand;
 	
 
-	public Origin(Node self, HashMap<Integer, Float> dests) {
+	public Origin(Node self, HashMap<Integer, Double> dests) {
 		super(self.getIncomingLinks(), self.getOutgoingLinks(), self.getID());
 		destDemand = dests;	// store demand HashMap
 		destinations = new HashSet<Integer>(dests.keySet());
@@ -27,7 +27,7 @@ public class Origin extends Node{
 		return destinations;
 	}
 	
-	Float getDemand(Integer n) {
+	Double getDemand(Integer n) {
 		return destDemand.get(n);
 	}
 	

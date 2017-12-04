@@ -21,8 +21,8 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 		//TODO b.getLongestPaths(to);
 		Integer index = to.size() - 1;
 		Node cur;
-		HashMap<Link, Float> deltaX = new HashMap<Link, Float>();
-		for (Link z : b.getLinks().keySet()) deltaX.put(z, new Float(0));
+		HashMap<Link, Double> deltaX = new HashMap<Link, Double>();
+		for (Link z : b.getLinks().keySet()) deltaX.put(z, new Double(0));
 		
 		while (index >= 0) {
 			cur = to.get(index);
@@ -41,8 +41,8 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			LinkedList<Link> uPath = new LinkedList<Link>();
 			LinkedList<Link> lPath = new LinkedList<Link>();
 			Node m,n;
-			Float maxDelta = Float.MAX_VALUE;
-			Float x;
+			Double maxDelta = Double.MAX_VALUE;
+			Double x;
 
 			//Dump all nodes on short path into a temporary set
 			//Note that this isn't optimal but it works for our purposes
@@ -80,14 +80,14 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			//The two paths constitute a Pair of Alternate Segments
 
 			//calculate delta h, capping at maxDelta
-			Float denominator = new Float(0.0);
+			Double denominator = new Double(0.0);
 			for (Link l : lPath) {
 				denominator += l.tPrime();
 			}
 			for (Link l : uPath) {
 				denominator += l.tPrime();
 			}
-			Float deltaH = Float.min(maxDelta,
+			Double deltaH = Double.min(maxDelta,
 					( (b.getU(cur)-b.getU(m)) - (b.getL(cur)-b.getL(m)) ) / denominator );
 
 			//add delta h to all x values in pi_L

@@ -29,7 +29,7 @@ public class Network {
 		// Open the files for reading
 		BufferedReader lf = new BufferedReader(new FileReader(linkFile));
 		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
-		HashMap<Integer, Float> dest = new HashMap<Integer, Float>();
+		HashMap<Integer, Double> dest = new HashMap<Integer, Double>();
 		//////////////////////////////////////////////
 		// Read links and build corresponding nodes
 		//////////////////////////////////////////////
@@ -46,20 +46,20 @@ public class Network {
 			String[] cols 	= line.split("\\s+");
 			Integer tail 	= Integer.parseInt(cols[0]);
 			Integer head 	= Integer.parseInt(cols[1]);
-			Float capacity 	= Float.parseFloat(cols[2]);
-			Float length 	= Float.parseFloat(cols[3]);
-			Float fftime 	= Float.parseFloat(cols[4]);
-			Float B 		= Float.parseFloat(cols[5]);
-			Float power 	= Float.parseFloat(cols[6]);
+			Double capacity 	= Double.parseDouble(cols[2]);
+			Double length 	= Double.parseDouble(cols[3]);
+			Double fftime 	= Double.parseDouble(cols[4]);
+			Double B 		= Double.parseDouble(cols[5]);
+			Double power 	= Double.parseDouble(cols[6]);
 			
 			//Create new node(s) if new, then add to map
 			if (!nodes.containsKey(tail)) {
 				nodes.put(tail,new Node(tail));
-				dest.put(tail, new Float(0));
+				dest.put(tail, new Double(0));
 			}
 			if (!nodes.containsKey(head)) {
 				nodes.put(head,new Node(head));
-				dest.put(head,new Float(0));
+				dest.put(head,new Double(0));
 			}
 			
 			//Construct new link and add to the list
@@ -80,7 +80,7 @@ public class Network {
 		while (true) { //While more Origins to read
 			Integer origID = Integer.parseInt(line.trim().split("\\s+")[1]);
 			Node old = nodes.get(origID);	// Retrieve the existing node with that ID
-			HashMap<Integer, Float> dests = new HashMap<Integer, Float>(dest);
+			HashMap<Integer, Double> dests = new HashMap<Integer, Double>(dest);
 			String[] entries;
 			
 			while (true) {
@@ -91,7 +91,7 @@ public class Network {
 				for (String entry : entries) {	// For each entry on this line
 					String[] cols = entry.split(":");	// Get its values
 					Integer destID = Integer.parseInt(cols[0].trim());
-					Float demand = Float.parseFloat(cols[1].trim());
+					Double demand = Double.parseDouble(cols[1].trim());
 					dests.put(destID, demand);
 				}
 			}
@@ -124,8 +124,8 @@ public class Network {
 	}
 	
 	
-	public Float tstt() throws Exception{
-		Float tstt = 0.0f;
+	public Double tstt() throws Exception{
+		Double tstt = 0.0;
 		
 		for(Link l:links){
 			tstt += l.getFlow() * l.getTravelTime();
@@ -133,9 +133,9 @@ public class Network {
 		return tstt;
 	}
 	
-	public Float relativeGap() throws Exception {
-		Float numerator = new Float(0);
-		Float denominator = new Float(0);
+	public Double relativeGap() throws Exception {
+		Double numerator = new Double(0);
+		Double denominator = new Double(0);
 		
 		for (Link l : links) {
 			numerator += l.getTravelTime() * l.getFlow();
@@ -150,9 +150,9 @@ public class Network {
 		return (numerator/denominator) - 1;
 	}
 	
-	public Float AEC() throws Exception {
-		Float numerator = tstt();
-		Float denominator = new Float(0);
+	public Double AEC() throws Exception {
+		Double numerator = tstt();
+		Double denominator = new Double(0);
 		
 		for (Origin o : origins) {
 			for (Node d : o.getBush().getNodes()) {

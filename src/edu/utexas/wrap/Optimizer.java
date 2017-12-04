@@ -20,7 +20,7 @@ public abstract class Optimizer {
 
 	public abstract void optimize() throws Exception;
 	
-	public abstract List<Float> getResults() throws Exception;
+	public abstract List<Double> getResults() throws Exception;
 	
 	public abstract String toString();
 		

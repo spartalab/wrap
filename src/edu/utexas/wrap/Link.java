@@ -6,18 +6,18 @@ package edu.utexas.wrap;
  */
 public class Link {
 
-	private float capacity;
+	private Double capacity;
 	private Node head;
 	private Node tail;
-	private float length;
-	private float fftime;
-	private float b;
-	private float power;
-	private float flow;
+	private Double length;
+	private Double fftime;
+	private Double b;
+	private Double power;
+	private Double flow;
 
 	
 	
-	public Link(Node tail, Node head, float capacity, float length, float fftime, float b, float power) {
+	public Link(Node tail, Node head, Double capacity, Double length, Double fftime, Double b, Double power) {
 		this.tail = tail;
 		this.head = head;
 		this.capacity = capacity;
@@ -25,32 +25,32 @@ public class Link {
 		this.fftime = fftime;
 		this.b = b;
 		this.power = power;
-		this.flow = 0.0f;
+		this.flow = 0.0;
 	}
 
 	//B and power are empirical constants in the BPR function
-	public float getBValue() {
+	public Double getBValue() {
 		return this.b;
 	}
-	public void setBValue(float bvalue) {
+	public void setBValue(Double bvalue) {
 		this.b = bvalue;
 	}
-	public float getPower() {
+	public Double getPower() {
 		return power;
 	}
-	public void setPower(float power) {
+	public void setPower(Double power) {
 		this.power = power;
 	}
-	public float getCapacity() {
+	public Double getCapacity() {
 		return capacity;
 	}
-	public void setCapacity(float capacity) {
+	public void setCapacity(Double capacity) {
 		this.capacity = capacity;
 	}
-	public float getFfTime() {
+	public Double getFfTime() {
 		return fftime;
 	}
-	public void setFfTime(float fftime) {
+	public void setFfTime(Double fftime) {
 		this.fftime = fftime;
 	}
 	public Node getHead() {
@@ -65,28 +65,28 @@ public class Link {
 	public void setTail(Node tail) {
 		this.tail = tail;
 	}
-	public float getLength() {
+	public Double getLength() {
 		return length;
 	}
-	public void setLength(float length) {
+	public void setLength(Double length) {
 		this.length = length;
 	}
-	public float getFlow() throws Exception {
+	public Double getFlow() throws Exception {
 		if(this.flow < 0) throw new Exception();
 		return this.flow;
 	}
-	public void setFlow(float flow) {
+	public void setFlow(Double flow) {
 		this.flow = flow;
 	}
 	//Used to add deltaflow to current link flow
-	public void addFlow(float deltaflow) {
+	public void addFlow(Double deltaflow) {
 		this.flow += deltaflow;
-		this.flow = (float) Math.max(flow, 0.0);
+		this.flow = (Double) Math.max(flow, 0.0);
 	}
 	
-	public void subtractFlow(float deltaFlow) {
+	public void subtractFlow(Double deltaFlow) {
 		this.flow -= deltaFlow;
-		this.flow = (float) Math.max(flow, 0.0);
+		this.flow = (Double) Math.max(flow, 0.0);
 	}
 
 	/**BPR Function
@@ -95,8 +95,8 @@ public class Link {
 	 * @return travel time for the link at current flow
 	 * @throws Exception 
 	 */
-	public float getTravelTime() throws Exception {
-		return (float) (getFfTime()*(1.0 + getBValue()*Math.pow(getFlow()/getCapacity(), getPower())));
+	public Double getTravelTime() throws Exception {
+		return (Double) (getFfTime()*(1.0 + getBValue()*Math.pow(getFlow()/getCapacity(), getPower())));
 	}
 	
 	public String toString() {
@@ -108,23 +108,26 @@ public class Link {
 	 * @return t': the derivative of the BPR function
 	 * @throws Exception 
 	 */
-	public Float tPrime() throws Exception {
+	public Double tPrime() throws Exception {
 		// Return (a*b*t*(v/c)^a)/v
-		Float a = getPower();
-		Float b = getBValue();
-		Float t = getFfTime();
-		Float v = getFlow();
-		Float c = getCapacity();
-		if (v <= 0) {
-			if (b == 0) {
-				return t*a/c;
-			}
-			else {
-				return new Float(0);
-			}
-		}
-		Float vca = (float) Math.pow(v/c, a);
-		return (a*b*t*vca/v);
+		Double a = getPower();
+		Double b = getBValue();
+		Double t = getFfTime();
+		Double v = getFlow();
+		Double c = getCapacity();
+//		if (v <= 0) {
+//			if (b == 0) {
+//				return t*a/c;
+//			}
+//			else {
+//				return new Double(0);
+//			}
+//		}
+//		Double vca = (Double) Math.pow(v/c, a);
+//		return (a*b*t*vca/v);
+		Double va = Math.pow(v, a-1.0);
+		Double ca = Math.pow(c, -a);
+		return a*va*t*b*ca;
 	}
 	
 }

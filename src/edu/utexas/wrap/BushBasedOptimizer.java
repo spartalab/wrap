@@ -44,7 +44,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 				
 				// Step iii: Improve bush
 				altered = improveBush(b);
-
+				altered = false;
 				// Step iv: Reiterate if bush changed
 			} while (altered);
 		}
@@ -115,9 +115,9 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		return modified;
 	}
 
-	public List<Float> getResults() throws Exception {
+	public List<Double> getResults() throws Exception {
 		//TODO: Improve this method
-	    List<Float> results = new ArrayList<>();
+	    List<Double> results = new ArrayList<>();
 	    for(Origin o : network.getOrigins()) {
 	    		LinkedList<Node> to = o.getBush().getTopologicalOrder();
 	    		o.getBush().topoSearch(DijkCases.EQUILIBRATE_SHORTEST, to);
