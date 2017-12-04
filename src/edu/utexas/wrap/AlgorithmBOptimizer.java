@@ -17,6 +17,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 	 */
 	protected void equilibrateBush(Bush b) throws Exception {
 		LinkedList<Node> to = b.getTopologicalOrder();
+		//TODO b.getLongestPaths(to);
 		Integer index = to.size() - 1;
 		Node cur;
 		HashMap<Link, Float> deltaX = new HashMap<Link, Float>();

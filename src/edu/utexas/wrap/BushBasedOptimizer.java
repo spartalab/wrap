@@ -1,5 +1,6 @@
 package edu.utexas.wrap;
 
+import java.util.LinkedList;
 import java.util.Map;
 
 public abstract class BushBasedOptimizer extends Optimizer {
@@ -15,20 +16,19 @@ public abstract class BushBasedOptimizer extends Optimizer {
 			Boolean altered;
 			do{
 				Bush b = o.getBush();
-				if (o.getID().equals(16)) {
-					int z = 0;
-					z++;
-				}
+
 				// Step i: Build min- and max-path trees
 				b.runDijkstras(Bush.DijkCases.EQUILIBRATE_SHORTEST);
-				b.runDijkstras(Bush.DijkCases.LONGEST);
+				LinkedList<Node> to = new LinkedList<Node>();
+				to = b.getTopologicalOrder();
+				b.getLongestPaths(to);
 
 				// Step iia: Equilibrate bush
 				equilibrateBush(b);
 
 				// Step iib: Recalculate U labels
 				b.runDijkstras(Bush.DijkCases.EQUILIBRATE_SHORTEST);
-				b.runDijkstras(Bush.DijkCases.LONGEST);
+				b.getLongestPaths(to);
 				
 				// Step iii: Improve bush
 				altered = improveBush(b);

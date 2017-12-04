@@ -3,9 +3,12 @@ package edu.utexas.wrap;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 public class Bush {
 
@@ -148,24 +151,14 @@ public class Bush {
 		// eligible nodes to contain this origin only, and the 
 		// back-link mapping to be empty
 		Set<Integer> eligible  = new HashSet<Integer>();
-		if (type != DijkCases.LONGEST) {
-			nodeL = new HashMap<Integer, Float>();
-			qShort = new HashMap<Integer, Link>();
-			for (Integer l : this.nodes.keySet()) {
-				nodeL.put(l, Float.MAX_VALUE);
-				eligible.add(l);
-			}
-			nodeL.put(origin.getID(), new Float(0.0));
+		
+		nodeL = new HashMap<Integer, Float>();
+		qShort = new HashMap<Integer, Link>();
+		for (Integer l : this.nodes.keySet()) {
+			nodeL.put(l, Float.MAX_VALUE);
+			eligible.add(l);
 		}
-		else {
-			nodeU = new HashMap<Integer, Float>();
-			qLong = new HashMap<Integer, Link>();
-			for (Integer l : this.nodes.keySet()) {
-				nodeU.put(l, Float.MAX_VALUE);
-				eligible.add(l);
-			}
-			nodeU.put(origin.getID(), new Float(0.0));
-		}
+		nodeL.put(origin.getID(), new Float(0.0));
 		
 		// While not all nodes have been reached
 		while (true) {
@@ -173,18 +166,10 @@ public class Bush {
 			Node tail = null;
 			for (Integer nodeID : eligible) {
 				Node node = nodes.get(nodeID);
-				if (type != DijkCases.LONGEST) {	//Calculating shortest paths
-					if ( tail == null || 
-							nodeL.get(node.getID()) < nodeL.get(tail.getID()) ) 
+				//Calculating shortest paths
+					if ( tail == null || nodeL.get(node.getID()) < nodeL.get(tail.getID()) ) 
 						tail = node;
-					
 
-				} else {		//Calculating longest paths
-					if ( tail == null || 
-							nodeU.get(node.getID()) < nodeU.get(tail.getID()) ) 
-						tail = node;
-					
-				}
 			}
 			if (tail == null) break;
 			
@@ -198,29 +183,48 @@ public class Bush {
 				if (type != DijkCases.INITIAL && !links.get(link)) continue; //So skip this link if it is inactive in the bush
 				Node head = link.getHead();
 
-				if (type == DijkCases.LONGEST) {	//Longest paths search
-					// nodeU(j) = max( nodeU(j), nodeU(i)+c(ij) )
-					Float Uj    = nodeU.get(head.getID());
-					Float Uicij = nodeU.get(tail.getID())-link.getTravelTime();
-					if (Uicij < Uj) {
-						nodeU.put(head.getID(), Uicij);
-						qLong.put(head.getID(), link);
-					}
-				} else {		//Shortest paths search
-					// nodeL(j) = min( nodeL(j), nodeL(i)+c(ij) )
-					Float Lj    = nodeL.get(head.getID());
-					Float Licij = nodeL.get(tail.getID())+link.getTravelTime();
-					if (Licij < Lj) {
-						nodeL.put(head.getID(), Licij);
-						qShort.put(head.getID(), link);
+				//Shortest paths search
+				// nodeL(j) = min( nodeL(j), nodeL(i)+c(ij) )
+				Float Lj    = nodeL.get(head.getID());
+				Float Licij = nodeL.get(tail.getID())+link.getTravelTime();
+				if (Licij < Lj) {
+					nodeL.put(head.getID(), Licij);
+					qShort.put(head.getID(), link);
+				}
+				
+			}
+		}
+	}
+	
+	//Getting nodeU and qLong (longest paths) using Depth First Search algorithm
+	public void getLongestPaths(LinkedList<Node> to) {
+		// Initialize all nodeU values as 0 and all nodes as not visited
+		qLong = new HashMap<>();
+		for (Integer i : nodes.keySet()) {
+			nodeU.put(i, Float.NEGATIVE_INFINITY);
+			// visited.put(i, false);
+		}
+		nodeU.put(origin.getID(), 0.0f);
+
+		for (Node d : to) {
+
+			if (nodeU.get(d.getID()) == Float.NEGATIVE_INFINITY)
+				continue;
+
+			for (Link l : d.getOutgoingLinks()) {
+				if (links.get(l)) {
+					Float Uicij = l.getTravelTime() + nodeU.get(d.getID());
+
+					if (Uicij > nodeU.get(l.getHead().getID())) {
+						nodeU.put(l.getHead().getID(), Uicij);
+						qLong.put(l.getHead().getID(), l);
 					}
 				}
 			}
 		}
-		if (type == DijkCases.LONGEST) {
-			for (Integer node : nodeU.keySet()) nodeU.put(node, -nodeU.get(node));
-		}
+
 	}
+	
  
 	Link getqShort(Node n) {
 		return qShort.get(n.getID());
