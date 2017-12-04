@@ -21,9 +21,8 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 		Integer index = to.size() - 1;
 		Node cur;
 		HashMap<Link, Float> deltaX = new HashMap<Link, Float>();
-		for (Link z : b.getLinks().keySet()) {
-			deltaX.put(z, new Float(0));
-		}
+		for (Link z : b.getLinks().keySet()) deltaX.put(z, new Float(0));
+		
 		while (index >= 0) {
 			cur = to.get(index);
 			index --;
@@ -101,7 +100,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 				deltaX.put(l, deltaX.get(l) - deltaH);
 			}
 		}
-		for (Link z : deltaX.keySet()) z.addFlow(deltaX.get(z));
+		for (Link z : new HashSet<Link>(deltaX.keySet())) z.addFlow(deltaX.get(z));
 	}
 
 	@Override

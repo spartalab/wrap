@@ -1,5 +1,6 @@
 package edu.utexas.wrap;
 
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -43,7 +44,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 	protected Boolean improveBush(Bush b) {
 		Boolean modified = false;
 		Map<Link, Boolean> links = b.getLinks();
-		for (Link l : links.keySet()) {
+		for (Link l : new HashSet<Link>(links.keySet())) {
 			// If link is active, do nothing (removing flow should mark as inactive)
 
 			if (links.get(l)) {
@@ -74,7 +75,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		
 		return modified;
 	}
-	
+
 	public String getResults() {
 		//TODO: Improve this method
 		for (Origin o : network.getOrigins()) {

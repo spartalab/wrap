@@ -3,12 +3,9 @@ package edu.utexas.wrap;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 public class Bush {
 
@@ -102,9 +99,8 @@ public class Bush {
 	public LinkedList<Node> getTopologicalOrder() throws Exception {
 		// Start with a set of all bush edges
 		Set<Link> currentLinks = new HashSet<Link>();
-		for (Link l : links.keySet()) {
-			if (links.get(l)) currentLinks.add(l);
-		}
+		for (Link l : links.keySet()) if (links.get(l)) currentLinks.add(l);
+		
 		LinkedList<Node> to = new LinkedList<Node>();
 		LinkedList<Node> S = new LinkedList<Node>();
 		// "start nodes"
@@ -154,7 +150,7 @@ public class Bush {
 		
 		nodeL = new HashMap<Integer, Float>();
 		qShort = new HashMap<Integer, Link>();
-		for (Integer l : this.nodes.keySet()) {
+		for (Integer l : nodes.keySet()) {
 			nodeL.put(l, Float.MAX_VALUE);
 			eligible.add(l);
 		}
@@ -200,7 +196,7 @@ public class Bush {
 	public void getLongestPaths(LinkedList<Node> to) {
 		// Initialize all nodeU values as 0 and all nodes as not visited
 		qLong = new HashMap<>();
-		for (Integer i : nodes.keySet()) {
+		for (Integer i : new HashSet<Integer>(nodes.keySet())) {
 			nodeU.put(i, Float.NEGATIVE_INFINITY);
 			// visited.put(i, false);
 		}

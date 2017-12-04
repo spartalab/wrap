@@ -1,6 +1,7 @@
 package edu.utexas.wrap;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,7 +14,7 @@ public class Origin extends Node{
 	public Origin(Node self, HashMap<Integer, Float> dests) {
 		super(self.getIncomingLinks(), self.getOutgoingLinks(), self.getID());
 		destDemand = dests;	// store demand HashMap
-		destinations = dests.keySet();
+		destinations = new HashSet<Integer>(dests.keySet());
 	}
 
 
