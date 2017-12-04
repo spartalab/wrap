@@ -1,5 +1,6 @@
 package edu.utexas.wrap;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -101,6 +102,27 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			}
 		}
 		for (Link z : new HashSet<Link>(deltaX.keySet())) z.addFlow(deltaX.get(z));
+		
+		this.removedLinks = new ArrayList<>();
+		for (Link l : new HashSet<Link>(b.getLinks().keySet())){
+			if(b.getLinks().get(l)){
+				if(b.getBushFlow(l)<=0){
+					// Check to see if this link is needed for connectivity
+					Boolean needed = true;
+					for (Link i : l.getHead().getIncomingLinks()) {
+						if (!i.equals(l) && b.getLinks().get(i)) {
+							needed = false;
+							break;
+						}
+					}
+					if (!needed) {
+						b.getLinks().put(l, false);	// deactivate link in bush if no flow left
+						removedLinks.add(l);
+					}
+				}
+				
+			}
+		}
 	}
 
 	@Override

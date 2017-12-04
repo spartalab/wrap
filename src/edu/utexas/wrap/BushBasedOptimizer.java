@@ -2,9 +2,12 @@ package edu.utexas.wrap;
 
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 public abstract class BushBasedOptimizer extends Optimizer {
+	
+	protected List<Link> removedLinks;
 
 	public BushBasedOptimizer(Network network) {
 		super(network);
@@ -26,7 +29,8 @@ public abstract class BushBasedOptimizer extends Optimizer {
 
 				// Step iia: Equilibrate bush
 				equilibrateBush(b);
-
+				
+				to = b.getTopologicalOrder();
 				// Step iib: Recalculate U labels
 				b.runDijkstras(Bush.DijkCases.EQUILIBRATE_SHORTEST);
 				b.getLongestPaths(to);
@@ -46,31 +50,32 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		Map<Link, Boolean> links = b.getLinks();
 		for (Link l : new HashSet<Link>(links.keySet())) {
 			// If link is active, do nothing (removing flow should mark as inactive)
-
-			if (links.get(l)) {
-				if (b.getBushFlow(l) <= 0) {
-					// Check to see if this link is needed for connectivity
-					Boolean needed = true;
-					for (Link i : l.getHead().getIncomingLinks()) {
-						if (!i.equals(l) && links.get(i)) {
-							needed = false;
-							break;
-						}
-					}
-					if (!needed) {
-						links.put(l, false);	// deactivate link in bush if no flow left
-						modified = true;
-					}
-				}
-			}
+			//Could potentially delete both incoming links to a node
+			if (!links.get(l)) {
+//				if (b.getBushFlow(l) <= 0) {
+//					// Check to see if this link is needed for connectivity
+//					Boolean needed = true;
+//					for (Link i : l.getHead().getIncomingLinks()) {
+//						if (!i.equals(l) && links.get(i)) {
+//							needed = false;
+//							break;
+//						}
+//					}
+//					if (!needed) {
+//						links.put(l, false);	// deactivate link in bush if no flow left
+//						modified = true;
+//					}
+//				}
+//			}
 
 			// Else if Ui + tij < Uj
-			else if (b.getU(l.getTail())
+			if (b.getU(l.getTail())
 					+ l.getTravelTime() 
 					< b.getU(l.getHead())) {
 				links.put(l, true);
-				modified = true;
+				if(!this.removedLinks.contains(l)) modified = true;
 			}
+		}
 		}
 		
 		return modified;

@@ -79,7 +79,7 @@ import java.io.IOException;
  */
 public class wrap{
 	static Integer iteration = 0;
-	static Integer maxIterations = 25;
+	static Integer maxIterations = 100;
 	
 	public static void main(String[] args) {
 		// The very first line of code!

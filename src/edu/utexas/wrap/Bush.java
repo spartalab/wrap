@@ -151,13 +151,13 @@ public class Bush {
 		nodeL = new HashMap<Integer, Float>();
 		qShort = new HashMap<Integer, Link>();
 		for (Integer l : nodes.keySet()) {
-			nodeL.put(l, Float.MAX_VALUE);
+			nodeL.put(l, Float.POSITIVE_INFINITY);
 			eligible.add(l);
 		}
 		nodeL.put(origin.getID(), new Float(0.0));
 		
 		// While not all nodes have been reached
-		while (true) {
+		while (!eligible.isEmpty()) {
 			// Find eligible node of minimal nodeL
 			Node tail = null;
 			for (Integer nodeID : eligible) {
@@ -167,7 +167,7 @@ public class Bush {
 						tail = node;
 
 			}
-			if (tail == null) break;
+//			if (tail == null) break;
 			
 			// Finalize node by adding to finalized
 			// And remove from eligible
