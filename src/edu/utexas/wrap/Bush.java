@@ -63,8 +63,6 @@ public class Bush {
 	void subtractFlow(Link l, Double f) {
 		Double newFlow = flow.get(l) - f;
 		flow.put(l, newFlow); // Keep track of new value of flow from bush
-
-		
 	}
 	
 	/**Initialize demand flow on shortest paths

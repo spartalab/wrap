@@ -20,34 +20,31 @@ public abstract class BushBasedOptimizer extends Optimizer {
 	public void optimize() throws Exception {
 		// A single general step iteration
 		for (Origin o : network.getOrigins()) {
-			
-			Boolean altered;
-			do{
-				Bush b = o.getBush();
 
-				// Step i: Build min- and max-path trees
-				LinkedList<Node> to = b.getTopologicalOrder();
-				//b.runDijkstras(Bush.DijkCases.EQUILIBRATE_SHORTEST);
-				b.topoSearch(Bush.DijkCases.EQUILIBRATE_SHORTEST, to);
-				b.topoSearch(Bush.DijkCases.LONGEST, to);
-				//b.getLongestPaths(to);
+			Bush b = o.getBush();
 
-				// Step iia: Equilibrate bush
-				equilibrateBush(b, to);
-				
-				//to = b.getTopologicalOrder();
-				// Step iib: Recalculate U labels
-				//b.runDijkstras(Bush.DijkCases.EQUILIBRATE_SHORTEST);
-//				b.topoSearch(Bush.DijkCases.EQUILIBRATE_SHORTEST, to);
-//				b.topoSearch(Bush.DijkCases.LONGEST, to);
-				//b.getLongestPaths(to);
-				
-				// Step iii: Improve bush
-				altered = improveBush(b);
-				altered = false;
-				// Step iv: Reiterate if bush changed
-			} while (altered);
+			// Step i: Build min- and max-path trees
+			LinkedList<Node> to = b.getTopologicalOrder();
+			b.topoSearch(Bush.DijkCases.EQUILIBRATE_SHORTEST, to);
+			b.topoSearch(Bush.DijkCases.LONGEST, to);
+
+			// Step iia: Equilibrate bush
+			equilibrateBush(b, to);
 		}
+		//to = b.getTopologicalOrder();
+		// Step iib: Recalculate U labels
+		//b.runDijkstras(Bush.DijkCases.EQUILIBRATE_SHORTEST);
+		//b.topoSearch(Bush.DijkCases.EQUILIBRATE_SHORTEST, to);
+		//b.topoSearch(Bush.DijkCases.LONGEST, to);
+		//b.getLongestPaths(to);
+		for (Origin o : network.getOrigins()) {
+			Bush b = o.getBush();
+
+			// Step iii: Improve bush
+			improveBush(b);
+		}
+		// Step iv: Reiterate if bush changed
+
 	}
 
 	protected abstract void equilibrateBush(Bush b, LinkedList<Node> to) throws Exception;
@@ -123,7 +120,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 	    		o.getBush().topoSearch(DijkCases.EQUILIBRATE_SHORTEST, to);
 	    }
 
-	    results.add(network.AEC());
+	    results.add(network.relativeGap());
 	    results.add(network.tstt());
 		return results;
 		

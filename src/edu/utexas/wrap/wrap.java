@@ -79,7 +79,7 @@ import java.io.IOException;
  */
 public class wrap{
 	static Integer iteration = 1;
-	static Integer maxIterations = 100;
+	static Integer maxIterations = 1000;
 	
 	public static void main(String[] args) {
 		// The very first line of code!
@@ -97,7 +97,7 @@ public class wrap{
 			
 			System.out.println("Starting " + opt.toString() + "...");
 			System.out.println();
-			System.out.println("ITERATION #\tAEC\t        TSTT");
+			System.out.println("ITERATION #\tRELGAP\t        TSTT");
 			System.out.println("--------------------------------------------------");
 //			System.out.println(opt.getResults());
 			while (!converged()) {

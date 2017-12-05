@@ -147,7 +147,7 @@ public class Network {
 			}
 		}
 		
-		return (numerator/denominator) - 1;
+		return (numerator/denominator) - 1.0;
 	}
 	
 	public Double AEC() throws Exception {
