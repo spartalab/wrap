@@ -1,6 +1,5 @@
 package edu.utexas.wrap;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -12,18 +11,18 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 		super(network);
 	}
 
-	/**
-	 * @param b
-	 * @throws Exception 
+	/** Implement the Algorithm B version of bush equilibration
+	 * @param b a bush to be equilibrated
+	 * @param to the bush's topological order
+	 * @throws Exception if there was negative bush flow
 	 */
 	protected void equilibrateBush(Bush b, LinkedList<Node> to) throws Exception {
-//		LinkedList<Node> to = b.getTopologicalOrder();
-		//TODO b.getLongestPaths(to);
 		Integer index = to.size() - 1;
 		Node cur;
 		HashMap<Link, Double> deltaX = new HashMap<Link, Double>();
 		for (Link z : b.getLinks().keySet()) deltaX.put(z, new Double(0));
 		
+		// The LinkedList descendingIterator method wasn't working
 		while (index >= 0) {
 			cur = to.get(index);
 			index --;
@@ -33,7 +32,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			Set<Node> shortNodes = new HashSet<Node>();
 			
 			// If there is no divergence node, move on to the next topological node
-			if (longLink.equals(shortLink)) {// || b.getL(cur).equals(b.getU(cur))) {
+			if (longLink.equals(shortLink)) {
 				continue;
 			}
 			//Else calculate divergence node
@@ -49,6 +48,8 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			//since we don't use a true linked list for our shortest paths
 			//
 			//This may be changed in future development
+			
+			// ^^^ what? This needs to be cleaned up for sure
 			do {
 				n = shortLink.getTail();
 				shortNodes.add(n);
@@ -80,15 +81,15 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			//The two paths constitute a Pair of Alternate Segments
 
 			//calculate delta h, capping at maxDelta
-			Double denominator = new Double(0.0);
+			Double denom = new Double(0.0);
 			for (Link l : lPath) {
-				denominator += l.tPrime();
+				denom += l.tPrime();
 			}
 			for (Link l : uPath) {
-				denominator += l.tPrime();
+				denom += l.tPrime();
 			}
 			Double deltaH = Double.min(maxDelta,
-					( (b.getU(cur)-b.getU(m)) - (b.getL(cur)-b.getL(m)) ) / denominator );
+					( (b.getU(cur)-b.getU(m)) - (b.getL(cur)-b.getL(m)) ) / denom );
 
 			//add delta h to all x values in pi_L
 			for (Link l : lPath) {
@@ -101,28 +102,8 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 				deltaX.put(l, deltaX.get(l) - deltaH);
 			}
 		}
-		for (Link z : new HashSet<Link>(deltaX.keySet())) z.addFlow(deltaX.get(z));
-		
-//		this.removedLinks = new ArrayList<>();
-//		for (Link l : new HashSet<Link>(b.getLinks().keySet())){
-//			if(b.getLinks().get(l)){
-//				if(b.getBushFlow(l)<=0){
-//					// Check to see if this link is needed for connectivity
-//					Boolean needed = true;
-//					for (Link i : l.getHead().getIncomingLinks()) {
-//						if (!i.equals(l) && b.getLinks().get(i)) {
-//							needed = false;
-//							break;
-//						}
-//					}
-//					if (!needed) {
-//						b.getLinks().put(l, false);	// deactivate link in bush if no flow left
-//						removedLinks.add(l);
-//					}
-//				}
-//				
-//			}
-//		}
+		for (Link z : new HashSet<Link>(deltaX.keySet())) 
+			z.addFlow(deltaX.get(z));
 	}
 
 	@Override

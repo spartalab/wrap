@@ -1,13 +1,10 @@
 package edu.utexas.wrap;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-
-import edu.utexas.wrap.Bush.DijkCases;
 
 public abstract class BushBasedOptimizer extends Optimizer {
 	
@@ -25,18 +22,14 @@ public abstract class BushBasedOptimizer extends Optimizer {
 
 			// Step i: Build min- and max-path trees
 			LinkedList<Node> to = b.getTopologicalOrder();
-			b.topoSearch(Bush.DijkCases.EQUILIBRATE_SHORTEST, to);
-			b.topoSearch(Bush.DijkCases.LONGEST, to);
+			b.topoSearch(false, to);
+			b.topoSearch(true, to);
 
 			// Step iia: Equilibrate bush
 			equilibrateBush(b, to);
 		}
-		//to = b.getTopologicalOrder();
+
 		// Step iib: Recalculate U labels
-		//b.runDijkstras(Bush.DijkCases.EQUILIBRATE_SHORTEST);
-		//b.topoSearch(Bush.DijkCases.EQUILIBRATE_SHORTEST, to);
-		//b.topoSearch(Bush.DijkCases.LONGEST, to);
-		//b.getLongestPaths(to);
 		for (Origin o : network.getOrigins()) {
 			Bush b = o.getBush();
 
@@ -53,7 +46,6 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		boolean modified = false;
 		Map<Link, Boolean> links = b.getLinks();
 		this.removedLinks = new ArrayList<>();
-		int counter = 0;
 		
 		for (Link l : new HashSet<Link>(b.getLinks().keySet())){
 			if(b.getLinks().get(l)){
@@ -69,7 +61,6 @@ public abstract class BushBasedOptimizer extends Optimizer {
 					if (!needed) {
 						b.getLinks().put(l, false);	// deactivate link in bush if no flow left
 						removedLinks.add(l);
-//						counter++;
 					}
 				}
 			}
@@ -77,38 +68,21 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		
 		LinkedList<Node> to = new LinkedList<>();
 		to = b.getTopologicalOrder();
-		b.topoSearch(Bush.DijkCases.EQUILIBRATE_SHORTEST, to);
-		b.topoSearch(Bush.DijkCases.LONGEST, to);
+		b.topoSearch(false, to);
+		b.topoSearch(true, to);
 		
 		for (Link l : new HashSet<Link>(links.keySet())) {
 			// If link is active, do nothing (removing flow should mark as inactive)
 			//Could potentially delete both incoming links to a node
 			if (!links.get(l)) {
-//				if (b.getBushFlow(l) <= 0) {
-//					// Check to see if this link is needed for connectivity
-//					Boolean needed = true;
-//					for (Link i : l.getHead().getIncomingLinks()) {
-//						if (!i.equals(l) && links.get(i)) {
-//							needed = false;
-//							break;
-//						}
-//					}
-//					if (!needed) {
-//						links.put(l, false);	// deactivate link in bush if no flow left
-//						modified = true;
-//					}
-//				}
-//			}
 
-			// Else if Ui + tij < Uj
-			if (b.getU(l.getTail()) + l.getTravelTime() < b.getU(l.getHead())) {
-				links.put(l, true);
-				if(!this.removedLinks.contains(l)) modified = true;
-//				else counter++;
+				// Else if Ui + tij < Uj
+				if (b.getU(l.getTail()) + l.getTravelTime() < b.getU(l.getHead())) {
+					links.put(l, true);
+					if(!this.removedLinks.contains(l)) modified = true;
+				}
 			}
 		}
-		}
-		
 		return modified;
 	}
 
@@ -117,7 +91,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 	    List<Double> results = new ArrayList<>();
 	    for(Origin o : network.getOrigins()) {
 	    		LinkedList<Node> to = o.getBush().getTopologicalOrder();
-	    		o.getBush().topoSearch(DijkCases.EQUILIBRATE_SHORTEST, to);
+	    		o.getBush().topoSearch(false, to);
 	    }
 
 	    results.add(network.relativeGap());

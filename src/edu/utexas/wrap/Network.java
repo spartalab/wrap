@@ -3,7 +3,6 @@ package edu.utexas.wrap;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -30,6 +29,7 @@ public class Network {
 		BufferedReader lf = new BufferedReader(new FileReader(linkFile));
 		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
 		HashMap<Integer, Double> dest = new HashMap<Integer, Double>();
+		
 		//////////////////////////////////////////////
 		// Read links and build corresponding nodes
 		//////////////////////////////////////////////
