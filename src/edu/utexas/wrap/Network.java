@@ -163,5 +163,13 @@ public class Network {
 		
 		return numerator/denominator;
 	}
+	
+	public Double Beckmann() throws Exception {
+		Double b = new Double(0);
+		for (Link l : links) {
+			b += l.tIntegral();
+		}
+		return b;
+	}
 
 }

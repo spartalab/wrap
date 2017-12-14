@@ -94,8 +94,9 @@ public abstract class BushBasedOptimizer extends Optimizer {
 	    		o.getBush().topoSearch(false, to);
 	    }
 
-	    results.add(network.relativeGap());
+	    results.add(network.AEC());
 	    results.add(network.tstt());
+	    results.add(network.Beckmann());
 		return results;
 		
 	}

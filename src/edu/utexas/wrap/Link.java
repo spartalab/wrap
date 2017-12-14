@@ -15,8 +15,6 @@ public class Link {
 	private Double power;
 	private Double flow;
 
-	
-	
 	public Link(Node tail, Node head, Double capacity, Double length, Double fftime, Double b, Double power) {
 		this.tail = tail;
 		this.head = head;
@@ -80,11 +78,13 @@ public class Link {
 	}
 	//Used to add deltaflow to current link flow
 	public void addFlow(Double deltaflow) {
+		//System.out.println(this.toString()+" add: "+Double.toString(deltaflow));
 		this.flow += deltaflow;
 		this.flow = (Double) Math.max(flow, 0.0);
 	}
 	
 	public void subtractFlow(Double deltaFlow) {
+		//System.out.println(this.toString()+" sub: "+Double.toString(deltaFlow));
 		this.flow -= deltaFlow;
 		this.flow = (Double) Math.max(flow, 0.0);
 	}
@@ -115,19 +115,19 @@ public class Link {
 		Double t = getFfTime();
 		Double v = getFlow();
 		Double c = getCapacity();
-//		if (v <= 0) {
-//			if (b == 0) {
-//				return t*a/c;
-//			}
-//			else {
-//				return new Double(0);
-//			}
-//		}
-//		Double vca = (Double) Math.pow(v/c, a);
-//		return (a*b*t*vca/v);
 		Double va = Math.pow(v, a-1.0);
 		Double ca = Math.pow(c, -a);
 		return a*va*t*b*ca;
 	}
 	
+	public Double tIntegral() throws Exception{
+		Double a = getPower();
+		Double b = getBValue();
+		Double t = getFfTime();
+		Double v = getFlow();
+		Double c = getCapacity();
+		
+		return t*v + t*b*(Math.pow(v,a+1))/((a+1)*(Math.pow(c, a)));
+		
+	}
 }

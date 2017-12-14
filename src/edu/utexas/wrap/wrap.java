@@ -2,6 +2,7 @@ package edu.utexas.wrap;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 /** wrap: an Algorithm B implementation
  * @author William E. Alexander
@@ -79,7 +80,7 @@ import java.io.IOException;
  */
 public class wrap{
 	static Integer iteration = 1;
-	static Integer maxIterations = 1000;
+	static Integer maxIterations = 25;
 	
 	public static void main(String[] args) {
 		// The very first line of code!
@@ -97,13 +98,15 @@ public class wrap{
 			
 			System.out.println("Starting " + opt.toString() + "...");
 			System.out.println();
-			System.out.println("ITERATION #\tRELGAP\t        TSTT");
+			System.out.println("ITERATION #\tAEC\t\t\tTSTT\t\t\t");
 			System.out.println("--------------------------------------------------");
 //			System.out.println(opt.getResults());
 			while (!converged()) {
 //				System.out.println("Iteration "+iteration+"\t");
 				opt.optimize();
-				System.out.println("Iteration "+iteration+"\t"+opt.getResults().get(0) + "\t" + opt.getResults().get(1));
+				List<Double> results = opt.getResults();
+				System.out.println("Iteration "+iteration+"\t"+results.get(0) + "\t" + results.get(1)
+						+"\t"+results.get(2));
 				iteration ++;
 			}
 			Long end = System.currentTimeMillis();

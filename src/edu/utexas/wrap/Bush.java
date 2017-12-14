@@ -75,8 +75,8 @@ public class Bush {
 			
 			if (nodes.get(node).getIncomingLinks().isEmpty()) continue;
 			while (!node.equals(origin.getID())) {
-				
 				Link back = qShort.get(node);
+				//.out.println(back.toString()+" dump: "+Double.toString(x));
 				addFlow(back, x);
 				links.put(back, true);
 				back.addFlow(x);
