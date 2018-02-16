@@ -14,6 +14,7 @@ public class Link {
 	private Double b;
 	private Double power;
 	private Double flow;
+	Double k = 0.0;
 
 	public Link(Node tail, Node head, Double capacity, Double length, Double fftime, Double b, Double power) {
 		this.tail = tail;
@@ -96,7 +97,7 @@ public class Link {
 	 * @throws Exception 
 	 */
 	public Double getTravelTime() throws Exception {
-		return (Double) (getFfTime()*(1.0 + getBValue()*Math.pow(getFlow()/getCapacity(), getPower())));
+		return (Double) (getFfTime()*(1.0 + getBValue()*Math.pow((getFlow()+k)/getCapacity(), getPower())));
 	}
 	
 	public String toString() {
