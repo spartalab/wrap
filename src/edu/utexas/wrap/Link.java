@@ -14,6 +14,7 @@ public class Link {
 	private Double b;
 	private Double power;
 	private Double flow;
+	public Double artDem;
 
 	public Link(Node tail, Node head, Double capacity, Double length, Double fftime, Double b, Double power) {
 		this.tail = tail;
@@ -24,6 +25,7 @@ public class Link {
 		this.b = b;
 		this.power = power;
 		this.flow = 0.0;
+		this.artDem = 1.0;
 	}
 
 	//B and power are empirical constants in the BPR function
@@ -96,7 +98,7 @@ public class Link {
 	 * @throws Exception 
 	 */
 	public Double getTravelTime() throws Exception {
-		return (Double) (getFfTime()*(1.0 + getBValue()*Math.pow(getFlow()/getCapacity(), getPower())));
+		return (Double) (getFfTime()*(1.0 + getBValue()*Math.pow(getFlow()*this.artDem/getCapacity(), getPower())));
 	}
 	
 	public String toString() {

@@ -13,11 +13,12 @@ public class Network {
 	//private Map<Integer, Node> nodes;
 	protected Set<Link> links;
 	protected Set<Origin> origins;
+	protected Map<Integer, Node> nodes;
 	
-	
-	public Network(Set<Link> links, Set<Origin> origins) {
+	public Network(Set<Link> links, Set<Origin> origins, Map<Integer, Node> nodes) {
 		setLinks(links);
 		setOrigins(origins);
+		this.nodes = nodes;
 	}
 	
 	public static Network fromFiles(File linkFile, File odMatrix) throws Exception {
@@ -104,7 +105,7 @@ public class Network {
 			if (line == null || line.trim().equals("")) break; // If the origin header is empty, we've reached the end of the list
 		}
 		of.close();
-		return new Network(links, origins);
+		return new Network(links, origins, nodes);
 		
 	}
 	
