@@ -125,11 +125,11 @@ public class wrap{
 			}
 			String legend = "Focus,Altered,Focus Indegree,Focus Outdegree,Focus cap,Focus b,Focus power,Focus FFT,Focus len,Focus v/c,";
 			legend += "Adj Indegree,Adj Outdegree,Adj cap,Adj b,Adj power,Adj FFT,Adj len,Adj v/c,Adj %%,"
-					+"SPLength F2A,SPLength A2F,SPTime F2A,SPTime A2F,SPTimeCap F2A,SPTimeCap A2F,"
+					+"SPLength F2A,SPLength A2F,SPTime F2A,SPTime A2F,SPCap F2A,SPCap A2F,"
 					+"Focus %%Change";
 			System.out.println(legend);
 			//TODO: For %change level
-			for (Double level = Double.valueOf(.5); level <= 2; level += 0.1) {
+			for (Double level = Double.valueOf(.5); level <= 2.01; level += 0.1) {
 				for (Link l : network.getLinks()) {
 					l.artDem = level;
 					opt = new AlgorithmBOptimizer(network);
