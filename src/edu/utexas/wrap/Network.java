@@ -14,11 +14,17 @@ public class Network {
 	protected Set<Link> links;
 	protected Set<Origin> origins;
 	protected Map<Integer, Node> nodes;
+	protected Graph graph;
 	
-	public Network(Set<Link> links, Set<Origin> origins, Map<Integer, Node> nodes) {
+	public Network(Set<Link> links, Set<Origin> origins, Map<Integer, Node> nodes, Graph g) {
 		setLinks(links);
 		setOrigins(origins);
 		this.nodes = nodes;
+		graph = g;
+	}
+	
+	public Graph getGraph() {
+		return new Graph(graph);
 	}
 	
 	public static Network fromFiles(File linkFile, File odMatrix) throws Exception {
@@ -30,6 +36,8 @@ public class Network {
 		BufferedReader lf = new BufferedReader(new FileReader(linkFile));
 		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
 		HashMap<Integer, Double> dest = new HashMap<Integer, Double>();
+		
+		Graph g = new Graph();
 		
 		//////////////////////////////////////////////
 		// Read links and build corresponding nodes
@@ -65,6 +73,8 @@ public class Network {
 			
 			//Construct new link and add to the list
 			Link link = new Link(nodes.get(tail), nodes.get(head), capacity, length, fftime, B, power);
+			g.addLink(link);
+			
 			nodes.get(tail).addOutgoing(link);
 			nodes.get(head).addIncoming(link);
 			links.add(link);
@@ -105,7 +115,7 @@ public class Network {
 			if (line == null || line.trim().equals("")) break; // If the origin header is empty, we've reached the end of the list
 		}
 		of.close();
-		return new Network(links, origins, nodes);
+		return new Network(links, origins, nodes, g);
 		
 	}
 	

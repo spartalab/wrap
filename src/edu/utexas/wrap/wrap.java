@@ -302,5 +302,9 @@ public class wrap{
 		}
 		return nodeL;
 	}
+	
+	public static Integer getK() {
+		return 0;
+	}
 }
 
