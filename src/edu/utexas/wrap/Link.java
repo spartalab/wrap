@@ -4,7 +4,7 @@ package edu.utexas.wrap;
  * @author rahulpatel
  *
  */
-public class Link {
+public class Link implements Priced {
 
 	private Double capacity;
 	private Node head;
@@ -131,5 +131,16 @@ public class Link {
 		
 		return t*v + t*b*(Math.pow(v,a+1))/((a+1)*(Math.pow(c, a)));
 		
+	}
+
+	@Override
+	public Double getPrice() {
+		try {
+			return getTravelTime();
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+			return 0.0;
+		}
 	}
 }

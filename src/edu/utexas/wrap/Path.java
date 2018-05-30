@@ -3,7 +3,7 @@ package edu.utexas.wrap;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Path extends LinkedList<Link> implements Comparable<Path> {
+public class Path extends LinkedList<Link> implements Comparable<Path>, Priced {
 
 	public Node node(Integer i) {
 		return this.get(i).getTail();
@@ -31,7 +31,7 @@ public class Path extends LinkedList<Link> implements Comparable<Path> {
 		for (Link l : this) {
 			list.add(l.getTail());
 		}
-		list.add(this.getLast().getHead());
+		if (this.size() > 0) list.add(this.getLast().getHead());
 		return list;
 	}
 
@@ -44,19 +44,26 @@ public class Path extends LinkedList<Link> implements Comparable<Path> {
 	@Override
 	public int compareTo(Path o) {
 		// TODO Auto-generated method stub
-		return this.cost().compareTo(o.cost());
+		return this.getPrice().compareTo(o.getPrice());
 	}
 
-	private Double cost() {
-		// TODO Auto-generated method stub
+	@Override
+	public Double getPrice() {
 		Double sum = 0.0;
 		for (Link l : this) {
 			try {
-				sum += l.getTravelTime();
+				sum += l.getPrice();
 			} catch (Exception e) {}
 		}
 		return sum;
 	}
-
+	
+	public String toString() {
+		String ret = "";
+		for (Link l : this) {
+			ret += l.toString() + ",";
+		}
+		return ret;
+	}
 
 }

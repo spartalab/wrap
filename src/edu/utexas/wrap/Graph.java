@@ -33,17 +33,23 @@ public class Graph {
 		
 		headIns.add(link);
 		tailOuts.add(link);
+		inLinks.put(head, headIns);
+		outLinks.put(tail, tailOuts);
+		
 	}
 	
 	public Set<Node> vertices(){
-		Set<Node> ret = outLinks.keySet();
-		ret.addAll(inLinks.keySet());
+		HashSet<Node> ret = new HashSet<Node>();
+		Set<Node> out = outLinks.keySet();
+		Set<Node> in = inLinks.keySet();
+		ret.addAll(in);
+		ret.addAll(out);
 		return ret;
 	}
 
 	public Set<Link> outLinks(Node u) {
 		// TODO Auto-generated method stub
-		return outLinks.get(u);
+		return outLinks.getOrDefault(u, new HashSet<Link>());
 	}
 
 	public void remove(Link link) {
@@ -53,10 +59,10 @@ public class Graph {
 	}
 
 	public void remove(Node node) {
-		for (Link link : inLinks.get(node)) {
+		for (Link link : inLinks.getOrDefault(node, new HashSet<Link>())) {
 			outLinks.get(link.getTail()).remove(link);
 		}
-		for (Link link : outLinks.get(node)) {
+		for (Link link : outLinks.getOrDefault(node, new HashSet<Link>())) {
 			inLinks.get(link.getHead()).remove(link);
 		}
 		inLinks.remove(node);

@@ -127,7 +127,7 @@ public class FibonacciHeap<E> extends AbstractQueue<Leaf<E>>{
 	}
 
 	public void decreaseKey(Leaf<E> x, Double k) throws Exception {
-		if (k > x.key) throw new Exception();
+		if (k > x.key) return; //throw new Exception();
 		x.key = k;
 		Leaf<E> y = x.parent;
 		if (y != null && x.key < y.key) {

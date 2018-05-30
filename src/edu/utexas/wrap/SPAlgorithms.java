@@ -24,7 +24,7 @@ public class SPAlgorithms {
 			Leaf<Node> u = Q.poll();
 			for (Link uv : g.outLinks(u.n)) {
 				Leaf<Node> v = Q.getLeaf(uv.getHead());
-				Double alt = uv.getTravelTime() + u.key;
+				Double alt = uv.getPrice() + u.key;
 				if (alt < v.key) {
 					Q.decreaseKey(v, alt);
 					back.put(v.n, uv);
@@ -37,7 +37,7 @@ public class SPAlgorithms {
 		while (i != origin) {
 			Link backLink = back.get(i);
 			if (backLink==null) return null;
-			path.add(backLink);
+			path.addFirst(backLink);
 			i = backLink.getTail();
 		}
 		return path;
