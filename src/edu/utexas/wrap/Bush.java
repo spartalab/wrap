@@ -148,47 +148,75 @@ public class Bush {
 		// Initialize the empty map of finalized nodes, the map of 
 		// eligible nodes to contain this origin only, and the 
 		// back-link mapping to be empty
-		Set<Integer> eligible  = new HashSet<Integer>();
-		
+//		Set<Integer> eligible  = new HashSet<Integer>();
+//		FibonacciHeap<Node> Q = new FibonacciHeap<Node>();
+//		
+//		nodeL = new HashMap<Integer, Double>();
+//		qShort = new HashMap<Integer, Link>();
+//		for (Integer l : nodes.keySet()) {
+//			nodeL.put(l, Double.POSITIVE_INFINITY);
+//			eligible.add(l);
+//			Q.add(nodes.get(l), Double.POSITIVE_INFINITY);
+//		}
+//		
+//		Q.add(origin, 0.0);
+//		
+//		// While not all nodes have been reached
+//		while (!Q.isEmpty()) {
+//			
+//			// Find eligible node of minimal nodeL
+//			Leaf<Node> leaf = Q.poll();
+//			Node tail = leaf.n;
+//			nodeL.put(tail.getID(), leaf.key);
+////			for (Integer nodeID : eligible) {
+////				Node node = nodes.get(nodeID);
+////				//Calculating shortest paths
+////					if ( tail == null || nodeL.get(node.getID()) < nodeL.get(tail.getID())) 
+////						tail = node;
+////			}			
+//			
+//			// Finalize node by adding to finalized
+//			// And remove from eligible
+//			//eligible.remove(tail.getID());
+//
+//			// Update labels and backnodes for links leaving node i
+//			for (Link link : tail.getOutgoingLinks()) {
+//				Node head = link.getHead();
+//
+//				//Shortest paths search
+//				// nodeL(j) = min( nodeL(j), nodeL(i)+c(ij) )
+//				Double Lj    = Q.getLeaf(head).key;
+//				Double Licij = Q.getLeaf(tail).key+link.getTravelTime();
+//				if (Licij < Lj) {
+//					qShort.put(head.getID(), link);
+//					Q.decreaseKey(Q.getLeaf(head), Licij);
+//				}
+//				
+//			}
+//		}
+		Map<Integer, Link> back = new HashMap<Integer, Link>();
+		FibonacciHeap<Integer> Q = new FibonacciHeap<Integer>();
 		nodeL = new HashMap<Integer, Double>();
-		qShort = new HashMap<Integer, Link>();
-		for (Integer l : nodes.keySet()) {
-			nodeL.put(l, Double.POSITIVE_INFINITY);
-			eligible.add(l);
-		}
-		nodeL.put(origin.getID(), new Double(0.0));
-		
-		// While not all nodes have been reached
-		while (!eligible.isEmpty()) {
-			
-			// Find eligible node of minimal nodeL
-			Node tail = null;
-			for (Integer nodeID : eligible) {
-				Node node = nodes.get(nodeID);
-				//Calculating shortest paths
-					if ( tail == null || nodeL.get(node.getID()) < nodeL.get(tail.getID()) ) 
-						tail = node;
-			}			
-			
-			// Finalize node by adding to finalized
-			// And remove from eligible
-			eligible.remove(tail.getID());
-
-			// Update labels and backnodes for links leaving node i
-			for (Link link : tail.getOutgoingLinks()) {
-				Node head = link.getHead();
-
-				//Shortest paths search
-				// nodeL(j) = min( nodeL(j), nodeL(i)+c(ij) )
-				Double Lj    = nodeL.get(head.getID());
-				Double Licij = nodeL.get(tail.getID())+link.getTravelTime();
-				if (Licij < Lj) {
-					nodeL.put(head.getID(), Licij);
-					qShort.put(head.getID(), link);
-				}
-				
+		for (Node n : nodes.values()) {
+			if (!n.equals(origin)) {
+				Q.add(n.getID(), Double.MAX_VALUE);
 			}
 		}
+		Q.add(origin.getID(), 0.0);
+		
+		while (!Q.isEmpty()) {
+			Leaf<Integer> u = Q.poll();
+			nodeL.put(u.n, u.key);
+			for (Link uv : nodes.get(u.n).getOutgoingLinks()) {
+				Leaf<Integer> v = Q.getLeaf(uv.getHead().getID());
+				Double alt = uv.getPrice() + u.key;
+				if (alt < v.key) {
+					Q.decreaseKey(v, alt);
+					back.put(v.n, uv);
+				}
+			}
+		}
+		qShort = back;
 	}
 	
 
