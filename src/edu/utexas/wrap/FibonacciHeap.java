@@ -123,6 +123,7 @@ public class FibonacciHeap<E> extends AbstractQueue<Leaf<E>>{
 		ignore.add(y);
 		x.child.add(y);
 		x.degree++;
+		y.parent = x;
 		y.mark = false;
 	}
 
@@ -209,7 +210,7 @@ class Leaf<E>{
 	}
 
 	public String toString() {
-		return "Leaf\t"+key.toString();
+		return "Leaf\t"+n.toString()+"\t"+key.toString();
 	}
 
 }
