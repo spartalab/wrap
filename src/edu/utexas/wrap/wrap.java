@@ -2,6 +2,7 @@ package edu.utexas.wrap;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -98,7 +99,7 @@ public class wrap{
 		try {
 			//System.out.println("Reading network...");
 			network = Network.fromFiles(links, odMatrix);
-			
+			System.setOut(new PrintStream("results.csv"));
 			//System.out.println("Initializing optimizer...");
 			Optimizer opt = new AlgorithmBOptimizer(network);
 			
