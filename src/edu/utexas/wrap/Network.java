@@ -108,7 +108,7 @@ public class Network {
 			}
 			Origin o = new Origin(old, dests); 	// Construct an origin to replace it
 			o.buildBush(links, nodes);
-			nodes.put(origID, o); // Replace the node with its origin equivalent
+			//nodes.put(origID, o); // Replace the node with its origin equivalent
 			origins.add(o);
 			
 			while (line != null && !line.startsWith("O")) line = of.readLine(); // Read in the origin header

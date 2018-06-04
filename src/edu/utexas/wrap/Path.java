@@ -11,7 +11,7 @@ public class Path extends LinkedList<Link> implements Comparable<Path>, Priced {
 
 	public Path subPath(Integer start, Integer end) {
 		Path sp = new Path();
-		for (Integer i = start; i < end; i++) {
+		for (Integer i = start; i < this.size() && i < end; i++) {
 			sp.add(get(i));
 		}
 		return sp;
@@ -64,6 +64,13 @@ public class Path extends LinkedList<Link> implements Comparable<Path>, Priced {
 			ret += l.toString() + ",";
 		}
 		return ret;
+	}
+
+	public Double getLength() {
+		// TODO Auto-generated method stub
+		Double sum = 0.0;
+		for (Link l : this) sum += l.getLength();
+		return sum;
 	}
 
 }

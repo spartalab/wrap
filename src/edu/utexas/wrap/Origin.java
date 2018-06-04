@@ -45,4 +45,8 @@ public class Origin extends Node{
 	public void buildBush(Set<Link> links, Map<Integer, Node> nodes) throws Exception {
 		bush = new Bush(this, nodes, links);
 	}
+	
+	public int hashCode() {
+		return getID();
+	}
 }

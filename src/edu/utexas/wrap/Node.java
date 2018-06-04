@@ -59,4 +59,8 @@ public class Node {
 	public String toString() {
 		return "Node " + this.ID.toString();
 	}
+	
+	public int hashCode() {
+		return getID();
+	}
 }

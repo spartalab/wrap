@@ -51,7 +51,7 @@ public class SPAlgorithms {
 		
 		for (Integer k = 1; k < K; k++) {
 		
-			for (Integer i = 0; i < A.get(k-1).size()-1; i++) {
+			for (Integer i = 0; i < A.get(k-1).size(); i++) {
 				Graph gprime = new Graph(g);
 				Node spurNode = A.get(k-1).node(i);
 				Path rootPath = A.get(k-1).subPath(0,i);

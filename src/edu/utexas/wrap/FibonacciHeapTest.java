@@ -10,7 +10,7 @@ class FibonacciHeapTest {
 	private Random random = new Random();
 	@Test
 	void test() throws Exception {
-		int numCases = 50000;
+		Integer numCases = 50000;
 		FibonacciHeap<Node> heap = new FibonacciHeap<Node>();
 		HashMap<Integer, Node> map = new HashMap<Integer, Node>();
 		random.setSeed(90210L);
@@ -32,22 +32,25 @@ class FibonacciHeapTest {
 			}
 			System.out.println("-----");
 		}
-		assertTrue(isOrdered(heap));
+		assertTrue(valid(heap,numCases));
 	}
 	
-	boolean isOrdered(FibonacciHeap<Node> heap) {
+	boolean valid(FibonacciHeap<Node> heap, Integer numCases) {
 		Leaf<Node> last = null, comp = null;
+		Integer count = 0;
 		while (!heap.isEmpty()) {
 			if (last == null) {
 				last = heap.poll();
+				count++;
 				//System.out.println(last);
 			}
 			comp = heap.poll();
+			count++;
 			//System.out.println(comp);
 			if (comp.key < last.key) return false;
 			last = comp;
 		}
-		return true;
+		return count.equals(numCases);
 	}
 
 }
