@@ -80,7 +80,7 @@ import java.util.List;
  */
 public class wrap{
 	static Integer iteration = 1;
-	static Integer maxIterations = 25;
+	static Integer maxIterations = 105;
 	
 	public static void main(String[] args) {
 		// The very first line of code!
@@ -98,15 +98,15 @@ public class wrap{
 			
 			System.out.println("Starting " + opt.toString() + "...");
 			System.out.println();
-			System.out.println("ITERATION #\tAEC\t\t\tTSTT\t\t\t");
-			System.out.println("--------------------------------------------------");
+			System.out.println("ITERATION #\tAEC\t\t\tTSTT\t\t\tBeckmann\t\tRelative Gap");
+			System.out.println("-------------------------------------------------------------------------------------------------------------");
 //			System.out.println(opt.getResults());
-			while (!converged()) {
+			while (!converged(network)) {
 //				System.out.println("Iteration "+iteration+"\t");
 				opt.optimize();
 				List<Double> results = opt.getResults();
 				System.out.println("Iteration "+iteration+"\t"+results.get(0) + "\t" + results.get(1)
-						+"\t"+results.get(2));
+						+"\t"+results.get(2)+"\t"+results.get(3));
 				iteration ++;
 			}
 			Long end = System.currentTimeMillis();
@@ -120,8 +120,14 @@ public class wrap{
 		}
 	}
 
-	private static Boolean converged() {
-		return iteration > maxIterations;
+	private static Boolean converged(Network network) {
+		try {
+			return iteration > maxIterations || network.relativeGap() < Math.pow(10, -6);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return iteration > maxIterations;
+		}
 	}
 }
 

@@ -97,6 +97,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 	    results.add(network.AEC());
 	    results.add(network.tstt());
 	    results.add(network.Beckmann());
+	    results.add(network.relativeGap());
 		return results;
 		
 	}
