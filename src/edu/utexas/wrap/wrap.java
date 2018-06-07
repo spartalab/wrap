@@ -172,9 +172,9 @@ public class wrap{
 							}
 							
 							distMean.put(m.getID(), getMean(lens));
-							distVar.put(m.getID(), getVarianceInv(lens));
+							distVar.put(m.getID(), getVariance(lens));
 							timeMean.put(m.getID(), getMean(times));
-							timeVar.put(m.getID(), getVarianceInv(times));
+							timeVar.put(m.getID(), getVariance(times));
 							
 						}
 						
@@ -385,14 +385,14 @@ public class wrap{
         return sum/data.size();
     }
 
-    static double getVarianceInv(List<Double> data) {
+    static double getVariance(List<Double> data) {
     	//if (data.size() == 1) return 0.0;
         double mean = getMean(data);
         double temp = 0;
         for(double a : data)
             temp += (a-mean)*(a-mean);
         if (temp == 0.0) return Double.MAX_VALUE; 
-        return (data.size()-1)/temp;
+        return temp/(data.size()-1);
     }
 }
 
