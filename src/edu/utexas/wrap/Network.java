@@ -107,7 +107,7 @@ public class Network {
 				}
 			}
 			Origin o = new Origin(old, dests); 	// Construct an origin to replace it
-			o.buildBush(links, nodes);
+			o.buildBush(links, nodes, 0.0);
 			//nodes.put(origID, o); // Replace the node with its origin equivalent
 			origins.add(o);
 			
@@ -153,8 +153,10 @@ public class Network {
 		}
 		
 		for (Origin o : origins) {
-			for (Node d : o.getBush().getNodes()) {
-				denominator += o.getBush().getL(d) * o.getDemand(d.getID());
+			for (Bush b : o.getBushes()) {
+				for (Node d : b.getNodes()) {
+					denominator += b.getL(d) * o.getDemand(d.getID());
+				}
 			}
 		}
 		
@@ -166,9 +168,11 @@ public class Network {
 		Double denominator = new Double(0);
 		
 		for (Origin o : origins) {
-			for (Node d : o.getBush().getNodes()) {
-				numerator -= o.getBush().getL(d) * o.getDemand(d.getID());
-				denominator += o.getDemand(d.getID());
+			for (Bush b : o.getBushes()) {
+				for (Node d : b.getNodes()) {
+					numerator -= b.getL(d) * o.getDemand(d.getID());
+					denominator += o.getDemand(d.getID());
+				}
 			}
 		}
 		

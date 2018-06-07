@@ -11,12 +11,13 @@ public class Bush {
 
 	// Bush structure
 	private final Origin origin;
+	private final Double vot;
 	private Map<Integer, Node> nodes; 
 	private Map<Link, Boolean> links; // Map from Link to its status (active/inactive)
 	
 	// Labels (for solving)
-	private Map<Integer, Double> 		nodeL;
-	private Map<Integer, Double>		nodeU;
+	private Map<Integer, Double> 	nodeL;
+	private Map<Integer, Double>	nodeU;
 	private Map<Integer, Link> 		qShort;
 	private Map<Integer, Link>		qLong;
 	private Map<Link, Double> 		flow;
@@ -24,9 +25,10 @@ public class Bush {
 	enum DijkCases {LONGEST, SHORTEST};
 
 	
-	public Bush(Origin o, Map<Integer,Node> nodes, Set<Link> links) throws Exception 
+	public Bush(Origin o, Map<Integer,Node> nodes, Set<Link> links, Double vot) throws Exception 
 	{
 		origin = o;
+		this.vot = vot;
 		
 		//Initialize flow and status maps
 		this.links = new HashMap<Link,Boolean>();
@@ -148,52 +150,6 @@ public class Bush {
 		// Initialize the empty map of finalized nodes, the map of 
 		// eligible nodes to contain this origin only, and the 
 		// back-link mapping to be empty
-//		Set<Integer> eligible  = new HashSet<Integer>();
-//		FibonacciHeap<Node> Q = new FibonacciHeap<Node>();
-//		
-//		nodeL = new HashMap<Integer, Double>();
-//		qShort = new HashMap<Integer, Link>();
-//		for (Integer l : nodes.keySet()) {
-//			nodeL.put(l, Double.POSITIVE_INFINITY);
-//			eligible.add(l);
-//			Q.add(nodes.get(l), Double.POSITIVE_INFINITY);
-//		}
-//		
-//		Q.add(origin, 0.0);
-//		
-//		// While not all nodes have been reached
-//		while (!Q.isEmpty()) {
-//			
-//			// Find eligible node of minimal nodeL
-//			Leaf<Node> leaf = Q.poll();
-//			Node tail = leaf.n;
-//			nodeL.put(tail.getID(), leaf.key);
-////			for (Integer nodeID : eligible) {
-////				Node node = nodes.get(nodeID);
-////				//Calculating shortest paths
-////					if ( tail == null || nodeL.get(node.getID()) < nodeL.get(tail.getID())) 
-////						tail = node;
-////			}			
-//			
-//			// Finalize node by adding to finalized
-//			// And remove from eligible
-//			//eligible.remove(tail.getID());
-//
-//			// Update labels and backnodes for links leaving node i
-//			for (Link link : tail.getOutgoingLinks()) {
-//				Node head = link.getHead();
-//
-//				//Shortest paths search
-//				// nodeL(j) = min( nodeL(j), nodeL(i)+c(ij) )
-//				Double Lj    = Q.getLeaf(head).key;
-//				Double Licij = Q.getLeaf(tail).key+link.getTravelTime();
-//				if (Licij < Lj) {
-//					qShort.put(head.getID(), link);
-//					Q.decreaseKey(Q.getLeaf(head), Licij);
-//				}
-//				
-//			}
-//		}
 		Map<Integer, Link> back = new HashMap<Integer, Link>();
 		FibonacciHeap<Integer> Q = new FibonacciHeap<Integer>();
 		nodeL = new HashMap<Integer, Double>();

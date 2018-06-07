@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 public abstract class BushBasedOptimizer extends Optimizer {
-	
+
 	protected List<Link> removedLinks;
 
 	public BushBasedOptimizer(Network network) {
@@ -17,36 +17,35 @@ public abstract class BushBasedOptimizer extends Optimizer {
 	public void optimize() throws Exception {
 		// A single general step iteration
 		for (Origin o : network.getOrigins()) {
+			for (Bush b : o.getBushes()) {
 
-			Bush b = o.getBush();
+				// Step i: Build min- and max-path trees
+				LinkedList<Node> to = b.getTopologicalOrder();
+				b.topoSearch(false, to);
+				b.topoSearch(true, to);
 
-			// Step i: Build min- and max-path trees
-			LinkedList<Node> to = b.getTopologicalOrder();
-			b.topoSearch(false, to);
-			b.topoSearch(true, to);
-
-			// Step iia: Equilibrate bush
-			equilibrateBush(b, to);
+				// Step iia: Equilibrate bush
+				equilibrateBush(b, to);
+			}
 		}
 
 		// Step iib: Recalculate U labels
 		for (Origin o : network.getOrigins()) {
-			Bush b = o.getBush();
-
-			// Step iii: Improve bush
-			improveBush(b);
+			for (Bush b : o.getBushes())
+				// Step iii: Improve bush
+				improveBush(b);
 		}
 		// Step iv: Reiterate if bush changed
 
 	}
 
 	protected abstract void equilibrateBush(Bush b, LinkedList<Node> to) throws Exception;
-	
+
 	protected Boolean improveBush(Bush b) throws Exception {
 		boolean modified = false;
 		Map<Link, Boolean> links = b.getLinks();
 		this.removedLinks = new ArrayList<>();
-		
+
 		for (Link l : new HashSet<Link>(b.getLinks().keySet())){
 			if(b.getLinks().get(l)){
 				if(b.getBushFlow(l)<=0){
@@ -65,12 +64,12 @@ public abstract class BushBasedOptimizer extends Optimizer {
 				}
 			}
 		}
-		
+
 		LinkedList<Node> to = new LinkedList<>();
 		to = b.getTopologicalOrder();
 		b.topoSearch(false, to);
 		b.topoSearch(true, to);
-		
+
 		for (Link l : new HashSet<Link>(links.keySet())) {
 			// If link is active, do nothing (removing flow should mark as inactive)
 			//Could potentially delete both incoming links to a node
@@ -88,18 +87,20 @@ public abstract class BushBasedOptimizer extends Optimizer {
 
 	public List<Double> getResults() throws Exception {
 		//TODO: Improve this method
-	    List<Double> results = new ArrayList<>();
-	    for(Origin o : network.getOrigins()) {
-	    		LinkedList<Node> to = o.getBush().getTopologicalOrder();
-	    		o.getBush().topoSearch(false, to);
-	    }
+		List<Double> results = new ArrayList<>();
+		for(Origin o : network.getOrigins()) {
+			for (Bush b : o.getBushes()) {
+				LinkedList<Node> to = b.getTopologicalOrder();
+				b.topoSearch(false, to);
+			}
+		}
 
-	    results.add(network.AEC());
-	    results.add(network.tstt());
-	    results.add(network.Beckmann());
-	    results.add(network.relativeGap());
+		results.add(network.AEC());
+		results.add(network.tstt());
+		results.add(network.Beckmann());
+		results.add(network.relativeGap());
 		return results;
-		
+
 	}
-	
+
 }

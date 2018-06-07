@@ -1,12 +1,15 @@
 package edu.utexas.wrap;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 public class Origin extends Node{
-	private Bush bush;
+	//private Bush bush;
+	private List<Bush> bushes;
 	private final Set<Integer> destinations;
 	private final Map<Integer, Double> destDemand;
 	
@@ -15,11 +18,12 @@ public class Origin extends Node{
 		super(self.getIncomingLinks(), self.getOutgoingLinks(), self.getID());
 		destDemand = dests;	// store demand HashMap
 		destinations = new HashSet<Integer>(dests.keySet());
+		bushes = new ArrayList<Bush>();
 	}
 
 
-	public Bush getBush() {
-		return bush;
+	public List<Bush> getBushes() {
+		return bushes;
 	}
 
 	Set<Integer> getDests() {
@@ -42,8 +46,8 @@ public class Origin extends Node{
 	 * @param nodes all nodes in the network
 	 * @throws Exception 
 	 */
-	public void buildBush(Set<Link> links, Map<Integer, Node> nodes) throws Exception {
-		bush = new Bush(this, nodes, links);
+	public void buildBush(Set<Link> links, Map<Integer, Node> nodes, Double vot) throws Exception {
+		bushes.add(new Bush(this, nodes, links, vot));
 	}
 	
 	public int hashCode() {
