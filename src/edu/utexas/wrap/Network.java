@@ -55,11 +55,12 @@ public class Network {
 			String[] cols 	= line.split("\\s+");
 			Integer tail 	= Integer.parseInt(cols[0]);
 			Integer head 	= Integer.parseInt(cols[1]);
-			Double capacity 	= Double.parseDouble(cols[2]);
+			Double capacity = Double.parseDouble(cols[2]);
 			Double length 	= Double.parseDouble(cols[3]);
 			Double fftime 	= Double.parseDouble(cols[4]);
 			Double B 		= Double.parseDouble(cols[5]);
 			Double power 	= Double.parseDouble(cols[6]);
+			Double toll		= Double.parseDouble(cols[8]);
 			
 			//Create new node(s) if new, then add to map
 			if (!nodes.containsKey(tail)) {
@@ -72,7 +73,7 @@ public class Network {
 			}
 			
 			//Construct new link and add to the list
-			Link link = new Link(nodes.get(tail), nodes.get(head), capacity, length, fftime, B, power);
+			Link link = new Link(nodes.get(tail), nodes.get(head), capacity, length, fftime, B, power, toll);
 			g.addLink(link);
 			
 			nodes.get(tail).addOutgoing(link);
@@ -150,12 +151,17 @@ public class Network {
 		Double denominator = new Double(0);
 		
 		for (Link l : links) {
-			numerator += l.getTravelTime() * l.getFlow();
+			for (Origin o : origins) {
+				for (Bush b : o.getBushes()) {
+					numerator += b.getBushFlow(l) * l.getPrice(b.getVOT());
+				}
+			}
 		}
 		
 		for (Origin o : origins) {
 			for (Bush b : o.getBushes()) {
 				for (Node d : b.getNodes()) {
+					
 					denominator += b.getL(d) * o.getDemand(d.getID());
 				}
 			}
@@ -165,6 +171,7 @@ public class Network {
 	}
 	
 	public Double AEC() throws Exception {
+		//TODO: Modify for generalized cost
 		Double numerator = tstt();
 		Double denominator = new Double(0);
 		
