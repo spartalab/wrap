@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,14 +28,16 @@ public class Network {
 		return new Graph(graph);
 	}
 	
-	public static Network fromFiles(File linkFile, File odMatrix) throws Exception {
+	public static Network fromFiles(File linkFile, File odMatrix, File VOTfile) throws Exception {
 		// Initialization
 		Map<Integer,Node> nodes = new HashMap<Integer, Node>();
 		Set<Link> links = new HashSet<Link>();
 		Set<Origin> origins = new HashSet<Origin>();
+		LinkedList<Double[]> VOTs = new LinkedList<Double[]>();
 		// Open the files for reading
 		BufferedReader lf = new BufferedReader(new FileReader(linkFile));
 		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
+		BufferedReader vf = new BufferedReader(new FileReader(VOTfile));
 		HashMap<Integer, Double> dest = new HashMap<Integer, Double>();
 		
 		Graph g = new Graph();
@@ -43,6 +46,18 @@ public class Network {
 		// Read links and build corresponding nodes
 		//////////////////////////////////////////////
 		String line;
+		vf.readLine();
+		do {
+			line = vf.readLine();
+			if (line == null) break;
+			String[] args = line.split("\t");
+			Double vot = Double.parseDouble(args[0]);
+			Double vProp = Double.parseDouble(args[1]);
+			Double[] entry = {vot, vProp};
+			VOTs.add(entry);
+		} while (!line.equals(""));
+		vf.close();
+		
 		do { //Move past headers in the file
 			line = lf.readLine();
 		} while (!line.startsWith("~"));
@@ -109,9 +124,14 @@ public class Network {
 			}
 			Origin o = new Origin(old, dests.keySet()); 	// Construct an origin to replace it
 			
-			
+			for (Double[] entry : VOTs) {
+				HashMap<Integer, Double> bushDests = new HashMap<Integer, Double>();
+				for (Integer temp : dests.keySet()) {
+					bushDests.put(temp, entry[1] * dests.get(temp));
+				}
+				o.buildBush(links, nodes, entry[0], bushDests);
+			}
 			//TODO: Handle multiple VOT classes and split destination demand accordingly
-			o.buildBush(links, nodes, 0.0);
 			//nodes.put(origID, o); // Replace the node with its origin equivalent
 			origins.add(o);
 			
