@@ -21,13 +21,14 @@ public class Bush {
 	private Map<Integer, Link> 		qShort;
 	private Map<Integer, Link>		qLong;
 	private Map<Link, Double> 		flow;
+	private final Map<Integer, Double>	destDemand;
 	
 	
-	public Bush(Origin o, Map<Integer,Node> nodes, Set<Link> links, Double vot) throws Exception 
+	public Bush(Origin o, Map<Integer,Node> nodes, Set<Link> links, Double vot, Map<Integer, Double> destDemand) throws Exception 
 	{
 		origin = o;
 		this.vot = vot;
-		
+		this.destDemand = destDemand;
 		//Initialize flow and status maps
 		this.links = new HashMap<Link,Boolean>();
 		flow	= new HashMap<Link, Double>();
@@ -263,7 +264,7 @@ public class Bush {
 	
 	Double getBushFlow(Link l) throws Exception{
 		if(flow.get(l) < 0) throw new Exception();
-		return flow.get(l);
+		return flow.getOrDefault(l, 0.0);
 	}
 
 	public Node getOrigin() {
@@ -281,6 +282,10 @@ public class Bush {
 	public Double getVOT() {
 		// TODO Auto-generated method stub
 		return vot;
+	}
+	
+	Double getDemand(Integer n) {
+		return destDemand.getOrDefault(n, 0.0);
 	}
 	
 }

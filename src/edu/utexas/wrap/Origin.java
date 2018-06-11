@@ -11,13 +11,11 @@ public class Origin extends Node{
 	//private Bush bush;
 	private List<Bush> bushes;
 	private final Set<Integer> destinations;
-	private final Map<Integer, Double> destDemand;
 	
-
-	public Origin(Node self, HashMap<Integer, Double> dests) {
+	public Origin(Node self, Set<Integer> dests) {
 		super(self.getIncomingLinks(), self.getOutgoingLinks(), self.getID());
-		destDemand = dests;	// store demand HashMap
-		destinations = new HashSet<Integer>(dests.keySet());
+//		destDemand = dests;	// store demand HashMap
+		destinations = dests;
 		bushes = new ArrayList<Bush>();
 	}
 
@@ -32,7 +30,12 @@ public class Origin extends Node{
 	}
 	
 	Double getDemand(Integer n) {
-		return destDemand.get(n);
+		Double demand = 0.0;
+		for(Bush bush : this.bushes) {
+			demand += bush.getDemand(n);
+		}
+		
+		return demand;
 	}
 	
 	/** Build the origin's initial bush using Dijkstra's algorithm
@@ -46,8 +49,8 @@ public class Origin extends Node{
 	 * @param nodes all nodes in the network
 	 * @throws Exception 
 	 */
-	public void buildBush(Set<Link> links, Map<Integer, Node> nodes, Double vot) throws Exception {
-		bushes.add(new Bush(this, nodes, links, vot));
+	public void buildBush(Set<Link> links, Map<Integer, Node> nodes, Double vot, Map<Integer, Double> destDemand) throws Exception {
+		bushes.add(new Bush(this, nodes, links, vot, destDemand));
 	}
 	
 	public int hashCode() {
