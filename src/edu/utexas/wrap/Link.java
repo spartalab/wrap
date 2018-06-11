@@ -14,9 +14,9 @@ public class Link implements Priced {
 	private Double b;
 	private Double power;
 	private Double flow;
-	public Double artDem;
+	private Double toll;
 
-	public Link(Node tail, Node head, Double capacity, Double length, Double fftime, Double b, Double power) {
+	public Link(Node tail, Node head, Double capacity, Double length, Double fftime, Double b, Double power, Double toll) {
 		this.tail = tail;
 		this.head = head;
 		this.capacity = capacity;
@@ -25,7 +25,7 @@ public class Link implements Priced {
 		this.b = b;
 		this.power = power;
 		this.flow = 0.0;
-		this.artDem = 1.0;
+		this.toll = toll;
 	}
 
 	//B and power are empirical constants in the BPR function
@@ -98,7 +98,7 @@ public class Link implements Priced {
 	 * @throws Exception 
 	 */
 	public Double getTravelTime() throws Exception {
-		return (Double) (getFfTime()*(1.0 + getBValue()*Math.pow(getFlow()*this.artDem/getCapacity(), getPower())));
+		return (Double) (getFfTime()*(1.0 + getBValue()*Math.pow(getFlow()/getCapacity(), getPower())));
 	}
 	
 	public String toString() {
@@ -134,9 +134,9 @@ public class Link implements Priced {
 	}
 
 	@Override
-	public Double getPrice() {
+	public Double getPrice(Double vot) {
 		try {
-			return getTravelTime();
+			return getTravelTime() * vot + toll;
 		}
 		catch (Exception e) {
 			e.printStackTrace();

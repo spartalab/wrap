@@ -22,8 +22,6 @@ public class Bush {
 	private Map<Integer, Link>		qLong;
 	private Map<Link, Double> 		flow;
 	
-	enum DijkCases {LONGEST, SHORTEST};
-
 	
 	public Bush(Origin o, Map<Integer,Node> nodes, Set<Link> links, Double vot) throws Exception 
 	{

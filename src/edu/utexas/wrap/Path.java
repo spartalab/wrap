@@ -5,6 +5,11 @@ import java.util.List;
 
 public class Path extends LinkedList<Link> implements Comparable<Path>, Priced {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8522817449668927596L;
+
 	public Node node(Integer i) {
 		return this.get(i).getTail();
 	}

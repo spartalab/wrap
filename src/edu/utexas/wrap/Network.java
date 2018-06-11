@@ -107,6 +107,7 @@ public class Network {
 				}
 			}
 			Origin o = new Origin(old, dests); 	// Construct an origin to replace it
+			//TODO: Handle multiple VOT classes and split destination demand accordingly
 			o.buildBush(links, nodes, 0.0);
 			//nodes.put(origID, o); // Replace the node with its origin equivalent
 			origins.add(o);
