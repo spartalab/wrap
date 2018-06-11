@@ -3,7 +3,7 @@ package edu.utexas.wrap;
 import java.util.LinkedList;
 import java.util.List;
 
-public class Path extends LinkedList<Link> implements Comparable<Path>, Priced {
+public class Path extends LinkedList<Link> implements Priced {
 
 	/**
 	 * 
@@ -47,17 +47,11 @@ public class Path extends LinkedList<Link> implements Comparable<Path>, Priced {
 	}
 
 	@Override
-	public int compareTo(Path o) {
-		// TODO Auto-generated method stub
-		return this.getPrice().compareTo(o.getPrice());
-	}
-
-	@Override
-	public Double getPrice() {
+	public Double getPrice(Double vot) {
 		Double sum = 0.0;
 		for (Link l : this) {
 			try {
-				sum += l.getPrice();
+				sum += l.getPrice(vot);
 			} catch (Exception e) {}
 		}
 		return sum;

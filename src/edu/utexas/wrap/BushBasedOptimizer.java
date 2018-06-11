@@ -76,7 +76,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 			if (!links.get(l)) {
 
 				// Else if Ui + tij < Uj
-				if (b.getU(l.getTail()) + l.getTravelTime() < b.getU(l.getHead())) {
+				if (b.getU(l.getTail()) + l.getPrice(b.getVOT()) < b.getU(l.getHead())) {
 					links.put(l, true);
 					if(!this.removedLinks.contains(l)) modified = true;
 				}

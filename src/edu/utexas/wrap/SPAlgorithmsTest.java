@@ -19,23 +19,23 @@ class SPAlgorithmsTest {
 		Node C = new Node(3);
 		Node D = new Node(4);
 		
-		Link AB = new Link(A, B, null, null, null, null, null) {
+		Link AB = new Link(A, B, null, null, null, null, null,null) {
 			@Override
 			public Double getTravelTime() { return 15.0;}
 		};
-		Link AC = new Link(A, C, null, null, null, null, null) {
+		Link AC = new Link(A, C, null, null, null, null, null, null) {
 			@Override
 			public Double getTravelTime() { return 22.0;}
 		};
-		Link BC = new Link(B, C, null, null, null, null, null) {
+		Link BC = new Link(B, C, null, null, null, null, null, null) {
 			@Override
 			public Double getTravelTime() { return 5.0;}
 		};
-		Link CD = new Link(C, D, null, null, null, null, null) {
+		Link CD = new Link(C, D, null, null, null, null, null, null) {
 			@Override
 			public Double getTravelTime() { return 6.0;}
 		};
-		Link BD = new Link(B, D, null, null, null, null, null) {
+		Link BD = new Link(B, D, null, null, null, null, null, null) {
 			@Override
 			public Double getTravelTime() { return 17.0;}
 		};

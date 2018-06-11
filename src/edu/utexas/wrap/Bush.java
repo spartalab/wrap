@@ -163,7 +163,7 @@ public class Bush {
 			nodeL.put(u.n, u.key);
 			for (Link uv : nodes.get(u.n).getOutgoingLinks()) {
 				Leaf<Integer> v = Q.getLeaf(uv.getHead().getID());
-				Double alt = uv.getPrice() + u.key;
+				Double alt = uv.getPrice(vot) + u.key;
 				if (alt < v.key) {
 					Q.decreaseKey(v, alt);
 					back.put(v.n, uv);
@@ -203,7 +203,7 @@ public class Bush {
 	
 				for (Link l : d.getOutgoingLinks()) {
 					if (links.get(l)) {
-						Double Licij = l.getTravelTime() + nodeL.get(d.getID());
+						Double Licij = l.getPrice(vot) + nodeL.get(d.getID());
 						
 						Integer id = l.getHead().getID();
 						if (Licij < nodeL.get(id)) {
@@ -230,7 +230,7 @@ public class Bush {
 
 				for (Link l : d.getOutgoingLinks()) {
 					if (links.get(l)) {
-						Double Uicij = l.getTravelTime() + nodeU.get(d.getID());
+						Double Uicij = l.getPrice(vot) + nodeU.get(d.getID());
 						Integer id = l.getHead().getID();
 						if (Uicij > nodeU.get(id)) {
 							nodeU.put(id, Uicij);
@@ -276,6 +276,11 @@ public class Bush {
 
 	public Collection<Node> getNodes() {
 		return nodes.values();
+	}
+
+	public Double getVOT() {
+		// TODO Auto-generated method stub
+		return vot;
 	}
 	
 }
