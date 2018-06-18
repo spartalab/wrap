@@ -83,7 +83,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			//calculate delta h, capping at maxDelta
 			Double denom = new Double(0.0);
 			for (Link l : lPath) {
-				denom += l.tPrime();
+				denom += l.pricePrime(b.getVOT());
 			}
 			for (Link l : uPath) {
 				denom += l.tPrime();

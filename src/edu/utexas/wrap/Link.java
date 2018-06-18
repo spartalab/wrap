@@ -132,15 +132,31 @@ public class Link implements Priced {
 		return t*v + t*b*(Math.pow(v,a+1))/((a+1)*(Math.pow(c, a)));
 		
 	}
+	
+	public Double toll() {
+		return toll;
+	}
+	
+	public Double tollPrime() {
+		return 0.0;
+	}
 
 	@Override
 	public Double getPrice(Double vot) {
 		try {
-			return getTravelTime() * vot + toll;
+			return getTravelTime() * vot + toll();
 		}
 		catch (Exception e) {
 			e.printStackTrace();
 			return 0.0;
+		}
+	}
+	
+	public Double pricePrime(Double vot) {
+		try {
+			return vot * tPrime() + tollPrime();
+		} catch (Exception e) {
+			return tollPrime();
 		}
 	}
 }
