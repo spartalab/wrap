@@ -2,6 +2,7 @@ package edu.utexas.wrap;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.List;
 
 /** wrap: an Algorithm B implementation
@@ -88,11 +89,12 @@ public class wrap{
 		
 		File links = new File(args[0]);
 		File odMatrix = new File(args[1]);
+		File votBreakdown = new File(args[2]);
 		
 		Network network;
 		try {
 			System.out.println("Reading network...");
-			network = Network.fromFiles(links, odMatrix);
+			network = Network.fromFiles(links, odMatrix, votBreakdown);
 			System.out.println("Initializing optimizer...");
 			Optimizer opt = new AlgorithmBOptimizer(network);
 			
@@ -113,6 +115,21 @@ public class wrap{
 			Double runtime = (end - start)/1000.0;
 			System.out.println("Runtime "+runtime+" seconds");
 			
+			//System.setOut(new PrintStream("VOTflow.csv"));
+			System.out.println("\r\n\r\nLink,VOT0.2 Flow,VOT0.5 Flow,VOT0.8 Flow");
+			for (Link l : network.links) {
+				Double vot0 = 0.0;
+				Double vot1 = 0.0;
+				Double vot2 = 0.0;
+				for (Origin o : network.origins) {
+					for (Bush b : o.getBushes()) {
+							vot0 += b.getBushFlow(l);
+						
+						//System.out.println(l+"\t"+b.getVOT()+"\t"+b.getBushFlow(l));
+					}
+				}
+				System.out.println(l+","+vot0+","+vot1+","+vot2);
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (Exception e) {

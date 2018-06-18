@@ -184,7 +184,7 @@ public class Network {
 			for (Bush b : o.getBushes()) {
 				for (Node d : b.getNodes()) {
 					
-					denominator += b.getL(d) * o.getDemand(d.getID());
+					denominator += b.getL(d) * b.getDemand(d.getID());
 				}
 			}
 		}

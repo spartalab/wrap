@@ -5,37 +5,40 @@ import static org.junit.jupiter.api.Assertions.*;
 import java.util.LinkedList;
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
+import org.junit.BeforeClass;
+import org.junit.jupiter.api.*;
 
 class SPAlgorithmsTest {
-
-	@Test
-	void braessTestFixed() {
+	static Graph graph;
+	static Node A,B,C,D;
+	static Link AB,AC,BC,CD,BD;
+	
+	@BeforeClass
+	void setUpBraess(){
+		graph = new Graph();
 		
-		Graph graph = new Graph();
+		A = new Node(1);
+		B = new Node(2);
+		C = new Node(3);
+		D = new Node(4);
 		
-		Node A = new Node(1);
-		Node B = new Node(2);
-		Node C = new Node(3);
-		Node D = new Node(4);
-		
-		Link AB = new Link(A, B, null, null, null, null, null,null) {
+		AB = new Link(A, B, null, null, null, null, null,null) {
 			@Override
 			public Double getTravelTime() { return 15.0;}
 		};
-		Link AC = new Link(A, C, null, null, null, null, null, null) {
+		AC = new Link(A, C, null, null, null, null, null, null) {
 			@Override
 			public Double getTravelTime() { return 22.0;}
 		};
-		Link BC = new Link(B, C, null, null, null, null, null, null) {
+		BC = new Link(B, C, null, null, null, null, null, null) {
 			@Override
 			public Double getTravelTime() { return 5.0;}
 		};
-		Link CD = new Link(C, D, null, null, null, null, null, null) {
+		CD = new Link(C, D, null, null, null, null, null, null) {
 			@Override
 			public Double getTravelTime() { return 6.0;}
 		};
-		Link BD = new Link(B, D, null, null, null, null, null, null) {
+		BD = new Link(B, D, null, null, null, null, null, null) {
 			@Override
 			public Double getTravelTime() { return 17.0;}
 		};
@@ -57,6 +60,11 @@ class SPAlgorithmsTest {
 		graph.addLink(BD);
 		graph.addLink(CD);
 		
+	}
+
+	@Test
+	void braessTestFixed() {
+		
 		List<Path> shortPath = null;
 		try {
 			shortPath = SPAlgorithms.kShortestPaths(graph, A, D,3);
@@ -70,7 +78,11 @@ class SPAlgorithmsTest {
 		
 		LinkedList<Path> p = new LinkedList<Path>();
 		p.add(abcd); p.add(acd); p.add(abd);
+		
 		if (shortPath == null || !(shortPath.equals(p))) fail("K Short Path returned "+shortPath.toString());
+		assertTrue(shortPath != null && shortPath.equals(p));
+		assertEquals(shortPath,p);
+		
 	}
 
 }

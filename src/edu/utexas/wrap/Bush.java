@@ -71,7 +71,7 @@ public class Bush {
 	 * */
 	private void dumpFlow() {
 		for (Integer node : nodes.keySet()) {
-			Double x = origin.getDemand(node);
+			Double x = getDemand(node);
 			if (x == null) x = new Double(0);
 			
 			if (nodes.get(node).getIncomingLinks().isEmpty()) continue;
