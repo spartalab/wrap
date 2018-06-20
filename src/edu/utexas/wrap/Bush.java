@@ -30,17 +30,17 @@ public class Bush {
 		this.vot = vot;
 		this.destDemand = destDemand;
 		//Initialize flow and status maps
-		this.links = new HashMap<Link,Boolean>();
-		flow	= new HashMap<Link, Double>();
+		this.links = new HashMap<Link,Boolean>(links.size(),1.0f);
+		flow	= new HashMap<Link, Double>(links.size(),1.0f);
 		for (Link l : links) {
 			this.links.put(l, false);
-			flow.put(l, new Double(0));
+			flow.put(l, 0.0);
 		}
 		this.nodes	= nodes;
-		nodeL	= new HashMap<Integer, Double>();
-		nodeU	= new HashMap<Integer, Double>();
-		qShort	= new HashMap<Integer, Link>();
-		qLong	= new HashMap<Integer, Link>();
+		nodeL	= new HashMap<Integer, Double>(nodes.size(),1.0f);
+		nodeU	= new HashMap<Integer, Double>(nodes.size(),1.0f);
+		qShort	= new HashMap<Integer, Link>(nodes.size(),1.0f);
+		qLong	= new HashMap<Integer, Link>(nodes.size(),1.0f);
 		
 		runDijkstras();
 		dumpFlow();
@@ -72,7 +72,7 @@ public class Bush {
 	private void dumpFlow() {
 		for (Integer node : nodes.keySet()) {
 			Double x = getDemand(node);
-			if (x == null) x = new Double(0);
+			if (x == null) x = 0.0;
 			
 			if (nodes.get(node).getIncomingLinks().isEmpty()) continue;
 			while (!node.equals(origin.getID())) {
@@ -149,9 +149,9 @@ public class Bush {
 		// Initialize the empty map of finalized nodes, the map of 
 		// eligible nodes to contain this origin only, and the 
 		// back-link mapping to be empty
-		Map<Integer, Link> back = new HashMap<Integer, Link>();
-		FibonacciHeap<Integer> Q = new FibonacciHeap<Integer>();
-		nodeL = new HashMap<Integer, Double>();
+		Map<Integer, Link> back = new HashMap<Integer, Link>(nodes.size(),1.0f);
+		FibonacciHeap<Integer> Q = new FibonacciHeap<Integer>(nodes.size(),1.0f);
+		nodeL = new HashMap<Integer, Double>(nodes.size(),1.0f);
 		for (Node n : nodes.values()) {
 			if (!n.equals(origin)) {
 				Q.add(n.getID(), Double.MAX_VALUE);
@@ -190,8 +190,8 @@ public class Bush {
 		//SHORTEST PATHS
 		if(!longest) {
 			//Initialize infinity-filled nodeL and empty qShort
-			qShort = new HashMap<Integer, Link>();
-			nodeL = new HashMap<Integer, Double>();
+			qShort = new HashMap<Integer, Link>(nodes.size(),1.0f);
+			nodeL = new HashMap<Integer, Double>(nodes.size(),1.0f);
 			for (Integer i : new HashSet<Integer>(nodes.keySet())) {
 				nodeL.put(i, Double.POSITIVE_INFINITY);
 			}
@@ -218,8 +218,8 @@ public class Bush {
 		
 		//LONGEST PATHS
 		else  {
-			qLong = new HashMap<Integer, Link>();
-			nodeU = new HashMap<Integer, Double>();
+			qLong = new HashMap<Integer, Link>(nodes.size(),1.0f);
+			nodeU = new HashMap<Integer, Double>(nodes.size(),1.0f);
 			for (Integer i : new HashSet<Integer>(nodes.keySet())) {
 				nodeU.put(i, Double.NEGATIVE_INFINITY);
 			}

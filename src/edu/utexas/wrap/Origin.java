@@ -1,6 +1,6 @@
 package edu.utexas.wrap;
 
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,7 +14,7 @@ public class Origin extends Node{
 		super(self.getIncomingLinks(), self.getOutgoingLinks(), self.getID());
 //		destDemand = dests;	// store demand HashMap
 		destinations = dests;
-		bushes = new ArrayList<Bush>();
+		bushes = new LinkedList<Bush>();
 	}
 
 

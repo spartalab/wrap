@@ -32,7 +32,6 @@ public class Network {
 		// Initialization
 		Map<Integer,Node> nodes = new HashMap<Integer, Node>();
 		Set<Link> links = new HashSet<Link>();
-		Set<Origin> origins = new HashSet<Origin>();
 		LinkedList<Double[]> VOTs = new LinkedList<Double[]>();
 		// Open the files for reading
 		BufferedReader lf = new BufferedReader(new FileReader(linkFile));
@@ -100,15 +99,27 @@ public class Network {
 		/////////////////////////////////////
 		// Read OD Matrix and assign flows
 		/////////////////////////////////////
+		
+		Integer origID;
+		Node old;
+		HashMap<Integer, Double> dests;
+		String[] entries;
+		Origin o;
+		String[] cols;
+		Integer destID;
+		Double demand;
+		HashMap<Integer, Double> bushDests;
+		Set<Origin> origins = new HashSet<Origin>();
+		
 		do { // Move past headers in the file
 			line = of.readLine();
 		} while (!line.startsWith("Origin"));
 		
 		while (true) { //While more Origins to read
-			Integer origID = Integer.parseInt(line.trim().split("\\s+")[1]);
-			Node old = nodes.get(origID);	// Retrieve the existing node with that ID
-			HashMap<Integer, Double> dests = new HashMap<Integer, Double>(dest);
-			String[] entries;
+			origID = Integer.parseInt(line.trim().split("\\s+")[1]);
+			old = nodes.get(origID);	// Retrieve the existing node with that ID
+			dests = new HashMap<Integer, Double>(dest);
+			
 			
 			while (true) {
 				line = of.readLine();
@@ -116,16 +127,16 @@ public class Network {
 				entries = line.trim().split(";");
 				
 				for (String entry : entries) {	// For each entry on this line
-					String[] cols = entry.split(":");	// Get its values
-					Integer destID = Integer.parseInt(cols[0].trim());
-					Double demand = Double.parseDouble(cols[1].trim());
+					cols = entry.split(":");	// Get its values
+					destID = Integer.parseInt(cols[0].trim());
+					demand = Double.parseDouble(cols[1].trim());
 					dests.put(destID, demand);
 				}
 			}
-			Origin o = new Origin(old, dests.keySet()); 	// Construct an origin to replace it
+			o = new Origin(old, dests.keySet()); 	// Construct an origin to replace it
 			
 			for (Double[] entry : VOTs) {
-				HashMap<Integer, Double> bushDests = new HashMap<Integer, Double>();
+				bushDests = new HashMap<Integer, Double>();
 				for (Integer temp : dests.keySet()) {
 					bushDests.put(temp, entry[1] * dests.get(temp));
 				}

@@ -16,11 +16,19 @@ public class FibonacciHeap<E> extends AbstractQueue<Leaf<E>>{
 	private List<Leaf<E>> rootList;
 	private Map<E,Leaf<E>> map;
 	
-	public FibonacciHeap(){
+	public FibonacciHeap() {
+		this(16,0.75f);
+	}
+	
+	public FibonacciHeap(Integer size) {
+		this(size,0.75f);
+	}
+	
+	public FibonacciHeap(Integer size, Float loadFactor){
 		n = 0;
 		min = null;
 		rootList = new LinkedList<Leaf<E>>();
-		map = new HashMap<E,Leaf<E>>();
+		map = new HashMap<E,Leaf<E>>(size,loadFactor);
 	}
 	
 	public boolean add(E node, Double d) throws Exception{
