@@ -253,12 +253,14 @@ public class Bush {
 	}
 	
 	Double getU(Node n) throws Exception {
-		if(nodeU.get(n.getID()) < 0) throw new Exception();
+		if(nodeU.get(n.getID()).equals(Double.NEGATIVE_INFINITY)) throw new UnreachableException(n,origin);
+		if(nodeU.get(n.getID()) < 0) throw new Exception("Negative longest path cost");
 		return nodeU.get(n.getID());
 	}
 	
 	Double getL(Node n) throws Exception {
-		if(nodeL.get(n.getID()) < 0) throw new Exception();
+		if(nodeU.get(n.getID()).equals(Double.POSITIVE_INFINITY)) throw new UnreachableException(n,origin);
+		if(nodeL.get(n.getID()) < 0) throw new Exception("Negative shortest path cost");
 		return nodeL.get(n.getID());
 	}
 	
