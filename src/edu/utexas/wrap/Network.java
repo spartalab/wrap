@@ -130,7 +130,7 @@ public class Network {
 					cols = entry.split(":");	// Get its values
 					destID = Integer.parseInt(cols[0].trim());
 					demand = Double.parseDouble(cols[1].trim());
-					dests.put(destID, demand);
+					if (demand > 0.0) dests.put(destID, demand);
 				}
 			}
 			o = new Origin(old, dests.keySet()); 	// Construct an origin to replace it
@@ -195,7 +195,12 @@ public class Network {
 			for (Bush b : o.getBushes()) {
 				for (Node d : b.getNodes()) {
 					
-					denominator += b.getL(d) * b.getDemand(d.getID());
+					Double demand = b.getDemand(d.getID());
+					try {
+						denominator += b.getL(d) * demand;
+					} catch (UnreachableException e) {
+						if (e.demand > 0.0)	e.printStackTrace();
+					}
 				}
 			}
 		}
@@ -211,8 +216,9 @@ public class Network {
 		for (Origin o : origins) {
 			for (Bush b : o.getBushes()) {
 				for (Node d : b.getNodes()) {
-					numerator -= b.getL(d) * o.getDemand(d.getID());
-					denominator += o.getDemand(d.getID());
+					Double demand = o.getDemand(d.getID());
+					if (demand > 0.0) numerator -= b.getL(d) * demand;
+					denominator += demand;
 				}
 			}
 		}
