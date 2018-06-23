@@ -88,6 +88,11 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			for (Link l : uPath) {
 				denom += l.pricePrime(b.getVOT());
 			}
+			to = b.getTopologicalOrder();
+			b.topoSearch(false,to);
+			b.topoSearch(true, to);
+			
+			
 			Double diffU = (b.getU(cur)-b.getU(m));
 			Double diffL = (b.getL(cur)-b.getL(m));
 			Double deltaH = Double.min(maxDelta,

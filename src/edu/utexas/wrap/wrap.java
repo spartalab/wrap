@@ -2,7 +2,6 @@ package edu.utexas.wrap;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.List;
 
 /** wrap: an Algorithm B implementation

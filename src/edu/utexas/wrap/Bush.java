@@ -255,23 +255,52 @@ public class Bush {
 		return qLong.get(n.getID());
 	}
 	
+	Path getShortestPath(Node n) {
+		Path p = new Path();
+		Link curLink = getqShort(n);
+		while (curLink != null) {
+			p.addFirst(curLink);
+			curLink = getqShort(curLink.getTail());
+		}
+		return p;
+	}
+	
+	Path getLongestPath(Node n) {
+		Path p = new Path();
+		Link curLink = getqLong(n);
+		while (curLink != null) {
+			p.addFirst(curLink);
+			curLink = getqLong(curLink.getTail());
+		}
+		return p;
+	}
+	
 	Double getU(Node n) throws Exception {
+
 		Link back = qLong.get(n.getID());
 		if (n.equals(origin)) return 0.0;
 		else if (back == null) throw new UnreachableException(n,this);
 		else return getU(back.getTail()) + back.getPrice(vot);
+
 //		if(nodeU.getOrDefault(n.getID(),Double.NEGATIVE_INFINITY).equals(Double.NEGATIVE_INFINITY)) throw new UnreachableException(n,this);
 //		if(nodeU.get(n.getID()) < 0) throw new Exception("Negative longest path cost");
 //		return nodeU.get(n.getID());
 	}
 	
 	Double getL(Node n) throws Exception {
+
 		Link back = qShort.get(n.getID());
 		if (n.equals(origin)) return 0.0;
 		else if (back == null) throw new UnreachableException(n,this);
 		else return getL(back.getTail()) + back.getPrice(vot);
+
 //		if(nodeL.getOrDefault(n.getID(),Double.POSITIVE_INFINITY).equals(Double.POSITIVE_INFINITY)) throw new UnreachableException(n,this);
 //		if(nodeL.get(n.getID()) < 0) throw new Exception("Negative shortest path cost");
+//		
+//		if(!nodeL.get(n.getID()).equals(
+//				getShortestPath(n).getPrice(vot)))
+//			throw new RuntimeException(origin.toString()+" "+n.toString()+" "+(nodeL.get(n.getID()) - getShortestPath(n).getPrice(vot)));
+//		
 //		return nodeL.get(n.getID());
 	}
 	
