@@ -82,12 +82,15 @@ public class Link implements Priced {
 	public void addFlow(Double deltaflow) {
 		//System.out.println(this.toString()+" add: "+Double.toString(deltaflow));
 		this.flow += deltaflow;
+		if (flow < 0.0) throw new RuntimeException();
+
 		this.flow = (Double) Math.max(flow, 0.0);
 	}
 	
 	public void subtractFlow(Double deltaFlow) {
 		//System.out.println(this.toString()+" sub: "+Double.toString(deltaFlow));
 		this.flow -= deltaFlow;
+		if (flow < 0.0) throw new RuntimeException();
 		this.flow = (Double) Math.max(flow, 0.0);
 	}
 
