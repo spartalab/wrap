@@ -31,9 +31,13 @@ public abstract class BushBasedOptimizer extends Optimizer {
 
 		// Step iib: Recalculate U labels
 		for (Origin o : network.getOrigins()) {
-			for (Bush b : o.getBushes())
+			for (Bush b : o.getBushes()) {
 				// Step iii: Improve bush
+				LinkedList<Node> to = b.getTopologicalOrder();
+				b.topoSearch(false, to);
+				b.topoSearch(true, to);
 				improveBush(b);
+			}
 		}
 		// Step iv: Reiterate if bush changed
 

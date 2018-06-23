@@ -193,6 +193,8 @@ public class Network {
 		
 		for (Origin o : origins) {
 			for (Bush b : o.getBushes()) {
+				LinkedList<Node> to = b.getTopologicalOrder();
+				b.topoSearch(false,to);
 				for (Node d : b.getNodes()) {
 					
 					Double demand = b.getDemand(d.getID());
@@ -215,6 +217,8 @@ public class Network {
 		
 		for (Origin o : origins) {
 			for (Bush b : o.getBushes()) {
+				LinkedList<Node> to = b.getTopologicalOrder();
+				b.topoSearch(false,to);
 				for (Node d : b.getNodes()) {
 					Double demand = o.getDemand(d.getID());
 					if (demand > 0.0) numerator -= b.getL(d) * demand;
