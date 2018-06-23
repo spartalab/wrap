@@ -51,9 +51,11 @@ public class Bush {
 	 * @param f the amount of flow to add to the link
 	 */
 	void addFlow(Link l, Double f) {
-		Double x0 = flow.get(l);
-		if (x0 != null) flow.put(l, x0 + f);
-		else flow.put(l, f);
+		if (f < 0.0) throw new RuntimeException();
+		Double x0 = flow.getOrDefault(l,0.0);
+		Double x1 = x0 + f;
+		flow.put(l, Double.max(x1,0.0));
+		if (x1<0.0) System.err.println(x1);
 	}
 	
 	/**Subtract from the bush's flow on a link and mark inactive if needed
@@ -63,7 +65,8 @@ public class Bush {
 	 */
 	void subtractFlow(Link l, Double f) {
 		Double newFlow = flow.get(l) - f;
-		flow.put(l, newFlow); // Keep track of new value of flow from bush
+		flow.put(l, Double.max(newFlow,0.0)); // Keep track of new value of flow from bush
+		if (newFlow<0.0) System.err.println(newFlow);
 	}
 	
 	/**Initialize demand flow on shortest paths
@@ -253,15 +256,23 @@ public class Bush {
 	}
 	
 	Double getU(Node n) throws Exception {
-		if(nodeU.get(n.getID()).equals(Double.NEGATIVE_INFINITY)) throw new UnreachableException(n,origin);
-		if(nodeU.get(n.getID()) < 0) throw new Exception("Negative longest path cost");
-		return nodeU.get(n.getID());
+		Link back = qLong.get(n.getID());
+		if (n.equals(origin)) return 0.0;
+		else if (back == null) throw new UnreachableException(n,this);
+		else return getU(back.getTail()) + back.getPrice(vot);
+//		if(nodeU.getOrDefault(n.getID(),Double.NEGATIVE_INFINITY).equals(Double.NEGATIVE_INFINITY)) throw new UnreachableException(n,this);
+//		if(nodeU.get(n.getID()) < 0) throw new Exception("Negative longest path cost");
+//		return nodeU.get(n.getID());
 	}
 	
 	Double getL(Node n) throws Exception {
-		if(nodeU.get(n.getID()).equals(Double.POSITIVE_INFINITY)) throw new UnreachableException(n,origin);
-		if(nodeL.get(n.getID()) < 0) throw new Exception("Negative shortest path cost");
-		return nodeL.get(n.getID());
+		Link back = qShort.get(n.getID());
+		if (n.equals(origin)) return 0.0;
+		else if (back == null) throw new UnreachableException(n,this);
+		else return getL(back.getTail()) + back.getPrice(vot);
+//		if(nodeL.getOrDefault(n.getID(),Double.POSITIVE_INFINITY).equals(Double.POSITIVE_INFINITY)) throw new UnreachableException(n,this);
+//		if(nodeL.get(n.getID()) < 0) throw new Exception("Negative shortest path cost");
+//		return nodeL.get(n.getID());
 	}
 	
 	Double getBushFlow(Link l) throws Exception{
