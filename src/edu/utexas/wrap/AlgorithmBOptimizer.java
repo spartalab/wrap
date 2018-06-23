@@ -86,10 +86,13 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 				denom += l.pricePrime(b.getVOT());
 			}
 			for (Link l : uPath) {
-				denom += l.tPrime();
+				denom += l.pricePrime(b.getVOT());
 			}
+			Double diffU = (b.getU(cur)-b.getU(m));
+			Double diffL = (b.getL(cur)-b.getL(m));
 			Double deltaH = Double.min(maxDelta,
-					( (b.getU(cur)-b.getU(m)) - (b.getL(cur)-b.getL(m)) ) / denom );
+					( diffU 
+							- diffL ) / denom );
 
 			//add delta h to all x values in pi_L
 			for (Link l : lPath) {
