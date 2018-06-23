@@ -74,11 +74,15 @@ public abstract class BushBasedOptimizer extends Optimizer {
 			// If link is active, do nothing (removing flow should mark as inactive)
 			//Could potentially delete both incoming links to a node
 			if (!links.get(l)) {
-
-				// Else if Ui + tij < Uj
-				if (b.getU(l.getTail()) + l.getPrice(b.getVOT()) < b.getU(l.getHead())) {
-					links.put(l, true);
-					if(!this.removedLinks.contains(l)) modified = true;
+				try {
+					// Else if Ui + tij < Uj
+					if (b.getU(l.getTail()) + l.getPrice(b.getVOT()) < b.getU(l.getHead())) {
+						links.put(l, true);
+						if(!this.removedLinks.contains(l)) modified = true;
+					}
+				} catch (UnreachableException e) {
+					if (e.demand > 0) e.printStackTrace();
+					continue;
 				}
 			}
 		}
@@ -95,7 +99,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 			}
 		}
 
-		results.add(network.AEC());
+		results.add(0.0); //Temporary removal of AEC calculation, TODO: repair AEC functionality
 		results.add(network.tstt());
 		results.add(network.Beckmann());
 		results.add(network.relativeGap());
