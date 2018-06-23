@@ -103,33 +103,33 @@ public class wrap{
 			System.out.println("ITERATION #\tAEC\t\t\tTSTT\t\t\tBeckmann\t\tRelative Gap");
 			System.out.println("-------------------------------------------------------------------------------------------------------------");
 //			System.out.println(opt.getResults());
-			while (!converged(network)) {
+			do {
 //				System.out.println("Iteration "+iteration+"\t");
 				opt.optimize();
 				List<Double> results = opt.getResults();
 				System.out.println("Iteration "+iteration+"\t"+results.get(0) + "\t" + results.get(1)
 						+"\t"+results.get(2)+"\t"+results.get(3));
 				iteration ++;
-			}
+			} while (!converged(network));
 			Long end = System.currentTimeMillis();
 			Double runtime = (end - start)/1000.0;
 			System.out.println("Runtime "+runtime+" seconds");
 			
 			//System.setOut(new PrintStream("VOTflow.csv"));
-			System.out.println("\r\n\r\nLink,VOT0.2 Flow,VOT0.5 Flow,VOT0.8 Flow");
-			for (Link l : network.links) {
-				Double vot0 = 0.0;
-				Double vot1 = 0.0;
-				Double vot2 = 0.0;
-				for (Origin o : network.origins) {
-					for (Bush b : o.getBushes()) {
-							vot0 += b.getBushFlow(l);
-						
-						//System.out.println(l+"\t"+b.getVOT()+"\t"+b.getBushFlow(l));
-					}
-				}
-				System.out.println(l+","+vot0+","+vot1+","+vot2);
-			}
+//			System.out.println("\r\n\r\nLink,VOT0.2 Flow,VOT0.5 Flow,VOT0.8 Flow");
+//			for (Link l : network.links) {
+//				Double vot0 = 0.0;
+//				Double vot1 = 0.0;
+//				Double vot2 = 0.0;
+//				for (Origin o : network.origins) {
+//					for (Bush b : o.getBushes()) {
+//							vot0 += b.getBushFlow(l);
+//						
+//						//System.out.println(l+"\t"+b.getVOT()+"\t"+b.getBushFlow(l));
+//					}
+//				}
+//				System.out.println(l+","+vot0+","+vot1+","+vot2);
+//			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
