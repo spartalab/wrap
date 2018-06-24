@@ -16,7 +16,7 @@ public class Bush {
 	private Map<Link, Boolean> links; // Map from Link to its status (active/inactive)
 	
 	// Labels (for solving)
-	private Map<Integer, Double> 	nodeL;
+//	private Map<Integer, Double> 	nodeL;
 	private Map<Integer, Double>	nodeU;
 	private Map<Integer, Link> 		qShort;
 	private Map<Integer, Link>		qLong;
@@ -37,7 +37,7 @@ public class Bush {
 			flow.put(l, 0.0);
 		}
 		this.nodes	= nodes;
-		nodeL	= new HashMap<Integer, Double>(nodes.size(),1.0f);
+//		nodeL	= new HashMap<Integer, Double>(nodes.size(),1.0f);
 		nodeU	= new HashMap<Integer, Double>(nodes.size(),1.0f);
 		qShort	= new HashMap<Integer, Link>(nodes.size(),1.0f);
 		qLong	= new HashMap<Integer, Link>(nodes.size(),1.0f);
@@ -154,7 +154,7 @@ public class Bush {
 		// back-link mapping to be empty
 		Map<Integer, Link> back = new HashMap<Integer, Link>(nodes.size(),1.0f);
 		FibonacciHeap<Integer> Q = new FibonacciHeap<Integer>(nodes.size(),1.0f);
-		nodeL = new HashMap<Integer, Double>(nodes.size(),1.0f);
+//		nodeL = new HashMap<Integer, Double>(nodes.size(),1.0f);
 		for (Node n : nodes.values()) {
 			if (!n.equals(origin)) {
 				Q.add(n.getID(), Double.MAX_VALUE);
@@ -164,7 +164,7 @@ public class Bush {
 		
 		while (!Q.isEmpty()) {
 			Leaf<Integer> u = Q.poll();
-			nodeL.put(u.n, u.key);
+//			nodeL.put(u.n, u.key);
 			for (Link uv : nodes.get(u.n).getOutgoingLinks()) {
 				Leaf<Integer> v = Q.getLeaf(uv.getHead().getID());
 				Double alt = uv.getPrice(vot) + u.key;
@@ -193,25 +193,26 @@ public class Bush {
 		//SHORTEST PATHS
 		if(!longest) {
 			//Initialize infinity-filled nodeL and empty qShort
-			qShort = new HashMap<Integer, Link>(nodes.size(),1.0f);
-			nodeL = new HashMap<Integer, Double>(nodes.size(),1.0f);
-			for (Integer i : new HashSet<Integer>(nodes.keySet())) {
-				nodeL.put(i, Double.POSITIVE_INFINITY);
-			}
-			nodeL.put(origin.getID(), 0.0);
+//			qShort = new HashMap<Integer, Link>(nodes.size(),1.0f);
+//			nodeL = new HashMap<Integer, Double>(nodes.size(),1.0f);
+//			for (Integer i : new HashSet<Integer>(nodes.keySet())) {
+//				nodeL.put(i, Double.POSITIVE_INFINITY);
+//			}
+//			nodeL.put(origin.getID(), 0.0);
 			
 			for (Node d : to) {
 				// Should only occur if there's a node with no incoming links
-				if (nodeL.get(d.getID()) == Double.POSITIVE_INFINITY)
-					continue;
+//				if (nodeL.get(d.getID()) == Double.POSITIVE_INFINITY)
+//					continue;
 	
 				for (Link l : d.getOutgoingLinks()) {
 					if (links.get(l)) {
-						Double Licij = l.getPrice(vot) + nodeL.get(d.getID());
+						Double Licij = l.getPrice(vot) + getL(d);
 						
+						Node head = l.getHead();
 						Integer id = l.getHead().getID();
-						if (Licij < nodeL.get(id)) {
-							nodeL.put(id, Licij);
+						if (qShort.get(id) == null || Licij < getL(head)) {
+//							nodeL.put(id, Licij);
 							qShort.put(id, l);
 						}
 					}
