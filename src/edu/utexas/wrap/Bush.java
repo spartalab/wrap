@@ -16,8 +16,6 @@ public class Bush {
 	private Map<Link, Boolean> links; // Map from Link to its status (active/inactive)
 	
 	// Labels (for solving)
-//	private Map<Integer, Double> 	nodeL;
-	private Map<Integer, Double>	nodeU;
 	private Map<Integer, Link> 		qShort;
 	private Map<Integer, Link>		qLong;
 	private Map<Link, Double> 		flow;
@@ -37,8 +35,6 @@ public class Bush {
 			flow.put(l, 0.0);
 		}
 		this.nodes	= nodes;
-//		nodeL	= new HashMap<Integer, Double>(nodes.size(),1.0f);
-		nodeU	= new HashMap<Integer, Double>(nodes.size(),1.0f);
 		qShort	= new HashMap<Integer, Link>(nodes.size(),1.0f);
 		qLong	= new HashMap<Integer, Link>(nodes.size(),1.0f);
 		
@@ -82,7 +78,7 @@ public class Bush {
 				Link back = qShort.get(node);
 				//.out.println(back.toString()+" dump: "+Double.toString(x));
 				addFlow(back, x);
-				links.put(back, true);
+				markActive(back);
 				back.addFlow(x);
 				node = back.getTail().getID();
 			} 
@@ -101,7 +97,7 @@ public class Bush {
 	public LinkedList<Node> getTopologicalOrder() throws Exception {
 		// Start with a set of all bush edges
 		Set<Link> currentLinks = new HashSet<Link>();
-		for (Link l : links.keySet()) if (links.get(l)) currentLinks.add(l);
+		for (Link l : links.keySet()) if (isActive(l)) currentLinks.add(l);
 		
 		LinkedList<Node> to = new LinkedList<Node>();
 		LinkedList<Node> S = new LinkedList<Node>();
@@ -154,7 +150,6 @@ public class Bush {
 		// back-link mapping to be empty
 		Map<Integer, Link> back = new HashMap<Integer, Link>(nodes.size(),1.0f);
 		FibonacciHeap<Integer> Q = new FibonacciHeap<Integer>(nodes.size(),1.0f);
-//		nodeL = new HashMap<Integer, Double>(nodes.size(),1.0f);
 		for (Node n : nodes.values()) {
 			if (!n.equals(origin)) {
 				Q.add(n.getID(), Double.MAX_VALUE);
@@ -193,26 +188,18 @@ public class Bush {
 		//SHORTEST PATHS
 		if(!longest) {
 			//Initialize infinity-filled nodeL and empty qShort
-//			qShort = new HashMap<Integer, Link>(nodes.size(),1.0f);
-//			nodeL = new HashMap<Integer, Double>(nodes.size(),1.0f);
-//			for (Integer i : new HashSet<Integer>(nodes.keySet())) {
-//				nodeL.put(i, Double.POSITIVE_INFINITY);
-//			}
-//			nodeL.put(origin.getID(), 0.0);
-			
 			for (Node d : to) {
 				// Should only occur if there's a node with no incoming links
 //				if (nodeL.get(d.getID()) == Double.POSITIVE_INFINITY)
 //					continue;
 	
 				for (Link l : d.getOutgoingLinks()) {
-					if (links.get(l)) {
+					if (isActive(l)) {
 						Double Licij = l.getPrice(vot) + getL(d);
 						
 						Node head = l.getHead();
 						Integer id = l.getHead().getID();
 						if (qShort.get(id) == null || Licij < getL(head)) {
-//							nodeL.put(id, Licij);
 							qShort.put(id, l);
 						}
 					}
@@ -223,22 +210,13 @@ public class Bush {
 		//LONGEST PATHS
 		else  {
 			qLong = new HashMap<Integer, Link>(nodes.size(),1.0f);
-			nodeU = new HashMap<Integer, Double>(nodes.size(),1.0f);
-			for (Integer i : new HashSet<Integer>(nodes.keySet())) {
-				nodeU.put(i, Double.NEGATIVE_INFINITY);
-			}
-			nodeU.put(origin.getID(), 0.0);
-			
 			for (Node d : to) {
-				if (nodeU.get(d.getID()) == Double.NEGATIVE_INFINITY)
-					continue;
-
 				for (Link l : d.getOutgoingLinks()) {
-					if (links.get(l)) {
-						Double Uicij = l.getPrice(vot) + nodeU.get(d.getID());
+					if (isActive(l)) {
+						Double Uicij = l.getPrice(vot) + getU(d);
+						Node head = l.getHead();
 						Integer id = l.getHead().getID();
-						if (Uicij > nodeU.get(id)) {
-							nodeU.put(id, Uicij);
+						if (qLong.get(id) == null || Uicij > getU(head)) {
 							qLong.put(id, l);
 						}
 					}
@@ -283,9 +261,6 @@ public class Bush {
 		else if (back == null) throw new UnreachableException(n,this);
 		else return getU(back.getTail()) + back.getPrice(vot);
 
-//		if(nodeU.getOrDefault(n.getID(),Double.NEGATIVE_INFINITY).equals(Double.NEGATIVE_INFINITY)) throw new UnreachableException(n,this);
-//		if(nodeU.get(n.getID()) < 0) throw new Exception("Negative longest path cost");
-//		return nodeU.get(n.getID());
 	}
 	
 	Double getL(Node n) throws Exception {
@@ -294,15 +269,6 @@ public class Bush {
 		if (n.equals(origin)) return 0.0;
 		else if (back == null) throw new UnreachableException(n,this);
 		else return getL(back.getTail()) + back.getPrice(vot);
-
-//		if(nodeL.getOrDefault(n.getID(),Double.POSITIVE_INFINITY).equals(Double.POSITIVE_INFINITY)) throw new UnreachableException(n,this);
-//		if(nodeL.get(n.getID()) < 0) throw new Exception("Negative shortest path cost");
-//		
-//		if(!nodeL.get(n.getID()).equals(
-//				getShortestPath(n).getPrice(vot)))
-//			throw new RuntimeException(origin.toString()+" "+n.toString()+" "+(nodeL.get(n.getID()) - getShortestPath(n).getPrice(vot)));
-//		
-//		return nodeL.get(n.getID());
 	}
 	
 	Double getBushFlow(Link l) throws Exception{
@@ -323,7 +289,6 @@ public class Bush {
 	}
 
 	public Double getVOT() {
-		// TODO Auto-generated method stub
 		return vot;
 	}
 	
@@ -331,4 +296,19 @@ public class Bush {
 		return destDemand.getOrDefault(n, 0.0);
 	}
 	
+	public String toString() {
+		return "Bush "+origin.getID()+"-VOT="+vot;
+	}
+	
+	public void markActive(Link l) {
+		links.put(l, true);
+	}
+	
+	public void markInactive(Link l) {
+		links.put(l, false);
+	}
+	
+	public boolean isActive(Link l) {
+		return links.get(l);
+	}
 }
