@@ -2,13 +2,11 @@ package edu.utexas.wrap;
 
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 public abstract class BushBasedOptimizer extends Optimizer {
 
-	protected List<Link> removedLinks;
 
 	public BushBasedOptimizer(Network network) {
 		super(network);
@@ -20,12 +18,11 @@ public abstract class BushBasedOptimizer extends Optimizer {
 			for (Bush b : o.getBushes()) {
 
 				// Step i: Build min- and max-path trees
-				LinkedList<Node> to = b.getTopologicalOrder();
-				b.topoSearch(false, to);
-				b.topoSearch(true, to);
+				b.topoSearch(false);
+				b.topoSearch(true);
 
 				// Step iia: Equilibrate bush
-				equilibrateBush(b, to);
+				equilibrateBush(b);
 			}
 		}
 
@@ -33,9 +30,8 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		for (Origin o : network.getOrigins()) {
 			for (Bush b : o.getBushes()) {
 				// Step iii: Improve bush
-				LinkedList<Node> to = b.getTopologicalOrder();
-				b.topoSearch(false, to);
-				b.topoSearch(true, to);
+				b.topoSearch(false);
+				b.topoSearch(true);
 				improveBush(b);
 			}
 		}
@@ -43,53 +39,55 @@ public abstract class BushBasedOptimizer extends Optimizer {
 
 	}
 
-	protected abstract void equilibrateBush(Bush b, LinkedList<Node> to) throws Exception;
+	protected abstract void equilibrateBush(Bush b) throws Exception;
 
 	protected Boolean improveBush(Bush b) throws Exception {
 		boolean modified = false;
-		Map<Link, Boolean> links = b.getLinks();
-		this.removedLinks = new ArrayList<>();
+		Set<Link> usedLinks = new HashSet<Link>(b.getLinks());
+		Set<Link> unusedLinks = new HashSet<Link>(network.getLinks());
+		unusedLinks.removeAll(usedLinks);
+		Set<Link> removedLinks = new HashSet<Link>();
 
-		for (Link l : new HashSet<Link>(b.getLinks().keySet())){
-			if(b.getLinks().get(l)){
-				if(b.getBushFlow(l)<=0){
-					// Check to see if this link is needed for connectivity
-					Boolean needed = true;
-					for (Link i : l.getHead().getIncomingLinks()) {
-						if (!i.equals(l) && b.getLinks().get(i) && !removedLinks.contains(i)) {
-							needed = false;
-							break;
-						}
-					}
-					if (!needed) {
-						b.getLinks().put(l, false);	// deactivate link in bush if no flow left
-						removedLinks.add(l);
+		for (Link l : new HashSet<Link>(usedLinks)){
+			if(b.getBushFlow(l)<=0){
+				// Check to see if this link is needed for connectivity
+				Boolean needed = true;
+				for (Link i : l.getHead().getIncomingLinks()) {
+					if (!i.equals(l) && usedLinks.contains(i) && !removedLinks.contains(i)) {
+						needed = false;
+						break;
 					}
 				}
+				if (!needed) {
+					usedLinks.remove(l);	// deactivate link in bush if no flow left
+					unusedLinks.add(l);
+					removedLinks.add(l);
+				}
 			}
+
 		}
+		b.setActive(usedLinks);
+		
+		b.topoSearch(false);
+		b.topoSearch(true);
 
-		LinkedList<Node> to = new LinkedList<>();
-		to = b.getTopologicalOrder();
-		b.topoSearch(false, to);
-		b.topoSearch(true, to);
-
-		for (Link l : new HashSet<Link>(links.keySet())) {
+		for (Link l : new HashSet<Link>(unusedLinks)) {
 			// If link is active, do nothing (removing flow should mark as inactive)
 			//Could potentially delete both incoming links to a node
-			if (!links.get(l)) {
-				try {
-					// Else if Ui + tij < Uj
-					if (b.getU(l.getTail()) + l.getPrice(b.getVOT()) < b.getU(l.getHead())) {
-						links.put(l, true);
-						if(!this.removedLinks.contains(l)) modified = true;
-					}
-				} catch (UnreachableException e) {
-					if (e.demand > 0) e.printStackTrace();
-					continue;
+			try {
+				// Else if Ui + tij < Uj
+				if (b.getU(l.getTail()) + l.getPrice(b.getVOT()) < b.getU(l.getHead())) {
+					usedLinks.add(l);
+					unusedLinks.remove(l);
+					if(!removedLinks.contains(l)) modified = true;
 				}
+			} catch (UnreachableException e) {
+				if (e.demand > 0) e.printStackTrace();
+				continue;
 			}
+
 		}
+		b.setActive(usedLinks);
 		return modified;
 	}
 
@@ -98,8 +96,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		List<Double> results = new ArrayList<>();
 		for(Origin o : network.getOrigins()) {
 			for (Bush b : o.getBushes()) {
-				LinkedList<Node> to = b.getTopologicalOrder();
-				b.topoSearch(false, to);
+				b.topoSearch(false);
 			}
 		}
 

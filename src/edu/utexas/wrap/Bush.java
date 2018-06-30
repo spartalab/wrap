@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -13,12 +14,13 @@ public class Bush {
 	private final Origin origin;
 	private final Double vot;
 	private Map<Integer, Node> nodes; 
-	private Map<Link, Boolean> links; // Map from Link to its status (active/inactive)
+	private Set<Link> links; // Map from Link to its status (active/inactive)
 	
 	// Labels (for solving)
 	private Map<Integer, Link> 		qShort;
 	private Map<Integer, Link>		qLong;
 	private Map<Link, Double> 		flow;
+	private List<Node>				topoOrder;
 	private final Map<Integer, Double>	destDemand;
 	
 	
@@ -28,10 +30,10 @@ public class Bush {
 		this.vot = vot;
 		this.destDemand = destDemand;
 		//Initialize flow and status maps
-		this.links = new HashMap<Link,Boolean>(links.size(),1.0f);
+		this.links = new HashSet<Link>(links.size(),1.0f);
 		flow	= new HashMap<Link, Double>(links.size(),1.0f);
 		for (Link l : links) {
-			this.links.put(l, false);
+			this.links.remove(l);
 			flow.put(l, 0.0);
 		}
 		this.nodes	= nodes;
@@ -94,10 +96,18 @@ public class Bush {
 	 * @return a topological ordering of this bush's nodes
 	 * @throws Exception 
 	 */
-	public LinkedList<Node> getTopologicalOrder() throws Exception {
+	public List<Node> getTopologicalOrder() throws Exception {
+		return (topoOrder != null) ?  topoOrder :  generateTopoOrder();
+	}
+
+	/**
+	 * @return
+	 * @throws Exception
+	 */
+	private List<Node> generateTopoOrder() throws Exception {
 		// Start with a set of all bush edges
 		Set<Link> currentLinks = new HashSet<Link>();
-		for (Link l : links.keySet()) if (isActive(l)) currentLinks.add(l);
+		for (Link l : links) if (isActive(l)) currentLinks.add(l);
 		
 		LinkedList<Node> to = new LinkedList<Node>();
 		LinkedList<Node> S = new LinkedList<Node>();
@@ -182,9 +192,9 @@ public class Bush {
 	 * @param to a topological ordering of the nodes
 	 * @throws Exception if the link performance functions are unavailable
 	 */
-	public void topoSearch(Boolean longest, LinkedList<Node> to) throws Exception {
+	public void topoSearch(Boolean longest) throws Exception {
 		// Initialize all nodeU values as 0 and all nodes as not visited
-
+		List<Node> to = getTopologicalOrder();
 		//SHORTEST PATHS
 		if(!longest) {
 			//Initialize infinity-filled nodeL and empty qShort
@@ -280,7 +290,7 @@ public class Bush {
 		return origin;
 	}
 	
-	public Map<Link, Boolean> getLinks(){
+	public Set<Link> getLinks(){
 		return links;
 	}
 
@@ -301,14 +311,20 @@ public class Bush {
 	}
 	
 	public void markActive(Link l) {
-		links.put(l, true);
+		if (links.add(l)) topoOrder = null;
 	}
 	
 	public void markInactive(Link l) {
-		links.put(l, false);
+		if (links.remove(l)) topoOrder = null;;
 	}
 	
 	public boolean isActive(Link l) {
-		return links.get(l);
+		return links.contains(l);
+	}
+	
+	public void setActive(Set<Link> m) {
+		links = m;
+		topoOrder = null;
+
 	}
 }
