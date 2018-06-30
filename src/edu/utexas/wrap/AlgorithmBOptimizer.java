@@ -3,6 +3,7 @@ package edu.utexas.wrap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 
 public class AlgorithmBOptimizer extends BushBasedOptimizer{
@@ -16,11 +17,12 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 	 * @param to the bush's topological order
 	 * @throws Exception if there was negative bush flow
 	 */
-	protected void equilibrateBush(Bush b, LinkedList<Node> to) throws Exception {
+	protected void equilibrateBush(Bush b) throws Exception {
+		List<Node> to = b.getTopologicalOrder();
 		Integer index = to.size() - 1;
 		Node cur;
 		HashMap<Link, Double> deltaX = new HashMap<Link, Double>();
-		for (Link z : b.getLinks().keySet()) deltaX.put(z, new Double(0));
+		for (Link z : b.getLinks()) deltaX.put(z, new Double(0));
 		
 		// The LinkedList descendingIterator method wasn't working
 		while (index >= 0) {
@@ -88,9 +90,8 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			for (Link l : uPath) {
 				denom += l.pricePrime(b.getVOT());
 			}
-			to = b.getTopologicalOrder();
-			b.topoSearch(false,to);
-			b.topoSearch(true, to);
+			b.topoSearch(false);
+			b.topoSearch(true);
 			
 			
 			Double diffU = (b.getU(cur)-b.getU(m));
@@ -120,4 +121,5 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 	public String toString() {
 		return "Algorithm B Optimizer";
 	}
+
 }
