@@ -22,7 +22,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 		Integer index = to.size() - 1;
 		Node cur;
 		HashMap<Link, Double> deltaX = new HashMap<Link, Double>();
-		for (Link z : b.getLinks()) deltaX.put(z, new Double(0));
+		for (Link z : b.getLinks()) deltaX.put(z, 0.0);
 		
 		// The LinkedList descendingIterator method wasn't working
 		while (index >= 0) {
@@ -83,7 +83,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			//The two paths constitute a Pair of Alternate Segments
 
 			//calculate delta h, capping at maxDelta
-			Double denom = new Double(0.0);
+			Double denom = 0.0;
 			for (Link l : lPath) {
 				denom += l.pricePrime(b.getVOT());
 			}
