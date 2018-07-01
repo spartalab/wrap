@@ -1,8 +1,6 @@
 package edu.utexas.wrap;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 public abstract class BushBasedOptimizer extends Optimizer {
@@ -23,18 +21,19 @@ public abstract class BushBasedOptimizer extends Optimizer {
 
 				// Step iia: Equilibrate bush
 				equilibrateBush(b);
+				improveBush(b);
 			}
 		}
 
 		// Step iib: Recalculate U labels
-		for (Origin o : network.getOrigins()) {
-			for (Bush b : o.getBushes()) {
-				// Step iii: Improve bush
-				b.topoSearch(false);
-				b.topoSearch(true);
-				improveBush(b);
-			}
-		}
+//		for (Origin o : network.getOrigins()) {
+//			for (Bush b : o.getBushes()) {
+//				// Step iii: Improve bush
+//				b.topoSearch(false);
+//				b.topoSearch(true);
+//				improveBush(b);
+//			}
+//		}
 		// Step iv: Reiterate if bush changed
 
 	}
@@ -90,22 +89,4 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		b.setActive(usedLinks);
 		return modified;
 	}
-
-	public List<Double> getResults() throws Exception {
-		//TODO: Improve this method
-		List<Double> results = new ArrayList<>();
-		for(Origin o : network.getOrigins()) {
-			for (Bush b : o.getBushes()) {
-				b.topoSearch(false);
-			}
-		}
-
-		results.add(0.0); //Temporary removal of AEC calculation, TODO: repair AEC functionality
-		results.add(network.tstt());
-		results.add(network.Beckmann());
-		results.add(network.relativeGap());
-		return results;
-
-	}
-
 }

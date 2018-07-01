@@ -2,7 +2,6 @@ package edu.utexas.wrap;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 /** wrap: an Algorithm B implementation
  * @author William E. Alexander
@@ -80,7 +79,7 @@ import java.util.List;
  */
 public class wrap{
 	static Integer iteration = 1;
-	static Integer maxIterations = 105;
+	static Integer maxIterations = 160;
 	
 	public static void main(String[] args) {
 		// The very first line of code!
@@ -101,13 +100,9 @@ public class wrap{
 			System.out.println();
 			System.out.println("ITERATION #\tAEC\t\t\tTSTT\t\t\tBeckmann\t\tRelative Gap");
 			System.out.println("-------------------------------------------------------------------------------------------------------------");
-//			System.out.println(opt.getResults());
 			do {
-//				System.out.println("Iteration "+iteration+"\t");
 				opt.optimize();
-				List<Double> results = opt.getResults();
-				System.out.println("Iteration "+iteration+"\t"+results.get(0) + "\t" + results.get(1)
-						+"\t"+results.get(2)+"\t"+results.get(3));
+				System.out.println("Iteration "+iteration+"\t"+network.toString());
 				iteration ++;
 			} while (!converged(network));
 			Long end = System.currentTimeMillis();

@@ -79,11 +79,11 @@ public class Network {
 			//Create new node(s) if new, then add to map
 			if (!nodes.containsKey(tail)) {
 				nodes.put(tail,new Node(tail));
-				dest.put(tail, new Double(0));
+				dest.put(tail, 0.0);
 			}
 			if (!nodes.containsKey(head)) {
 				nodes.put(head,new Node(head));
-				dest.put(head,new Double(0));
+				dest.put(head,0.0);
 			}
 			
 			//Construct new link and add to the list
@@ -180,8 +180,8 @@ public class Network {
 	}
 	
 	public Double relativeGap() throws Exception {
-		Double numerator = new Double(0);
-		Double denominator = new Double(0);
+		Double numerator = 0.0;
+		Double denominator = 0.0;
 		
 		for (Link l : links) {
 			for (Origin o : origins) {
@@ -211,29 +211,55 @@ public class Network {
 	
 	public Double AEC() throws Exception {
 		//TODO: Modify for generalized cost
-		Double numerator = tstt();
-		Double denominator = new Double(0);
-		
-		for (Origin o : origins) {
-			for (Bush b : o.getBushes()) {
-				b.topoSearch(false);
-				for (Node d : b.getNodes()) {
-					Double demand = o.getDemand(d.getID());
-					if (demand > 0.0) numerator -= b.getL(d) * demand;
-					denominator += demand;
-				}
-			}
-		}
-		
-		return numerator/denominator;
+		throw new Exception();
+//		Double numerator = tstt();
+//		Double denominator = 0.0;
+//		
+//		for (Origin o : origins) {
+//			for (Bush b : o.getBushes()) {
+//				b.topoSearch(false);
+//				for (Node d : b.getNodes()) {
+//					Double demand = o.getDemand(d.getID());
+//					if (demand > 0.0) numerator -= b.getL(d) * demand;
+//					denominator += demand;
+//				}
+//			}
+//		}
+//		
+//		return numerator/denominator;
 	}
 	
 	public Double Beckmann() throws Exception {
-		Double b = new Double(0);
+		Double b = 0.0;
 		for (Link l : links) {
 			b += l.tIntegral();
 		}
 		return b;
+	}
+	
+	public String toString() {
+		String out = "";
+		try {
+			out += String.format("%6.10E", AEC()) + "\t";
+		} catch (Exception e) {
+			out += "Error           \t";
+		}
+		try {
+			out += String.format("%6.10E",tstt()) + "\t";
+		} catch (Exception e) {
+			out += "Error           \t";
+		}
+		try {
+			out += String.format("%6.10E",Beckmann()) + "\t";
+		} catch (Exception e) {
+			out += "Error           \t";
+		}
+		try {
+			out += String.format("%6.10E",relativeGap());
+		} catch (Exception e) {
+			out += "Error           ";
+		}
+		return out;
 	}
 
 }

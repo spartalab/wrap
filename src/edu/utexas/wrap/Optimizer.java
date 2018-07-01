@@ -1,7 +1,5 @@
 package edu.utexas.wrap;
 
-import java.util.List;
-
 public abstract class Optimizer {
 
 	protected Network network;
@@ -19,9 +17,7 @@ public abstract class Optimizer {
 	}
 
 	public abstract void optimize() throws Exception;
-	
-	public abstract List<Double> getResults() throws Exception;
-	
+		
 	public abstract String toString();
 		
 }
