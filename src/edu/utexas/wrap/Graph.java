@@ -48,12 +48,10 @@ public class Graph {
 	}
 
 	public Set<Link> outLinks(Node u) {
-		// TODO Auto-generated method stub
 		return outLinks.getOrDefault(u, new HashSet<Link>());
 	}
 
 	public void remove(Link link) {
-		// TODO Auto-generated method stub
 		outLinks.get(link.getTail()).remove(link);
 		inLinks.get(link.getHead()).remove(link);
 	}

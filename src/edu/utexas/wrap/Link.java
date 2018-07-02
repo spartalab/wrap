@@ -6,15 +6,16 @@ package edu.utexas.wrap;
  */
 public class Link implements Priced {
 
-	private Double capacity;
-	private Node head;
-	private Node tail;
-	private Double length;
-	private Double fftime;
-	private Double b;
-	private Double power;
+	private final Double capacity;
+	private final Node head;
+	private final Node tail;
+	private final Double length;
+	private final Double fftime;
+	private final Double b;
+	private final Double power;
 	private Double flow;
 	private Double toll;
+	private Double cachedTT = null;
 
 	public Link(Node tail, Node head, Double capacity, Double length, Double fftime, Double b, Double power, Double toll) {
 		this.tail = tail;
@@ -32,65 +33,54 @@ public class Link implements Priced {
 	public Double getBValue() {
 		return this.b;
 	}
-	public void setBValue(Double bvalue) {
-		this.b = bvalue;
-	}
+
 	public Double getPower() {
 		return power;
 	}
-	public void setPower(Double power) {
-		this.power = power;
-	}
+
 	public Double getCapacity() {
 		return capacity;
 	}
-	public void setCapacity(Double capacity) {
-		this.capacity = capacity;
-	}
+
 	public Double getFfTime() {
 		return fftime;
 	}
-	public void setFfTime(Double fftime) {
-		this.fftime = fftime;
-	}
+	
 	public Node getHead() {
 		return head;
 	}
-	public void setHead(Node head) {
-		this.head = head;
-	}
+
 	public Node getTail() {
 		return tail;
 	}
-	public void setTail(Node tail) {
-		this.tail = tail;
-	}
+
 	public Double getLength() {
 		return length;
 	}
-	public void setLength(Double length) {
-		this.length = length;
-	}
+
 	public Double getFlow() throws Exception {
 		if(this.flow < 0) throw new Exception();
 		return this.flow;
 	}
 	public void setFlow(Double flow) {
+		cachedTT = null;
 		this.flow = flow;
 	}
 	//Used to add deltaflow to current link flow
 	public void addFlow(Double deltaflow) {
 		//System.out.println(this.toString()+" add: "+Double.toString(deltaflow));
+		if (deltaflow != 0.0) cachedTT = null;
 		this.flow += deltaflow;
-		if (flow < 0.0) throw new RuntimeException();
+		if (flow < 0.0) throw new RuntimeException("flow is "+flow.toString());
 
 		this.flow = (Double) Math.max(flow, 0.0);
 	}
 	
 	public void subtractFlow(Double deltaFlow) {
 		//System.out.println(this.toString()+" sub: "+Double.toString(deltaFlow));
+		if (deltaFlow != 0.0) cachedTT = null;
 		this.flow -= deltaFlow;
-		if (flow < 0.0) throw new RuntimeException();
+		if (flow < 0.0) throw new RuntimeException("flow is "+flow.toString());
 		this.flow = (Double) Math.max(flow, 0.0);
 	}
 
@@ -101,7 +91,9 @@ public class Link implements Priced {
 	 * @throws Exception 
 	 */
 	public Double getTravelTime() throws Exception {
-		return (Double) (getFfTime()*(1.0 + getBValue()*Math.pow(getFlow()/getCapacity(), getPower())));
+		if (cachedTT != null) return cachedTT;
+		cachedTT = (Double) (getFfTime()*(1.0 + getBValue()*Math.pow(getFlow()/getCapacity(), getPower())));
+		return cachedTT;
 	}
 	
 	public String toString() {

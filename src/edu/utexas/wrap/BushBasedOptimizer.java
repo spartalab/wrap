@@ -14,7 +14,6 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		// A single general step iteration
 		for (Origin o : network.getOrigins()) {
 			for (Bush b : o.getBushes()) {
-
 				// Step i: Build min- and max-path trees
 				b.topoSearch(false);
 				b.topoSearch(true);
@@ -22,6 +21,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 				// Step iia: Equilibrate bush
 				equilibrateBush(b);
 				improveBush(b);
+
 			}
 		}
 

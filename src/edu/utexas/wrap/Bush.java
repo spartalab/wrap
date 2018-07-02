@@ -14,7 +14,7 @@ public class Bush {
 	private final Origin origin;
 	private final Double vot;
 	private Map<Integer, Node> nodes; 
-	private Set<Link> links; // Map from Link to its status (active/inactive)
+	private Set<Link> activeLinks; // Set of active links
 	
 	// Labels (for solving)
 	private Map<Integer, Link> 		qShort;
@@ -30,12 +30,8 @@ public class Bush {
 		this.vot = vot;
 		this.destDemand = destDemand;
 		//Initialize flow and status maps
-		this.links = new HashSet<Link>(links.size(),1.0f);
+		activeLinks = new HashSet<Link>(links.size(),1.0f);
 		flow	= new HashMap<Link, Double>(links.size(),1.0f);
-		for (Link l : links) {
-			this.links.remove(l);
-			flow.put(l, 0.0);
-		}
 		this.nodes	= nodes;
 		qShort	= new HashMap<Integer, Link>(nodes.size(),1.0f);
 		qLong	= new HashMap<Integer, Link>(nodes.size(),1.0f);
@@ -49,7 +45,8 @@ public class Bush {
 	 * @param f the amount of flow to add to the link
 	 */
 	void addFlow(Link l, Double f) {
-		if (f < 0.0) throw new RuntimeException();
+		l.addFlow(f);
+		if (f < 0.0) throw new RuntimeException("flow is "+f.toString());
 		Double x0 = flow.getOrDefault(l,0.0);
 		Double x1 = x0 + f;
 		flow.put(l, Double.max(x1,0.0));
@@ -62,9 +59,13 @@ public class Bush {
 	 * @param f the amount of flow to subtract from the link
 	 */
 	void subtractFlow(Link l, Double f) {
-		Double newFlow = flow.get(l) - f;
+		l.subtractFlow(f);
+		Double newFlow = flow.getOrDefault(l,0.0) - f;
 		flow.put(l, Double.max(newFlow,0.0)); // Keep track of new value of flow from bush
 		if (newFlow<0.0) System.err.println(newFlow);
+		else if (newFlow == 0.0) {
+			flow.remove(l);
+		}
 	}
 	
 	/**Initialize demand flow on shortest paths
@@ -81,7 +82,6 @@ public class Bush {
 				//.out.println(back.toString()+" dump: "+Double.toString(x));
 				addFlow(back, x);
 				markActive(back);
-				back.addFlow(x);
 				node = back.getTail().getID();
 			} 
 		}
@@ -107,7 +107,7 @@ public class Bush {
 	private List<Node> generateTopoOrder() throws Exception {
 		// Start with a set of all bush edges
 		Set<Link> currentLinks = new HashSet<Link>();
-		for (Link l : links) if (isActive(l)) currentLinks.add(l);
+		for (Link l : activeLinks) if (isActive(l)) currentLinks.add(l);
 		
 		LinkedList<Node> to = new LinkedList<Node>();
 		LinkedList<Node> S = new LinkedList<Node>();
@@ -282,7 +282,7 @@ public class Bush {
 	}
 	
 	Double getBushFlow(Link l) throws Exception{
-		if(flow.get(l) < 0) throw new Exception();
+		if(flow.getOrDefault(l,0.0) < 0) throw new Exception();
 		return flow.getOrDefault(l, 0.0);
 	}
 
@@ -291,7 +291,7 @@ public class Bush {
 	}
 	
 	public Set<Link> getLinks(){
-		return links;
+		return activeLinks;
 	}
 
 	public Collection<Node> getNodes() {
@@ -311,19 +311,19 @@ public class Bush {
 	}
 	
 	public void markActive(Link l) {
-		if (links.add(l)) topoOrder = null;
+		if (activeLinks.add(l)) topoOrder = null;
 	}
 	
 	public void markInactive(Link l) {
-		if (links.remove(l)) topoOrder = null;;
+		if (activeLinks.remove(l)) topoOrder = null;;
 	}
 	
 	public boolean isActive(Link l) {
-		return links.contains(l);
+		return activeLinks.contains(l);
 	}
 	
 	public void setActive(Set<Link> m) {
-		links = m;
+		activeLinks = m;
 		topoOrder = null;
 
 	}

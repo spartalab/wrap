@@ -103,13 +103,13 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			//add delta h to all x values in pi_L
 			for (Link l : lPath) {
 				b.addFlow(l, deltaH);
-				l.addFlow(deltaH);
+				
 				//deltaX.put(l, deltaX.get(l) + deltaH);
 			}
 			//subtract delta h from all x values in pi_U
 			for (Link l : uPath) {
 				b.subtractFlow(l, deltaH);
-				l.subtractFlow(deltaH);
+				
 				//deltaX.put(l, deltaX.get(l) - deltaH);
 			}
 		}
