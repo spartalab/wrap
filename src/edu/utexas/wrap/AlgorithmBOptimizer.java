@@ -22,13 +22,16 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 		Integer index = to.size() - 1;
 		Node cur;
 		HashMap<Link, Double> deltaX = new HashMap<Link, Double>();
-		for (Link z : b.getLinks()) deltaX.put(z, 0.0);
+		b.topoSearch(false);
+		b.topoSearch(true);
 		
 		// The LinkedList descendingIterator method wasn't working
 		while (index >= 0) {
 			cur = to.get(index);
 			index --;
 			if (cur.equals(b.getOrigin())) continue;
+			
+
 			Link shortLink = b.getqShort(cur);
 			Link longLink = b.getqLong(cur);
 			Set<Node> shortNodes = new HashSet<Node>();
@@ -39,8 +42,8 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			}
 			//Else calculate divergence node
 
-			LinkedList<Link> uPath = new LinkedList<Link>();
-			LinkedList<Link> lPath = new LinkedList<Link>();
+			Path uPath = new Path();
+			Path lPath = new Path();
 			Node m,n;
 			Double maxDelta = Double.MAX_VALUE;
 			Double x;
@@ -61,7 +64,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			//Iterate through longest paths until reaching a node in shortest path
 			do {
 				//Determine the max amount of flow that can be shifted
-				x = b.getBushFlow(longLink);
+				x = b.getBushFlow(longLink) + deltaX.getOrDefault(longLink, 0.0);
 				if (x < maxDelta) {
 					maxDelta = x;
 				}
@@ -90,31 +93,36 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			for (Link l : uPath) {
 				denom += l.pricePrime(b.getVOT());
 			}
-			b.topoSearch(false);
-			b.topoSearch(true);
-			
+//			b.topoSearch(false);
+//			b.topoSearch(true);
+//			
 			
 			Double diffU = (b.getU(cur)-b.getU(m));
 			Double diffL = (b.getL(cur)-b.getL(m));
 			Double deltaH = Double.min(maxDelta,
 					( diffU 
 							- diffL ) / denom );
-
+			assert deltaH > 0.0;
 			//add delta h to all x values in pi_L
 			for (Link l : lPath) {
-				b.addFlow(l, deltaH);
+//				b.addFlow(l, deltaH);
+				Double t = deltaX.getOrDefault(l, 0.0) + deltaH;
 				
-				//deltaX.put(l, deltaX.get(l) + deltaH);
+				deltaX.put(l, t);
 			}
+			
 			//subtract delta h from all x values in pi_U
 			for (Link l : uPath) {
-				b.subtractFlow(l, deltaH);
-				
-				//deltaX.put(l, deltaX.get(l) - deltaH);
+//				b.subtractFlow(l, deltaH);
+				Double t = deltaX.getOrDefault(l, 0.0) - deltaH;
+
+				deltaX.put(l,t);
 			}
 		}
-//		for (Link z : new HashSet<Link>(deltaX.keySet())) 
-//			z.addFlow(deltaX.get(z));
+		for (Link z : new HashSet<Link>(deltaX.keySet())) {
+			Double t = deltaX.get(z);
+			b.addFlow(z, t);
+		}
 	}
 
 	@Override
