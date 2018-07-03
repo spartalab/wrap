@@ -46,7 +46,7 @@ public class Bush {
 	 */
 	void addFlow(Link l, Double f) {
 		l.addFlow(f);
-		if (f < 0.0) throw new RuntimeException("flow is "+f.toString());
+//		if (f < 0.0) throw new RuntimeException("flow is "+f.toString());
 		Double x0 = flow.getOrDefault(l,0.0);
 		Double x1 = x0 + f;
 		flow.put(l, Double.max(x1,0.0));
@@ -198,6 +198,7 @@ public class Bush {
 		//SHORTEST PATHS
 		if(!longest) {
 			//Initialize infinity-filled nodeL and empty qShort
+			qShort = new HashMap<Integer, Link>(nodes.size(),1.0f);
 			for (Node d : to) {
 				// Should only occur if there's a node with no incoming links
 //				if (nodeL.get(d.getID()) == Double.POSITIVE_INFINITY)
