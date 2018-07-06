@@ -2,10 +2,13 @@ package edu.utexas.wrap;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
+
+
 
 public class AlgorithmBOptimizer extends BushBasedOptimizer{
 
@@ -18,8 +21,9 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 	 * @param to the bush's topological order
 	 * @throws Exception if there was negative bush flow
 	 */
-	protected void equilibrateBush(Bush b) throws Exception {
-		List<Node> to = b.getTopologicalOrder();
+	protected synchronized void equilibrateBush(Bush b) throws Exception {
+		
+		LinkedList<Node> to = b.getTopologicalOrder();
 		Integer index = to.size() - 1;
 		Node cur;
 		HashMap<Link, Double> deltaX = new HashMap<Link, Double>();
@@ -27,11 +31,17 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 		b.topoSearch(true);
 		
 		// The LinkedList descendingIterator method wasn't working
-		while (index >= 0) {
-			cur = to.get(index);
-			index --;
-			if (cur.equals(b.getOrigin())) continue;
-			
+//		while (index >= 0) {
+//			cur = to.get(index);
+//			index --;
+		Iterator<Node> it = to.descendingIterator();
+		while (it.hasNext()) {
+			wrap.dBlock.acquire();
+			cur = it.next();
+			if (cur.equals(b.getOrigin())) {
+				wrap.dBlock.release();
+				continue;
+			}
 
 			Link shortLink = b.getqShort(cur);
 			Link longLink = b.getqLong(cur);
@@ -39,6 +49,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			
 			// If there is no divergence node, move on to the next topological node
 			if (longLink.equals(shortLink)) {
+				wrap.dBlock.release();
 				continue;
 			}
 			//Else calculate divergence node
@@ -102,7 +113,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			Double diffL = (b.getL(cur)-b.getL(m));
 			Double deltaH = Double.min(maxDelta,
 					( diffU - diffL ) / denom );
-			assert deltaH > 0.0;
+			if(!( deltaH >= 0.0)) throw new RuntimeException();
 			//add delta h to all x values in pi_L
 			for (Link l : lPath) {
 //				b.addFlow(l, deltaH);
@@ -115,17 +126,27 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			for (Link l : uPath) {
 //				b.subtractFlow(l, deltaH);
 				Double t = deltaX.getOrDefault(l, 0.0) - deltaH;
-				assert t >= -l.getFlow() && t >= -b.getBushFlow(l);
+				if (t < -b.getBushFlow(l)) throw new NegativeFlowException("too much bush flow removed");
+				if (t < -l.getFlow() ) {
+					throw new NegativeFlowException("too much link flow removed");
+				}
 				deltaX.put(l,t);
 			}
 			
-
+			wrap.dBlock.release();
 		}
 		for (Link z : new HashSet<Link>(deltaX.keySet())) {
+			wrap.dBlock.acquire();
 			Double t = deltaX.get(z);
-			assert b.getBushFlow(z) + t >= 0 && z.getFlow() + t >= 0;
+			synchronized(z) {
+
+				
+			if(!( b.getBushFlow(z) + t >= 0 && z.getFlow() + t >= 0)) throw new NegativeFlowException("");
 			b.changeFlow(z, t);
+			}
+			wrap.dBlock.release();
 		}
+		
 	}
 
 	@Override
