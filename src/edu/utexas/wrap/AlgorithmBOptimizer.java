@@ -76,7 +76,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			//Iterate through longest paths until reaching a node in shortest path
 			do {
 				//Determine the max amount of flow that can be shifted
-				x = b.getBushFlow(longLink) + deltaX.getOrDefault(longLink, 0.0);
+				x = longLink.getBushFlow(b) + deltaX.getOrDefault(longLink, 0.0);
 				if (x < maxDelta) {
 					maxDelta = x;
 				}
@@ -126,7 +126,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			for (Link l : uPath) {
 //				b.subtractFlow(l, deltaH);
 				Double t = deltaX.getOrDefault(l, 0.0) - deltaH;
-				if (t < -b.getBushFlow(l)) throw new NegativeFlowException("too much bush flow removed");
+				if (t < -l.getBushFlow(b)) throw new NegativeFlowException("too much bush flow removed");
 				if (t < -l.getFlow() ) {
 					throw new NegativeFlowException("too much link flow removed");
 				}
@@ -141,7 +141,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			synchronized(z) {
 
 				
-			if(!( b.getBushFlow(z) + t >= 0 && z.getFlow() + t >= 0)) throw new NegativeFlowException("");
+			if(!( z.getBushFlow(b) + t >= 0 && z.getFlow() + t >= 0)) throw new NegativeFlowException("");
 			b.changeFlow(z, t);
 			}
 			wrap.dBlock.release();

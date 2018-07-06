@@ -48,7 +48,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		Set<Link> removedLinks = new HashSet<Link>();
 
 		for (Link l : new HashSet<Link>(usedLinks)){
-			if(b.getBushFlow(l)<=0.0){
+			if(l.getBushFlow(b)<=0.0){
 				// Check to see if this link is needed for connectivity
 				Boolean needed = true;
 				for (Link i : l.getHead().getIncomingLinks()) {

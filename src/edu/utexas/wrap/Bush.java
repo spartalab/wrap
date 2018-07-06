@@ -19,7 +19,7 @@ public class Bush {
 	// Labels (for solving)
 	private Map<Integer, Link> 		qShort;
 	private Map<Integer, Link>		qLong;
-	private Map<Link, Double> 		flow;
+	//private Map<Link, Double> 		flow;
 	private LinkedList<Node>				topoOrder;
 	private final Map<Integer, Double>	destDemand;
 	
@@ -31,7 +31,7 @@ public class Bush {
 		this.destDemand = destDemand;
 		//Initialize flow and status maps
 		activeLinks = new HashSet<Link>(links.size(),1.0f);
-		flow	= new HashMap<Link, Double>(links.size(),1.0f);
+		//flow	= new HashMap<Link, Double>(links.size(),1.0f);
 		this.nodes	= nodes;
 		qShort	= new HashMap<Integer, Link>(nodes.size(),1.0f);
 		qLong	= new HashMap<Integer, Link>(nodes.size(),1.0f);
@@ -56,20 +56,20 @@ public class Bush {
 //	}
 	
 	void changeFlow(Link l, Double delta) {
-		if (l.getFlow() + delta < 0.0 )	{	
-			throw new NegativeFlowException("Removed too much link flow");
-		
-		}
-		if (getBushFlow(l) + delta < 0.0) 	throw new NegativeFlowException("Removed too much bush flow");
-		l.changeFlow(delta);
-		Double d = getBushFlow(l)+delta;
-		if (d > 0.0) {
-			flow.put(l, d);
-			if (flow.get(l) > l.getFlow()) {
-				throw new NegativeFlowException("bush flow higher than link flow");
-			}
-		}
-		else flow.remove(l);
+//		if (l.getFlow() + delta < 0.0 )	{	
+//			throw new NegativeFlowException("Removed too much link flow");
+//		
+//		}
+//		if (getBushFlow(l) + delta < 0.0) 	throw new NegativeFlowException("Removed too much bush flow");
+		l.alterBushFlow(delta, this);
+//		Double d = getBushFlow(l)+delta;
+//		if (d > 0.0) {
+//			flow.put(l, d);
+//			if (flow.get(l) > l.getFlow()) {
+//				throw new NegativeFlowException("bush flow higher than link flow");
+//			}
+//		}
+//		else flow.remove(l);
 		
 	}
 	
@@ -303,8 +303,7 @@ public class Bush {
 	}
 	
 	Double getBushFlow(Link l) {
-		if (flow.getOrDefault(l,0.0) < 0.0) throw new NegativeFlowException("Negative bush flow");
-		return flow.getOrDefault(l, 0.0);
+		return l.getBushFlow(this);
 	}
 
 	public Node getOrigin() {
