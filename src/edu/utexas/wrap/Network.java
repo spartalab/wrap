@@ -186,7 +186,7 @@ public class Network {
 		for (Link l : links) {
 			for (Origin o : origins) {
 				for (Bush b : o.getBushes()) {
-					numerator += b.getBushFlow(l) * l.getPrice(b.getVOT());
+					numerator += l.getBushFlow(b) * l.getPrice(b.getVOT());
 				}
 			}
 		}

@@ -1,5 +1,8 @@
 package edu.utexas.wrap;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * @author rahulpatel
  *
@@ -13,7 +16,7 @@ public class Link implements Priced {
 	private final Double fftime;
 	private final Double b;
 	private final Double power;
-	private Double flow;
+	private Map<Bush,Double> flow;
 	private Double toll;
 	private Double cachedTT = null;
 
@@ -25,7 +28,7 @@ public class Link implements Priced {
 		this.fftime = fftime;
 		this.b = b;
 		this.power = power;
-		this.flow = 0.0;
+		this.flow = new HashMap<Bush,Double>();
 		this.toll = toll;
 	}
 
@@ -59,8 +62,11 @@ public class Link implements Priced {
 	}
 
 	public Double getFlow() {
-		if (flow < 0.0) throw new NegativeFlowException("Negative link flow");
-		return flow;
+		Double f = 0.0;
+		for (Bush b : flow.keySet()) f+=flow.get(b);
+		if (f < 0.0) throw new NegativeFlowException("Negative link flow");
+		
+		return f;
 	}
 //	public void setFlow(Double flow) {
 //		cachedTT = null;
@@ -85,11 +91,11 @@ public class Link implements Priced {
 //		this.flow = (Double) Math.max(flow, 0.0);
 //	}
 	
-	public void changeFlow(Double delta) {
-		if (flow + delta < 0.0) throw new NegativeFlowException("Removed too much link flow");
-		flow = flow + delta;
-		if (delta != 0.0) cachedTT = null;
-	}
+//	public void changeFlow(Double delta) {
+//		if (flow + delta < 0.0) throw new NegativeFlowException("Removed too much link flow");
+//		flow = flow + delta;
+//		if (delta != 0.0) cachedTT = null;
+//	}
 
 	/**BPR Function
 	 * A link performance function using empirical constants (b and power) and 
@@ -162,5 +168,19 @@ public class Link implements Priced {
 		} catch (Exception e) {
 			return tollPrime();
 		}
+	}
+
+	public synchronized void alterBushFlow(Double delta, Bush bush) {
+		// TODO Auto-generated method stub
+		Double newFlow = flow.getOrDefault(bush,0.0) + delta;
+		if (newFlow < 0.0) throw new NegativeFlowException("invalid alter request");
+		else if (newFlow > 0.0) flow.put(bush, newFlow);
+		else flow.remove(bush);
+		if (delta != 0.0) cachedTT = null;
+	}
+
+	public Double getBushFlow(Bush bush) {
+		// TODO Auto-generated method stub
+		return flow.getOrDefault(bush, 0.0);
 	}
 }
