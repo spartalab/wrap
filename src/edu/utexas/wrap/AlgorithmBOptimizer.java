@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 
 public class AlgorithmBOptimizer extends BushBasedOptimizer{
 
@@ -100,8 +101,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			Double diffU = (b.getU(cur)-b.getU(m));
 			Double diffL = (b.getL(cur)-b.getL(m));
 			Double deltaH = Double.min(maxDelta,
-					( diffU 
-							- diffL ) / denom );
+					( diffU - diffL ) / denom );
 			assert deltaH > 0.0;
 			//add delta h to all x values in pi_L
 			for (Link l : lPath) {
@@ -115,13 +115,16 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			for (Link l : uPath) {
 //				b.subtractFlow(l, deltaH);
 				Double t = deltaX.getOrDefault(l, 0.0) - deltaH;
-
+				assert t >= -l.getFlow() && t >= -b.getBushFlow(l);
 				deltaX.put(l,t);
 			}
+			
+
 		}
 		for (Link z : new HashSet<Link>(deltaX.keySet())) {
 			Double t = deltaX.get(z);
-			b.addFlow(z, t);
+			assert b.getBushFlow(z) + t >= 0 && z.getFlow() + t >= 0;
+			b.changeFlow(z, t);
 		}
 	}
 

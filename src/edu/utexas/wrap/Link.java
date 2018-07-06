@@ -58,30 +58,37 @@ public class Link implements Priced {
 		return length;
 	}
 
-	public Double getFlow() throws Exception {
-		if(this.flow < 0) throw new Exception();
-		return this.flow;
+	public Double getFlow() {
+		if (flow < 0.0) throw new NegativeFlowException("Negative link flow");
+		return flow;
 	}
 	public void setFlow(Double flow) {
 		cachedTT = null;
+		assert flow >= 0.0;
 		this.flow = flow;
 	}
 	//Used to add deltaflow to current link flow
-	public void addFlow(Double deltaflow) {
-		//System.out.println(this.toString()+" add: "+Double.toString(deltaflow));
-		if (deltaflow != 0.0) cachedTT = null;
-		this.flow += deltaflow;
-		if (flow < 0.0) throw new RuntimeException("flow is "+flow.toString());
-
-		this.flow = (Double) Math.max(flow, 0.0);
-	}
+//	public void addFlow(Double deltaflow) {
+//		//System.out.println(this.toString()+" add: "+Double.toString(deltaflow));
+//		if (deltaflow != 0.0) cachedTT = null;
+//		this.flow += deltaflow;
+//		if (flow < 0.0) throw new RuntimeException("flow is "+flow.toString());
+//
+//		this.flow = (Double) Math.max(flow, 0.0);
+//	}
 	
-	public void subtractFlow(Double deltaFlow) {
-		//System.out.println(this.toString()+" sub: "+Double.toString(deltaFlow));
-		if (deltaFlow != 0.0) cachedTT = null;
-		this.flow -= deltaFlow;
-		if (flow < 0.0) throw new RuntimeException("flow is "+flow.toString());
-		this.flow = (Double) Math.max(flow, 0.0);
+//	public void subtractFlow(Double deltaFlow) {
+//		//System.out.println(this.toString()+" sub: "+Double.toString(deltaFlow));
+//		if (deltaFlow != 0.0) cachedTT = null;
+//		this.flow -= deltaFlow;
+//		if (flow < 0.0) throw new RuntimeException("flow is "+flow.toString());
+//		this.flow = (Double) Math.max(flow, 0.0);
+//	}
+	
+	public void changeFlow(Double delta) {
+		if (flow + delta < 0.0) throw new NegativeFlowException("Removed too much link flow");
+		flow = flow + delta;
+		if (delta != 0.0) cachedTT = null;
 	}
 
 	/**BPR Function
@@ -92,12 +99,12 @@ public class Link implements Priced {
 	 */
 	public Double getTravelTime() throws Exception {
 		if (cachedTT != null) return cachedTT;
-		cachedTT = (Double) (getFfTime()*(1.0 + getBValue()*Math.pow(getFlow()/getCapacity(), getPower())));
+		cachedTT = getFfTime()*(1.0 + getBValue()*Math.pow(getFlow()/getCapacity(), getPower()));
 		return cachedTT;
 	}
 	
 	public String toString() {
-		return this.tail.toString() + " -> " + this.head.toString();
+		return tail.toString() + " -> " + head.toString();
 	}
 
 	/**Derivative of {@link getTravelTime} formula
@@ -107,6 +114,7 @@ public class Link implements Priced {
 	 */
 	public Double tPrime() throws Exception {
 		// Return (a*b*t*(v/c)^a)/v
+		//TODO: cache this
 		Double a = getPower();
 		Double b = getBValue();
 		Double t = getFfTime();
@@ -128,18 +136,19 @@ public class Link implements Priced {
 		
 	}
 	
-	public Double toll() {
+	public Double getToll() {
 		return toll;
 	}
 	
 	public Double tollPrime() {
+		//TODO: Modify this if tolls change in response to flow
 		return 0.0;
 	}
 
 	@Override
 	public Double getPrice(Double vot) {
 		try {
-			return getTravelTime() * vot + toll();
+			return getTravelTime() * vot + getToll();
 		}
 		catch (Exception e) {
 			e.printStackTrace();

@@ -101,6 +101,7 @@ public class wrap{
 			System.out.println("ITERATION #\tAEC\t\t\tTSTT\t\t\tBeckmann\t\tRelative Gap");
 			System.out.println("-------------------------------------------------------------------------------------------------------------");
 			do {
+				
 				opt.optimize();
 				System.out.println("Iteration "+iteration+"\t"+network.toString());
 				iteration ++;

@@ -44,13 +44,27 @@ public class Bush {
 	 * @param l the link for which flow should be added
 	 * @param f the amount of flow to add to the link
 	 */
-	void addFlow(Link l, Double f) {
-		l.addFlow(f);
-//		if (f < 0.0) throw new RuntimeException("flow is "+f.toString());
-		Double x0 = flow.getOrDefault(l,0.0);
-		Double x1 = x0 + f;
-		flow.put(l, Double.max(x1,0.0));
-		if (x1<0.0) System.err.println(x1);
+//	void addFlow(Link l, Double f) {
+//		l.addFlow(f);
+////		if (f < 0.0) throw new RuntimeException("flow is "+f.toString());
+//		Double x0 = flow.getOrDefault(l,0.0);
+//		Double x1 = x0 + f;
+//		flow.put(l, Double.max(x1,0.0));
+//		if (x1<0.0) {
+//			System.err.println(x1);
+//		}
+//	}
+	
+	void changeFlow(Link l, Double delta) {
+		if (l.getFlow() + delta < 0.0 )	{	
+			throw new NegativeFlowException("Removed too much link flow");
+		
+		}
+		if (getBushFlow(l) + delta < 0.0) 	throw new NegativeFlowException("Removed too much bush flow");
+		l.changeFlow(delta);
+		Double d = getBushFlow(l)+delta;
+		if (d > 0.0) flow.put(l, d);
+		else flow.remove(l);
 	}
 	
 	/**Subtract from the bush's flow on a link and mark inactive if needed
@@ -58,15 +72,15 @@ public class Bush {
 	 * @param l the link for which flow should be removed
 	 * @param f the amount of flow to subtract from the link
 	 */
-	void subtractFlow(Link l, Double f) {
-		l.subtractFlow(f);
-		Double newFlow = flow.getOrDefault(l,0.0) - f;
-		flow.put(l, Double.max(newFlow,0.0)); // Keep track of new value of flow from bush
-		if (newFlow<0.0) System.err.println(newFlow);
-		else if (newFlow == 0.0) {
-			flow.remove(l);
-		}
-	}
+//	void subtractFlow(Link l, Double f) {
+//		l.subtractFlow(f);
+//		Double newFlow = flow.getOrDefault(l,0.0) - f;
+//		flow.put(l, Double.max(newFlow,0.0)); // Keep track of new value of flow from bush
+//		if (newFlow<0.0) System.err.println(newFlow);
+//		else if (newFlow == 0.0) {
+//			flow.remove(l);
+//		}
+//	}
 	
 	/**Initialize demand flow on shortest paths
 	 * Add each destination's demand to the shortest path to that destination
@@ -80,7 +94,7 @@ public class Bush {
 			while (!node.equals(origin.getID())) {
 				Link back = qShort.get(node);
 				//.out.println(back.toString()+" dump: "+Double.toString(x));
-				addFlow(back, x);
+				changeFlow(back, x);
 				markActive(back);
 				node = back.getTail().getID();
 			} 
@@ -282,8 +296,8 @@ public class Bush {
 		else return getL(back.getTail()) + back.getPrice(vot);
 	}
 	
-	Double getBushFlow(Link l) throws Exception{
-		if(flow.getOrDefault(l,0.0) < 0) throw new Exception();
+	Double getBushFlow(Link l) {
+		if (flow.getOrDefault(l,0.0) < 0.0) throw new NegativeFlowException("Negative bush flow");
 		return flow.getOrDefault(l, 0.0);
 	}
 
@@ -316,7 +330,7 @@ public class Bush {
 	}
 	
 	public void markInactive(Link l) {
-		if (activeLinks.remove(l)) topoOrder = null;;
+		if (activeLinks.remove(l)) topoOrder = null;
 	}
 	
 	public boolean isActive(Link l) {
