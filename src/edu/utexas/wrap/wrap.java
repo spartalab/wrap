@@ -2,6 +2,7 @@ package edu.utexas.wrap;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.Semaphore;
 
 /** wrap: an Algorithm B implementation
  * @author William E. Alexander
@@ -80,7 +81,7 @@ import java.io.IOException;
 public class wrap{
 	static Integer iteration = 1;
 	static Integer maxIterations = 160;
-	
+	public static Semaphore dBlock = new Semaphore(1);
 	public static void main(String[] args) {
 		// The very first line of code!
 		Long start = System.currentTimeMillis();

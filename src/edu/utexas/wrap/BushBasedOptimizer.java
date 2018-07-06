@@ -10,13 +10,13 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		super(network);
 	}
 
-	public void optimize() throws Exception {
+	public synchronized void optimize() throws Exception {
 		// A single general step iteration
 		for (Origin o : network.getOrigins()) {
 			for (Bush b : o.getBushes()) {
 				// Step i: Build min- and max-path trees
-				b.topoSearch(false);
-				b.topoSearch(true);
+//				b.topoSearch(false);
+//				b.topoSearch(true);
 
 				// Step iia: Equilibrate bush
 				equilibrateBush(b);

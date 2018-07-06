@@ -62,11 +62,11 @@ public class Link implements Priced {
 		if (flow < 0.0) throw new NegativeFlowException("Negative link flow");
 		return flow;
 	}
-	public void setFlow(Double flow) {
-		cachedTT = null;
-		assert flow >= 0.0;
-		this.flow = flow;
-	}
+//	public void setFlow(Double flow) {
+//		cachedTT = null;
+//		assert flow >= 0.0;
+//		this.flow = flow;
+//	}
 	//Used to add deltaflow to current link flow
 //	public void addFlow(Double deltaflow) {
 //		//System.out.println(this.toString()+" add: "+Double.toString(deltaflow));

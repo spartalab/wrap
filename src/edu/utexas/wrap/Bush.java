@@ -20,7 +20,7 @@ public class Bush {
 	private Map<Integer, Link> 		qShort;
 	private Map<Integer, Link>		qLong;
 	private Map<Link, Double> 		flow;
-	private List<Node>				topoOrder;
+	private LinkedList<Node>				topoOrder;
 	private final Map<Integer, Double>	destDemand;
 	
 	
@@ -63,8 +63,14 @@ public class Bush {
 		if (getBushFlow(l) + delta < 0.0) 	throw new NegativeFlowException("Removed too much bush flow");
 		l.changeFlow(delta);
 		Double d = getBushFlow(l)+delta;
-		if (d > 0.0) flow.put(l, d);
+		if (d > 0.0) {
+			flow.put(l, d);
+			if (flow.get(l) > l.getFlow()) {
+				throw new NegativeFlowException("bush flow higher than link flow");
+			}
+		}
 		else flow.remove(l);
+		
 	}
 	
 	/**Subtract from the bush's flow on a link and mark inactive if needed
@@ -110,7 +116,7 @@ public class Bush {
 	 * @return a topological ordering of this bush's nodes
 	 * @throws Exception 
 	 */
-	public List<Node> getTopologicalOrder() throws Exception {
+	public LinkedList<Node> getTopologicalOrder() throws Exception {
 		return (topoOrder != null) ?  topoOrder :  generateTopoOrder();
 	}
 
@@ -118,7 +124,7 @@ public class Bush {
 	 * @return
 	 * @throws Exception
 	 */
-	private List<Node> generateTopoOrder() throws Exception {
+	private LinkedList<Node> generateTopoOrder() throws Exception {
 		// Start with a set of all bush edges
 		Set<Link> currentLinks = new HashSet<Link>();
 		for (Link l : activeLinks) if (isActive(l)) currentLinks.add(l);
