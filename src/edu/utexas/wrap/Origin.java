@@ -6,27 +6,18 @@ import java.util.Map;
 import java.util.Set;
 
 public class Origin extends Node{
-	//private Bush bush;
+
 	private List<Bush> bushes;
-	private final Set<Integer> destinations;
 	
-	public Origin(Node self, Set<Integer> dests) {
+	public Origin(Node self) {
 		super(self.getIncomingLinks(), self.getOutgoingLinks(), self.getID());
-//		destDemand = dests;	// store demand HashMap
-		destinations = dests;
 		bushes = new LinkedList<Bush>();
 	}
-
 
 	public List<Bush> getBushes() {
 		return bushes;
 	}
 
-	Set<Integer> getDests() {
-
-		return destinations;
-	}
-	
 	Double getDemand(Integer n) {
 		Double demand = 0.0;
 		for(Bush bush : this.bushes) {
@@ -47,7 +38,7 @@ public class Origin extends Node{
 	 * @param nodes all nodes in the network
 	 * @throws Exception 
 	 */
-	public void buildBush(Set<Link> links, Map<Integer, Node> nodes, Double vot, Map<Integer, Double> destDemand) throws Exception {
+	public void buildBush(Set<Link> links, Map<Integer, Node> nodes, Double vot, Map<Integer, Double> destDemand) {
 		bushes.add(new Bush(this, nodes, links, vot, destDemand));
 	}
 	

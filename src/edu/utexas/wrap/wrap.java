@@ -2,7 +2,6 @@ package edu.utexas.wrap;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.Semaphore;
 
 /** wrap: an Algorithm B implementation
  * @author William E. Alexander
@@ -81,19 +80,18 @@ import java.util.concurrent.Semaphore;
 public class wrap{
 	static Integer iteration = 1;
 	static Integer maxIterations = 160;
-	public static Semaphore dBlock = new Semaphore(1);
+	static Boolean printFlows = false;
+
 	public static void main(String[] args) {
-		// The very first line of code!
-		Long start = System.currentTimeMillis();
+
 		
 		File links = new File(args[0]);
 		File odMatrix = new File(args[1]);
 		File votBreakdown = new File(args[2]);
 		
-		Network network;
 		try {
 			System.out.println("Reading network...");
-			network = Network.fromFiles(links, odMatrix, votBreakdown);
+			Network network = Network.fromFiles(links, odMatrix, votBreakdown);
 			System.out.println("Initializing optimizer...");
 			Optimizer opt = new AlgorithmBOptimizer(network);
 			
@@ -101,31 +99,19 @@ public class wrap{
 			System.out.println();
 			System.out.println("ITERATION #\tAEC\t\t\tTSTT\t\t\tBeckmann\t\tRelative Gap");
 			System.out.println("-------------------------------------------------------------------------------------------------------------");
+			Long start = System.currentTimeMillis();
 			do {
-				
+				System.out.print("Iteration "+iteration);
 				opt.optimize();
-				System.out.println("Iteration "+iteration+"\t"+network.toString());
-				iteration ++;
+				System.out.print("\t"+network.toString()+"\r");
+				iteration++;
 			} while (!converged(network));
 			Long end = System.currentTimeMillis();
 			Double runtime = (end - start)/1000.0;
 			System.out.println("Runtime "+runtime+" seconds");
 			
 			//System.setOut(new PrintStream("VOTflow.csv"));
-//			System.out.println("\r\n\r\nLink,VOT0.2 Flow,VOT0.5 Flow,VOT0.8 Flow");
-//			for (Link l : network.links) {
-//				Double vot0 = 0.0;
-//				Double vot1 = 0.0;
-//				Double vot2 = 0.0;
-//				for (Origin o : network.origins) {
-//					for (Bush b : o.getBushes()) {
-//							vot0 += b.getBushFlow(l);
-//						
-//						//System.out.println(l+"\t"+b.getVOT()+"\t"+b.getBushFlow(l));
-//					}
-//				}
-//				System.out.println(l+","+vot0+","+vot1+","+vot2);
-//			}
+			if (printFlows) network.printFlows(System.out);
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
@@ -137,7 +123,6 @@ public class wrap{
 		try {
 			return iteration > maxIterations || network.relativeGap() < Math.pow(10, -6);
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return iteration > maxIterations;
 		}

@@ -13,19 +13,18 @@ public class Bush {
 	// Bush structure
 	private final Origin origin;
 	private final Double vot;
-	private Map<Integer, Node> nodes; 
+	private final Map<Integer, Double>	destDemand;
+	private final Map<Integer, Node> 	nodes; 
 	private Set<Link> activeLinks; // Set of active links
-	
+
 	// Labels (for solving)
 	private Map<Integer, Link> 		qShort;
 	private Map<Integer, Link>		qLong;
-	//private Map<Link, Double> 		flow;
-	private LinkedList<Node>				topoOrder;
-	private final Map<Integer, Double>	destDemand;
-	
-	
-	public Bush(Origin o, Map<Integer,Node> nodes, Set<Link> links, Double vot, Map<Integer, Double> destDemand) throws Exception 
-	{
+
+	private LinkedList<Node>		topoOrder;
+
+
+	public Bush(Origin o, Map<Integer,Node> nodes, Set<Link> links, Double vot, Map<Integer, Double> destDemand) {
 		origin = o;
 		this.vot = vot;
 		this.destDemand = destDemand;
@@ -36,70 +35,26 @@ public class Bush {
 		qShort	= new HashMap<Integer, Link>(nodes.size(),1.0f);
 		qLong	= new HashMap<Integer, Link>(nodes.size(),1.0f);
 		
-		runDijkstras();
+		try {runDijkstras();} catch (Exception e) { throw new RuntimeException();}
 		dumpFlow();
 	}
 
-	/**Add to the bush's flow on a link
-	 * @param l the link for which flow should be added
-	 * @param f the amount of flow to add to the link
-	 */
-//	void addFlow(Link l, Double f) {
-//		l.addFlow(f);
-////		if (f < 0.0) throw new RuntimeException("flow is "+f.toString());
-//		Double x0 = flow.getOrDefault(l,0.0);
-//		Double x1 = x0 + f;
-//		flow.put(l, Double.max(x1,0.0));
-//		if (x1<0.0) {
-//			System.err.println(x1);
-//		}
-//	}
-	
-	void changeFlow(Link l, Double delta) {
-//		if (l.getFlow() + delta < 0.0 )	{	
-//			throw new NegativeFlowException("Removed too much link flow");
-//		
-//		}
-//		if (getBushFlow(l) + delta < 0.0) 	throw new NegativeFlowException("Removed too much bush flow");
+
+	public void changeFlow(Link l, Double delta) {
 		l.alterBushFlow(delta, this);
-//		Double d = getBushFlow(l)+delta;
-//		if (d > 0.0) {
-//			flow.put(l, d);
-//			if (flow.get(l) > l.getFlow()) {
-//				throw new NegativeFlowException("bush flow higher than link flow");
-//			}
-//		}
-//		else flow.remove(l);
-		
 	}
-	
-	/**Subtract from the bush's flow on a link and mark inactive if needed
-	 * 
-	 * @param l the link for which flow should be removed
-	 * @param f the amount of flow to subtract from the link
-	 */
-//	void subtractFlow(Link l, Double f) {
-//		l.subtractFlow(f);
-//		Double newFlow = flow.getOrDefault(l,0.0) - f;
-//		flow.put(l, Double.max(newFlow,0.0)); // Keep track of new value of flow from bush
-//		if (newFlow<0.0) System.err.println(newFlow);
-//		else if (newFlow == 0.0) {
-//			flow.remove(l);
-//		}
-//	}
-	
+
 	/**Initialize demand flow on shortest paths
 	 * Add each destination's demand to the shortest path to that destination
 	 * */
 	private void dumpFlow() {
 		for (Integer node : nodes.keySet()) {
-			Double x = getDemand(node);
-			if (x == null) x = 0.0;
-			
+
 			if (nodes.get(node).getIncomingLinks().isEmpty()) continue;
+
+			Double x = getDemand(node);
 			while (!node.equals(origin.getID())) {
 				Link back = qShort.get(node);
-				//.out.println(back.toString()+" dump: "+Double.toString(x));
 				changeFlow(back, x);
 				markActive(back);
 				node = back.getTail().getID();
@@ -107,28 +62,26 @@ public class Bush {
 		}
 
 	}
-	
+
 	/** Calculate a topological order using Kahn's algorithm
 	 * 
 	 * Evaluate the set of bush links, starting from the origin
 	 * and determine a topological order for the nodes that they
 	 * attach
 	 * @return a topological ordering of this bush's nodes
-	 * @throws Exception 
 	 */
-	public LinkedList<Node> getTopologicalOrder() throws Exception {
+	public LinkedList<Node> getTopologicalOrder() {
 		return (topoOrder != null) ?  topoOrder :  generateTopoOrder();
 	}
 
 	/**
-	 * @return
-	 * @throws Exception
+	 * @return Nodes in topological order
 	 */
-	private LinkedList<Node> generateTopoOrder() throws Exception {
+	private LinkedList<Node> generateTopoOrder() {
 		// Start with a set of all bush edges
 		Set<Link> currentLinks = new HashSet<Link>();
 		for (Link l : activeLinks) if (isActive(l)) currentLinks.add(l);
-		
+
 		LinkedList<Node> to = new LinkedList<Node>();
 		LinkedList<Node> S = new LinkedList<Node>();
 		// "start nodes"
@@ -138,16 +91,16 @@ public class Bush {
 		while (!S.isEmpty()) {
 			n = S.pop();// remove node from S
 			to.add(n); 	// append node to L
-			
+
 			// for each active edge out of this node
 			for (Link l : n.getOutgoingLinks()) {
 				if (currentLinks.contains(l)) {
-					
+
 					// remove the links from the set
 					currentLinks.remove(l);
 					// the node on the other end
 					Node m = l.getHead();
-					
+
 					// see if this node has no other incoming active links
 					boolean mHasIncoming = false;
 					for (Link e : m.getIncomingLinks()) {
@@ -162,7 +115,7 @@ public class Bush {
 			}
 		}
 		if (!currentLinks.isEmpty()) {
-			throw new Exception();
+			throw new RuntimeException("Cyclic graph error");
 		}
 		else return to;
 	}
@@ -173,7 +126,7 @@ public class Bush {
 	 * To be called on initialization. Overwrites nodeL and qShort.
 	 * @throws Exception if link travel times are unavailable
 	 */
-	public void runDijkstras() throws Exception {
+	private void runDijkstras() throws Exception {
 		// Initialize every nodeL to infinity except this, the origin
 		// Initialize the empty map of finalized nodes, the map of 
 		// eligible nodes to contain this origin only, and the 
@@ -186,10 +139,10 @@ public class Bush {
 			}
 		}
 		Q.add(origin.getID(), 0.0);
-		
+
 		while (!Q.isEmpty()) {
 			Leaf<Integer> u = Q.poll();
-//			nodeL.put(u.n, u.key);
+			//			nodeL.put(u.n, u.key);
 			for (Link uv : nodes.get(u.n).getOutgoingLinks()) {
 				Leaf<Integer> v = Q.getLeaf(uv.getHead().getID());
 				Double alt = uv.getPrice(vot) + u.key;
@@ -201,7 +154,7 @@ public class Bush {
 		}
 		qShort = back;
 	}
-	
+
 
 	/**Calculate shortest or longest paths in bush (DAG) using topological search
 	 * 
@@ -210,9 +163,8 @@ public class Bush {
 	 * 
 	 * @param longest switch for Longest/Shortest
 	 * @param to a topological ordering of the nodes
-	 * @throws Exception if the link performance functions are unavailable
 	 */
-	public void topoSearch(Boolean longest) throws Exception {
+	public void topoSearch(Boolean longest)  {
 		// Initialize all nodeU values as 0 and all nodes as not visited
 		List<Node> to = getTopologicalOrder();
 		//SHORTEST PATHS
@@ -220,35 +172,44 @@ public class Bush {
 			//Initialize infinity-filled nodeL and empty qShort
 			qShort = new HashMap<Integer, Link>(nodes.size(),1.0f);
 			for (Node d : to) {
-				// Should only occur if there's a node with no incoming links
-//				if (nodeL.get(d.getID()) == Double.POSITIVE_INFINITY)
-//					continue;
-	
+
 				for (Link l : d.getOutgoingLinks()) {
 					if (isActive(l)) {
-						Double Licij = l.getPrice(vot) + getL(d);
-						
-						Node head = l.getHead();
-						Integer id = l.getHead().getID();
-						if (qShort.get(id) == null || Licij < getL(head)) {
-							qShort.put(id, l);
+						try {
+							Double Licij = l.getPrice(vot) + getL(d);
+
+							Node head = l.getHead();
+							Integer id = l.getHead().getID();
+							if (qShort.get(id) == null || Licij < getL(head)) {
+								qShort.put(id, l);
+							}
+						} catch (UnreachableException e) {
+							if (getDemand(d.getID()) > 0.0) {
+								throw new RuntimeException();
+							}
 						}
 					}
 				}
 			}
 		}
-		
+
 		//LONGEST PATHS
 		else  {
 			qLong = new HashMap<Integer, Link>(nodes.size(),1.0f);
 			for (Node d : to) {
 				for (Link l : d.getOutgoingLinks()) {
 					if (isActive(l)) {
-						Double Uicij = l.getPrice(vot) + getU(d);
-						Node head = l.getHead();
-						Integer id = l.getHead().getID();
-						if (qLong.get(id) == null || Uicij > getU(head)) {
-							qLong.put(id, l);
+						try {
+							Double Uicij = l.getPrice(vot) + getU(d);
+							Node head = l.getHead();
+							Integer id = l.getHead().getID();
+							if (qLong.get(id) == null || Uicij > getU(head)) {
+								qLong.put(id, l);
+							}
+						} catch (UnreachableException e) {
+							if (getDemand(d.getID()) > 0.0) {
+								throw new RuntimeException();
+							}
 						}
 					}
 				}
@@ -256,16 +217,16 @@ public class Bush {
 		}
 
 	}
- 
-	Link getqShort(Node n) {
+
+	public Link getqShort(Node n) {
 		return qShort.get(n.getID());
 	}
-	
-	Link getqLong(Node n) {
+
+	public Link getqLong(Node n) {
 		return qLong.get(n.getID());
 	}
-	
-	Path getShortestPath(Node n) {
+
+	public Path getShortestPath(Node n) {
 		Path p = new Path();
 		Link curLink = getqShort(n);
 		while (curLink != null) {
@@ -274,8 +235,8 @@ public class Bush {
 		}
 		return p;
 	}
-	
-	Path getLongestPath(Node n) {
+
+	public Path getLongestPath(Node n) {
 		Path p = new Path();
 		Link curLink = getqLong(n);
 		while (curLink != null) {
@@ -284,8 +245,8 @@ public class Bush {
 		}
 		return p;
 	}
-	
-	Double getU(Node n) throws Exception {
+
+	public Double getU(Node n) throws UnreachableException {
 
 		Link back = qLong.get(n.getID());
 		if (n.equals(origin)) return 0.0;
@@ -293,23 +254,24 @@ public class Bush {
 		else return getU(back.getTail()) + back.getPrice(vot);
 
 	}
-	
-	Double getL(Node n) throws Exception {
+
+	public Double getL(Node n) throws UnreachableException {
 
 		Link back = qShort.get(n.getID());
 		if (n.equals(origin)) return 0.0;
 		else if (back == null) throw new UnreachableException(n,this);
 		else return getL(back.getTail()) + back.getPrice(vot);
 	}
-	
-	Double getBushFlow(Link l) {
+
+	@Deprecated
+	public Double getBushFlow(Link l) {
 		return l.getBushFlow(this);
 	}
 
 	public Node getOrigin() {
 		return origin;
 	}
-	
+
 	public Set<Link> getLinks(){
 		return activeLinks;
 	}
@@ -321,27 +283,23 @@ public class Bush {
 	public Double getVOT() {
 		return vot;
 	}
-	
-	Double getDemand(Integer n) {
+
+	public Double getDemand(Integer n) {
 		return destDemand.getOrDefault(n, 0.0);
 	}
-	
+
 	public String toString() {
-		return "Bush "+origin.getID()+"-VOT="+vot;
+		return "ORIG="+origin.getID()+"VOT="+vot;
 	}
-	
-	public void markActive(Link l) {
+
+	private void markActive(Link l) {
 		if (activeLinks.add(l)) topoOrder = null;
 	}
-	
-	public void markInactive(Link l) {
-		if (activeLinks.remove(l)) topoOrder = null;
-	}
-	
-	public boolean isActive(Link l) {
+
+	private boolean isActive(Link l) {
 		return activeLinks.contains(l);
 	}
-	
+
 	public void setActive(Set<Link> m) {
 		activeLinks = m;
 		topoOrder = null;

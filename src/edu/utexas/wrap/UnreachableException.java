@@ -9,7 +9,6 @@ public class UnreachableException extends Exception {
 	public Double demand;
 
 	public UnreachableException() {
-		// TODO Auto-generated constructor stub
 	}
 	
 	public UnreachableException(Node to, Bush from) {
@@ -19,23 +18,19 @@ public class UnreachableException extends Exception {
 
 	public UnreachableException(String arg0) {
 		super(arg0);
-		// TODO Auto-generated constructor stub
 	}
 
 	public UnreachableException(Throwable cause) {
 		super(cause);
-		// TODO Auto-generated constructor stub
 	}
 
 	public UnreachableException(String message, Throwable cause) {
 		super(message, cause);
-		// TODO Auto-generated constructor stub
 	}
 
 	public UnreachableException(String message, Throwable cause, boolean enableSuppression,
 			boolean writableStackTrace) {
 		super(message, cause, enableSuppression, writableStackTrace);
-		// TODO Auto-generated constructor stub
 	}
 
 }

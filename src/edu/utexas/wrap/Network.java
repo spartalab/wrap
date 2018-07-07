@@ -2,7 +2,10 @@ package edu.utexas.wrap;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -12,15 +15,12 @@ import java.util.Set;
 public class Network {
 
 	//private Map<Integer, Node> nodes;
-	protected Set<Link> links;
+//	protected Set<Link> links;
 	protected Set<Origin> origins;
-	protected Map<Integer, Node> nodes;
 	protected Graph graph;
 	
-	public Network(Set<Link> links, Set<Origin> origins, Map<Integer, Node> nodes, Graph g) {
-		setLinks(links);
-		setOrigins(origins);
-		this.nodes = nodes;
+	public Network(Set<Origin> origins, Graph g) {
+		this.origins = origins;
 		graph = g;
 	}
 	
@@ -29,34 +29,19 @@ public class Network {
 	}
 	
 	public static Network fromFiles(File linkFile, File odMatrix, File VOTfile) throws Exception {
-		// Initialization
-		Map<Integer,Node> nodes = new HashMap<Integer, Node>();
-		Set<Link> links = new HashSet<Link>();
-		LinkedList<Double[]> VOTs = new LinkedList<Double[]>();
-		// Open the files for reading
-		BufferedReader lf = new BufferedReader(new FileReader(linkFile));
-		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
-		BufferedReader vf = new BufferedReader(new FileReader(VOTfile));
-		HashMap<Integer, Double> dest = new HashMap<Integer, Double>();
-		
-		Graph g = new Graph();
+
+		LinkedList<Double[]> VOTs = readVOTs(VOTfile);
 		
 		//////////////////////////////////////////////
 		// Read links and build corresponding nodes
 		//////////////////////////////////////////////
-		String line;
-		vf.readLine();
-		do {
-			line = vf.readLine();
-			if (line == null) break;
-			String[] args = line.split("\t");
-			Double vot = Double.parseDouble(args[0]);
-			Double vProp = Double.parseDouble(args[1]);
-			Double[] entry = {vot, vProp};
-			VOTs.add(entry);
-		} while (!line.equals(""));
-		vf.close();
 		
+		//TODO externalize this graph constructor phase
+		String line;
+		Graph g = new Graph();
+		BufferedReader lf = new BufferedReader(new FileReader(linkFile));
+		Map<Integer,Node> nodes = new HashMap<Integer, Node>();
+		Set<Link> links = new HashSet<Link>();
 		do { //Move past headers in the file
 			line = lf.readLine();
 		} while (!line.startsWith("~"));
@@ -79,11 +64,9 @@ public class Network {
 			//Create new node(s) if new, then add to map
 			if (!nodes.containsKey(tail)) {
 				nodes.put(tail,new Node(tail));
-				dest.put(tail, 0.0);
 			}
 			if (!nodes.containsKey(head)) {
 				nodes.put(head,new Node(head));
-				dest.put(head,0.0);
 			}
 			
 			//Construct new link and add to the list
@@ -99,7 +82,8 @@ public class Network {
 		/////////////////////////////////////
 		// Read OD Matrix and assign flows
 		/////////////////////////////////////
-		
+		//TODO externalize this Origin builder
+		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
 		Integer origID;
 		Node old;
 		HashMap<Integer, Double> dests;
@@ -118,7 +102,7 @@ public class Network {
 		while (true) { //While more Origins to read
 			origID = Integer.parseInt(line.trim().split("\\s+")[1]);
 			old = nodes.get(origID);	// Retrieve the existing node with that ID
-			dests = new HashMap<Integer, Double>(dest);
+			dests = new HashMap<Integer, Double>();
 			
 			
 			while (true) {
@@ -133,7 +117,7 @@ public class Network {
 					if (demand > 0.0) dests.put(destID, demand);
 				}
 			}
-			o = new Origin(old, dests.keySet()); 	// Construct an origin to replace it
+			o = new Origin(old); 	// Construct an origin to replace it
 			
 			for (Double[] entry : VOTs) {
 				bushDests = new HashMap<Integer, Double>();
@@ -142,48 +126,66 @@ public class Network {
 				}
 				o.buildBush(links, nodes, entry[0], bushDests);
 			}
-			//TODO: Handle multiple VOT classes and split destination demand accordingly
-			//nodes.put(origID, o); // Replace the node with its origin equivalent
 			origins.add(o);
 			
 			while (line != null && !line.startsWith("O")) line = of.readLine(); // Read in the origin header
 			if (line == null || line.trim().equals("")) break; // If the origin header is empty, we've reached the end of the list
 		}
 		of.close();
-		return new Network(links, origins, nodes, g);
 		
+		
+		return new Network(origins, g);
+	}
+
+	/**
+	 * @param VOTfile
+	 * @return
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	private static LinkedList<Double[]> readVOTs(File VOTfile) throws FileNotFoundException, IOException {
+		// TODO handle this better so that breakdowns can be different per origin
+		BufferedReader vf = new BufferedReader(new FileReader(VOTfile));
+		LinkedList<Double[]> VOTs = new LinkedList<Double[]>();
+
+
+		String line;
+		vf.readLine(); //Ignore header line
+		do {
+			line = vf.readLine();
+			if (line == null) break;
+			String[] args = line.split("\t");
+			Double vot = Double.parseDouble(args[0]);
+			Double vProp = Double.parseDouble(args[1]);
+			Double[] entry = {vot, vProp};
+			VOTs.add(entry);
+		} while (!line.equals(""));
+		vf.close();
+		return VOTs;
 	}
 	
 	public Set<Link> getLinks() {
-		return links;
+		return graph.getLinks();
 	}
-	private void setLinks(Set<Link> links) {
-		this.links = links;
-	}
-
 
 	public Set<Origin> getOrigins() {
 		return origins;
 	}
-	private void setOrigins(Set<Origin> origins) {
-		this.origins = origins;
-	}
 	
-	
-	public Double tstt() throws Exception{
+	public Double tstt() {
 		Double tstt = 0.0;
 		
-		for(Link l:links){
+		for(Link l: getLinks()){
 			tstt += l.getFlow() * l.getTravelTime();
 		}
 		return tstt;
 	}
 	
-	public Double relativeGap() throws Exception {
+	public Double relativeGap() {
 		Double numerator = 0.0;
 		Double denominator = 0.0;
 		
-		for (Link l : links) {
+		for (Link l : getLinks()) {
 			for (Origin o : origins) {
 				for (Bush b : o.getBushes()) {
 					numerator += l.getBushFlow(b) * l.getPrice(b.getVOT());
@@ -229,9 +231,9 @@ public class Network {
 //		return numerator/denominator;
 	}
 	
-	public Double Beckmann() throws Exception {
+	public Double Beckmann() {
 		Double b = 0.0;
-		for (Link l : links) {
+		for (Link l : getLinks()) {
 			b += l.tIntegral();
 		}
 		return b;
@@ -244,22 +246,24 @@ public class Network {
 		} catch (Exception e) {
 			out += "Error           \t";
 		}
-		try {
-			out += String.format("%6.10E",tstt()) + "\t";
-		} catch (Exception e) {
-			out += "Error           \t";
-		}
-		try {
-			out += String.format("%6.10E",Beckmann()) + "\t";
-		} catch (Exception e) {
-			out += "Error           \t";
-		}
-		try {
-			out += String.format("%6.10E",relativeGap());
-		} catch (Exception e) {
-			out += "Error           ";
-		}
+		out += String.format("%6.10E",tstt()) + "\t";
+		out += String.format("%6.10E",Beckmann()) + "\t";
+		out += String.format("%6.10E",relativeGap());
+	
 		return out;
+	}
+
+	public void printFlows(PrintStream out) {
+		System.out.println("\r\n\r\nLink\tflow");
+		for (Link l : getLinks()) {
+			Double sum = 0.0;
+			for (Origin o : origins) {
+				for (Bush b : o.getBushes()) {
+						sum += l.getBushFlow(b);	
+				}
+			}
+			out.println(l+"\t"+sum);
+		}
 	}
 
 }

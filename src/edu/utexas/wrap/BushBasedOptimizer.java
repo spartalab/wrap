@@ -12,35 +12,22 @@ public abstract class BushBasedOptimizer extends Optimizer {
 
 	public synchronized void optimize() throws Exception {
 		// A single general step iteration
+		// TODO explore which bushes should be examined 
 		for (Origin o : network.getOrigins()) {
 			for (Bush b : o.getBushes()) {
-				// Step i: Build min- and max-path trees
-//				b.topoSearch(false);
-//				b.topoSearch(true);
-
-				// Step iia: Equilibrate bush
+				// Step i: Equilibrate bush
 				equilibrateBush(b);
+				// Step ii: Improve bush
 				improveBush(b);
 
 			}
 		}
-
-		// Step iib: Recalculate U labels
-//		for (Origin o : network.getOrigins()) {
-//			for (Bush b : o.getBushes()) {
-//				// Step iii: Improve bush
-//				b.topoSearch(false);
-//				b.topoSearch(true);
-//				improveBush(b);
-//			}
-//		}
-		// Step iv: Reiterate if bush changed
-
 	}
 
 	protected abstract void equilibrateBush(Bush b) throws Exception;
 
 	protected Boolean improveBush(Bush b) throws Exception {
+		//TODO cleanup
 		boolean modified = false;
 		Set<Link> usedLinks = new HashSet<Link>(b.getLinks());
 		Set<Link> unusedLinks = new HashSet<Link>(network.getLinks());

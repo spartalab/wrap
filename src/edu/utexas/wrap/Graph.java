@@ -38,12 +38,18 @@ public class Graph {
 		
 	}
 	
-	public Set<Node> vertices(){
+	public Set<Node> getNodes(){
 		HashSet<Node> ret = new HashSet<Node>();
 		Set<Node> out = outLinks.keySet();
 		Set<Node> in = inLinks.keySet();
 		ret.addAll(in);
 		ret.addAll(out);
+		return ret;
+	}
+	
+	public Set<Link> getLinks(){
+		HashSet<Link> ret = new HashSet<Link>();
+		for (Node n : outLinks.keySet()) ret.addAll(outLinks.get(n));
 		return ret;
 	}
 

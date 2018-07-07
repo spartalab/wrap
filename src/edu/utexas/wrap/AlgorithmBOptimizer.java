@@ -4,10 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Semaphore;
-
 
 
 public class AlgorithmBOptimizer extends BushBasedOptimizer{
@@ -21,37 +18,27 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 	 * @param to the bush's topological order
 	 * @throws Exception if there was negative bush flow
 	 */
-	protected synchronized void equilibrateBush(Bush b) throws Exception {
-		
+	protected synchronized void equilibrateBush(Bush b) {
+
 		LinkedList<Node> to = b.getTopologicalOrder();
-		Integer index = to.size() - 1;
 		Node cur;
 		HashMap<Link, Double> deltaX = new HashMap<Link, Double>();
 		b.topoSearch(false);
 		b.topoSearch(true);
-		
-		// The LinkedList descendingIterator method wasn't working
-//		while (index >= 0) {
-//			cur = to.get(index);
-//			index --;
+
 		Iterator<Node> it = to.descendingIterator();
 		while (it.hasNext()) {
-			wrap.dBlock.acquire();
 			cur = it.next();
-			if (cur.equals(b.getOrigin())) {
-				wrap.dBlock.release();
-				continue;
-			}
+			if (cur.equals(b.getOrigin())) continue;
+
 
 			Link shortLink = b.getqShort(cur);
 			Link longLink = b.getqLong(cur);
 			Set<Node> shortNodes = new HashSet<Node>();
-			
+
 			// If there is no divergence node, move on to the next topological node
-			if (longLink.equals(shortLink)) {
-				wrap.dBlock.release();
-				continue;
-			}
+			if (longLink.equals(shortLink)) continue;
+
 			//Else calculate divergence node
 
 			Path uPath = new Path();
@@ -65,8 +52,8 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			//since we don't use a true linked list for our shortest paths
 			//
 			//This may be changed in future development
-			
-			// ^^^ what? This needs to be cleaned up for sure
+
+			// ^^^ what? This needs to be cleaned up for sure TODO
 			do {
 				n = shortLink.getTail();
 				shortNodes.add(n);
@@ -80,7 +67,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 				if (x < maxDelta) {
 					maxDelta = x;
 				}
-				
+
 				m = longLink.getTail();
 				//Construct the longest path for PAS
 				uPath.addFirst(longLink);
@@ -99,54 +86,47 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 
 			//calculate delta h, capping at maxDelta
 			Double denom = 0.0;
-			for (Link l : lPath) {
-				denom += l.pricePrime(b.getVOT());
-			}
-			for (Link l : uPath) {
-				denom += l.pricePrime(b.getVOT());
-			}
-//			b.topoSearch(false);
-//			b.topoSearch(true);
-//			
-			
-			Double diffU = (b.getU(cur)-b.getU(m));
-			Double diffL = (b.getL(cur)-b.getL(m));
-			Double deltaH = Double.min(maxDelta,
-					( diffU - diffL ) / denom );
-			if(!( deltaH >= 0.0)) throw new RuntimeException();
-			//add delta h to all x values in pi_L
-			for (Link l : lPath) {
-//				b.addFlow(l, deltaH);
-				Double t = deltaX.getOrDefault(l, 0.0) + deltaH;
-				
-				deltaX.put(l, t);
-			}
-			
-			//subtract delta h from all x values in pi_U
-			for (Link l : uPath) {
-//				b.subtractFlow(l, deltaH);
-				Double t = deltaX.getOrDefault(l, 0.0) - deltaH;
-				if (t < -l.getBushFlow(b)) throw new NegativeFlowException("too much bush flow removed");
-				if (t < -l.getFlow() ) {
-					throw new NegativeFlowException("too much link flow removed");
+			for (Link l : lPath) denom += l.pricePrime(b.getVOT());			
+			for (Link l : uPath) denom += l.pricePrime(b.getVOT());
+
+			try {
+				Double diffU = (b.getU(cur)-b.getU(m));
+				Double diffL = (b.getL(cur)-b.getL(m));
+
+				Double deltaH = Double.min(maxDelta,
+						( diffU - diffL ) / denom );
+				if( deltaH < 0.0) throw new RuntimeException("Longest path shorter than Shortest path");
+
+				//add delta h to all x values in pi_L
+				for (Link l : lPath) {
+					Double t = deltaX.getOrDefault(l, 0.0) + deltaH;
+
+					deltaX.put(l, t);
 				}
-				deltaX.put(l,t);
+
+				//subtract delta h from all x values in pi_U
+				for (Link l : uPath) {
+					//				b.subtractFlow(l, deltaH);
+					Double t = deltaX.getOrDefault(l, 0.0) - deltaH;
+					if (t < -l.getBushFlow(b)) throw new NegativeFlowException("too much bush flow removed");
+					if (t < -l.getFlow() ) {
+						throw new NegativeFlowException("too much link flow removed");
+					}
+					deltaX.put(l,t);
+				}
+			} catch (UnreachableException e) {
+				throw new RuntimeException("Couldn't calculate deltaH");
 			}
-			
-			wrap.dBlock.release();
+
 		}
 		for (Link z : new HashSet<Link>(deltaX.keySet())) {
-			wrap.dBlock.acquire();
 			Double t = deltaX.get(z);
-			synchronized(z) {
 
-				
+
 			if(!( z.getBushFlow(b) + t >= 0 && z.getFlow() + t >= 0)) throw new NegativeFlowException("");
 			b.changeFlow(z, t);
-			}
-			wrap.dBlock.release();
 		}
-		
+
 	}
 
 	@Override

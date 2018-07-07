@@ -13,7 +13,7 @@ public class SPAlgorithms {
 		Map<Node, Link> back = new HashMap<Node, Link>();
 		FibonacciHeap<Node> Q = new FibonacciHeap<Node>();
 		
-		for (Node n : g.vertices()) {
+		for (Node n : g.getNodes()) {
 			if (!n.equals(origin)) {
 				Q.add(n, Double.MAX_VALUE);
 			}
