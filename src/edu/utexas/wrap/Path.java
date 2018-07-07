@@ -10,13 +10,14 @@ public class Path extends LinkedList<Link> implements Priced {
 	 */
 	private static final long serialVersionUID = 8522817449668927596L;
 
-	public Node node(Integer i) {
-		return this.get(i).getTail();
+	public Node node(Integer index) {
+		if (index == size()) return getLast().getHead();
+		return get(index).getTail();
 	}
 
 	public Path subPath(Integer start, Integer end) {
 		Path sp = new Path();
-		for (Integer i = start; i < this.size() && i < end; i++) {
+		for (Integer i = start; i < size() && i < end; i++) {
 			sp.add(get(i));
 		}
 		return sp;
@@ -31,42 +32,32 @@ public class Path extends LinkedList<Link> implements Priced {
 	}
 
 	public List<Node> nodes() {
-		// TODO Auto-generated method stub
 		List<Node> list = new LinkedList<Node>();
 		for (Link l : this) {
 			list.add(l.getTail());
 		}
-		if (this.size() > 0) list.add(this.getLast().getHead());
+		if (!isEmpty()) list.add(getLast().getHead());
 		return list;
 	}
 
 	public void append(Path spurPath) {
-		for (Link l : spurPath) {
-			add(l);
-		}
+		addAll(spurPath);
 	}
 
 	@Override
 	public Double getPrice(Double vot) {
 		Double sum = 0.0;
-		for (Link l : this) {
-			try {
-				sum += l.getPrice(vot);
-			} catch (Exception e) {}
-		}
+		for (Link l : this) sum += l.getPrice(vot);
 		return sum;
 	}
 	
 	public String toString() {
-		String ret = "";
-		for (Link l : this) {
-			ret += l.toString() + ",";
-		}
-		return ret;
+		String ret = "[";
+		for (Node n : nodes()) ret += n.toString()+",";
+		return ret+"]";
 	}
 
 	public Double getLength() {
-		// TODO Auto-generated method stub
 		Double sum = 0.0;
 		for (Link l : this) sum += l.getLength();
 		return sum;

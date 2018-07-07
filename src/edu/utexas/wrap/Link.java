@@ -68,42 +68,13 @@ public class Link implements Priced {
 		
 		return f;
 	}
-//	public void setFlow(Double flow) {
-//		cachedTT = null;
-//		assert flow >= 0.0;
-//		this.flow = flow;
-//	}
-	//Used to add deltaflow to current link flow
-//	public void addFlow(Double deltaflow) {
-//		//System.out.println(this.toString()+" add: "+Double.toString(deltaflow));
-//		if (deltaflow != 0.0) cachedTT = null;
-//		this.flow += deltaflow;
-//		if (flow < 0.0) throw new RuntimeException("flow is "+flow.toString());
-//
-//		this.flow = (Double) Math.max(flow, 0.0);
-//	}
-	
-//	public void subtractFlow(Double deltaFlow) {
-//		//System.out.println(this.toString()+" sub: "+Double.toString(deltaFlow));
-//		if (deltaFlow != 0.0) cachedTT = null;
-//		this.flow -= deltaFlow;
-//		if (flow < 0.0) throw new RuntimeException("flow is "+flow.toString());
-//		this.flow = (Double) Math.max(flow, 0.0);
-//	}
-	
-//	public void changeFlow(Double delta) {
-//		if (flow + delta < 0.0) throw new NegativeFlowException("Removed too much link flow");
-//		flow = flow + delta;
-//		if (delta != 0.0) cachedTT = null;
-//	}
 
 	/**BPR Function
 	 * A link performance function using empirical constants (b and power) and 
 	 * link characteristics (current flow, capacity, & free flow travel time)
 	 * @return travel time for the link at current flow
-	 * @throws Exception 
 	 */
-	public Double getTravelTime() throws Exception {
+	public Double getTravelTime() {
 		if (cachedTT != null) return cachedTT;
 		cachedTT = getFfTime()*(1.0 + getBValue()*Math.pow(getFlow()/getCapacity(), getPower()));
 		return cachedTT;
@@ -116,9 +87,8 @@ public class Link implements Priced {
 	/**Derivative of {@link getTravelTime} formula
 	 * Calculate the derivative of the BPR function with respect to the flow
 	 * @return t': the derivative of the BPR function
-	 * @throws Exception 
 	 */
-	public Double tPrime() throws Exception {
+	public Double tPrime()  {
 		// Return (a*b*t*(v/c)^a)/v
 		//TODO: cache this
 		Double a = getPower();
@@ -131,7 +101,7 @@ public class Link implements Priced {
 		return a*va*t*b*ca;
 	}
 	
-	public Double tIntegral() throws Exception{
+	public Double tIntegral() {
 		Double a = getPower();
 		Double b = getBValue();
 		Double t = getFfTime();
@@ -139,7 +109,6 @@ public class Link implements Priced {
 		Double c = getCapacity();
 		
 		return t*v + t*b*(Math.pow(v,a+1))/((a+1)*(Math.pow(c, a)));
-		
 	}
 	
 	public Double getToll() {
@@ -163,15 +132,10 @@ public class Link implements Priced {
 	}
 	
 	public Double pricePrime(Double vot) {
-		try {
 			return vot * tPrime() + tollPrime();
-		} catch (Exception e) {
-			return tollPrime();
-		}
 	}
 
 	public synchronized void alterBushFlow(Double delta, Bush bush) {
-		// TODO Auto-generated method stub
 		Double newFlow = flow.getOrDefault(bush,0.0) + delta;
 		if (newFlow < 0.0) throw new NegativeFlowException("invalid alter request");
 		else if (newFlow > 0.0) flow.put(bush, newFlow);
@@ -180,7 +144,6 @@ public class Link implements Priced {
 	}
 
 	public Double getBushFlow(Bush bush) {
-		// TODO Auto-generated method stub
 		return flow.getOrDefault(bush, 0.0);
 	}
 }
