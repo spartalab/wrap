@@ -1,5 +1,7 @@
 package edu.utexas.wrap;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -22,7 +24,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 
 		LinkedList<Node> to = b.getTopologicalOrder();
 		Node cur;
-		HashMap<Link, Double> deltaX = new HashMap<Link, Double>();
+		HashMap<Link, BigDecimal> deltaX = new HashMap<Link, BigDecimal>();
 		b.topoSearch(false);
 		b.topoSearch(true);
 
@@ -44,8 +46,8 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			Path uPath = new Path();
 			Path lPath = new Path();
 			Node m,n;
-			Double maxDelta = Double.MAX_VALUE;
-			Double x;
+			BigDecimal maxDelta = null;
+			BigDecimal x;
 
 			//Dump all nodes on short path into a temporary set
 			//Note that this isn't optimal but it works for our purposes
@@ -63,8 +65,8 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			//Iterate through longest paths until reaching a node in shortest path
 			do {
 				//Determine the max amount of flow that can be shifted
-				x = longLink.getBushFlow(b) + deltaX.getOrDefault(longLink, 0.0);
-				if (x < maxDelta) {
+				x = longLink.getBushFlow(b).add(deltaX.getOrDefault(longLink, BigDecimal.ZERO));
+				if (maxDelta == null || x.compareTo(maxDelta) < 0) {
 					maxDelta = x;
 				}
 
@@ -73,7 +75,9 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 				uPath.addFirst(longLink);
 				longLink = b.getqLong(m);
 			} while (!shortNodes.contains(m));
-
+			
+			if (maxDelta.compareTo(BigDecimal.ZERO) <= 0) continue;
+			
 			//Reiterate through shortest path to build path up to divergence node
 			shortLink = b.getqShort(cur);
 			do {
@@ -85,21 +89,23 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			//The two paths constitute a Pair of Alternate Segments
 
 			//calculate delta h, capping at maxDelta
-			Double denom = 0.0;
-			for (Link l : lPath) denom += l.pricePrime(b.getVOT());			
-			for (Link l : uPath) denom += l.pricePrime(b.getVOT());
+			BigDecimal denom = BigDecimal.ZERO;
+			for (Link l : lPath) denom = denom.add(l.pricePrime(b.getVOT()));			
+			for (Link l : uPath) denom = denom.add(l.pricePrime(b.getVOT()));
 
 			try {
-				Double diffU = (b.getU(cur)-b.getU(m));
-				Double diffL = (b.getL(cur)-b.getL(m));
+				BigDecimal diffU = ((b.getU(cur).subtract(b.getU(m))));
+				BigDecimal diffL = ((b.getL(cur)).subtract((b.getL(m))));
+				BigDecimal deltaH = maxDelta.min(
+						( diffU.subtract(diffL)).divide(denom,RoundingMode.HALF_EVEN));
 
-				Double deltaH = Double.min(maxDelta,
-						( diffU - diffL ) / denom );
-				if( deltaH < 0.0) throw new RuntimeException("Longest path shorter than Shortest path");
+				if( deltaH.compareTo(BigDecimal.ZERO) < 0) {
+					throw new RuntimeException("Longest path shorter than Shortest path");
+				}
 
 				//add delta h to all x values in pi_L
 				for (Link l : lPath) {
-					Double t = deltaX.getOrDefault(l, 0.0) + deltaH;
+					BigDecimal t = deltaX.getOrDefault(l, BigDecimal.ZERO).add(deltaH);
 
 					deltaX.put(l, t);
 				}
@@ -107,9 +113,12 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 				//subtract delta h from all x values in pi_U
 				for (Link l : uPath) {
 					//				b.subtractFlow(l, deltaH);
-					Double t = deltaX.getOrDefault(l, 0.0) - deltaH;
-					if (t < -l.getBushFlow(b)) throw new NegativeFlowException("too much bush flow removed");
-					if (t < -l.getFlow() ) {
+					BigDecimal t = deltaX.getOrDefault(l, BigDecimal.ZERO).subtract(deltaH);
+					
+					if (t.compareTo( l.getBushFlow(b).negate() ) < 0) {
+						throw new NegativeFlowException("too much bush flow removed");
+					}
+					if (t.compareTo( l.getFlow().negate() ) < 0 ) {
 						throw new NegativeFlowException("too much link flow removed");
 					}
 					deltaX.put(l,t);
@@ -120,10 +129,11 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 
 		}
 		for (Link z : new HashSet<Link>(deltaX.keySet())) {
-			Double t = deltaX.get(z);
+			BigDecimal t = deltaX.get(z);
 
 
-			if(!( z.getBushFlow(b) + t >= 0 && z.getFlow() + t >= 0)) throw new NegativeFlowException("");
+			if(!(  t.add(z.getBushFlow(b)).compareTo(BigDecimal.ZERO) >= 0 
+					&& t.add(z.getFlow()).compareTo(BigDecimal.ZERO) >= 0)) throw new NegativeFlowException("");
 			b.changeFlow(z, t);
 		}
 
