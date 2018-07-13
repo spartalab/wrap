@@ -1,5 +1,6 @@
 package edu.utexas.wrap;
 
+import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -45,9 +46,9 @@ public class Path extends LinkedList<Link> implements Priced {
 	}
 
 	@Override
-	public Double getPrice(Double vot) {
-		Double sum = 0.0;
-		for (Link l : this) sum += l.getPrice(vot);
+	public BigDecimal getPrice(Double vot) {
+		BigDecimal sum = BigDecimal.ZERO;
+		for (Link l : this) sum =sum.add(l.getPrice(vot));
 		return sum;
 	}
 	

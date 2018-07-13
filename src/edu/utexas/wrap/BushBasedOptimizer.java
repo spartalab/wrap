@@ -1,5 +1,6 @@
 package edu.utexas.wrap;
 
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -19,7 +20,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 				equilibrateBush(b);
 				// Step ii: Improve bush
 				improveBush(b);
-
+				
 			}
 		}
 	}
@@ -35,7 +36,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		Set<Link> removedLinks = new HashSet<Link>();
 
 		for (Link l : new HashSet<Link>(usedLinks)){
-			if(l.getBushFlow(b)<=0.0){
+			if(l.getBushFlow(b).compareTo(BigDecimal.ZERO) <= 0){
 				// Check to see if this link is needed for connectivity
 				Boolean needed = true;
 				for (Link i : l.getHead().getIncomingLinks()) {
@@ -62,7 +63,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 			//Could potentially delete both incoming links to a node
 			try {
 				// Else if Ui + tij < Uj
-				if (b.getU(l.getTail()) + l.getPrice(b.getVOT()) < b.getU(l.getHead())) {
+				if (b.getU(l.getTail()).add(l.getPrice(b.getVOT())).compareTo(b.getU(l.getHead()))<0) {
 					usedLinks.add(l);
 					unusedLinks.remove(l);
 					if(!removedLinks.contains(l)) modified = true;

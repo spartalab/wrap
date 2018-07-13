@@ -78,12 +78,44 @@ import java.io.IOException;
  *   
  */
 public class wrap{
-	static Integer iteration = 1;
-	static Integer maxIterations = 160;
+
+	/**
+	 * Maximum number of optimization iterations
+	 */
+	static Integer maxIterations = 150;
+	/**
+	 * Power to which the relative gap limit is raised, 
+	 * i.e. the algorithm terminates when relativeGap is
+	 * less than 10^relativeGapExp
+	 */
+	static Integer relativeGapExp = -6;
+	/**
+	 * Maximum number of decimal places past zero that 
+	 * links should care about for flow values. Default
+	 * rounding mode is RoundingMode.HALF_EVEN
+	 */
+	static Integer decimalPlaces = 16;
+	/**
+	 * Whether flows should be printed once converged
+	 */
 	static Boolean printFlows = false;
-
+	
+	/**
+	 * @param network whose metrics are measured in the convergence criteria
+	 * @return whether or not a convergence criterion has been met
+	 */
+	private static Boolean converged(Network network) {
+		try {
+			return iteration > maxIterations || network.relativeGap() < Math.pow(10, relativeGapExp);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return iteration > maxIterations;
+		}
+	}
+	
+	private static Integer iteration = 1;
+	
 	public static void main(String[] args) {
-
 		
 		File links = new File(args[0]);
 		File odMatrix = new File(args[1]);
@@ -102,8 +134,10 @@ public class wrap{
 			Long start = System.currentTimeMillis();
 			do {
 				System.out.print("Iteration "+iteration);
+				System.out.flush();
 				opt.optimize();
 				System.out.print("\t"+network.toString()+"\r");
+				System.out.flush();
 				iteration++;
 			} while (!converged(network));
 			Long end = System.currentTimeMillis();
@@ -116,15 +150,6 @@ public class wrap{
 			e.printStackTrace();
 		} catch (Exception e) {
 			e.printStackTrace();
-		}
-	}
-
-	private static Boolean converged(Network network) {
-		try {
-			return iteration > maxIterations || network.relativeGap() < Math.pow(10, -6);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return iteration > maxIterations;
 		}
 	}
 }
