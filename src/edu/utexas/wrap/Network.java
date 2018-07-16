@@ -19,6 +19,7 @@ public class Network {
 //	protected Set<Link> links;
 	protected Set<Origin> origins;
 	protected Graph graph;
+	private Double cachedRelGap;
 	
 	public Network(Set<Origin> origins, Graph g) {
 		this.origins = origins;
@@ -211,6 +212,7 @@ public class Network {
 	}
 	
 	public Double relativeGap() {
+		if (cachedRelGap != null) return cachedRelGap;
 		Double numerator = 0.0;
 		Double denominator = 0.0;
 		
@@ -237,7 +239,8 @@ public class Network {
 			}
 		}
 		
-		return (numerator/denominator) - 1.0;
+		cachedRelGap = (numerator/denominator) - 1.0;
+		return cachedRelGap;
 	}
 	
 	public Double AEC() throws Exception {
@@ -293,6 +296,10 @@ public class Network {
 			}
 			out.println(l+"\t"+sum+"\t"+l.getTravelTime());
 		}
+	}
+
+	public void clearCache() {
+		cachedRelGap = null;
 	}
 
 }

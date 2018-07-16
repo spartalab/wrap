@@ -37,6 +37,7 @@ public abstract class Optimizer {
 		
 		Long start = System.currentTimeMillis();
 		do {
+			network.clearCache();
 			System.out.print("Iteration "+iteration);
 			iterate();
 			System.out.print("\t"+network.toString()+"\r");
