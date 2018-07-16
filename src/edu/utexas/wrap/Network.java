@@ -29,7 +29,7 @@ public class Network {
 		return new Graph(graph);
 	}
 	
-	public static Network fromFiles(File linkFile, File odMatrix, File VOTfile) throws Exception {
+	public static Network fromFiles(File linkFile, File odMatrix, File VOTfile) throws FileNotFoundException, IOException {
 
 		//Read the underlying network structure
 		Graph g = readGraph(linkFile);

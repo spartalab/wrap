@@ -1,6 +1,7 @@
 package edu.utexas.wrap;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 
 /** wrap: an Algorithm B implementation
@@ -83,31 +84,33 @@ public class wrap{
 	 * Whether flows should be printed once converged
 	 */
 	static Boolean printFlows = false;
-	
+
 	public static void main(String[] args) {
-		
-		File links = new File(args[0]);
-		File odMatrix = new File(args[1]);
-		File votBreakdown = new File(args[2]);
-		
+
+		File links 		= new File(args[0]);
+		File odMatrix	= new File(args[1]);
+		File votFile 	= new File(args[2]);
+		Network network;
 		try {
 			System.out.println("Reading network...");
-			Network network = Network.fromFiles(links, odMatrix, votBreakdown);
-			System.out.println("Initializing optimizer...");
-			Optimizer opt = new AlgorithmBOptimizer(network);
-			
-			System.out.println("Starting " + opt.toString() + "...");
-			opt.optimize();
-			
-			
-			//System.setOut(new PrintStream("VOTflow.csv"));
-			if (printFlows) network.printFlows(System.out);
-			
+			network = Network.fromFiles(links, odMatrix, votFile);
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			return;
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
+			return;
 		}
+		
+		System.out.println("Initializing optimizer...");
+		Optimizer opt = new AlgorithmBOptimizer(network);
+
+		System.out.println("Starting " + opt.toString() + "...");
+		opt.optimize();
+
+		//System.setOut(new PrintStream("VOTflow.csv"));
+		if (printFlows) network.printFlows(System.out);
 	}
 }
 
