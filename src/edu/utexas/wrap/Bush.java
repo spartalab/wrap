@@ -1,5 +1,6 @@
 package edu.utexas.wrap;
 
+import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -43,7 +44,7 @@ public class Bush {
 		this(o, g.getNodeMap(), g.getLinks(), vot, destDemand);
 	}
 
-	public void changeFlow(Link l, Double delta) {
+	public void changeFlow(Link l, BigDecimal delta) {
 		l.alterBushFlow(delta, this);
 	}
 
@@ -58,7 +59,7 @@ public class Bush {
 			Double x = getDemand(node);
 			while (!node.equals(origin.getID())) {
 				Link back = qShort.get(node);
-				changeFlow(back, x);
+				changeFlow(back, BigDecimal.valueOf(x));
 				markActive(back);
 				node = back.getTail().getID();
 			} 
@@ -148,9 +149,9 @@ public class Bush {
 			//			nodeL.put(u.n, u.key);
 			for (Link uv : nodes.get(u.n).getOutgoingLinks()) {
 				Leaf<Integer> v = Q.getLeaf(uv.getHead().getID());
-				Double alt = uv.getPrice(vot) + u.key;
-				if (alt < v.key) {
-					Q.decreaseKey(v, alt);
+				BigDecimal alt = uv.getPrice(vot).add(BigDecimal.valueOf(u.key));
+				if (alt.compareTo(BigDecimal.valueOf(v.key)) < 0) {
+					Q.decreaseKey(v, alt.doubleValue());
 					back.put(v.n, uv);
 				}
 			}
@@ -179,11 +180,11 @@ public class Bush {
 				for (Link l : d.getOutgoingLinks()) {
 					if (isActive(l)) {
 						try {
-							Double Licij = l.getPrice(vot) + getL(d);
+							BigDecimal Licij = l.getPrice(vot).add(getL(d));
 
 							Node head = l.getHead();
 							Integer id = l.getHead().getID();
-							if (qShort.get(id) == null || Licij < getL(head)) {
+							if (qShort.get(id) == null || Licij.compareTo(getL(head)) < 0) {
 								qShort.put(id, l);
 							}
 						} catch (UnreachableException e) {
@@ -203,10 +204,10 @@ public class Bush {
 				for (Link l : d.getOutgoingLinks()) {
 					if (isActive(l)) {
 						try {
-							Double Uicij = l.getPrice(vot) + getU(d);
+							BigDecimal Uicij = l.getPrice(vot).add(getU(d));
 							Node head = l.getHead();
 							Integer id = l.getHead().getID();
-							if (qLong.get(id) == null || Uicij > getU(head)) {
+							if (qLong.get(id) == null || Uicij.compareTo(getU(head)) > 0) {
 								qLong.put(id, l);
 							}
 						} catch (UnreachableException e) {
@@ -249,27 +250,23 @@ public class Bush {
 		return p;
 	}
 
-	public Double getU(Node n) throws UnreachableException {
+	public BigDecimal getU(Node n) throws UnreachableException {
 
 		Link back = qLong.get(n.getID());
-		if (n.equals(origin)) return 0.0;
+		if (n.equals(origin)) return BigDecimal.ZERO;
 		else if (back == null) throw new UnreachableException(n,this);
-		else return getU(back.getTail()) + back.getPrice(vot);
+		else return getU(back.getTail()).add(back.getPrice(vot));
 
 	}
 
-	public Double getL(Node n) throws UnreachableException {
+	public BigDecimal getL(Node n) throws UnreachableException {
 
 		Link back = qShort.get(n.getID());
-		if (n.equals(origin)) return 0.0;
+		if (n.equals(origin)) return BigDecimal.ZERO;
 		else if (back == null) throw new UnreachableException(n,this);
-		else return getL(back.getTail()) + back.getPrice(vot);
+		else return getL(back.getTail()).add(back.getPrice(vot));
 	}
 
-	@Deprecated
-	public Double getBushFlow(Link l) {
-		return l.getBushFlow(this);
-	}
 
 	public Node getOrigin() {
 		return origin;

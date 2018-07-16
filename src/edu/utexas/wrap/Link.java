@@ -1,5 +1,7 @@
 package edu.utexas.wrap;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,9 +18,9 @@ public class Link implements Priced {
 	private final Double fftime;
 	private final Double b;
 	private final Double power;
-	private Map<Bush,Double> flow;
+	private Map<Bush,BigDecimal> flow;
 	private Double toll;
-	private Double cachedTT = null;
+	private BigDecimal cachedTT = null;
 
 	public Link(Node tail, Node head, Double capacity, Double length, Double fftime, Double b, Double power, Double toll) {
 		this.tail = tail;
@@ -28,7 +30,7 @@ public class Link implements Priced {
 		this.fftime = fftime;
 		this.b = b;
 		this.power = power;
-		this.flow = new HashMap<Bush,Double>();
+		this.flow = new HashMap<Bush,BigDecimal>();
 		this.toll = toll;
 	}
 
@@ -61,10 +63,10 @@ public class Link implements Priced {
 		return length;
 	}
 
-	public Double getFlow() {
-		Double f = 0.0;
-		for (Bush b : flow.keySet()) f+=flow.get(b);
-		if (f < 0.0) throw new NegativeFlowException("Negative link flow");
+	public BigDecimal getFlow() {
+		BigDecimal f = BigDecimal.ZERO;
+		for (Bush b : flow.keySet()) f = f.add(flow.get(b));
+		if (f.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("Negative link flow");
 		
 		return f;
 	}
@@ -74,9 +76,11 @@ public class Link implements Priced {
 	 * link characteristics (current flow, capacity, & free flow travel time)
 	 * @return travel time for the link at current flow
 	 */
-	public Double getTravelTime() {
+	public BigDecimal getTravelTime() {
 		if (cachedTT != null) return cachedTT;
-		cachedTT = getFfTime()*(1.0 + getBValue()*Math.pow(getFlow()/getCapacity(), getPower()));
+		cachedTT = BigDecimal.valueOf(getFfTime()).multiply(BigDecimal.ONE.add(
+				BigDecimal.valueOf(getBValue()*Math.pow(getFlow().doubleValue()/getCapacity(), getPower()))
+				));
 		return cachedTT;
 	}
 	
@@ -88,62 +92,67 @@ public class Link implements Priced {
 	 * Calculate the derivative of the BPR function with respect to the flow
 	 * @return t': the derivative of the BPR function
 	 */
-	public Double tPrime()  {
+	public BigDecimal tPrime()  {
 		// Return (a*b*t*(v/c)^a)/v
 		//TODO: cache this
 		Double a = getPower();
-		Double b = getBValue();
-		Double t = getFfTime();
-		Double v = getFlow();
+		BigDecimal b = BigDecimal.valueOf(getBValue());
+		BigDecimal t = BigDecimal.valueOf(getFfTime());
+		Double v = getFlow().doubleValue();
 		Double c = getCapacity();
-		Double va = Math.pow(v, a-1.0);
-		Double ca = Math.pow(c, -a);
-		return a*va*t*b*ca;
+		BigDecimal va = BigDecimal.valueOf(Math.pow(v, a-1.0));
+		BigDecimal ca = BigDecimal.valueOf(Math.pow(c, -a));
+		return BigDecimal.valueOf(a).multiply(va).multiply(t).multiply(b).multiply(ca);
 	}
 	
-	public Double tIntegral() {
+	public BigDecimal tIntegral() {
 		Double a = getPower();
-		Double b = getBValue();
-		Double t = getFfTime();
-		Double v = getFlow();
+		BigDecimal b = BigDecimal.valueOf(getBValue());
+		BigDecimal t = BigDecimal.valueOf(getFfTime());
+		Double v = getFlow().doubleValue();
 		Double c = getCapacity();
 		
-		return t*v + t*b*(Math.pow(v,a+1))/((a+1)*(Math.pow(c, a)));
+		//return t*v + t*b*(Math.pow(v,a+1))/((a+1)*(Math.pow(c, a)));
+		return t.multiply(getFlow()).add(
+				t.multiply(b).multiply(BigDecimal.valueOf(Math.pow(v, a+1))).divide(
+						BigDecimal.valueOf(a).add(BigDecimal.ONE).multiply(BigDecimal.valueOf(Math.pow(c, a))),
+						RoundingMode.HALF_EVEN)
+				);
 	}
 	
 	public Double getToll() {
 		return toll;
 	}
 	
-	public Double tollPrime() {
+	public BigDecimal tollPrime() {
 		//TODO: Modify this if tolls change in response to flow
-		return 0.0;
+		return BigDecimal.ZERO;
 	}
 
 	@Override
-	public Double getPrice(Double vot) {
+	public BigDecimal getPrice(Double vot) {
 		try {
-			return getTravelTime() * vot + getToll();
+			return getTravelTime().multiply(BigDecimal.valueOf(vot)).add(BigDecimal.valueOf(getToll()));
 		}
 		catch (Exception e) {
 			e.printStackTrace();
-			return 0.0;
+			return BigDecimal.ZERO;
 		}
 	}
 	
-	public Double pricePrime(Double vot) {
-			return vot * tPrime() + tollPrime();
+	public BigDecimal pricePrime(Double vot) {
+			return BigDecimal.valueOf(vot).multiply(tPrime()).add(tollPrime());
 	}
 
-	public synchronized void alterBushFlow(Double delta, Bush bush) {
-		Double newFlow = flow.getOrDefault(bush,0.0) + delta;
-		if (newFlow < 0.0) throw new NegativeFlowException("invalid alter request");
-		else if (newFlow > 0.0) flow.put(bush, newFlow);
+	public synchronized void alterBushFlow(BigDecimal delta, Bush bush) {
+		BigDecimal newFlow = flow.getOrDefault(bush,BigDecimal.ZERO).add(delta).setScale(wrap.decimalPlaces, RoundingMode.HALF_EVEN);
+		if (newFlow.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("invalid alter request");
+		else if (newFlow.compareTo(BigDecimal.ZERO) > 0) flow.put(bush, newFlow);
 		else flow.remove(bush);
-		if (delta != 0.0) cachedTT = null;
+		if (delta.compareTo(BigDecimal.ZERO) != 0) cachedTT = null;
 	}
 
-	public Double getBushFlow(Bush bush) {
-		return flow.getOrDefault(bush, 0.0);
+	public BigDecimal getBushFlow(Bush bush) {
+		return flow.getOrDefault(bush, BigDecimal.ZERO);
 	}
 }
