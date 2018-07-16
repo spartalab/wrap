@@ -1,5 +1,6 @@
 package edu.utexas.wrap;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -8,10 +9,12 @@ import java.util.Set;
 public class Graph {
 	private Map<Node, Set<Link>> outLinks;
 	private Map<Node, Set<Link>> inLinks;
+	private Map<Integer, Node> nodeMap;
 	
 	public Graph() {
 		outLinks = new HashMap<Node, Set<Link>>();
 		inLinks = new HashMap<Node, Set<Link>>();
+		nodeMap = new HashMap<Integer, Node>();
 	}
 	
 	public Graph(Graph g) {
@@ -23,6 +26,7 @@ public class Graph {
 		for (Node n : g.inLinks.keySet()) {
 			inLinks.put(n, new HashSet<Link>(g.inLinks.get(n)));
 		}
+		nodeMap = g.nodeMap;
 	}
 	
 	public void addLink(Link link) {
@@ -35,16 +39,20 @@ public class Graph {
 		tailOuts.add(link);
 		inLinks.put(head, headIns);
 		outLinks.put(tail, tailOuts);
-		
+		nodeMap.put(link.getHead().getID(), link.getHead());
+		nodeMap.put(link.getTail().getID(), link.getTail());
 	}
 	
-	public Set<Node> getNodes(){
-		HashSet<Node> ret = new HashSet<Node>();
-		Set<Node> out = outLinks.keySet();
-		Set<Node> in = inLinks.keySet();
-		ret.addAll(in);
-		ret.addAll(out);
-		return ret;
+	public Collection<Node> getNodes(){
+		return nodeMap.values();
+	}
+	
+	public Node getNode(Integer id) {
+		return nodeMap.get(id);
+	}
+	
+	public Map<Integer, Node> getNodeMap(){
+		return nodeMap;
 	}
 	
 	public Set<Link> getLinks(){

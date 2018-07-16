@@ -42,6 +42,10 @@ public class Origin extends Node{
 		bushes.add(new Bush(this, nodes, links, vot, destDemand));
 	}
 	
+	public void buildBush(Graph g, Double vot, Map<Integer, Double> destDemand) {
+		this.buildBush(g.getLinks(), g.getNodeMap(), vot, destDemand);
+	}
+	
 	public int hashCode() {
 		return getID();
 	}

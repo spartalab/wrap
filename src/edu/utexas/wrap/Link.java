@@ -81,7 +81,7 @@ public class Link implements Priced {
 	}
 	
 	public String toString() {
-		return tail.toString() + " -> " + head.toString();
+		return tail.toString() + "\t" + head.toString();
 	}
 
 	/**Derivative of {@link getTravelTime} formula
