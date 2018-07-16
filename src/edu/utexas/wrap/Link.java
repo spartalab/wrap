@@ -145,7 +145,7 @@ public class Link implements Priced {
 	}
 
 	public synchronized void alterBushFlow(BigDecimal delta, Bush bush) {
-		BigDecimal newFlow = flow.getOrDefault(bush,BigDecimal.ZERO).add(delta).setScale(wrap.decimalPlaces, RoundingMode.HALF_EVEN);
+		BigDecimal newFlow = flow.getOrDefault(bush,BigDecimal.ZERO).add(delta).setScale(Optimizer.decimalPlaces, RoundingMode.HALF_EVEN);
 		if (newFlow.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("invalid alter request");
 		else if (newFlow.compareTo(BigDecimal.ZERO) > 0) flow.put(bush, newFlow);
 		else flow.remove(bush);

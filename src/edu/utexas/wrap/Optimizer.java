@@ -2,8 +2,15 @@ package edu.utexas.wrap;
 
 public abstract class Optimizer {
 	private Integer iteration = 1;
-	private Integer maxIterations;
+	private final Integer maxIterations;
+	private final Integer relativeGapExp = -6;
 	protected final Network network;
+	/**
+	 * Maximum number of decimal places past zero that 
+	 * links should care about for flow values. Default
+	 * rounding mode is RoundingMode.HALF_EVEN
+	 */
+	static Integer decimalPlaces = 16;
 	
 	public Optimizer(Network network) {
 		this(network, 1000);
@@ -43,7 +50,8 @@ public abstract class Optimizer {
 	
 	private Boolean converged() {
 		try {
-			return iteration > maxIterations || network.relativeGap() < Math.pow(10, -6);
+			
+			return iteration > maxIterations || network.relativeGap() < Math.pow(10, relativeGapExp);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return iteration > maxIterations;
