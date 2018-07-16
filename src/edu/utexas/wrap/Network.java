@@ -81,7 +81,7 @@ public class Network {
 			
 			while (true) {
 				line = of.readLine();
-				if (line.trim().startsWith("O") || line.trim().equals("")) break; // If we've reached the gap, move to the next origin
+				if (line == null || line.trim().startsWith("O") || line.trim().equals("")) break; // If we've reached the gap, move to the next origin
 				entries = line.trim().split(";");
 				
 				for (String entry : entries) {	// For each entry on this line
