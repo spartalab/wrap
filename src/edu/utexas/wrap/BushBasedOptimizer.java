@@ -10,7 +10,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		super(network);
 	}
 
-	public synchronized void optimize() throws Exception {
+	public synchronized void iterate() throws Exception {
 		// A single general step iteration
 		// TODO explore which bushes should be examined 
 		for (Origin o : network.getOrigins()) {

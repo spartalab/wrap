@@ -2,6 +2,7 @@ package edu.utexas.wrap;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 
 /** wrap: an Algorithm B implementation
  * @author William E. Alexander
@@ -78,39 +79,27 @@ import java.io.IOException;
  *   
  */
 public class wrap{
-	static Integer iteration = 1;
-	static Integer maxIterations = 160;
-	static Boolean printFlows = false;
+
+	static Boolean printFlows = true;
 
 	public static void main(String[] args) {
 
 		
-		File links = new File(args[0]);
-		File odMatrix = new File(args[1]);
-		File votBreakdown = new File(args[2]);
+		File links 			= new File(args[0]);
+		File odMatrix 		= new File(args[1]);
+		File votBreakdown 	= new File(args[2]);
 		
 		try {
 			System.out.println("Reading network...");
 			Network network = Network.fromFiles(links, odMatrix, votBreakdown);
+			
 			System.out.println("Initializing optimizer...");
 			Optimizer opt = new AlgorithmBOptimizer(network);
 			
 			System.out.println("Starting " + opt.toString() + "...");
-			System.out.println();
-			System.out.println("ITERATION #\tAEC\t\t\tTSTT\t\t\tBeckmann\t\tRelative Gap");
-			System.out.println("-------------------------------------------------------------------------------------------------------------");
-			Long start = System.currentTimeMillis();
-			do {
-				System.out.print("Iteration "+iteration);
-				opt.optimize();
-				System.out.print("\t"+network.toString()+"\r");
-				iteration++;
-			} while (!converged(network));
-			Long end = System.currentTimeMillis();
-			Double runtime = (end - start)/1000.0;
-			System.out.println("Runtime "+runtime+" seconds");
+			opt.optimize();
 			
-			//System.setOut(new PrintStream("VOTflow.csv"));
+			System.setOut(new PrintStream("VOTflow.csv"));
 			if (printFlows) network.printFlows(System.out);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -119,13 +108,6 @@ public class wrap{
 		}
 	}
 
-	private static Boolean converged(Network network) {
-		try {
-			return iteration > maxIterations || network.relativeGap() < Math.pow(10, -6);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return iteration > maxIterations;
-		}
-	}
+
 }
 

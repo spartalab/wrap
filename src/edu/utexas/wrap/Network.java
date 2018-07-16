@@ -9,6 +9,7 @@ import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,13 +31,91 @@ public class Network {
 	
 	public static Network fromFiles(File linkFile, File odMatrix, File VOTfile) throws Exception {
 
-		LinkedList<Double[]> VOTs = readVOTs(VOTfile);
+		//Read the underlying network structure
+		Graph g = readGraph(linkFile);
 		
-		//////////////////////////////////////////////
-		// Read links and build corresponding nodes
-		//////////////////////////////////////////////
+		//Read the VOT distribution
+		Map<Node, List<Double[]>> VOTs = readUniformVOTDistrib(VOTfile,g);
 		
-		//TODO externalize this graph constructor phase
+		//Read the OD matrices for each VOT class
+		Set<Origin> origins = readODMatrices(odMatrix, g, VOTs);
+		
+		return new Network(origins, g);
+	}
+
+	/**
+	 * @param odMatrix
+	 * @param g
+	 * @param VOTs
+	 * @return
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	private static Set<Origin> readODMatrices(File odMatrix, Graph g, Map<Node, List<Double[]>> VOTs)
+			throws FileNotFoundException, IOException {
+		/////////////////////////////////////
+		// Read OD Matrix and assign flows
+		/////////////////////////////////////
+		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
+		String line;
+		Integer origID;
+		Node old;
+		HashMap<Integer, Double> dests;
+		String[] entries;
+		Origin o;
+		String[] cols;
+		Integer destID;
+		Double demand;
+		HashMap<Integer, Double> bushDests;
+		Set<Origin> origins = new HashSet<Origin>();
+		
+		do { // Move past headers in the file
+			line = of.readLine();
+		} while (!line.startsWith("Origin"));
+		
+		while (true) { //While more Origins to read
+			origID = Integer.parseInt(line.trim().split("\\s+")[1]);
+			old = g.getNode(origID);	// Retrieve the existing node with that ID
+			dests = new HashMap<Integer, Double>();
+			
+			
+			while (true) {
+				line = of.readLine();
+				if (line.trim().startsWith("O") || line.trim().equals("")) break; // If we've reached the gap, move to the next origin
+				entries = line.trim().split(";");
+				
+				for (String entry : entries) {	// For each entry on this line
+					cols = entry.split(":");	// Get its values
+					destID = Integer.parseInt(cols[0].trim());
+					demand = Double.parseDouble(cols[1].trim());
+					if (demand > 0.0) dests.put(destID, demand);
+				}
+			}
+			o = new Origin(old); 	// Construct an origin to replace it
+			
+			for (Double[] entry : VOTs.get(old)) {
+				bushDests = new HashMap<Integer, Double>();
+				for (Integer temp : dests.keySet()) {
+					bushDests.put(temp, entry[1] * dests.get(temp));
+				}
+				o.buildBush(g, entry[0], bushDests);
+			}
+			origins.add(o);
+			
+			while (line != null && !line.startsWith("O")) line = of.readLine(); // Read in the origin header
+			if (line == null || line.trim().equals("")) break; // If the origin header is empty, we've reached the end of the list
+		}
+		of.close();
+		return origins;
+	}
+
+	/**
+	 * @param linkFile
+	 * @return
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	private static Graph readGraph(File linkFile) throws FileNotFoundException, IOException {
 		String line;
 		Graph g = new Graph();
 		BufferedReader lf = new BufferedReader(new FileReader(linkFile));
@@ -78,72 +157,17 @@ public class Network {
 			links.add(link);
 		}
 		lf.close();
-		
-		/////////////////////////////////////
-		// Read OD Matrix and assign flows
-		/////////////////////////////////////
-		//TODO externalize this Origin builder
-		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
-		Integer origID;
-		Node old;
-		HashMap<Integer, Double> dests;
-		String[] entries;
-		Origin o;
-		String[] cols;
-		Integer destID;
-		Double demand;
-		HashMap<Integer, Double> bushDests;
-		Set<Origin> origins = new HashSet<Origin>();
-		
-		do { // Move past headers in the file
-			line = of.readLine();
-		} while (!line.startsWith("Origin"));
-		
-		while (true) { //While more Origins to read
-			origID = Integer.parseInt(line.trim().split("\\s+")[1]);
-			old = nodes.get(origID);	// Retrieve the existing node with that ID
-			dests = new HashMap<Integer, Double>();
-			
-			
-			while (true) {
-				line = of.readLine();
-				if (line.trim().startsWith("O") || line.trim().equals("")) break; // If we've reached the gap, move to the next origin
-				entries = line.trim().split(";");
-				
-				for (String entry : entries) {	// For each entry on this line
-					cols = entry.split(":");	// Get its values
-					destID = Integer.parseInt(cols[0].trim());
-					demand = Double.parseDouble(cols[1].trim());
-					if (demand > 0.0) dests.put(destID, demand);
-				}
-			}
-			o = new Origin(old); 	// Construct an origin to replace it
-			
-			for (Double[] entry : VOTs) {
-				bushDests = new HashMap<Integer, Double>();
-				for (Integer temp : dests.keySet()) {
-					bushDests.put(temp, entry[1] * dests.get(temp));
-				}
-				o.buildBush(links, nodes, entry[0], bushDests);
-			}
-			origins.add(o);
-			
-			while (line != null && !line.startsWith("O")) line = of.readLine(); // Read in the origin header
-			if (line == null || line.trim().equals("")) break; // If the origin header is empty, we've reached the end of the list
-		}
-		of.close();
-		
-		
-		return new Network(origins, g);
+		return g;
 	}
 
 	/**
 	 * @param VOTfile
+	 * @param g 
 	 * @return
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	private static LinkedList<Double[]> readVOTs(File VOTfile) throws FileNotFoundException, IOException {
+	private static Map<Node, List<Double[]>> readUniformVOTDistrib(File VOTfile, Graph g) throws FileNotFoundException, IOException {
 		// TODO handle this better so that breakdowns can be different per origin
 		BufferedReader vf = new BufferedReader(new FileReader(VOTfile));
 		LinkedList<Double[]> VOTs = new LinkedList<Double[]>();
@@ -161,7 +185,12 @@ public class Network {
 			VOTs.add(entry);
 		} while (!line.equals(""));
 		vf.close();
-		return VOTs;
+		
+		Map<Node, List<Double[]>> votMap = new HashMap<Node, List<Double[]>>();
+		for (Node n : g.getNodes()) {
+			votMap.put(n, VOTs);
+		}
+		return votMap;
 	}
 	
 	public Set<Link> getLinks() {
@@ -254,7 +283,7 @@ public class Network {
 	}
 
 	public void printFlows(PrintStream out) {
-		System.out.println("\r\n\r\nLink\tflow");
+		System.out.println("\r\n\r\nLink\tflow\ttravelTime");
 		for (Link l : getLinks()) {
 			Double sum = 0.0;
 			for (Origin o : origins) {
@@ -262,7 +291,7 @@ public class Network {
 						sum += l.getBushFlow(b);	
 				}
 			}
-			out.println(l+"\t"+sum);
+			out.println(l+"\t"+sum+"\t"+l.getTravelTime());
 		}
 	}
 

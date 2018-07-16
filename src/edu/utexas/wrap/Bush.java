@@ -39,6 +39,9 @@ public class Bush {
 		dumpFlow();
 	}
 
+	public Bush(Origin o, Graph g, Double vot, Map<Integer, Double> destDemand) {
+		this(o, g.getNodeMap(), g.getLinks(), vot, destDemand);
+	}
 
 	public void changeFlow(Link l, Double delta) {
 		l.alterBushFlow(delta, this);
