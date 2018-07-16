@@ -87,6 +87,10 @@ public class Origin {
 		return self;
 	}
 	
+	public void buildBush(Graph g, Double vot, Map<Integer, Double> destDemand) {
+		this.buildBush(g.getLinks(), g.getNodeMap(), vot, destDemand);
+	}
+	
 	public int hashCode() {
 		return self.getID();
 	}
