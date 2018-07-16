@@ -2,6 +2,7 @@ package edu.utexas.wrap;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -24,23 +25,23 @@ class SPAlgorithmsTest {
 		
 		AB = new Link(A, B, null, null, null, null, null,null) {
 			@Override
-			public Double getTravelTime() { return 15.0;}
+			public BigDecimal getTravelTime() { return new BigDecimal("15");}
 		};
 		AC = new Link(A, C, null, null, null, null, null, null) {
 			@Override
-			public Double getTravelTime() { return 22.0;}
+			public BigDecimal getTravelTime() { return new BigDecimal("22.0");}
 		};
 		BC = new Link(B, C, null, null, null, null, null, null) {
 			@Override
-			public Double getTravelTime() { return 5.0;}
+			public BigDecimal getTravelTime() { return new BigDecimal("5.0");}
 		};
 		CD = new Link(C, D, null, null, null, null, null, null) {
 			@Override
-			public Double getTravelTime() { return 6.0;}
+			public BigDecimal getTravelTime() { return new BigDecimal("6.0");}
 		};
 		BD = new Link(B, D, null, null, null, null, null, null) {
 			@Override
-			public Double getTravelTime() { return 17.0;}
+			public BigDecimal getTravelTime() { return new BigDecimal("17.0");}
 		};
 
 		A.addOutgoing(AB);

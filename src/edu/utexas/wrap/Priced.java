@@ -1,6 +1,8 @@
 package edu.utexas.wrap;
 
+import java.math.BigDecimal;
+
 public interface Priced {
 
-	public Double getPrice(Double vot);
+	public BigDecimal getPrice(Double vot);
 }

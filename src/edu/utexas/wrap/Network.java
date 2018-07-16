@@ -205,7 +205,7 @@ public class Network {
 		Double tstt = 0.0;
 		
 		for(Link l: getLinks()){
-			tstt += l.getFlow() * l.getTravelTime();
+			tstt += l.getFlow().doubleValue() * l.getTravelTime().doubleValue();
 		}
 		return tstt;
 	}
@@ -217,7 +217,7 @@ public class Network {
 		for (Link l : getLinks()) {
 			for (Origin o : origins) {
 				for (Bush b : o.getBushes()) {
-					numerator += l.getBushFlow(b) * l.getPrice(b.getVOT());
+					numerator += l.getBushFlow(b).doubleValue() * l.getPrice(b.getVOT()).doubleValue();
 				}
 			}
 		}
@@ -229,7 +229,7 @@ public class Network {
 					
 					Double demand = b.getDemand(d.getID());
 					try {
-						denominator += b.getL(d) * demand;
+						denominator += b.getL(d).doubleValue() * demand;
 					} catch (UnreachableException e) {
 						if (e.demand > 0.0)	e.printStackTrace();
 					}
@@ -263,7 +263,7 @@ public class Network {
 	public Double Beckmann() {
 		Double b = 0.0;
 		for (Link l : getLinks()) {
-			b += l.tIntegral();
+			b += l.tIntegral().doubleValue();
 		}
 		return b;
 	}
@@ -288,7 +288,7 @@ public class Network {
 			Double sum = 0.0;
 			for (Origin o : origins) {
 				for (Bush b : o.getBushes()) {
-						sum += l.getBushFlow(b);	
+						sum += l.getBushFlow(b).doubleValue();	
 				}
 			}
 			out.println(l+"\t"+sum+"\t"+l.getTravelTime());
