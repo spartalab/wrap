@@ -25,11 +25,11 @@ public abstract class Optimizer {
 		return network;
 	}
 
-	public abstract void iterate() throws Exception;
+	public abstract void iterate();
 		
 	public abstract String toString();
 	
-	public void optimize() throws Exception {
+	public void optimize(){
 		
 		System.out.println();
 		System.out.println("ITERATION #\tAEC\t\t\tTSTT\t\t\tBeckmann\t\tRelative Gap");

@@ -11,7 +11,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		super(network);
 	}
 
-	public synchronized void iterate() throws Exception {
+	public synchronized void iterate() {
 		// A single general step iteration
 		// TODO explore which bushes should be examined 
 		for (Origin o : network.getOrigins()) {
@@ -25,9 +25,9 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		}
 	}
 
-	protected abstract void equilibrateBush(Bush b) throws Exception;
+	protected abstract void equilibrateBush(Bush b);
 
-	protected Boolean improveBush(Bush b) throws Exception {
+	protected Boolean improveBush(Bush b) {
 		//TODO cleanup
 		boolean modified = false;
 		Set<Link> usedLinks = new HashSet<Link>(b.getLinks());
