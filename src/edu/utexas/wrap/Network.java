@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -28,6 +29,10 @@ public class Network {
 	
 	public Graph getGraph() {
 		return new Graph(graph);
+	}
+	
+	public Integer numNodes() {
+		return graph.numNodes();
 	}
 	
 	public static Network fromFiles(File linkFile, File odMatrix, File VOTfile) throws FileNotFoundException, IOException {
@@ -227,11 +232,12 @@ public class Network {
 		for (Origin o : origins) {
 			for (Bush b : o.getBushes()) {
 				b.topoSearch(false);
+				Map<Node, BigDecimal> cache = new HashMap<Node, BigDecimal>(graph.numNodes());
 				for (Node d : b.getNodes()) {
 					
 					Double demand = b.getDemand(d.getID());
 					try {
-						denominator += b.getL(d).doubleValue() * demand;
+						denominator += b.getCachedL(d,cache).doubleValue() * demand;
 					} catch (UnreachableException e) {
 						if (e.demand > 0.0)	e.printStackTrace();
 					}

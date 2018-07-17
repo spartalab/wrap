@@ -171,6 +171,7 @@ public class Bush {
 	public void topoSearch(Boolean longest)  {
 		// Initialize all nodeU values as 0 and all nodes as not visited
 		List<Node> to = getTopologicalOrder();
+		Map<Node, BigDecimal> cache = new HashMap<Node, BigDecimal>(nodes.size());
 		//SHORTEST PATHS
 		if(!longest) {
 			//Initialize infinity-filled nodeL and empty qShort
@@ -180,12 +181,13 @@ public class Bush {
 				for (Link l : d.getOutgoingLinks()) {
 					if (isActive(l)) {
 						try {
-							BigDecimal Licij = l.getPrice(vot).add(getL(d));
+							BigDecimal Licij = l.getPrice(vot).add(getCachedL(d,cache));
 
 							Node head = l.getHead();
 							Integer id = l.getHead().getID();
-							if (qShort.get(id) == null || Licij.compareTo(getL(head)) < 0) {
+							if (qShort.get(id) == null || Licij.compareTo(getCachedL(head,cache)) < 0) {
 								qShort.put(id, l);
+								cache.put(head, Licij);
 							}
 						} catch (UnreachableException e) {
 							if (getDemand(d.getID()) > 0.0) {
@@ -204,11 +206,12 @@ public class Bush {
 				for (Link l : d.getOutgoingLinks()) {
 					if (isActive(l)) {
 						try {
-							BigDecimal Uicij = l.getPrice(vot).add(getU(d));
+							BigDecimal Uicij = l.getPrice(vot).add(getCachedU(d,cache));
 							Node head = l.getHead();
 							Integer id = l.getHead().getID();
-							if (qLong.get(id) == null || Uicij.compareTo(getU(head)) > 0) {
+							if (qLong.get(id) == null || Uicij.compareTo(getCachedU(head,cache)) > 0) {
 								qLong.put(id, l);
+								cache.put(head, Uicij);
 							}
 						} catch (UnreachableException e) {
 							if (getDemand(d.getID()) > 0.0) {
@@ -219,7 +222,6 @@ public class Bush {
 				}
 			}
 		}
-
 	}
 
 	public Link getqShort(Node n) {
@@ -266,6 +268,30 @@ public class Bush {
 		else if (back == null) throw new UnreachableException(n,this);
 		else return getL(back.getTail()).add(back.getPrice(vot));
 	}
+	
+	public BigDecimal getCachedU(Node n, Map<Node, BigDecimal> cache) throws UnreachableException {
+		Link back = qLong.get(n.getID());
+		if (n.equals(origin)) return BigDecimal.ZERO;
+		else if (back == null) throw new UnreachableException(n, this);
+		else if (cache.containsKey(n)) return cache.get(n);
+		else {
+			BigDecimal newU = getCachedU(back.getTail(),cache).add(back.getPrice(vot));
+			cache.put(n, newU);
+			return newU;
+		}
+	}
+	
+	public BigDecimal getCachedL(Node n, Map<Node, BigDecimal> cache) throws UnreachableException {
+		Link back = qShort.get(n.getID());
+		if (n.equals(origin)) return BigDecimal.ZERO;
+		else if (back == null) throw new UnreachableException(n,this);
+		else if (cache.containsKey(n)) return cache.get(n);
+		else {
+			BigDecimal newL = getCachedL(back.getTail(), cache).add(back.getPrice(vot));
+			cache.put(n,newL);
+			return newL;
+		}
+	}
 
 
 	public Node getOrigin() {
@@ -303,6 +329,5 @@ public class Bush {
 	public void setActive(Set<Link> m) {
 		activeLinks = m;
 		topoOrder = null;
-
 	}
 }

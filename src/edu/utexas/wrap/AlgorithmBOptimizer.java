@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Set;
 
 
@@ -92,10 +93,12 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			BigDecimal denom = BigDecimal.ZERO;
 			for (Link l : lPath) denom = denom.add(l.pricePrime(b.getVOT()));			
 			for (Link l : uPath) denom = denom.add(l.pricePrime(b.getVOT()));
-
+			
 			try {
-				BigDecimal diffU = ((b.getU(cur).subtract(b.getU(m))));
-				BigDecimal diffL = ((b.getL(cur)).subtract((b.getL(m))));
+				Map<Node, BigDecimal> cache = new HashMap<Node, BigDecimal>(network.numNodes());
+				BigDecimal diffU = ((b.getCachedU(cur,cache).subtract(b.getCachedU(m,cache))));
+				cache = new HashMap<Node, BigDecimal>(network.numNodes());
+				BigDecimal diffL = ((b.getCachedL(cur,cache)).subtract((b.getCachedL(m,cache))));
 				BigDecimal deltaH = maxDelta.min(
 						( diffU.subtract(diffL)).divide(denom,RoundingMode.HALF_EVEN));
 
