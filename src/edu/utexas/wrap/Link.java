@@ -21,6 +21,7 @@ public class Link implements Priced {
 	private Map<Bush,BigDecimal> flow;
 	private Double toll;
 	private BigDecimal cachedTT = null;
+	private BigDecimal cachedPrice = null;
 
 	public Link(Node tail, Node head, Double capacity, Double length, Double fftime, Double b, Double power, Double toll) {
 		this.tail = tail;
@@ -131,6 +132,7 @@ public class Link implements Priced {
 
 	@Override
 	public BigDecimal getPrice(Double vot) {
+		if (cachedPrice != null) return cachedPrice;
 		try {
 			return getTravelTime().multiply(BigDecimal.valueOf(vot)).add(BigDecimal.valueOf(getToll()));
 		}
@@ -149,7 +151,10 @@ public class Link implements Priced {
 		if (newFlow.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("invalid alter request");
 		else if (newFlow.compareTo(BigDecimal.ZERO) > 0) flow.put(bush, newFlow);
 		else flow.remove(bush);
-		if (delta.compareTo(BigDecimal.ZERO) != 0) cachedTT = null;
+		if (delta.compareTo(BigDecimal.ZERO) != 0) {
+			cachedTT = null;
+			cachedPrice = null;
+		}
 	}
 
 	public BigDecimal getBushFlow(Bush bush) {

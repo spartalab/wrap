@@ -1,7 +1,9 @@
 package edu.utexas.wrap;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 public abstract class BushBasedOptimizer extends Optimizer {
@@ -57,13 +59,18 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		
 		b.topoSearch(false);
 		b.topoSearch(true);
-
+		Map<Node, BigDecimal> cache = new HashMap<Node, BigDecimal>(network.numNodes());
 		for (Link l : new HashSet<Link>(unusedLinks)) {
 			// If link is active, do nothing (removing flow should mark as inactive)
 			//Could potentially delete both incoming links to a node
 			try {
 				// Else if Ui + tij < Uj
-				if (b.getU(l.getTail()).add(l.getPrice(b.getVOT())).compareTo(b.getU(l.getHead()))<0) {
+				
+				BigDecimal tailU = b.getCachedU(l.getTail(), cache);
+				BigDecimal headU = b.getCachedU(l.getHead(), cache);
+			
+				
+				if (tailU.add(l.getPrice(b.getVOT())).compareTo(headU)<0) {
 					usedLinks.add(l);
 					unusedLinks.remove(l);
 					if(!removedLinks.contains(l)) modified = true;
