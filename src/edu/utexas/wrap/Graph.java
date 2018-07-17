@@ -105,4 +105,9 @@ public class Graph {
 		outLinks.remove(node);
 	}
 
+	public Integer numNodes() {
+		// TODO Auto-generated method stub
+		return nodeMap.size();
+	}
+
 }
