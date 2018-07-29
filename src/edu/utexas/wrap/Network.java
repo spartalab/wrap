@@ -16,11 +16,13 @@ import java.util.Set;
 
 public class Network {
 
-	//private Map<Integer, Node> nodes;
+//	private Map<Integer, Node> nodes;
 //	protected Set<Link> links;
 	protected Set<Origin> origins;
 	protected Graph graph;
 	private Double cachedRelGap;
+	private Double cachedTSTT;
+//	private Double cachedTSGC;
 	
 	public Network(Set<Origin> origins, Graph g) {
 		this.origins = origins;
@@ -208,12 +210,27 @@ public class Network {
 	}
 	
 	public Double tstt() {
+		if (cachedTSTT != null) return cachedTSTT;
 		Double tstt = 0.0;
 		
 		for(Link l: getLinks()){
 			tstt += l.getFlow().doubleValue() * l.getTravelTime().doubleValue();
 		}
+		cachedTSTT = tstt;
 		return tstt;
+	}
+	
+	public Double tsgc() {
+		double tsgc = 0.0;
+		
+		for (Origin o : origins) {
+			for (Bush b : o.getBushes()) {
+				for (Link l : b.getLinks()) {
+					tsgc += l.getBushFlow(b).doubleValue() * l.getPrice(b.getVOT()).doubleValue();
+				}
+			}
+		}
+		return tsgc;
 	}
 	
 	public Double relativeGap() {
@@ -252,15 +269,15 @@ public class Network {
 	public Double AEC() throws Exception {
 		//TODO: Modify for generalized cost
 		throw new Exception();
-//		Double numerator = tstt();
+//		Double numerator = tsgc();
 //		Double denominator = 0.0;
 //		
 //		for (Origin o : origins) {
 //			for (Bush b : o.getBushes()) {
-//				b.topoSearch(false);
 //				for (Node d : b.getNodes()) {
 //					Double demand = o.getDemand(d.getID());
-//					if (demand > 0.0) numerator -= b.getL(d) * demand;
+//					Map<Node, BigDecimal> cache = new HashMap<Node, BigDecimal>();
+//					if (demand > 0.0) numerator -= b.getCachedL(d, cache).doubleValue() * demand;
 //					denominator += demand;
 //				}
 //			}
@@ -306,6 +323,8 @@ public class Network {
 
 	public void clearCache() {
 		cachedRelGap = null;
+		cachedTSTT = null;
+//		cachedTSGC = null;
 	}
 
 }

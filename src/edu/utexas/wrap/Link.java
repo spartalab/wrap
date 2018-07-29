@@ -20,6 +20,7 @@ public class Link implements Priced {
 	private final Double power;
 	private Map<Bush,BigDecimal> flow;
 	private Double toll;
+	private BigDecimal cachedFlow = null;
 	private BigDecimal cachedTT = null;
 	private BigDecimal cachedPrice = null;
 
@@ -65,10 +66,11 @@ public class Link implements Priced {
 	}
 
 	public BigDecimal getFlow() {
+		if (cachedFlow != null) return cachedFlow;
 		BigDecimal f = BigDecimal.ZERO;
 		for (Bush b : flow.keySet()) f = f.add(flow.get(b));
 		if (f.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("Negative link flow");
-		
+		cachedFlow = f;
 		return f;
 	}
 
@@ -114,11 +116,11 @@ public class Link implements Priced {
 		Double c = getCapacity();
 		
 		//return t*v + t*b*(Math.pow(v,a+1))/((a+1)*(Math.pow(c, a)));
-		return t.multiply(getFlow()).add(
-				t.multiply(b).multiply(BigDecimal.valueOf(Math.pow(v, a+1))).divide(
-						BigDecimal.valueOf(a).add(BigDecimal.ONE).multiply(BigDecimal.valueOf(Math.pow(c, a))),
-						RoundingMode.HALF_EVEN)
-				);
+		return t.multiply(getFlow()).add(	// t*v + (
+				t.multiply(b).multiply(BigDecimal.valueOf(Math.pow(v, a+1))).divide(	// t*b*(v^a+1)/(
+						BigDecimal.valueOf(a).add(BigDecimal.ONE).multiply(BigDecimal.valueOf(Math.pow(c, a))),	// a+1*(c^a)
+						RoundingMode.HALF_EVEN)											// )
+				);							// )
 	}
 	
 	public Double getToll() {
@@ -154,6 +156,7 @@ public class Link implements Priced {
 		if (delta.compareTo(BigDecimal.ZERO) != 0) {
 			cachedTT = null;
 			cachedPrice = null;
+			cachedFlow = null;
 		}
 	}
 
