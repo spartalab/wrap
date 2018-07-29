@@ -3,7 +3,7 @@ package edu.utexas.wrap;
 public abstract class Optimizer {
 	private Integer iteration = 1;
 	private final Integer maxIterations;
-	private final Integer relativeGapExp = -6;
+	private final Integer relativeGapExp;
 	protected final Network network;
 	/**
 	 * Maximum number of decimal places past zero that 
@@ -17,10 +17,20 @@ public abstract class Optimizer {
 	}
 	
 	public Optimizer(Network network, Integer maxIters) {
-		this.network = network;
-		maxIterations = maxIters;
+		this(network, maxIters, -4);
+	}
+	
+	public Optimizer(Network network, Integer maxIters, Integer exp) {
+		this(network, maxIters, -4, 16);
 	}
 
+	public Optimizer(Network network, Integer maxIters, Integer exp, Integer places) {
+		this.network	= network;
+		maxIterations	= maxIters;
+		relativeGapExp	= exp;
+		decimalPlaces	= places;
+	}
+	
 	public Network getNetwork() {
 		return network;
 	}
@@ -32,21 +42,23 @@ public abstract class Optimizer {
 	public void optimize(){
 		
 		System.out.println();
-		System.out.println("ITERATION #\tAEC\t\t\tTSTT\t\t\tBeckmann\t\tRelative Gap");
-		System.out.println("-------------------------------------------------------------------------------------------------------------");
+		System.out.println("Iter. #\tAEC\t\t\tTSTT\t\t\tBeckmann\t\tRelative Gap\t\tRuntime");
+		System.out.println("---------------------------------------------------------------------------------------------------------------");
 		
 		Long start = System.currentTimeMillis();
+		Long end; Double runtime;
 		do {
 			network.clearCache();
-			System.out.print("Iteration "+iteration);
+			System.out.print(iteration);
 			iterate();
-			System.out.print("\t"+network.toString()+"\r");
+			System.out.print("\t"+network.toString());
 			iteration++;
+			end = System.currentTimeMillis();
+			runtime = (end - start)/1000.0;
+			System.out.println("\t"+runtime+" s");
+			start = System.currentTimeMillis();
 		} while (!converged());
-		Long end = System.currentTimeMillis();
 		
-		Double runtime = (end - start)/1000.0;
-		System.out.println("Runtime "+runtime+" seconds");
 	}
 	
 	private Boolean converged() {
