@@ -14,6 +14,18 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 	public AlgorithmBOptimizer(Network network) {
 		super(network);
 	}
+	
+	public AlgorithmBOptimizer(Network network, Integer maxIters) {
+		super(network, maxIters, -6);
+	}
+	
+	public AlgorithmBOptimizer(Network network, Integer maxIters, Integer exp) {
+		super(network, maxIters, exp, 16);
+	}
+
+	public AlgorithmBOptimizer(Network network, Integer maxIters, Integer exp, Integer places) {
+		super(network,maxIters,exp,places);
+	}
 
 	/** Implement the Algorithm B version of bush equilibration
 	 * @param b a bush to be equilibrated

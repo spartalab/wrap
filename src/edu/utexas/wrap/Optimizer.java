@@ -5,8 +5,8 @@ import java.io.PrintStream;
 
 public abstract class Optimizer {
 	private Integer iteration = 1;
-	private final Integer maxIterations;
-	private final Integer relativeGapExp;
+	protected final Integer maxIterations;
+	protected final Integer relativeGapExp;
 	protected final Network network;
 	/**
 	 * Maximum number of decimal places past zero that 

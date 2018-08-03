@@ -13,6 +13,18 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		super(network);
 	}
 
+	public BushBasedOptimizer(Network network, Integer maxIters) {
+		super(network, maxIters, -6);
+	}
+	
+	public BushBasedOptimizer(Network network, Integer maxIters, Integer exp) {
+		super(network, maxIters, exp, 16);
+	}
+
+	public BushBasedOptimizer(Network network, Integer maxIters, Integer exp, Integer places) {
+		super(network,maxIters,exp,places);
+	}
+	
 	public synchronized void iterate() {
 		// A single general step iteration
 		// TODO explore which bushes should be examined 
