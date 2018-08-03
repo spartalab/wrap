@@ -83,34 +83,42 @@ public class wrap{
 	/**
 	 * Whether flows should be printed once converged
 	 */
-	static Boolean printFlows = false;
+	static Boolean printFlows = true;
+	static double alter = 1.0;
+
 
 	public static void main(String[] args) {
 
 		File links 		= new File(args[0]);
 		File odMatrix	= new File(args[1]);
-		File votFile 	= new File(args[2]);
-		Network network;
-		try {
-			System.out.println("Reading network...");
-			network = Network.fromFiles(links, odMatrix, votFile);
-
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-			return;
-		} catch (IOException e) {
-			e.printStackTrace();
-			return;
-		}
+		File votFile;
+		if (args.length < 3) votFile = new File("bkdn.txt"); else
+		votFile 	= new File(args[2]);
 		
-		System.out.println("Initializing optimizer...");
-		Optimizer opt = new AlgorithmBOptimizer(network);
+		
+		Network network;
+		for (alter = 0.5; alter < 2.10; alter += 0.1) {
+			try {
+				System.out.println("Reading network...");
+				network = Network.fromFiles(links, odMatrix, votFile);
 
-		System.out.println("Starting " + opt.toString() + "...");
-		opt.optimize();
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+				return;
+			} catch (IOException e) {
+				e.printStackTrace();
+				return;
+			}
+		
 
-		//System.setOut(new PrintStream("VOTflow.csv"));
-		if (printFlows) network.printFlows(System.out);
+			System.out.println("Initializing optimizer...");
+			Optimizer opt = new AlgorithmBOptimizer(network);
+
+			System.out.println("Starting " + opt.toString() + "...");
+			opt.optimize();
+		}
+//		System.setOut(new PrintStream("VOTflow.csv"));
+//		if (printFlows) network.printFlows(System.out);
 	}
 }
 

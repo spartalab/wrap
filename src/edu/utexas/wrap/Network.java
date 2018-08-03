@@ -95,7 +95,7 @@ public class Network {
 				for (String entry : entries) {	// For each entry on this line
 					cols = entry.split(":");	// Get its values
 					destID = Integer.parseInt(cols[0].trim());
-					demand = Double.parseDouble(cols[1].trim());
+					demand = Double.parseDouble(cols[1].trim()) * wrap.alter;
 					if (demand > 0.0) dests.put(destID, demand);
 				}
 			}
@@ -309,7 +309,7 @@ public class Network {
 	}
 
 	public void printFlows(PrintStream out) {
-		System.out.println("\r\n\r\nLink\tflow\ttravelTime");
+		out.println("\r\n\r\nTail\tHead\tflow");
 		for (Link l : getLinks()) {
 			Double sum = 0.0;
 			for (Origin o : origins) {
@@ -317,7 +317,7 @@ public class Network {
 						sum += l.getBushFlow(b).doubleValue();	
 				}
 			}
-			out.println(l+"\t"+sum+"\t"+l.getTravelTime());
+			out.println(l+"\t"+sum);
 		}
 	}
 

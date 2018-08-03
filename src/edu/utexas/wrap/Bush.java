@@ -57,6 +57,7 @@ public class Bush {
 			if (nodes.get(node).getIncomingLinks().isEmpty()) continue;
 
 			Double x = getDemand(node);
+			if (x.equals(0.0)) continue;
 			while (!node.equals(origin.getID())) {
 				Link back = qShort.get(node);
 				changeFlow(back, BigDecimal.valueOf(x));
