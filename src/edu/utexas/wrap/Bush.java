@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -45,7 +46,8 @@ public class Bush {
 	}
 
 	public void changeFlow(Link l, BigDecimal delta) {
-		l.alterBushFlow(delta, this);
+		if (l.alterBushFlow(delta, this)) activate(l);
+		else deactivate(l);
 	}
 
 	/**Initialize demand flow on shortest paths
@@ -57,10 +59,11 @@ public class Bush {
 			if (nodes.get(node).getIncomingLinks().isEmpty()) continue;
 
 			Double x = getDemand(node);
+			if (x.equals(0.0)) continue;
 			while (!node.equals(origin.getID())) {
 				Link back = qShort.get(node);
 				changeFlow(back, BigDecimal.valueOf(x));
-				markActive(back);
+				activate(back);
 				node = back.getTail().getID();
 			} 
 		}
@@ -233,23 +236,35 @@ public class Bush {
 	}
 
 	public Path getShortestPath(Node n) {
+		return getShortestPath(n, origin);
+	}
+	
+	public Path getShortestPath(Node end, Node start) {
 		Path p = new Path();
-		Link curLink = getqShort(n);
-		while (curLink != null) {
+		if (end.equals(start)) return p;
+		Link curLink = getqShort(end);
+		while (curLink != null && !curLink.getHead().equals(start)) {
 			p.addFirst(curLink);
 			curLink = getqShort(curLink.getTail());
 		}
 		return p;
 	}
-
+	
 	public Path getLongestPath(Node n) {
+		return getLongestPath(n,origin);
+	}
+	
+	public Path getLongestPath(Node end, Node start) {
+		
 		Path p = new Path();
-		Link curLink = getqLong(n);
-		while (curLink != null) {
+		if (end.equals(start)) return p;
+		Link curLink = getqLong(end);
+		while (curLink != null && !curLink.getHead().equals(start)) {
 			p.addFirst(curLink);
 			curLink = getqLong(curLink.getTail());
 		}
 		return p;
+		
 	}
 
 	public BigDecimal getU(Node n) throws UnreachableException {
@@ -318,10 +333,25 @@ public class Bush {
 		return "ORIG="+origin.getID()+"VOT="+vot;
 	}
 
-	private void markActive(Link l) {
+	void activate(Link l) {
 		if (activeLinks.add(l)) topoOrder = null;
 	}
 
+	private void markInactive(Link l) {
+		if (activeLinks.remove(l)) topoOrder = null;
+	}
+	
+	Boolean deactivate(Link l) {
+		Node head = l.getHead();
+		for (Link i : head.getIncomingLinks()) {
+			if (activeLinks.contains(i) && !i.equals(l)) {
+				markInactive(l);
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	private boolean isActive(Link l) {
 		return activeLinks.contains(l);
 	}
@@ -329,5 +359,61 @@ public class Bush {
 	public void setActive(Set<Link> m) {
 		activeLinks = m;
 		topoOrder = null;
+	}
+	
+	void prune() {
+		for (Link l : new HashSet<Link>(activeLinks)){
+			if(!l.hasFlow(this)){
+				// Check to see if this link is needed for connectivity, deactivate link in bush if no flow left
+				deactivate(l);
+			}
+
+		}
+	}
+	
+	private Integer depthL(Node n) {
+		if (n.equals(origin)) return 0;
+		return depthL(getqShort(n).getTail())+1;
+	}
+	
+	private Integer depthU(Node n) {
+		if (n.equals(origin)) return 0;
+		return depthU(getqLong(n).getTail())+1;
+	}
+	
+	Node divergeNode(Node l, Node u) {
+		if (l.equals(origin) || u.equals(origin)) return origin;
+		
+		Path lPath = getShortestPath(l);
+		Path uPath = getLongestPath(u);
+		
+		Set<Node> lNodes = new HashSet<Node>();
+		Set<Node> uNodes = new HashSet<Node>();
+		
+		Iterator<Link> lIter = lPath.descendingIterator();
+		Iterator<Link> uIter = uPath.descendingIterator();
+		
+		Link uLink, lLink;
+		while (lIter.hasNext() && uIter.hasNext()) {
+			lLink = lIter.next();
+			uLink = uIter.next();
+			
+			if (lLink.getTail().equals(uLink.getTail())) return lLink.getTail();
+			else if (uNodes.contains(lLink.getTail())) return lLink.getTail();
+			else if (lNodes.contains(uLink.getTail())) return uLink.getTail();
+			else {
+				lNodes.add(lLink.getTail());
+				uNodes.add(uLink.getTail());
+			}
+		}
+		while (uIter.hasNext()) {
+			uLink = uIter.next();
+			if (lNodes.contains(uLink.getTail())) return uLink.getTail();
+		}
+		while (lIter.hasNext()) {
+			lLink = lIter.next();
+			if (uNodes.contains(lLink.getTail())) return lLink.getTail();
+		}
+		return null;
 	}
 }

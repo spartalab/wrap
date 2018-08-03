@@ -3,6 +3,7 @@ package edu.utexas.wrap;
 import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class Path extends LinkedList<Link> implements Priced {
 
@@ -23,7 +24,7 @@ public class Path extends LinkedList<Link> implements Priced {
 		}
 		return sp;
 	}
-	
+
 	public boolean equals(Path other) {
 		if (other.size() != size()) return false;
 		for (Integer i = 0; i < size(); i++) {
@@ -51,7 +52,7 @@ public class Path extends LinkedList<Link> implements Priced {
 		for (Link l : this) sum =sum.add(l.getPrice(vot));
 		return sum;
 	}
-	
+
 	public String toString() {
 		String ret = "[";
 		for (Node n : nodes()) ret += n.toString()+",";
@@ -62,6 +63,17 @@ public class Path extends LinkedList<Link> implements Priced {
 		Double sum = 0.0;
 		for (Link l : this) sum += l.getLength();
 		return sum;
+	}
+
+	public BigDecimal getMinFlow(Bush b, Map<Link, BigDecimal> deltaX) {
+		BigDecimal maxDelta = null;
+		for (Link l : this) {
+			BigDecimal x = l.getBushFlow(b).add(deltaX.getOrDefault(l, BigDecimal.ZERO));
+			if (maxDelta == null || x.compareTo(maxDelta) < 0) {
+				maxDelta = x;
+			}
+		}
+		return maxDelta;
 	}
 
 }

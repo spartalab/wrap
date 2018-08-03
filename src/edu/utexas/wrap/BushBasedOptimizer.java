@@ -31,34 +31,18 @@ public abstract class BushBasedOptimizer extends Optimizer {
 
 	protected Boolean improveBush(Bush b) {
 		//TODO cleanup
+
+
+		b.prune();
+
 		boolean modified = false;
 		Set<Link> usedLinks = new HashSet<Link>(b.getLinks());
 		Set<Link> unusedLinks = new HashSet<Link>(network.getLinks());
 		unusedLinks.removeAll(usedLinks);
-		Set<Link> removedLinks = new HashSet<Link>();
-
-		for (Link l : new HashSet<Link>(usedLinks)){
-			if(l.getBushFlow(b).compareTo(BigDecimal.ZERO) <= 0){
-				// Check to see if this link is needed for connectivity
-				Boolean needed = true;
-				for (Link i : l.getHead().getIncomingLinks()) {
-					if (!i.equals(l) && usedLinks.contains(i) && !removedLinks.contains(i)) {
-						needed = false;
-						break;
-					}
-				}
-				if (!needed) {
-					usedLinks.remove(l);	// deactivate link in bush if no flow left
-					unusedLinks.add(l);
-					removedLinks.add(l);
-				}
-			}
-
-		}
-		b.setActive(usedLinks);
 		
 		b.topoSearch(false);
 		b.topoSearch(true);
+		
 		Map<Node, BigDecimal> cache = new HashMap<Node, BigDecimal>(network.numNodes());
 		for (Link l : new HashSet<Link>(unusedLinks)) {
 			// If link is active, do nothing (removing flow should mark as inactive)
@@ -71,9 +55,8 @@ public abstract class BushBasedOptimizer extends Optimizer {
 			
 				
 				if (tailU.add(l.getPrice(b.getVOT())).compareTo(headU)<0) {
-					usedLinks.add(l);
-					unusedLinks.remove(l);
-					if(!removedLinks.contains(l)) modified = true;
+					b.activate(l);
+					modified = true;
 				}
 			} catch (UnreachableException e) {
 				if (e.demand > 0) e.printStackTrace();
@@ -81,7 +64,6 @@ public abstract class BushBasedOptimizer extends Optimizer {
 			}
 
 		}
-		b.setActive(usedLinks);
 		return modified;
 	}
 }

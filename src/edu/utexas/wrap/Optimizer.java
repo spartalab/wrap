@@ -1,5 +1,8 @@
 package edu.utexas.wrap;
 
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
+
 public abstract class Optimizer {
 	private Integer iteration = 1;
 	private final Integer maxIterations;
@@ -17,11 +20,11 @@ public abstract class Optimizer {
 	}
 	
 	public Optimizer(Network network, Integer maxIters) {
-		this(network, maxIters, -4);
+		this(network, maxIters, -6);
 	}
 	
 	public Optimizer(Network network, Integer maxIters, Integer exp) {
-		this(network, maxIters, -4, 16);
+		this(network, maxIters, exp, 16);
 	}
 
 	public Optimizer(Network network, Integer maxIters, Integer exp, Integer places) {
@@ -47,16 +50,26 @@ public abstract class Optimizer {
 		
 		Long start = System.currentTimeMillis();
 		Long end; Double runtime;
+		
+		
 		do {
 			network.clearCache();
 			System.out.print(iteration);
 			iterate();
 			System.out.print("\t"+network.toString());
-			iteration++;
+			
 			end = System.currentTimeMillis();
 			runtime = (end - start)/1000.0;
 			System.out.println("\t"+runtime+" s");
+			
+			if (wrap.printFlows) try {
+				network.printFlows(new PrintStream("flows.txt"));
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+			iteration++;
 			start = System.currentTimeMillis();
+
 		} while (!converged());
 		
 	}

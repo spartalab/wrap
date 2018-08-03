@@ -148,19 +148,28 @@ public class Link implements Priced {
 			return BigDecimal.valueOf(vot).multiply(tPrime()).add(tollPrime());
 	}
 
-	public synchronized void alterBushFlow(BigDecimal delta, Bush bush) {
-		BigDecimal newFlow = flow.getOrDefault(bush,BigDecimal.ZERO).add(delta).setScale(Optimizer.decimalPlaces, RoundingMode.HALF_EVEN);
-		if (newFlow.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("invalid alter request");
-		else if (newFlow.compareTo(BigDecimal.ZERO) > 0) flow.put(bush, newFlow);
-		else flow.remove(bush);
+	public synchronized Boolean alterBushFlow(BigDecimal delta, Bush bush) {
 		if (delta.compareTo(BigDecimal.ZERO) != 0) {
 			cachedTT = null;
 			cachedPrice = null;
 			cachedFlow = null;
 		}
+		BigDecimal newFlow = flow.getOrDefault(bush,BigDecimal.ZERO).add(delta).setScale(Optimizer.decimalPlaces, RoundingMode.HALF_EVEN);
+		if (newFlow.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("invalid alter request");
+		else if (newFlow.compareTo(BigDecimal.ZERO) > 0) flow.put(bush, newFlow);
+		else {
+			flow.remove(bush);
+			return false;
+		}
+		return true;
+
 	}
 
 	public BigDecimal getBushFlow(Bush bush) {
 		return flow.getOrDefault(bush, BigDecimal.ZERO);
+	}
+	
+	public Boolean hasFlow(Bush bush) {
+		return flow.get(bush) != null;
 	}
 }
