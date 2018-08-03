@@ -309,7 +309,7 @@ public class Network {
 	}
 
 	public void printFlows(PrintStream out) {
-		System.out.println("\r\n\r\nLink\tflow\ttravelTime");
+		System.out.println("\r\n\r\nTail\tHead\tflow");
 		for (Link l : getLinks()) {
 			Double sum = 0.0;
 			for (Origin o : origins) {
@@ -317,7 +317,7 @@ public class Network {
 						sum += l.getBushFlow(b).doubleValue();	
 				}
 			}
-			out.println(l+"\t"+sum+"\t"+l.getTravelTime());
+			out.println(l+"\t"+sum);
 		}
 	}
 
