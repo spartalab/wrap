@@ -303,7 +303,7 @@ public class Network {
 		}
 		out += String.format("%6.10E",tstt()) + "\t";
 		out += String.format("%6.10E",Beckmann()) + "\t";
-		out += String.format("%6.10E",relativeGap()+"\t");
+		out += String.format("%6.10E",relativeGap())+"\t";
 		out += String.format("%6.10E",VMT());
 	
 		return out;
