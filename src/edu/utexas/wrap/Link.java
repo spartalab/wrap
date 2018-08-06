@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Semaphore;
 
 /**
  * @author rahulpatel
@@ -18,6 +19,7 @@ public class Link implements Priced {
 	private final Double fftime;
 	private final Double b;
 	private final Double power;
+	public final Semaphore lock;
 	private Map<Bush,BigDecimal> flow;
 	private Double toll;
 	private BigDecimal cachedFlow = null;
@@ -34,6 +36,7 @@ public class Link implements Priced {
 		this.power = power;
 		this.flow = new HashMap<Bush,BigDecimal>();
 		this.toll = toll;
+		lock = new Semaphore(1);
 	}
 
 	//B and power are empirical constants in the BPR function
@@ -172,4 +175,6 @@ public class Link implements Priced {
 	public Boolean hasFlow(Bush bush) {
 		return flow.get(bush) != null;
 	}
+	
+	
 }
