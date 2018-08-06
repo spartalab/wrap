@@ -96,26 +96,32 @@ public class wrap{
 		votFile 	= new File(args[2]);
 		
 		
-		Network network;
 		for (alter = 0.5; alter < 2.10; alter += 0.1) {
-			try {
-				System.out.println("Reading network...");
-				network = Network.fromFiles(links, odMatrix, votFile);
+			Thread t = new Thread() {
+				public void run() {
+					Network network = null;
+					try {
+						System.out.println("Reading network...");
+						network = Network.fromFiles(links, odMatrix, votFile);
 
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-				return;
-			} catch (IOException e) {
-				e.printStackTrace();
-				return;
-			}
-		
+					} catch (FileNotFoundException e) {
+						e.printStackTrace();
+						return;
+					} catch (IOException e) {
+						e.printStackTrace();
+						return;
+					}
 
-			System.out.println("Initializing optimizer...");
-			Optimizer opt = new AlgorithmBOptimizer(network);
 
-			System.out.println("Starting " + opt.toString() + "...");
-			opt.optimize();
+					System.out.println("Initializing optimizer...");
+					Optimizer opt = new AlgorithmBOptimizer(network);
+
+					System.out.println("Starting " + opt.toString() + "...");
+					opt.optimize();
+				}
+			};
+			
+			t.run();
 		}
 //		System.setOut(new PrintStream("VOTflow.csv"));
 //		if (printFlows) network.printFlows(System.out);
