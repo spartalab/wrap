@@ -45,9 +45,9 @@ public abstract class Optimizer {
 	public void optimize(){
 		
 		System.out.println();
-		System.out.println("Iter. #\tAEC\t\t\tTSTT\t\t\tBeckmann\t\tRelative Gap\t\tRuntime");
-		System.out.println("---------------------------------------------------------------------------------------------------------------");
-		
+//		System.out.println("Iter. #\tAEC\t\t\tTSTT\t\t\tBeckmann\t\tRelative Gap\t\tRuntime");
+//		System.out.println("---------------------------------------------------------------------------------------------------------------");
+//		
 		Long start = System.currentTimeMillis();
 		Long end; Double runtime;
 		
@@ -56,14 +56,19 @@ public abstract class Optimizer {
 			network.clearCache();
 			System.out.print(iteration);
 			iterate();
-			System.out.print("\t"+network.toString());
+			//System.out.print("\t"+network.toString());
 			
 			end = System.currentTimeMillis();
 			runtime = (end - start)/1000.0;
 			System.out.println("\t"+runtime+" s");
 			
 			if (wrap.printFlows) try {
-				network.printFlows(new PrintStream("alter-"+wrap.alter+"-iter-"+iteration+".txt"));
+				PrintStream ps = new PrintStream("alter-"+wrap.alter+"-iter-"+iteration+".txt");
+				ps.println("AEC\t\t\tTSTT\t\t\tBeckmann\t\tRelative Gap\t\tVMT");
+				ps.println(network.toString());
+				ps.println("---------------------------------------------------------------------------------------------------------------");
+				
+				network.printFlows(ps);
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}

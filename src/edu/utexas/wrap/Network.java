@@ -303,13 +303,22 @@ public class Network {
 		}
 		out += String.format("%6.10E",tstt()) + "\t";
 		out += String.format("%6.10E",Beckmann()) + "\t";
-		out += String.format("%6.10E",relativeGap());
+		out += String.format("%6.10E",relativeGap()+"\t");
+		out += String.format("%6.10E",VMT());
 	
 		return out;
 	}
 
+	private Double VMT() {
+		Double v = 0.0;
+		for (Link l : getLinks()) {
+			v += l.getFlow().doubleValue() * l.getLength();
+		}
+		return v;
+	}
+
 	public void printFlows(PrintStream out) {
-		out.println("\r\n\r\nTail\tHead\tflow");
+		out.println("\r\nTail\tHead\tflow");
 		for (Link l : getLinks()) {
 			Double sum = 0.0;
 			for (Origin o : origins) {
