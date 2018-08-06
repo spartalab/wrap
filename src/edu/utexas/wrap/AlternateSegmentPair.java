@@ -1,7 +1,6 @@
 package edu.utexas.wrap;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.Map;
 
 public class AlternateSegmentPair {
