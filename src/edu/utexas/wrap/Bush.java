@@ -338,7 +338,7 @@ public class Bush {
 	private void markInactive(Link l) {
 		if (activeLinks.remove(l)) {
 			topoOrder = null;
-			l.lock.release();
+//			l.lock.release();
 		}
 	}
 	
@@ -431,20 +431,5 @@ public class Bush {
 		return new AlternateSegmentPair(getShortestPath(terminus, diverge), getLongestPath(terminus,diverge), this);
 	}
 	
-	public Boolean acquireLocks() {
-		for (Link l : activeLinks) {
-			try {
-				l.lock.acquire();
-			} catch (InterruptedException e) {
-				return false;
-			}
-		}
-		return true;
-	}
-	
-	public void releaseLocks() {
-		for (Link l : activeLinks) {
-			l.lock.release();
-		}
-	}
+
 }

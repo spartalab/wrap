@@ -1,7 +1,6 @@
 package edu.utexas.wrap;
 
 import java.math.BigDecimal;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -25,19 +24,43 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		super(network,maxIters,exp,places);
 	}
 	
-	public synchronized void iterate() {
+	public void iterate() {
 		// A single general step iteration
 		// TODO explore which bushes should be examined 
+		
+		
+		Set<Thread> pool = new HashSet<Thread>();
+		
 		for (Origin o : network.getOrigins()) {
 			for (Bush b : o.getBushes()) {
-				//TODO: Consider improving before equilibrating
-				// Step ii: Improve bush
-				improveBush(b);
-				// Step i: Equilibrate bush
-				equilibrateBush(b);
 				
+				Thread t = new Thread() {
+					public void run() {
+						// Step ii: Improve bushes in parallel
+						improveBush(b);
+					}
+				};
+				pool.add(t);
+				t.start();
 			}
 		}
+		for (Thread t : pool) {
+			try {
+				t.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		
+		for (Origin o : network.getOrigins()) {
+			for (Bush b : o.getBushes()) {
+						// Step i: Equilibrate bushes sequentially
+						equilibrateBush(b);
+
+			}
+		}
+
 	}
 
 	protected abstract void equilibrateBush(Bush b);
@@ -45,7 +68,6 @@ public abstract class BushBasedOptimizer extends Optimizer {
 	protected Boolean improveBush(Bush b) {
 		//TODO cleanup
 
-		b.acquireLocks();
 		b.prune();
 
 		boolean modified = false;
@@ -53,6 +75,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		Set<Link> unusedLinks = new HashSet<Link>(network.getLinks());
 		unusedLinks.removeAll(usedLinks);
 		
+//		network.acquireLocks();
 		b.topoSearch(false);
 		Map<Node, BigDecimal> cache = b.topoSearch(true);
 //		Map<Node, BigDecimal> cache = new HashMap<Node, BigDecimal>(network.numNodes());
@@ -77,7 +100,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 			}
 
 		}
-		b.releaseLocks();
+//		network.releaseLocks();
 		return modified;
 	}
 }

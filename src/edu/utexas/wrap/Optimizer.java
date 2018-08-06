@@ -60,7 +60,7 @@ public abstract class Optimizer {
 			
 			end = System.currentTimeMillis();
 			runtime = (end - start)/1000.0;
-			System.out.println("\t"+runtime+" s");
+			System.out.println("\t"+String.format("%4.3f", runtime)+" s");
 			
 			if (wrap.printFlows) try {
 				network.printFlows(new PrintStream("flows.txt"));

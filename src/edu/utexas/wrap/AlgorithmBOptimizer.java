@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Map;
 
 
 public class AlgorithmBOptimizer extends BushBasedOptimizer{
@@ -24,7 +23,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 	}
 
 	public AlgorithmBOptimizer(Network network, Integer maxIters, Integer exp, Integer places) {
-		super(network,maxIters,exp,places);
+		super(network, maxIters, exp, places);
 	}
 
 	/** Implement the Algorithm B version of bush equilibration
@@ -32,8 +31,8 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 	 * @param to the bush's topological order
 	 * @throws Exception if there was negative bush flow
 	 */
-	protected void equilibrateBush(Bush b) {
-		b.acquireLocks();
+	protected synchronized void equilibrateBush(Bush b) {
+//		network.acquireLocks();
 		LinkedList<Node> to = b.getTopologicalOrder();
 		Node cur;
 		HashMap<Link, BigDecimal> deltaX = new HashMap<Link, BigDecimal>();
@@ -87,7 +86,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			b.changeFlow(z, deltaX.get(z));
 		}
 		
-		b.releaseLocks();
+//		network.releaseLocks();
 	}
 
 	@Override

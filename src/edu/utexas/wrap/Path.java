@@ -49,7 +49,7 @@ public class Path extends LinkedList<Link> implements Priced {
 	@Override
 	public BigDecimal getPrice(Double vot) {
 		BigDecimal sum = BigDecimal.ZERO;
-		for (Link l : this) sum =sum.add(l.getPrice(vot));
+		for (Link l : this) sum = sum.add(l.getPrice(vot));
 		return sum;
 	}
 

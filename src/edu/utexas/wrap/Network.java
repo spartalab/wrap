@@ -23,10 +23,14 @@ public class Network {
 	private Double cachedRelGap;
 	private Double cachedTSTT;
 //	private Double cachedTSGC;
+	private GapCalculator gc;
+	private TSTTCalculator tc;
+	private BeckmannCalculator bc;
 	
 	public Network(Set<Origin> origins, Graph g) {
 		this.origins = origins;
 		graph = g;
+
 	}
 	
 	public Graph getGraph() {
@@ -301,9 +305,25 @@ public class Network {
 		} catch (Exception e) {
 			out += "Error           \t";
 		}
-		out += String.format("%6.10E",tstt()) + "\t";
-		out += String.format("%6.10E",Beckmann()) + "\t";
-		out += String.format("%6.10E",relativeGap());
+		
+//		Double tstt = tstt();
+//		Double beck = Beckmann();
+//		Double relg = relativeGap();
+	
+		gc = new GapCalculator(this);
+		tc = new TSTTCalculator(this);
+		bc = new BeckmannCalculator(this);
+
+		tc.start();gc.start();bc.start();
+		try {
+			tc.join();gc.join();bc.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		
+		out += String.format("%6.10E",tc.tstt) + "\t";
+		out += String.format("%6.10E",bc.beck) + "\t";
+		out += String.format("%6.10E",gc.gap);
 	
 		return out;
 	}
@@ -327,4 +347,60 @@ public class Network {
 //		cachedTSGC = null;
 	}
 
+}
+
+class TSTTCalculator extends Thread {
+	Double tstt;
+	Network net;
+	
+	public TSTTCalculator(Network net) {
+		this.net = net;
+	}
+	
+	@Override
+	public void run() {
+		tstt = net.tstt();
+	}
+}
+
+class TSGCCalculator extends Thread {
+	Double tsgc;
+	Network net;
+	
+	public TSGCCalculator(Network net) {
+		this.net = net;
+	}
+	
+	@Override
+	public void run() {
+		tsgc = net.tsgc();
+	}
+}
+
+class BeckmannCalculator extends Thread {
+	Double beck;
+	Network net;
+	
+	public BeckmannCalculator(Network net) {
+		this.net = net;
+	}
+	
+	@Override
+	public void run() {
+		beck = net.Beckmann();
+	}
+}
+
+class GapCalculator extends Thread {
+	Double gap;
+	Network net;
+	
+	public GapCalculator(Network net) {
+		this.net = net;
+	}
+	
+	@Override
+	public void run() {
+		gap = net.relativeGap();
+	}
 }
