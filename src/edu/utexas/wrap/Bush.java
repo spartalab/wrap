@@ -56,14 +56,13 @@ public class Bush {
 	private void dumpFlow() {
 		for (Integer node : nodes.keySet()) {
 
-			if (nodes.get(node).getIncomingLinks().isEmpty()) continue;
 
 			Double x = getDemand(node);
-			if (x.equals(0.0)) continue;
+			if (x.equals(0.0) || nodes.get(node).getIncomingLinks().isEmpty()) continue;
 			while (!node.equals(origin.getID())) {
 				Link back = qShort.get(node);
 				changeFlow(back, BigDecimal.valueOf(x));
-				activate(back);
+//				activate(back);
 				node = back.getTail().getID();
 			} 
 		}
@@ -86,8 +85,7 @@ public class Bush {
 	 */
 	private LinkedList<Node> generateTopoOrder() {
 		// Start with a set of all bush edges
-		Set<Link> currentLinks = new HashSet<Link>();
-		for (Link l : activeLinks) if (isActive(l)) currentLinks.add(l);
+		Set<Link> currentLinks = new HashSet<Link>(activeLinks);
 
 		LinkedList<Node> to = new LinkedList<Node>();
 		LinkedList<Node> S = new LinkedList<Node>();
@@ -121,10 +119,9 @@ public class Bush {
 				}
 			}
 		}
-		if (!currentLinks.isEmpty()) {
-			throw new RuntimeException("Cyclic graph error");
-		}
-		else return to;
+		if (!currentLinks.isEmpty()) throw new RuntimeException("Cyclic graph error");
+		
+		return to;
 	}
 
 
@@ -133,7 +130,7 @@ public class Bush {
 	 * To be called on initialization. Overwrites nodeL and qShort.
 	 * @throws Exception if link travel times are unavailable
 	 */
-	private void runDijkstras() throws Exception {
+	private void runDijkstras() {
 		// Initialize every nodeL to infinity except this, the origin
 		// Initialize the empty map of finalized nodes, the map of 
 		// eligible nodes to contain this origin only, and the 
@@ -171,7 +168,7 @@ public class Bush {
 	 * @param longest switch for Longest/Shortest
 	 * @param to a topological ordering of the nodes
 	 */
-	public void topoSearch(Boolean longest)  {
+	public Map<Node, BigDecimal> topoSearch(Boolean longest)  {
 		// Initialize all nodeU values as 0 and all nodes as not visited
 		List<Node> to = getTopologicalOrder();
 		Map<Node, BigDecimal> cache = new HashMap<Node, BigDecimal>(nodes.size());
@@ -225,6 +222,7 @@ public class Bush {
 				}
 			}
 		}
+		return cache;
 	}
 
 	public Link getqShort(Node n) {
@@ -338,7 +336,10 @@ public class Bush {
 	}
 
 	private void markInactive(Link l) {
-		if (activeLinks.remove(l)) topoOrder = null;
+		if (activeLinks.remove(l)) {
+			topoOrder = null;
+			l.lock.release();
+		}
 	}
 	
 	Boolean deactivate(Link l) {
@@ -415,5 +416,35 @@ public class Bush {
 			if (uNodes.contains(lLink.getTail())) return lLink.getTail();
 		}
 		return null;
+	}
+	
+	public AlternateSegmentPair getShortLongASP(Node terminus) {
+		Link shortLink = getqShort(terminus);
+		Link longLink = getqLong(terminus);
+
+		// If there is no divergence node, move on to the next topological node
+		if (longLink.equals(shortLink)) return null;
+
+		//Else calculate divergence node
+		
+		Node diverge = divergeNode(shortLink.getTail(), longLink.getTail());
+		return new AlternateSegmentPair(getShortestPath(terminus, diverge), getLongestPath(terminus,diverge), this);
+	}
+	
+	public Boolean acquireLocks() {
+		for (Link l : activeLinks) {
+			try {
+				l.lock.acquire();
+			} catch (InterruptedException e) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public void releaseLocks() {
+		for (Link l : activeLinks) {
+			l.lock.release();
+		}
 	}
 }

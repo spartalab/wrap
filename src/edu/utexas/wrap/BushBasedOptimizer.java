@@ -30,10 +30,11 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		// TODO explore which bushes should be examined 
 		for (Origin o : network.getOrigins()) {
 			for (Bush b : o.getBushes()) {
-				// Step i: Equilibrate bush
-				equilibrateBush(b);
+				//TODO: Consider improving before equilibrating
 				// Step ii: Improve bush
 				improveBush(b);
+				// Step i: Equilibrate bush
+				equilibrateBush(b);
 				
 			}
 		}
@@ -44,7 +45,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 	protected Boolean improveBush(Bush b) {
 		//TODO cleanup
 
-
+		b.acquireLocks();
 		b.prune();
 
 		boolean modified = false;
@@ -53,10 +54,10 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		unusedLinks.removeAll(usedLinks);
 		
 		b.topoSearch(false);
-		b.topoSearch(true);
+		Map<Node, BigDecimal> cache = b.topoSearch(true);
+//		Map<Node, BigDecimal> cache = new HashMap<Node, BigDecimal>(network.numNodes());
 		
-		Map<Node, BigDecimal> cache = new HashMap<Node, BigDecimal>(network.numNodes());
-		for (Link l : new HashSet<Link>(unusedLinks)) {
+		for (Link l : unusedLinks) {
 			// If link is active, do nothing (removing flow should mark as inactive)
 			//Could potentially delete both incoming links to a node
 			try {
@@ -76,6 +77,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 			}
 
 		}
+		b.releaseLocks();
 		return modified;
 	}
 }
