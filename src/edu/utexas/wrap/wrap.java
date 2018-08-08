@@ -93,7 +93,10 @@ public class wrap{
 		Network network;
 		try {
 			System.out.println("Reading network...");
-			network = Network.fromFiles(links, odMatrix, votFile);
+			NetworkFactory n = new NetworkFactory();
+			n.readTNTPGraph(links);
+			n.readTNTPUniformODs(votFile, odMatrix);
+			network = n.getNetwork();
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
