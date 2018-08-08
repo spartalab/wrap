@@ -24,10 +24,10 @@ public class NetworkFactory {
 		return new Network(origins,g);
 	}
 
-	public void readTNTPUniformODs(File VOTfile, File odMatrix) throws FileNotFoundException {
+	public void readTNTPUniformProportionalVOTDemand(File VOTfile, File odMatrix) throws FileNotFoundException {
 		if (g == null) throw new RuntimeException("Graph must be constrcuted before reading OD matrix");
 		try {
-			readMultipleVOTSingleTypeMatrix(odMatrix,readUniformVOTDistrib(VOTfile));
+			readTNTPOriginSpecificProportionalVOTDemand(odMatrix,readUniformVOTDistrib(VOTfile));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -35,13 +35,15 @@ public class NetworkFactory {
 
 
 	/**
+	 * Used when each origin has a specific VOT proportion breakdown with a single class
+	 * 
 	 * @param odMatrix
 	 * @param VOTs
 	 * @return
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	private void readMultipleVOTSingleTypeMatrix(File odMatrix, Map<Node, List<Double[]>> VOTs)
+	public void readTNTPOriginSpecificProportionalVOTDemand(File odMatrix, Map<Node, List<Double[]>> VOTs)
 			throws FileNotFoundException, IOException {
 		/////////////////////////////////////
 		// Read OD Matrix and assign flows
