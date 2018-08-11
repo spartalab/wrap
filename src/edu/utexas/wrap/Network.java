@@ -60,7 +60,7 @@ public class Network {
 		for (Origin o : origins) {
 			for (Bush b : o.getBushes()) {
 				for (Link l : b.getLinks()) {
-					tsgc += l.getBushFlow(b).doubleValue() * l.getPrice(b.getVOT()).doubleValue();
+					tsgc += l.getBushFlow(b).doubleValue() * l.getPrice(b.getVOT(),b.getVehicleClass()).doubleValue();
 				}
 			}
 		}
@@ -75,7 +75,7 @@ public class Network {
 		for (Link l : getLinks()) {
 			for (Origin o : origins) {
 				for (Bush b : o.getBushes()) {
-					numerator += l.getBushFlow(b).doubleValue() * l.getPrice(b.getVOT()).doubleValue();
+					numerator += l.getBushFlow(b).doubleValue() * l.getPrice(b.getVOT(),b.getVehicleClass()).doubleValue();
 				}
 			}
 		}
