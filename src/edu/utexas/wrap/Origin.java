@@ -38,12 +38,12 @@ public class Origin extends Node{
 	 * @param nodes all nodes in the network
 	 * @throws Exception 
 	 */
-	public void buildBush(Set<Link> links, Map<Integer, Node> nodes, Double vot, Map<Integer, Double> destDemand) {
-		bushes.add(new Bush(this, nodes, links, vot, destDemand));
+	public void buildBush(Set<Link> links, Map<Integer, Node> nodes, Double vot, Map<Integer, Double> destDemand, VehicleClass c) {
+		bushes.add(new Bush(this, nodes, links, vot, destDemand, c));
 	}
 	
-	public void buildBush(Graph g, Double vot, Map<Integer, Double> destDemand) {
-		this.buildBush(g.getLinks(), g.getNodeMap(), vot, destDemand);
+	public void buildBush(Graph g, Double vot, Map<Integer, Double> destDemand, VehicleClass c) {
+		this.buildBush(g.getLinks(), g.getNodeMap(), vot, destDemand, c);
 	}
 	
 	public int hashCode() {

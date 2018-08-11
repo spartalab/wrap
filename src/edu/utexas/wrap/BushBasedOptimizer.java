@@ -90,7 +90,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 				BigDecimal headU = b.getCachedU(l.getHead(), cache);
 			
 				
-				if (tailU.add(l.getPrice(b.getVOT())).compareTo(headU)<0) {
+				if (tailU.add(l.getPrice(b.getVOT(),b.getVehicleClass())).compareTo(headU)<0) {
 					b.activate(l);
 					modified = true;
 				}

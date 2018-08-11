@@ -35,8 +35,8 @@ public class AlternateSegmentPair {
 	}
 	
 	public BigDecimal getPriceDiff() {
-		BigDecimal longPrice = longPath.getPrice(bush.getVOT());				
-		BigDecimal shortPrice = shortPath.getPrice(bush.getVOT()); 
+		BigDecimal longPrice = longPath.getPrice(bush.getVOT(), bush.getVehicleClass());				
+		BigDecimal shortPrice = shortPath.getPrice(bush.getVOT(), bush.getVehicleClass()); 
 		if( longPrice.compareTo(shortPrice) < 0) throw new RuntimeException("Longest path shorter than Shortest path");
 		
 		return longPrice.subtract(shortPrice);

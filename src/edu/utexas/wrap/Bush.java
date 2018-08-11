@@ -15,6 +15,8 @@ public class Bush {
 	// Bush structure
 	private final Origin origin;
 	private final Double vot;
+	private final VehicleClass c;
+
 	private final Map<Integer, Double>	destDemand;
 	private final Map<Integer, Node> 	nodes; 
 	private Set<Link> activeLinks; // Set of active links
@@ -26,9 +28,10 @@ public class Bush {
 	private LinkedList<Node>		topoOrder;
 
 
-	public Bush(Origin o, Map<Integer,Node> nodes, Set<Link> links, Double vot, Map<Integer, Double> destDemand) {
+	public Bush(Origin o, Map<Integer,Node> nodes, Set<Link> links, Double vot, Map<Integer, Double> destDemand, VehicleClass c) {
 		origin = o;
 		this.vot = vot;
+		this.c = c;
 		this.destDemand = destDemand;
 		//Initialize flow and status maps
 		activeLinks = new HashSet<Link>(links.size(),1.0f);
@@ -41,8 +44,8 @@ public class Bush {
 		dumpFlow();
 	}
 
-	public Bush(Origin o, Graph g, Double vot, Map<Integer, Double> destDemand) {
-		this(o, g.getNodeMap(), g.getLinks(), vot, destDemand);
+	public Bush(Origin o, Graph g, Double vot, Map<Integer, Double> destDemand, VehicleClass c) {
+		this(o, g.getNodeMap(), g.getLinks(), vot, destDemand, c);
 	}
 
 	public void changeFlow(Link l, BigDecimal delta) {
@@ -149,7 +152,7 @@ public class Bush {
 			//			nodeL.put(u.n, u.key);
 			for (Link uv : nodes.get(u.n).getOutgoingLinks()) {
 				Leaf<Integer> v = Q.getLeaf(uv.getHead().getID());
-				BigDecimal alt = uv.getPrice(vot).add(BigDecimal.valueOf(u.key));
+				BigDecimal alt = uv.getPrice(vot,c).add(BigDecimal.valueOf(u.key));
 				if (alt.compareTo(BigDecimal.valueOf(v.key)) < 0) {
 					Q.decreaseKey(v, alt.doubleValue());
 					back.put(v.n, uv);
@@ -181,7 +184,7 @@ public class Bush {
 				for (Link l : d.getOutgoingLinks()) {
 					if (isActive(l)) {
 						try {
-							BigDecimal Licij = l.getPrice(vot).add(getCachedL(d,cache));
+							BigDecimal Licij = l.getPrice(vot,c).add(getCachedL(d,cache));
 
 							Node head = l.getHead();
 							Integer id = l.getHead().getID();
@@ -206,7 +209,7 @@ public class Bush {
 				for (Link l : d.getOutgoingLinks()) {
 					if (isActive(l)) {
 						try {
-							BigDecimal Uicij = l.getPrice(vot).add(getCachedU(d,cache));
+							BigDecimal Uicij = l.getPrice(vot,c).add(getCachedU(d,cache));
 							Node head = l.getHead();
 							Integer id = l.getHead().getID();
 							if (qLong.get(id) == null || Uicij.compareTo(getCachedU(head,cache)) > 0) {
@@ -270,7 +273,7 @@ public class Bush {
 		Link back = qLong.get(n.getID());
 		if (n.equals(origin)) return BigDecimal.ZERO;
 		else if (back == null) throw new UnreachableException(n,this);
-		else return getU(back.getTail()).add(back.getPrice(vot));
+		else return getU(back.getTail()).add(back.getPrice(vot,c));
 
 	}
 
@@ -279,7 +282,7 @@ public class Bush {
 		Link back = qShort.get(n.getID());
 		if (n.equals(origin)) return BigDecimal.ZERO;
 		else if (back == null) throw new UnreachableException(n,this);
-		else return getL(back.getTail()).add(back.getPrice(vot));
+		else return getL(back.getTail()).add(back.getPrice(vot,c));
 	}
 	
 	public BigDecimal getCachedU(Node n, Map<Node, BigDecimal> cache) throws UnreachableException {
@@ -288,7 +291,7 @@ public class Bush {
 		else if (back == null) throw new UnreachableException(n, this);
 		else if (cache.containsKey(n)) return cache.get(n);
 		else {
-			BigDecimal newU = getCachedU(back.getTail(),cache).add(back.getPrice(vot));
+			BigDecimal newU = getCachedU(back.getTail(),cache).add(back.getPrice(vot,c));
 			cache.put(n, newU);
 			return newU;
 		}
@@ -300,7 +303,7 @@ public class Bush {
 		else if (back == null) throw new UnreachableException(n,this);
 		else if (cache.containsKey(n)) return cache.get(n);
 		else {
-			BigDecimal newL = getCachedL(back.getTail(), cache).add(back.getPrice(vot));
+			BigDecimal newL = getCachedL(back.getTail(), cache).add(back.getPrice(vot,c));
 			cache.put(n,newL);
 			return newL;
 		}
@@ -431,5 +434,7 @@ public class Bush {
 		return new AlternateSegmentPair(getShortestPath(terminus, diverge), getLongestPath(terminus,diverge), this);
 	}
 	
-
+	public VehicleClass getVehicleClass() {
+		return c;
+	}
 }

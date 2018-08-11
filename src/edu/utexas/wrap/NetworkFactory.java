@@ -73,7 +73,7 @@ public class NetworkFactory {
 				for (Integer temp : dests.keySet()) {
 					bushDests.put(temp, entry[1] * dests.get(temp));
 				}
-				o.buildBush(g, entry[0], bushDests);
+				o.buildBush(g, entry[0], bushDests, null);
 			}
 			origins.add(o);
 			line = of.readLine();
@@ -150,7 +150,7 @@ public class NetworkFactory {
 			}
 
 			//Construct new link and add to the list
-			Link link = new TolledBPRLink(nodes.get(tail), nodes.get(head), capacity, length, fftime, B, power, toll);
+			Link link = new UnrestrictedFixedTollBPRLink(nodes.get(tail), nodes.get(head), capacity, length, fftime, B, power, toll);
 			g.addLink(link);
 
 			nodes.get(tail).addOutgoing(link);
@@ -193,4 +193,5 @@ public class NetworkFactory {
 		return votMap;
 	}
 
+	
 }

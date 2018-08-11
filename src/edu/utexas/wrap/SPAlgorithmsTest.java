@@ -23,23 +23,23 @@ class SPAlgorithmsTest {
 		C = new Node(3);
 		D = new Node(4);
 		
-		AB = new TolledBPRLink(A, B, null, null, null, null, null,null) {
+		AB = new UnrestrictedFixedTollBPRLink(A, B, null, null, null, null, null,null) {
 			@Override
 			public BigDecimal getTravelTime() { return new BigDecimal("15");}
 		};
-		AC = new TolledBPRLink(A, C, null, null, null, null, null, null) {
+		AC = new UnrestrictedFixedTollBPRLink(A, C, null, null, null, null, null, null) {
 			@Override
 			public BigDecimal getTravelTime() { return new BigDecimal("22.0");}
 		};
-		BC = new TolledBPRLink(B, C, null, null, null, null, null, null) {
+		BC = new UnrestrictedFixedTollBPRLink(B, C, null, null, null, null, null, null) {
 			@Override
 			public BigDecimal getTravelTime() { return new BigDecimal("5.0");}
 		};
-		CD = new TolledBPRLink(C, D, null, null, null, null, null, null) {
+		CD = new UnrestrictedFixedTollBPRLink(C, D, null, null, null, null, null, null) {
 			@Override
 			public BigDecimal getTravelTime() { return new BigDecimal("6.0");}
 		};
-		BD = new TolledBPRLink(B, D, null, null, null, null, null, null) {
+		BD = new UnrestrictedFixedTollBPRLink(B, D, null, null, null, null, null, null) {
 			@Override
 			public BigDecimal getTravelTime() { return new BigDecimal("17.0");}
 		};

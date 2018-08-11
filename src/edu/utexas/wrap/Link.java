@@ -41,7 +41,7 @@ public abstract class Link implements Priced {
 		return capacity;
 	}
 
-	public Double getFfTime() {
+	public Double freeFlowTime() {
 		return fftime;
 	}
 
@@ -76,7 +76,7 @@ public abstract class Link implements Priced {
 
 	public abstract BigDecimal tIntegral();
 
-	public abstract BigDecimal getPrice(Double vot);
+	public abstract BigDecimal getPrice(Double vot, VehicleClass c);
 
 	public abstract BigDecimal pricePrime(Double vot);
 
@@ -104,6 +104,10 @@ public abstract class Link implements Priced {
 	public Boolean hasFlow(Bush bush) {
 		return flow.get(bush) != null;
 	}
+	
+	public abstract Boolean allowsClass(VehicleClass c);
+}
 
-
+enum VehicleClass {
+	MED_TRUCK, HVY_TRUCK, SINGLE_OCC, HIGH_OCC
 }
