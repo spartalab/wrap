@@ -25,7 +25,7 @@ public class TolledEnhancedLink extends TolledLink {
 												BigDecimal sParam,
 												BigDecimal uParam,
 												BigDecimal saturatedFlowRate,
-												BigDecimal unsigDelay,
+												BigDecimal minDelay,
 												BigDecimal operCost,
 												BigDecimal CA,
 												BigDecimal CB,
@@ -39,7 +39,7 @@ public class TolledEnhancedLink extends TolledLink {
 		this.s = sParam;
 		this.u = uParam;
 		this.saturatedFlowRate = saturatedFlowRate;
-		this.minDelay = unsigDelay;
+		this.minDelay = minDelay;
 		this.operCost = operCost;
 		this.a = CA;
 		this.b = CB;
@@ -79,12 +79,14 @@ public class TolledEnhancedLink extends TolledLink {
 	
 	
 	
+	
 	@Override
 	public BigDecimal getTravelTime() {
 		//	T == T_0 + c(v) + s(v) + u(v)
-		return BigDecimal.valueOf(freeFlowTime()).add(conicalDelay()).add(signalDelay()).add(unsignalizedDelay());
+		return (cachedTT != null)? cachedTT : BigDecimal.valueOf(freeFlowTime()).add(conicalDelay()).add(signalDelay()).add(unsignalizedDelay());
 	}
 
+	
 	private BigDecimal unsignalizedDelay() {
 		//	u(v) == m + u*v/c
 		return minDelay.add(
@@ -146,6 +148,7 @@ public class TolledEnhancedLink extends TolledLink {
 		return conicalPrime().add(signalPrime()).add(unsignalPrime());
 	}
 
+	
 	private BigDecimal unsignalPrime() {
 		//	d'(v) == d( m + u*v/c )/dv
 		//	==	u/c
@@ -168,12 +171,7 @@ public class TolledEnhancedLink extends TolledLink {
 		//	r'(x) == d( sqrt( a^2 * g(x)^2 + b^2 ) )/dx
 		//	==	a^2 * g(x) * g'(x) / sqrt( a^2 * g(x)^2 + b^2 ) 
 		BigDecimal x = getFlow().divide(BigDecimal.valueOf(getCapacity()));
-		return conicalParam.pow(2).multiply(g(x)).multiply(gPrime()).divide(
-
-				conicalParam.pow(2).multiply(g(x).pow(2)).add(beta().pow(2))
-				.sqrt(MathContext.DECIMAL64)
-				
-				);
+		return conicalParam.pow(2).multiply(g(x)).multiply(gPrime()).divide(r(x));
 	}
 
 	private BigDecimal gPrime() {
@@ -208,7 +206,7 @@ public class TolledEnhancedLink extends TolledLink {
 
 		//	Else: (i.e. 0.925 > u > 0.875)
 		//		d( a*(v/m)^3 + b*(v/m)^2 + c*(v/m) + d )/dv
-		//		==	((3 * a * v^2) + (2 * b * m * v) + (c * m^2))
+		//		==	((3 * a * v^2) + (2 * b * m * v) + (c * m^2)) / m^3
 		else {
 			return BigDecimal.valueOf(3).multiply(a).multiply(getFlow().pow(2))
 					.add(BigDecimal.valueOf(2).multiply(b).multiply(saturatedFlowRate).multiply(getFlow()))
@@ -240,6 +238,7 @@ public class TolledEnhancedLink extends TolledLink {
 			.add(unsignalizedIntegral());	//Integral of u(x) dx
 	}
 
+	
 	private BigDecimal unsignalizedIntegral() {
 		
 		//	Integral from 0 to v of u(x) dx ==

@@ -21,7 +21,7 @@ public class Bush {
 	private final Map<Integer, Node> 	nodes; 
 	private Set<Link> activeLinks; // Set of active links
 
-	// Labels (for solving)
+	// Back vector maps
 	private Map<Integer, Link> 		qShort;
 	private Map<Integer, Link>		qLong;
 
@@ -33,14 +33,14 @@ public class Bush {
 		this.vot = vot;
 		this.c = c;
 		this.destDemand = destDemand;
+		
 		//Initialize flow and status maps
 		activeLinks = new HashSet<Link>(links.size(),1.0f);
-		//flow	= new HashMap<Link, Double>(links.size(),1.0f);
 		this.nodes	= nodes;
 		qShort	= new HashMap<Integer, Link>(nodes.size(),1.0f);
 		qLong	= new HashMap<Integer, Link>(nodes.size(),1.0f);
 		
-		try {runDijkstras();} catch (Exception e) { throw new RuntimeException();}
+		runDijkstras();
 		dumpFlow();
 	}
 
@@ -65,7 +65,6 @@ public class Bush {
 			while (!node.equals(origin.getID())) {
 				Link back = qShort.get(node);
 				changeFlow(back, BigDecimal.valueOf(x));
-//				activate(back);
 				node = back.getTail().getID();
 			} 
 		}
@@ -151,6 +150,8 @@ public class Bush {
 			Leaf<Integer> u = Q.poll();
 			//			nodeL.put(u.n, u.key);
 			for (Link uv : nodes.get(u.n).getOutgoingLinks()) {
+				if (!uv.allowsClass(c)) continue; //If this link doesn't allow this bush's class of driver on the link, don't consider it
+				
 				Leaf<Integer> v = Q.getLeaf(uv.getHead().getID());
 				BigDecimal alt = uv.getPrice(vot,c).add(BigDecimal.valueOf(u.key));
 				if (alt.compareTo(BigDecimal.valueOf(v.key)) < 0) {

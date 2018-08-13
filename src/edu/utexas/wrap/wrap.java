@@ -87,15 +87,41 @@ public class wrap{
 
 	public static void main(String[] args) {
 
-		File links 		= new File(args[0]);
-		File odMatrix	= new File(args[1]);
-		File votFile 	= new File(args[2]);
+
 		Network network;
 		try {
-			System.out.println("Reading network...");
 			NetworkFactory n = new NetworkFactory();
-			n.readTNTPGraph(links);
-			n.readTNTPUniformProportionalVOTDemand(votFile, odMatrix);
+			if (args.length < 3) {
+				System.err.println("Uniform VOT usage: wrap network.tntp odMatrix.tntp votSplit.tntp");
+				System.err.println("Variable VOT usage: wrap {-v || --variable} network.tntp odMatrix.tntp");
+				System.err.println("Enahnced usage: wrap {-e || --enhanced} network.csv odMatrix.csv");
+				System.exit(3);
+			}
+			if ((args[0].trim().equals("-e") || args[0].trim().equals("--enhanced"))) {
+				File links		= new File(args[1]);
+				File odMatrix	= new File(args[2]);
+				
+				System.out.println("Reading network...");
+				n.readEnhancedGraph(links);
+				
+				System.out.println("Reading trips...");				
+				n.readEnhancedTrips(odMatrix);
+			}
+			else if (!( args[0].trim().equals("-v") || args[0].trim().equals("--variable") )) {
+				File links 		= new File(args[0]);
+				File odMatrix	= new File(args[1]);
+				File votFile 	= new File(args[2]);
+				
+				System.out.println("Reading network...");
+				n.readTNTPGraph(links);
+				
+				System.out.println("Reading trips...");
+				n.readTNTPUniformVOTtrips(votFile, odMatrix);
+			}
+			else {
+				//TODO handle variable VOT usage
+				System.err.println("Not yet implemented");
+			}
 			network = n.getNetwork();
 
 		} catch (FileNotFoundException e) {
