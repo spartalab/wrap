@@ -3,14 +3,14 @@ package edu.utexas.wrap;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
-public class UnrestrictedFixedTollBPRLink extends TolledLink {
+public class TolledBPRLink extends TolledLink {
 	
 	private final Double b;
 	private final Double power;
 	protected Double toll;
 
 	
-	public UnrestrictedFixedTollBPRLink(Node tail, Node head, Double capacity, Double length, Double fftime, Double b, Double power, Double toll) {
+	public TolledBPRLink(Node tail, Node head, Double capacity, Double length, Double fftime, Double b, Double power, Double toll) {
 		super(tail,head,capacity,length,fftime);
 		
 		this.b = b;

@@ -150,7 +150,7 @@ public class NetworkFactory {
 			}
 
 			//Construct new link and add to the list
-			Link link = new UnrestrictedFixedTollBPRLink(nodes.get(tail), nodes.get(head), capacity, length, fftime, B, power, toll);
+			Link link = new TolledBPRLink(nodes.get(tail), nodes.get(head), capacity, length, fftime, B, power, toll);
 			g.addLink(link);
 
 			nodes.get(tail).addOutgoing(link);
