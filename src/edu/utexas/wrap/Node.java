@@ -8,18 +8,21 @@ public class Node {
 	private Set<Link> incomingLinks;
 	private Set<Link> outgoingLinks;
 	private final Integer ID;
+	private final Boolean isCentroid;
 	
-	public Node(Set<Link> incomingLinks, Set<Link> outgoingLinks, Integer ID) {
+	public Node(Set<Link> incomingLinks, Set<Link> outgoingLinks, Integer ID, Boolean isCentroid) {
 		this.incomingLinks = incomingLinks;
 		this.outgoingLinks = outgoingLinks;
 		this.ID = ID;
+		this.isCentroid = isCentroid;
 	}
 
 	
-	public Node(Integer ID) {
+	public Node(Integer ID, Boolean isCentroid) {
 		this.ID = ID;
 		incomingLinks = new HashSet<Link>();
 		outgoingLinks = new HashSet<Link>();
+		this.isCentroid = isCentroid;
 	}
 
 	public Set<Link> getIncomingLinks() {
@@ -62,5 +65,10 @@ public class Node {
 	
 	public int hashCode() {
 		return getID();
+	}
+
+
+	public boolean isCentroid() {
+		return isCentroid;
 	}
 }

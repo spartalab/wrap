@@ -87,10 +87,10 @@ public class Network {
 				for (Node d : b.getNodes()) {
 					
 					Double demand = b.getDemand(d.getID());
-					try {
+					if (demand > 0.0) try {
 						denominator += b.getCachedL(d,cache).doubleValue() * demand;
 					} catch (UnreachableException e) {
-						if (e.demand > 0.0)	e.printStackTrace();
+							e.printStackTrace();
 					}
 				}
 			}

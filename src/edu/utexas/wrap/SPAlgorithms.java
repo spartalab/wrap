@@ -8,7 +8,7 @@ import java.util.PriorityQueue;
 
 
 public class SPAlgorithms {
-	public static Path dijkstra(Graph g, Node origin, Node destination) throws Exception{
+	public static Path dijkstra(Graph g, Node origin, Node destination) {
 		
 		Map<Node, Link> back = new HashMap<Node, Link>();
 		FibonacciHeap<Node> Q = new FibonacciHeap<Node>();

@@ -80,6 +80,12 @@ public abstract class Link implements Priced {
 
 	public abstract BigDecimal pricePrime(Double vot);
 
+	/** Modifies the flow on a link which comes from a specified bush. 
+	 * <b> THIS METHOD SHOULD ONLY BE CALLED BY THE {@link edu.utexas.wrap.Bush}'s {@link edu.utexas.wrap.Bush.changeFlow} METHOD </b>
+	 * @param delta amount by how much the flow should be altered
+	 * @param bush the origin Bush of this flow
+	 * @return whether the flow from this bush on the link is non-zero
+	 */
 	public synchronized Boolean alterBushFlow(BigDecimal delta, Bush bush) {
 		if (delta.compareTo(BigDecimal.ZERO) != 0) {
 			cachedTT = null;

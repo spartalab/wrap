@@ -2,6 +2,7 @@ package edu.utexas.wrap;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
+import java.math.MathContext;
 
 public abstract class Optimizer {
 	private Integer iteration = 1;
@@ -14,6 +15,7 @@ public abstract class Optimizer {
 	 * rounding mode is RoundingMode.HALF_EVEN
 	 */
 	static Integer decimalPlaces = 16;
+	static MathContext defMC = MathContext.DECIMAL64;
 	
 	public Optimizer(Network network) {
 		this(network, 1000);
