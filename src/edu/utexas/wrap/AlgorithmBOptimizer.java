@@ -60,7 +60,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			for (Link l : asp.getLongPath()) denom = denom.add(l.pricePrime(b.getVOT()));
 
 			BigDecimal deltaH = asp.getMaxDelta(deltaX).min(
-					asp.getPriceDiff().divide(denom,RoundingMode.HALF_EVEN));
+					asp.getPriceDiff().divide(denom,Optimizer.defMC));
 
 			
 			//add delta h to all x values in pi_L

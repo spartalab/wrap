@@ -17,7 +17,7 @@ public class Bush {
 	private final Double vot;
 	private final VehicleClass c;
 
-	private final Map<Integer, Double>	destDemand;
+	private /*final*/ Map<Integer, Double>	destDemand;
 	private final Map<Integer, Node> 	nodes; 
 	private Set<Link> activeLinks; // Set of active links
 
@@ -61,12 +61,19 @@ public class Bush {
 
 
 			Double x = getDemand(node);
-			if (x.equals(0.0) || nodes.get(node).getIncomingLinks().isEmpty()) continue;
-			while (!node.equals(origin.getID())) {
-				Link back = qShort.get(node);
-				changeFlow(back, BigDecimal.valueOf(x));
-				node = back.getTail().getID();
-			} 
+			if (x <= 0.0) continue;
+			Path p;
+			try {
+				p = getShortestPath(nodes.get(node));
+			} catch (UnreachableException e) {
+				// TODO Auto-generated catch block
+				System.err.println("No path exists from Node "+origin.getID()+" to Node "+node+". Removed demand = "+x);
+				destDemand.put(node, 0.0);
+				continue;
+			}
+			for (Link l : p) {
+				changeFlow(l, BigDecimal.valueOf(x));
+			}
 		}
 
 	}
@@ -148,9 +155,11 @@ public class Bush {
 
 		while (!Q.isEmpty()) {
 			Leaf<Integer> u = Q.poll();
-			//			nodeL.put(u.n, u.key);
+			
+			
 			for (Link uv : nodes.get(u.n).getOutgoingLinks()) {
-				if (!uv.allowsClass(c)) continue; //If this link doesn't allow this bush's class of driver on the link, don't consider it
+				if (!uv.allowsClass(c) || isInvalidConnector(uv)) continue;
+				//If this link doesn't allow this bush's class of driver on the link, don't consider it
 				
 				Leaf<Integer> v = Q.getLeaf(uv.getHead().getID());
 				BigDecimal alt = uv.getPrice(vot,c).add(BigDecimal.valueOf(u.key));
@@ -163,6 +172,14 @@ public class Bush {
 		qShort = back;
 	}
 
+
+	public boolean isInvalidConnector(Link uv) {
+		if (!(uv instanceof CentroidConnector) || 
+				uv.getTail().equals(origin) || 
+				(uv.getHead().isCentroid() && !uv.getTail().isCentroid())
+				) return false;
+		else return true;
+	}
 
 	/**Calculate shortest or longest paths in bush (DAG) using topological search
 	 * 
@@ -237,18 +254,19 @@ public class Bush {
 		return qLong.get(n.getID());
 	}
 
-	public Path getShortestPath(Node n) {
+	public Path getShortestPath(Node n) throws UnreachableException {
 		return getShortestPath(n, origin);
 	}
 	
-	public Path getShortestPath(Node end, Node start) {
+	public Path getShortestPath(Node end, Node start) throws UnreachableException {
 		Path p = new Path();
 		if (end.equals(start)) return p;
 		Link curLink = getqShort(end);
 		while (curLink != null && !curLink.getHead().equals(start)) {
 			p.addFirst(curLink);
-			curLink = getqShort(curLink.getTail());
+			curLink = getqShort(curLink.getTail());	
 		}
+		if (p.isEmpty() || !p.getFirst().getTail().equals(start)) throw new UnreachableException();
 		return p;
 	}
 	
@@ -389,7 +407,14 @@ public class Bush {
 	Node divergeNode(Node l, Node u) {
 		if (l.equals(origin) || u.equals(origin)) return origin;
 		
-		Path lPath = getShortestPath(l);
+		Path lPath;
+		try {
+			lPath = getShortestPath(l);
+		} catch (UnreachableException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
 		Path uPath = getLongestPath(u);
 		
 		Set<Node> lNodes = new HashSet<Node>();
@@ -432,7 +457,13 @@ public class Bush {
 		//Else calculate divergence node
 		
 		Node diverge = divergeNode(shortLink.getTail(), longLink.getTail());
-		return new AlternateSegmentPair(getShortestPath(terminus, diverge), getLongestPath(terminus,diverge), this);
+		try {
+			return new AlternateSegmentPair(getShortestPath(terminus, diverge), getLongestPath(terminus,diverge), this);
+		} catch (UnreachableException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
 	public VehicleClass getVehicleClass() {

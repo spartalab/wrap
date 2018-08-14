@@ -142,9 +142,9 @@ public class NetworkFactory {
 			Double toll		= Double.parseDouble(cols[8]);
 
 			//Create new node(s) if new, then add to map
-			if (!nodes.containsKey(tail)) nodes.put(tail,new Node(tail));
+			if (!nodes.containsKey(tail)) nodes.put(tail,new Node(tail, false));
 			
-			if (!nodes.containsKey(head)) nodes.put(head,new Node(head));
+			if (!nodes.containsKey(head)) nodes.put(head,new Node(head, false));
 			
 
 			//Construct new link and add to the list
@@ -190,7 +190,7 @@ public class NetworkFactory {
 		return votMap;
 	}
 
-	public void readEnhancedGraph(File f) throws FileNotFoundException, IOException {
+	public void readEnhancedGraph(File f, Integer thruNode) throws FileNotFoundException, IOException {
 		String line;
 		g = new Graph();
 		BufferedReader lf = new BufferedReader(new FileReader(f));
@@ -206,8 +206,8 @@ public class NetworkFactory {
 			Integer nodeA = Integer.parseInt(args[1]);
 			Integer nodeB = Integer.parseInt(args[2]);
 			
-			if (!nodes.containsKey(nodeA)) nodes.put(nodeA, new Node(nodeA));
-			if (!nodes.containsKey(nodeB)) nodes.put(nodeB, new Node(nodeB));
+			if (!nodes.containsKey(nodeA)) nodes.put(nodeA, new Node(nodeA, nodeA < thruNode? true : false));
+			if (!nodes.containsKey(nodeB)) nodes.put(nodeB, new Node(nodeB, nodeB < thruNode? true : false));
 			
 			Double aCap		= parse(args[3]);
 			Double bCap		= parse(args[4]);
@@ -255,18 +255,32 @@ public class NetworkFactory {
 			allowed.put(VehicleClass.SINGLE_OCC, !Boolean.parseBoolean(args[35].trim()));
 			
 			// TODO: find out which links are not symmetric
-			if (aCap > 0.0) {
-				TolledEnhancedLink AB = new TolledEnhancedLink(nodes.get(nodeA), nodes.get(nodeB), aCap, length, ffTimeA, alpha, epsilon, sParA, uParA, satFlowA, minDel, opCostA, caA, cbA, ccA, cdA, allowed, tollsA);
+			// TODO: figure out what I meant by ^^^ that ^^^ comment
+			if (aCap > 0.0) { 
+				Link AB = null;
+				if(satFlowA.compareTo(BigDecimal.ZERO) > 0) {
+					AB = new TolledEnhancedLink(nodes.get(nodeA), nodes.get(nodeB), aCap, length, ffTimeA, alpha, epsilon, sParA, uParA, satFlowA, minDel, opCostA, caA, cbA, ccA, cdA, allowed, tollsA);
+				} else if (aCap > 0.0) {
+					AB = new CentroidConnector(nodes.get(nodeA), nodes.get(nodeB), aCap, length, ffTimeA, opCostA.doubleValue());
+				}
 				g.addLink(AB);
 				nodes.get(nodeA).addOutgoing(AB);
 				nodes.get(nodeB).addIncoming(AB);
+
 			}
-			
-			if (bCap > 0.0) {
-				TolledEnhancedLink BA = new TolledEnhancedLink(nodes.get(nodeB), nodes.get(nodeA), bCap, length, ffTimeB, alpha, epsilon, sParB, uParB, satFlowB, minDel, opCostB, caB, cbB, ccB, cdB, allowed, tollsB);
+		
+
+			if (bCap > 0.0) { 
+				Link BA = null;
+				if (satFlowB.compareTo(BigDecimal.ZERO) > 0) {
+					BA = new TolledEnhancedLink(nodes.get(nodeB), nodes.get(nodeA), bCap, length, ffTimeB, alpha, epsilon, sParB, uParB, satFlowB, minDel, opCostB, caB, cbB, ccB, cdB, allowed, tollsB);
+				} else {
+					BA = new CentroidConnector(nodes.get(nodeB),nodes.get(nodeA), bCap, length, ffTimeB, opCostB.doubleValue());
+				}
 				g.addLink(BA);
 				nodes.get(nodeB).addOutgoing(BA);
 				nodes.get(nodeA).addIncoming(BA);
+
 			}
 		}
 		lf.close();
@@ -281,7 +295,6 @@ public class NetworkFactory {
 	}
 
 	public void readEnhancedTrips(File odMatrix) throws FileNotFoundException, IOException {
-		// TODO Auto-generated method stub
 		Map<Integer, 				// Origin
 			Map<VehicleClass, 		// VehicleClass
 				Map<Double, 		// VOT

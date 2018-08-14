@@ -100,9 +100,10 @@ public class wrap{
 			if ((args[0].trim().equals("-e") || args[0].trim().equals("--enhanced"))) {
 				File links		= new File(args[1]);
 				File odMatrix	= new File(args[2]);
+				Integer firstThruNode = Integer.parseInt(args[3]);
 				
 				System.out.println("Reading network...");
-				n.readEnhancedGraph(links);
+				n.readEnhancedGraph(links, firstThruNode);
 				
 				System.out.println("Reading trips...");				
 				n.readEnhancedTrips(odMatrix);

@@ -35,8 +35,8 @@ public class TolledBPRLink extends TolledLink {
 	public BigDecimal getTravelTime() {
 		if (cachedTT != null) return cachedTT;
 		cachedTT = BigDecimal.valueOf(freeFlowTime()).multiply(BigDecimal.ONE.add(
-				BigDecimal.valueOf(getBValue()*Math.pow(getFlow().doubleValue()/getCapacity(), getPower()))
-				));
+				BigDecimal.valueOf(getBValue()*Math.pow(getFlow().doubleValue()/getCapacity(), getPower()))),
+				Optimizer.defMC);
 		return cachedTT;
 	}
 	
@@ -54,7 +54,7 @@ public class TolledBPRLink extends TolledLink {
 		Double c = getCapacity();
 		BigDecimal va = BigDecimal.valueOf(Math.pow(v, a-1.0));
 		BigDecimal ca = BigDecimal.valueOf(Math.pow(c, -a));
-		return BigDecimal.valueOf(a).multiply(va).multiply(t).multiply(b).multiply(ca);
+		return BigDecimal.valueOf(a).multiply(va).multiply(t).multiply(b).multiply(ca, Optimizer.defMC);
 	}
 	
 	public BigDecimal tIntegral() {
@@ -68,7 +68,7 @@ public class TolledBPRLink extends TolledLink {
 		return t.multiply(getFlow()).add(	// t*v + (
 				t.multiply(b).multiply(BigDecimal.valueOf(Math.pow(v, a+1))).divide(	// t*b*(v^a+1)/(
 						BigDecimal.valueOf(a).add(BigDecimal.ONE).multiply(BigDecimal.valueOf(Math.pow(c, a))),	// a+1*(c^a)
-						RoundingMode.HALF_EVEN)											// )
+						Optimizer.defMC)											// )
 				);							// )
 	}
 	
@@ -84,7 +84,7 @@ public class TolledBPRLink extends TolledLink {
 	public BigDecimal getPrice(Double vot, VehicleClass c) {
 		if (cachedPrice != null) return cachedPrice;
 		try {
-			return getTravelTime().multiply(BigDecimal.valueOf(vot)).add(BigDecimal.valueOf(getToll(null)));
+			return getTravelTime().multiply(BigDecimal.valueOf(vot), Optimizer.defMC).add(BigDecimal.valueOf(getToll(null)));
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -93,7 +93,7 @@ public class TolledBPRLink extends TolledLink {
 	}
 	
 	public BigDecimal pricePrime(Double vot) {
-		return BigDecimal.valueOf(vot).multiply(tPrime()).add(tollPrime());
+		return BigDecimal.valueOf(vot).multiply(tPrime(), Optimizer.defMC).add(tollPrime());
 	}
 
 	public Boolean allowsClass(VehicleClass c) {

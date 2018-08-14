@@ -18,10 +18,10 @@ class SPAlgorithmsTest {
 	void setUpBraess(){
 		graph = new Graph();
 		
-		A = new Node(1);
-		B = new Node(2);
-		C = new Node(3);
-		D = new Node(4);
+		A = new Node(1,false);
+		B = new Node(2,false);
+		C = new Node(3,false);
+		D = new Node(4,false);
 		
 		AB = new TolledBPRLink(A, B, null, null, null, null, null,null) {
 			@Override

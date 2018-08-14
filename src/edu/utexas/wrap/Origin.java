@@ -10,7 +10,7 @@ public class Origin extends Node{
 	private List<Bush> bushes;
 	
 	public Origin(Node self) {
-		super(self.getIncomingLinks(), self.getOutgoingLinks(), self.getID());
+		super(self.getIncomingLinks(), self.getOutgoingLinks(), self.getID(), self.isCentroid());
 		bushes = new LinkedList<Bush>();
 	}
 
