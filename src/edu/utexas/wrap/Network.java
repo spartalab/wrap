@@ -86,8 +86,8 @@ public class Network {
 				Map<Node, BigDecimal> cache = new HashMap<Node, BigDecimal>(graph.numNodes());
 				for (Node d : b.getNodes()) {
 					
-					Double demand = b.getDemand(d.getID());
-					if (demand > 0.0) try {
+					Float demand = b.getDemand(d.getID());
+					if (demand > 0.0F) try {
 						denominator += b.getCachedL(d,cache).doubleValue() * demand;
 					} catch (UnreachableException e) {
 							e.printStackTrace();

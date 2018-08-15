@@ -12,11 +12,11 @@ import java.util.concurrent.Semaphore;
  */
 public abstract class Link implements Priced {
 
-	private final Double capacity;
+	private final Float capacity;
 	private final Node head;
 	private final Node tail;
-	private final Double length;
-	private final Double fftime;
+	private final Float length;
+	private final Float fftime;
 
 	public final Semaphore lock;
 	private Map<Bush,BigDecimal> flow;
@@ -25,7 +25,7 @@ public abstract class Link implements Priced {
 	protected BigDecimal cachedTT = null;
 	protected BigDecimal cachedPrice = null;
 
-	public Link(Node tail, Node head, Double capacity, Double length, Double fftime) {
+	public Link(Node tail, Node head, Float capacity, Float length, Float fftime) {
 		this.tail = tail;
 		this.head = head;
 		this.capacity = capacity;
@@ -37,11 +37,11 @@ public abstract class Link implements Priced {
 	}
 
 
-	public Double getCapacity() {
+	public Float getCapacity() {
 		return capacity;
 	}
 
-	public Double freeFlowTime() {
+	public Float freeFlowTime() {
 		return fftime;
 	}
 
@@ -53,7 +53,7 @@ public abstract class Link implements Priced {
 		return tail;
 	}
 
-	public Double getLength() {
+	public Float getLength() {
 		return length;
 	}
 
@@ -76,9 +76,9 @@ public abstract class Link implements Priced {
 
 	public abstract BigDecimal tIntegral();
 
-	public abstract BigDecimal getPrice(Double vot, VehicleClass c);
+	public abstract BigDecimal getPrice(Float vot, VehicleClass c);
 
-	public abstract BigDecimal pricePrime(Double vot);
+	public abstract BigDecimal pricePrime(Float float1);
 
 	/** Modifies the flow on a link which comes from a specified bush. 
 	 * <b> THIS METHOD SHOULD ONLY BE CALLED BY THE {@link edu.utexas.wrap.Bush}'s {@link edu.utexas.wrap.Bush.changeFlow} METHOD </b>

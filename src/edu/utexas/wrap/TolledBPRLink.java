@@ -1,16 +1,15 @@
 package edu.utexas.wrap;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 public class TolledBPRLink extends TolledLink {
 	
-	private final Double b;
-	private final Double power;
-	protected Double toll;
+	private final Float b;
+	private final Float power;
+	protected Float toll;
 
 	
-	public TolledBPRLink(Node tail, Node head, Double capacity, Double length, Double fftime, Double b, Double power, Double toll) {
+	public TolledBPRLink(Node tail, Node head, Float capacity, Float length, Float fftime, Float b, Float power, Float toll) {
 		super(tail,head,capacity,length,fftime);
 		
 		this.b = b;
@@ -19,11 +18,11 @@ public class TolledBPRLink extends TolledLink {
 	}
 
 	//B and power are empirical constants in the BPR function
-	public Double getBValue() {
+	public Float getBValue() {
 		return this.b;
 	}
 
-	public Double getPower() {
+	public Float getPower() {
 		return power;
 	}
 	
@@ -47,22 +46,22 @@ public class TolledBPRLink extends TolledLink {
 	public BigDecimal tPrime()  {
 		// Return (a*b*t*(v/c)^a)/v
 		//TODO: cache this
-		Double a = getPower();
+		Float a = getPower();
 		BigDecimal b = BigDecimal.valueOf(getBValue());
 		BigDecimal t = BigDecimal.valueOf(freeFlowTime());
 		Double v = getFlow().doubleValue();
-		Double c = getCapacity();
+		Float c = getCapacity();
 		BigDecimal va = BigDecimal.valueOf(Math.pow(v, a-1.0));
 		BigDecimal ca = BigDecimal.valueOf(Math.pow(c, -a));
 		return BigDecimal.valueOf(a).multiply(va).multiply(t).multiply(b).multiply(ca, Optimizer.defMC);
 	}
 	
 	public BigDecimal tIntegral() {
-		Double a = getPower();
+		Float a = getPower();
 		BigDecimal b = BigDecimal.valueOf(getBValue());
 		BigDecimal t = BigDecimal.valueOf(freeFlowTime());
 		Double v = getFlow().doubleValue();
-		Double c = getCapacity();
+		Float c = getCapacity();
 		
 		//return t*v + t*b*(Math.pow(v,a+1))/((a+1)*(Math.pow(c, a)));
 		return t.multiply(getFlow()).add(	// t*v + (
@@ -72,7 +71,7 @@ public class TolledBPRLink extends TolledLink {
 				);							// )
 	}
 	
-	public Double getToll(VehicleClass c) {
+	public Float getToll(VehicleClass c) {
 		return toll;
 	}
 	
@@ -81,7 +80,7 @@ public class TolledBPRLink extends TolledLink {
 	}
 	
 	@Override
-	public BigDecimal getPrice(Double vot, VehicleClass c) {
+	public BigDecimal getPrice(Float vot, VehicleClass c) {
 		if (cachedPrice != null) return cachedPrice;
 		try {
 			return getTravelTime().multiply(BigDecimal.valueOf(vot), Optimizer.defMC).add(BigDecimal.valueOf(getToll(null)));
@@ -92,7 +91,7 @@ public class TolledBPRLink extends TolledLink {
 		}
 	}
 	
-	public BigDecimal pricePrime(Double vot) {
+	public BigDecimal pricePrime(Float vot) {
 		return BigDecimal.valueOf(vot).multiply(tPrime(), Optimizer.defMC).add(tollPrime());
 	}
 

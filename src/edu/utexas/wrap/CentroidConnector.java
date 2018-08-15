@@ -3,9 +3,9 @@ package edu.utexas.wrap;
 import java.math.BigDecimal;
 
 public class CentroidConnector extends TolledLink {
-	private Double toll;
+	private Float toll;
 
-	public CentroidConnector(Node tail, Node head, Double capacity, Double length, Double fftime, Double toll) {
+	public CentroidConnector(Node tail, Node head, Float capacity, Float length, Float fftime, Float toll) {
 		super(tail, head, capacity, length, fftime);
 		this.toll = toll;
 	}
@@ -26,12 +26,12 @@ public class CentroidConnector extends TolledLink {
 	}
 
 	@Override
-	public BigDecimal getPrice(Double vot, VehicleClass c) {
+	public BigDecimal getPrice(Float vot, VehicleClass c) {
 		return BigDecimal.valueOf(vot*freeFlowTime() + toll);
 	}
 
 	@Override
-	public BigDecimal pricePrime(Double vot) {
+	public BigDecimal pricePrime(Float vot) {
 		return BigDecimal.ZERO;
 	}
 
@@ -41,7 +41,7 @@ public class CentroidConnector extends TolledLink {
 	}
 
 	@Override
-	public Double getToll(VehicleClass c) {
+	public Float getToll(VehicleClass c) {
 		return toll;
 	}
 

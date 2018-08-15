@@ -6,7 +6,7 @@ public class UnreachableException extends Exception {
 	 * 
 	 */
 	private static final long serialVersionUID = -6856927021111691245L;
-	public Double demand;
+	public Float demand;
 
 	public UnreachableException() {
 	}
