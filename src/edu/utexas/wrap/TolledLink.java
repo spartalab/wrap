@@ -5,11 +5,11 @@ import java.math.BigDecimal;
 public abstract class TolledLink extends Link {
 	
 
-	public TolledLink(Node tail, Node head, Double capacity, Double length, Double fftime) {
+	public TolledLink(Node tail, Node head, Float capacity, Float length, Float fftime) {
 		super(tail, head, capacity, length, fftime);
 	}
 
-	public abstract Double getToll(VehicleClass c);
+	public abstract Float getToll(VehicleClass c);
 	
 	public abstract BigDecimal tollPrime();
 }

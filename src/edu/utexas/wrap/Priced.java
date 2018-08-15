@@ -4,6 +4,6 @@ import java.math.BigDecimal;
 
 public interface Priced {
 
-	public BigDecimal getPrice(Double vot, VehicleClass c);
+	public BigDecimal getPrice(Float vot, VehicleClass c);
 
 }

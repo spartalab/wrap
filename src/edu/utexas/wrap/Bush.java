@@ -14,10 +14,10 @@ public class Bush {
 
 	// Bush structure
 	private final Origin origin;
-	private final Double vot;
+	private final Float vot;
 	private final VehicleClass c;
 
-	private /*final*/ Map<Integer, Double>	destDemand;
+	private /*final*/ Map<Integer, Float>	destDemand;
 	private final Map<Integer, Node> 	nodes; 
 	private Set<Link> activeLinks; // Set of active links
 
@@ -28,7 +28,7 @@ public class Bush {
 	private LinkedList<Node>		topoOrder;
 
 
-	public Bush(Origin o, Map<Integer,Node> nodes, Set<Link> links, Double vot, Map<Integer, Double> destDemand, VehicleClass c) {
+	public Bush(Origin o, Map<Integer,Node> nodes, Set<Link> links, Float vot, Map<Integer, Float> destDemand, VehicleClass c) {
 		origin = o;
 		this.vot = vot;
 		this.c = c;
@@ -44,7 +44,7 @@ public class Bush {
 		dumpFlow();
 	}
 
-	public Bush(Origin o, Graph g, Double vot, Map<Integer, Double> destDemand, VehicleClass c) {
+	public Bush(Origin o, Graph g, Float vot, Map<Integer, Float> destDemand, VehicleClass c) {
 		this(o, g.getNodeMap(), g.getLinks(), vot, destDemand, c);
 	}
 
@@ -60,7 +60,7 @@ public class Bush {
 		for (Integer node : nodes.keySet()) {
 
 
-			Double x = getDemand(node);
+			Float x = getDemand(node);
 			if (x <= 0.0) continue;
 			Path p;
 			try {
@@ -68,7 +68,7 @@ public class Bush {
 			} catch (UnreachableException e) {
 				// TODO Auto-generated catch block
 				System.err.println("No path exists from Node "+origin.getID()+" to Node "+node+". Removed demand = "+x);
-				destDemand.put(node, 0.0);
+				destDemand.put(node, 0.0F);
 				continue;
 			}
 			for (Link l : p) {
@@ -341,12 +341,12 @@ public class Bush {
 		return nodes.values();
 	}
 
-	public Double getVOT() {
+	public Float getVOT() {
 		return vot;
 	}
 
-	public Double getDemand(Integer n) {
-		return destDemand.getOrDefault(n, 0.0);
+	public Float getDemand(Integer n) {
+		return destDemand.getOrDefault(n, 0.0F);
 	}
 
 	public String toString() {

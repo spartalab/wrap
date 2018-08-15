@@ -17,9 +17,9 @@ public class TolledEnhancedLink extends TolledLink {
 	
 	public TolledEnhancedLink(	Node tail,
 												Node head,
-												Double capacity,
-												Double length,
-												Double fftime,
+												Float capacity,
+												Float length,
+												Float fftime,
 												BigDecimal conicalParam,
 												BigDecimal VDFShift,
 												BigDecimal sParam,
@@ -50,20 +50,20 @@ public class TolledEnhancedLink extends TolledLink {
 	}
 
 	@Override
-	public BigDecimal getPrice(Double vot, VehicleClass c) {
+	public BigDecimal getPrice(Float vot, VehicleClass c) {
 		return BigDecimal.valueOf(getToll(c)).add(getTravelTime().multiply(BigDecimal.valueOf(vot),Optimizer.defMC));
 	}
 
 	@Override
-	public BigDecimal pricePrime(Double vot) {
+	public BigDecimal pricePrime(Float vot) {
 		// 	d( k(v) + m*t(v) )/dv
 		//	==	t'(v) * m + k'(v)
 		return tPrime().multiply(BigDecimal.valueOf(vot), Optimizer.defMC).add(tollPrime());
 	}
 
 	@Override
-	public Double getToll(VehicleClass c) {
-		return classTolls.get(c).add(operCost).doubleValue();
+	public Float getToll(VehicleClass c) {
+		return classTolls.get(c).add(operCost).floatValue();
 	}
 
 	@Override
