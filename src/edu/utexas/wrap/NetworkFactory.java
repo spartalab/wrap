@@ -232,40 +232,40 @@ public class NetworkFactory {
 			Float ffTimeA	= parse(args[6]);
 			Float ffTimeB	= parse(args[7]);
 			
-			BigDecimal alpha	= BigDecimal.valueOf(parse(args[8]));
-			BigDecimal epsilon	= BigDecimal.valueOf(parse(args[9]));
-			BigDecimal sParA	= BigDecimal.valueOf(parse(args[10]));
-			BigDecimal sParB	= BigDecimal.valueOf(parse(args[11]));
-			BigDecimal satFlowA	= BigDecimal.valueOf(parse(args[12]));
-			BigDecimal satFlowB	= BigDecimal.valueOf(parse(args[13]));
+			Float alpha	= (parse(args[8]));
+			Float epsilon	= (parse(args[9]));
+			Float sParA	= (parse(args[10]));
+			Float sParB	= (parse(args[11]));
+			Float satFlowA	= (parse(args[12]));
+			Float satFlowB	= (parse(args[13]));
 			
-			BigDecimal caA = BigDecimal.valueOf(parse(args[14]));
-			BigDecimal cbA = BigDecimal.valueOf(parse(args[15]));
-			BigDecimal ccA = BigDecimal.valueOf(parse(args[16]));
-			BigDecimal cdA = BigDecimal.valueOf(parse(args[17]));
+			Float caA = (parse(args[14]));
+			Float cbA = (parse(args[15]));
+			Float ccA = (parse(args[16]));
+			Float cdA = (parse(args[17]));
 			
-			BigDecimal caB = BigDecimal.valueOf(parse(args[18]));
-			BigDecimal cbB = BigDecimal.valueOf(parse(args[19]));
-			BigDecimal ccB = BigDecimal.valueOf(parse(args[20]));
-			BigDecimal cdB = BigDecimal.valueOf(parse(args[21]));
+			Float caB = (parse(args[18]));
+			Float cbB = (parse(args[19]));
+			Float ccB = (parse(args[20]));
+			Float cdB = (parse(args[21]));
 			
-			BigDecimal minDel	= BigDecimal.valueOf(parse(args[22]));
-			BigDecimal uParA	= BigDecimal.valueOf(parse(args[23]));
-			BigDecimal uParB	= BigDecimal.valueOf(parse(args[24]));
-			BigDecimal opCostA	= BigDecimal.valueOf(parse(args[25]));
-			BigDecimal opCostB	= BigDecimal.valueOf(parse(args[26]));
+			Float minDel	= (parse(args[22]));
+			Float uParA	= (parse(args[23]));
+			Float uParB	= (parse(args[24]));
+			Float opCostA	= (parse(args[25]));
+			Float opCostB	= (parse(args[26]));
 			
-			Map<VehicleClass, BigDecimal> tollsA = new HashMap<VehicleClass, BigDecimal>();
-			Map<VehicleClass, BigDecimal> tollsB = new HashMap<VehicleClass, BigDecimal>();
+			Map<VehicleClass, Float> tollsA = new HashMap<VehicleClass, Float>();
+			Map<VehicleClass, Float> tollsB = new HashMap<VehicleClass, Float>();
 			
-			tollsA.put(VehicleClass.SINGLE_OCC, BigDecimal.valueOf(parse(args[27])));
-			tollsB.put(VehicleClass.SINGLE_OCC, BigDecimal.valueOf(parse(args[28])));
-			tollsA.put(VehicleClass.HIGH_OCC, BigDecimal.valueOf(parse(args[29])));
-			tollsB.put(VehicleClass.HIGH_OCC, BigDecimal.valueOf(parse(args[30])));
-			tollsA.put(VehicleClass.MED_TRUCK, BigDecimal.valueOf(parse(args[31])));
-			tollsB.put(VehicleClass.MED_TRUCK, BigDecimal.valueOf(parse(args[32])));
-			tollsA.put(VehicleClass.HVY_TRUCK, BigDecimal.valueOf(parse(args[33])));
-			tollsB.put(VehicleClass.HVY_TRUCK, BigDecimal.valueOf(parse(args[34])));
+			tollsA.put(VehicleClass.SINGLE_OCC, (parse(args[27])));
+			tollsB.put(VehicleClass.SINGLE_OCC, (parse(args[28])));
+			tollsA.put(VehicleClass.HIGH_OCC, (parse(args[29])));
+			tollsB.put(VehicleClass.HIGH_OCC, (parse(args[30])));
+			tollsA.put(VehicleClass.MED_TRUCK, (parse(args[31])));
+			tollsB.put(VehicleClass.MED_TRUCK, (parse(args[32])));
+			tollsA.put(VehicleClass.HVY_TRUCK, (parse(args[33])));
+			tollsB.put(VehicleClass.HVY_TRUCK, (parse(args[34])));
 			
 			Map<VehicleClass, Boolean> allowed = new HashMap<VehicleClass, Boolean>();
 			
@@ -275,7 +275,7 @@ public class NetworkFactory {
 			// TODO: figure out what I meant by ^^^ that ^^^ comment
 			if (aCap > 0.0) { 
 				Link AB = null;
-				if(satFlowA.compareTo(BigDecimal.ZERO) > 0) {
+				if(satFlowA > 0) {
 					AB = new TolledEnhancedLink(nodes.get(nodeA), nodes.get(nodeB), aCap, length, ffTimeA, alpha, epsilon, sParA, uParA, satFlowA, minDel, opCostA, caA, cbA, ccA, cdA, allowed, tollsA);
 				} else if (aCap > 0.0) {
 					AB = new CentroidConnector(nodes.get(nodeA), nodes.get(nodeB), aCap, length, ffTimeA, opCostA.floatValue());
@@ -289,7 +289,7 @@ public class NetworkFactory {
 
 			if (bCap > 0.0) { 
 				Link BA = null;
-				if (satFlowB.compareTo(BigDecimal.ZERO) > 0) {
+				if (satFlowB > 0) {
 					BA = new TolledEnhancedLink(nodes.get(nodeB), nodes.get(nodeA), bCap, length, ffTimeB, alpha, epsilon, sParB, uParB, satFlowB, minDel, opCostB, caB, cbB, ccB, cdB, allowed, tollsB);
 				} else {
 					BA = new CentroidConnector(nodes.get(nodeB),nodes.get(nodeA), bCap, length, ffTimeB, opCostB.floatValue());

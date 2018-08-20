@@ -9,10 +9,10 @@ import java.util.Map;
  *
  */
 public class TolledEnhancedLink extends TolledLink {
-	private final BigDecimal conicalParam, VDFshift, saturatedFlowRate, minDelay, operCost;
-	private final BigDecimal a, b, c, d, s, u;
+	private final Float conicalParam, VDFshift, saturatedFlowRate, minDelay, operCost;
+	private final Float a, b, c, d, s, u;
 	private final Map<VehicleClass, Boolean> allowedClasses;
-	private final Map<VehicleClass, BigDecimal> classTolls;
+	private final Map<VehicleClass, Float> classTolls;
 	
 	
 	public TolledEnhancedLink(	Node tail,
@@ -20,19 +20,19 @@ public class TolledEnhancedLink extends TolledLink {
 												Float capacity,
 												Float length,
 												Float fftime,
-												BigDecimal conicalParam,
-												BigDecimal VDFShift,
-												BigDecimal sParam,
-												BigDecimal uParam,
-												BigDecimal saturatedFlowRate,
-												BigDecimal minDelay,
-												BigDecimal operCost,
-												BigDecimal CA,
-												BigDecimal CB,
-												BigDecimal CC,
-												BigDecimal CD,
+												Float conicalParam,
+												Float VDFShift,
+												Float sParam,
+												Float uParam,
+												Float saturatedFlowRate,
+												Float minDelay,
+												Float operCost,
+												Float CA,
+												Float CB,
+												Float CC,
+												Float CD,
 												Map<VehicleClass, Boolean> allowedClasses,
-												Map<VehicleClass, BigDecimal> classTolls) {
+												Map<VehicleClass, Float> classTolls) {
 		super(tail, head, capacity, length, fftime);
 		this.conicalParam = conicalParam;
 		this.VDFshift = VDFShift;
@@ -63,7 +63,7 @@ public class TolledEnhancedLink extends TolledLink {
 
 	@Override
 	public Float getToll(VehicleClass c) {
-		return classTolls.get(c).add(operCost).floatValue();
+		return classTolls.get(c) + operCost;
 	}
 
 	@Override
@@ -89,16 +89,16 @@ public class TolledEnhancedLink extends TolledLink {
 	
 	private BigDecimal unsignalizedDelay() {
 		//	u(v) == m + u*v/c
-		return minDelay.add(
-				u.multiply(getFlow()).divide(BigDecimal.valueOf(getCapacity()), Optimizer.defMC)
+		return BigDecimal.valueOf(minDelay).add(
+				BigDecimal.valueOf(u).multiply(getFlow()).divide(BigDecimal.valueOf(getCapacity()), Optimizer.defMC)
 				);
 	}
 
 	private BigDecimal signalDelay() {
 		//	S(v) == s / max(0.1, 1 - v/s)
-		return s.divide(
+		return BigDecimal.valueOf(s).divide(
 				BigDecimal.valueOf(0.1).max(
-						BigDecimal.ONE.subtract(	getFlow().divide(saturatedFlowRate, Optimizer.defMC)	)
+						BigDecimal.ONE.subtract(	getFlow().divide(BigDecimal.valueOf(saturatedFlowRate), Optimizer.defMC)	)
 						),
 				Optimizer.defMC);
 	}
@@ -115,26 +115,26 @@ public class TolledEnhancedLink extends TolledLink {
 		//	h(x) == 1 + r(x) - (a * g(x)) - b
 		return BigDecimal.ONE
 				.add(r(x))
-				.subtract(conicalParam.multiply(g(x),Optimizer.defMC))
+				.subtract(BigDecimal.valueOf(conicalParam).multiply(g(x),Optimizer.defMC))
 				.subtract(beta());
 	}
 
 	private BigDecimal r(BigDecimal x) {
 		//	r(x) == sqrt( a^2 * g(x)^2 + b^2 )
-		return conicalParam.pow(2).multiply(g(x).pow(2))
+		return BigDecimal.valueOf(conicalParam).pow(2).multiply(g(x).pow(2))
 		.add(beta().pow(2))
 		.sqrt(Optimizer.defMC);
 	}
 	
 	private BigDecimal g(BigDecimal x) {
 		//	g(x) == 1 + e - x
-		return BigDecimal.ONE.subtract(x).add(VDFshift);
+		return BigDecimal.ONE.subtract(x).add(BigDecimal.valueOf(VDFshift));
 	}
 
 	private BigDecimal beta() {
 		//	b == ( 2*a - 1 )/( 2*a - 2 )
-		return (conicalParam.multiply(BigDecimal.valueOf(2)).subtract(BigDecimal.ONE))
-				.divide(conicalParam.multiply(BigDecimal.valueOf(2)).subtract(BigDecimal.valueOf(2)), Optimizer.defMC);
+		return (BigDecimal.valueOf(conicalParam).multiply(BigDecimal.valueOf(2)).subtract(BigDecimal.ONE))
+				.divide(BigDecimal.valueOf(conicalParam).multiply(BigDecimal.valueOf(2)).subtract(BigDecimal.valueOf(2)), Optimizer.defMC);
 	}
 	
 	
@@ -152,7 +152,7 @@ public class TolledEnhancedLink extends TolledLink {
 	private BigDecimal unsignalPrime() {
 		//	d'(v) == d( m + u*v/c )/dv
 		//	==	u/c
-		return u.divide(BigDecimal.valueOf(getCapacity()), Optimizer.defMC);
+		return BigDecimal.valueOf(u).divide(BigDecimal.valueOf(getCapacity()), Optimizer.defMC);
 	}
 
 	private BigDecimal conicalPrime() {
@@ -164,14 +164,14 @@ public class TolledEnhancedLink extends TolledLink {
 	private BigDecimal hPrime() {
 		//	h'(v) == d( 1 + r(v) - (a * g(v)) - b )/dv
 		//	==	r'(v) - a * g'(v)
-		return rPrime().subtract(conicalParam.multiply(gPrime(),Optimizer.defMC));
+		return rPrime().subtract(BigDecimal.valueOf(conicalParam).multiply(gPrime(),Optimizer.defMC));
 	}
 	
 	private BigDecimal rPrime() {
 		//	r'(x) == d( sqrt( a^2 * g(x)^2 + b^2 ) )/dx
 		//	==	a^2 * g(x) * g'(x) / sqrt( a^2 * g(x)^2 + b^2 ) 
 		BigDecimal x = getFlow().divide(BigDecimal.valueOf(getCapacity()),Optimizer.defMC);
-		return conicalParam.pow(2).multiply(g(x)).multiply(gPrime()).divide(r(x),Optimizer.defMC);
+		return BigDecimal.valueOf(conicalParam).pow(2).multiply(g(x)).multiply(gPrime()).divide(r(x),Optimizer.defMC);
 	}
 
 	private BigDecimal gPrime() {
@@ -184,7 +184,7 @@ public class TolledEnhancedLink extends TolledLink {
 		// TODO: Explore boundary cases (0.875 and 0.925) where not differentiable
 		
 		// 	u = v/m
-		BigDecimal vOverS = getFlow().divide(saturatedFlowRate, Optimizer.defMC);
+		BigDecimal vOverS = getFlow().divide(BigDecimal.valueOf(saturatedFlowRate), Optimizer.defMC);
 
 		//	S'(v) == 
 		
@@ -192,8 +192,8 @@ public class TolledEnhancedLink extends TolledLink {
 		//		d( s/(1 - v/m) )/dv
 		//		==	m*s / (m-v)^2
 		if (vOverS.compareTo(BigDecimal.valueOf(0.875)) <= 0) {
-			return saturatedFlowRate.multiply(s)
-					.divide(saturatedFlowRate.subtract(getFlow())
+			return BigDecimal.valueOf(saturatedFlowRate * s)
+					.divide(BigDecimal.valueOf(saturatedFlowRate).subtract(getFlow())
 							.pow(2),
 							Optimizer.defMC);
 		}
@@ -208,10 +208,10 @@ public class TolledEnhancedLink extends TolledLink {
 		//		d( a*(v/m)^3 + b*(v/m)^2 + c*(v/m) + d )/dv
 		//		==	((3 * a * v^2) + (2 * b * m * v) + (c * m^2)) / m^3
 		else {
-			return BigDecimal.valueOf(3).multiply(a).multiply(getFlow().pow(2))
-					.add(BigDecimal.valueOf(2).multiply(b).multiply(saturatedFlowRate).multiply(getFlow()))
-					.add(c.multiply(saturatedFlowRate.pow(2)))
-					.divide(saturatedFlowRate.pow(3), Optimizer.defMC);
+			return BigDecimal.valueOf(3).multiply(BigDecimal.valueOf(a)).multiply(getFlow().pow(2))
+					.add(BigDecimal.valueOf(2).multiply(BigDecimal.valueOf(b)).multiply(BigDecimal.valueOf(saturatedFlowRate)).multiply(getFlow()))
+					.add(BigDecimal.valueOf(c).multiply(BigDecimal.valueOf(saturatedFlowRate).pow(2)))
+					.divide(BigDecimal.valueOf(saturatedFlowRate).pow(3), Optimizer.defMC);
 		}
 	}
 	
@@ -249,15 +249,15 @@ public class TolledEnhancedLink extends TolledLink {
 		//		== 	m*v
 		//		+	u*v^2/(2*c)
 		
-		return u.multiply(getFlow().pow(2)).divide(BigDecimal.valueOf(2*getCapacity()), Optimizer.defMC)	// u*v^2/(2*c)
-				.add(minDelay.multiply(getFlow(), Optimizer.defMC)); // + m*v
+		return BigDecimal.valueOf(u).multiply(getFlow().pow(2)).divide(BigDecimal.valueOf(2*getCapacity()), Optimizer.defMC)	// u*v^2/(2*c)
+				.add(BigDecimal.valueOf(minDelay).multiply(getFlow(), Optimizer.defMC)); // + m*v
 	}
 
 	private BigDecimal signalizedIntegral() {
 		
 
 		// u = v/m
-		BigDecimal u = getFlow().divide(saturatedFlowRate, Optimizer.defMC);
+		BigDecimal u = getFlow().divide(BigDecimal.valueOf(saturatedFlowRate), Optimizer.defMC);
 		
 		//	Integral from 0 to v of s(x) dx ==
 
@@ -273,7 +273,7 @@ public class TolledEnhancedLink extends TolledLink {
 		//	NOTE: Assume m >= v TODO: Ask about validity
 		
 		if (u.compareTo(BigDecimal.valueOf(0.875))<=0) {
-			return s.negate().multiply(saturatedFlowRate).multiply(
+			return BigDecimal.valueOf(s).negate().multiply(BigDecimal.valueOf(saturatedFlowRate)).multiply(
 					// natural log kludge, TODO: solve exactly
 					BigDecimal.valueOf(
 							Math.log(
@@ -292,7 +292,7 @@ public class TolledEnhancedLink extends TolledLink {
 		
 		else if (u.compareTo(BigDecimal.valueOf(0.925))>=0) {
 			//	10 * s * v
-			return BigDecimal.TEN.multiply(s).multiply(getFlow());
+			return BigDecimal.TEN.multiply(BigDecimal.valueOf(s)).multiply(getFlow());
 		} 
 		
 		//	Else: (i.e. 0.925 > u > 0.875)
@@ -307,13 +307,13 @@ public class TolledEnhancedLink extends TolledLink {
 		
 		else {
 			BigDecimal v = getFlow();
-			BigDecimal m = saturatedFlowRate;
+			BigDecimal m = BigDecimal.valueOf(saturatedFlowRate);
 			
 			
-			BigDecimal firstTerm = a.multiply(v.pow(4)).divide(BigDecimal.valueOf(4).multiply(m.pow(3)), Optimizer.defMC);	// a * v^4 / (4 * m^3)
-			BigDecimal secondTerm = b.multiply(v.pow(3)).divide(BigDecimal.valueOf(3).multiply(m.pow(2)), Optimizer.defMC);	// b * v^3 / (3 * m^2)
-			BigDecimal thirdTerm = c.multiply(v.pow(2)).divide(BigDecimal.valueOf(2).multiply(m), Optimizer.defMC);			// c * v^2 / (2 * m)
-			return firstTerm.add(secondTerm).add(thirdTerm).add(d.multiply(v));								// d * v
+			BigDecimal firstTerm = BigDecimal.valueOf(a).multiply(v.pow(4)).divide(BigDecimal.valueOf(4).multiply(m.pow(3)), Optimizer.defMC);	// a * v^4 / (4 * m^3)
+			BigDecimal secondTerm = BigDecimal.valueOf(b).multiply(v.pow(3)).divide(BigDecimal.valueOf(3).multiply(m.pow(2)), Optimizer.defMC);	// b * v^3 / (3 * m^2)
+			BigDecimal thirdTerm = BigDecimal.valueOf(c).multiply(v.pow(2)).divide(BigDecimal.valueOf(2).multiply(m), Optimizer.defMC);			// c * v^2 / (2 * m)
+			return firstTerm.add(secondTerm).add(thirdTerm).add(BigDecimal.valueOf(d).multiply(v));								// d * v
 		}
 	}
 
@@ -345,7 +345,7 @@ public class TolledEnhancedLink extends TolledLink {
 		
 		return getFlow().multiply(BigDecimal.ONE.subtract(beta()))
 				.add(rIntegral())
-				.subtract(conicalParam.multiply(gIntegral()),Optimizer.defMC);
+				.subtract(BigDecimal.valueOf(conicalParam).multiply(gIntegral()),Optimizer.defMC);
 	}
 
 	private BigDecimal gIntegral() {
@@ -386,10 +386,10 @@ public class TolledEnhancedLink extends TolledLink {
 		
 		// NOTE: assume a, b != 0
 		
-		BigDecimal a = conicalParam;
+		BigDecimal a = BigDecimal.valueOf(conicalParam);
 		BigDecimal b = beta();
 		BigDecimal c = BigDecimal.valueOf(getCapacity());
-		BigDecimal h = BigDecimal.ONE.add(VDFshift);
+		BigDecimal h = BigDecimal.ONE.add(BigDecimal.valueOf(VDFshift));
 		BigDecimal v = getFlow();
 		
 		// sqrt( (b^2 * c^2) + (h^2 * a^2 * c^2) )
