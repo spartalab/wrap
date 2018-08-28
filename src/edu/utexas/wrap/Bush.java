@@ -17,7 +17,7 @@ public class Bush {
 	private final Float vot;
 	private final VehicleClass c;
 
-	private /*final*/ Map<Integer, Float>	destDemand;
+//	private /*final*/ Map<Integer, Float>	destDemand;
 	private final Map<Integer, Node> 	nodes; 
 	private Set<Link> activeLinks; // Set of active links
 
@@ -32,7 +32,7 @@ public class Bush {
 		origin = o;
 		this.vot = vot;
 		this.c = c;
-		this.destDemand = destDemand;
+//		this.destDemand = destDemand;
 		
 		//Initialize flow and status maps
 		activeLinks = new HashSet<Link>(links.size(),1.0f);
@@ -41,7 +41,7 @@ public class Bush {
 		qLong	= new HashMap<Integer, Link>(nodes.size(),1.0f);
 		
 		runDijkstras();
-		dumpFlow();
+		dumpFlow(destDemand);
 	}
 
 	public Bush(Origin o, Graph g, Float vot, Map<Integer, Float> destDemand, VehicleClass c) {
@@ -55,20 +55,21 @@ public class Bush {
 
 	/**Initialize demand flow on shortest paths
 	 * Add each destination's demand to the shortest path to that destination
+	 * @param destDemand 
 	 * */
-	private void dumpFlow() {
+	private void dumpFlow(Map<Integer, Float> destDemand) {
 		for (Integer node : nodes.keySet()) {
 
 
-			Float x = getDemand(node);
+			Float x = destDemand.getOrDefault(node, 0.0F);
 			if (x <= 0.0) continue;
 			Path p;
 			try {
 				p = getShortestPath(nodes.get(node));
 			} catch (UnreachableException e) {
 				// TODO Auto-generated catch block
-				System.err.println("No path exists from Node "+origin.getID()+" to Node "+node+". Removed demand = "+x);
-				destDemand.put(node, 0.0F);
+				System.err.println("No path exists from Node "+origin.getID()+" to Node "+node+". Lost demand = "+x);
+//				destDemand.put(node, 0.0F);
 				continue;
 			}
 			for (Link l : p) {
@@ -346,11 +347,20 @@ public class Bush {
 	}
 
 	public Float getDemand(Integer n) {
-		return destDemand.getOrDefault(n, 0.0F);
+		Node node = nodes.get(n);
+		BigDecimal inFlow = BigDecimal.ZERO;
+		for (Link l : node.getIncomingLinks()) {
+			inFlow = inFlow.add(l.getBushFlow(this));
+		}
+		BigDecimal outFlow = BigDecimal.ZERO;
+		for (Link l : node.getOutgoingLinks()) {
+			outFlow = outFlow.add(l.getBushFlow(this));
+		}
+		return inFlow.subtract(outFlow).floatValue();
 	}
 
 	public String toString() {
-		return "ORIG="+origin.getID()+"VOT="+vot;
+		return "ORIG="+origin.getID()+"\tVOT="+vot+"\tCLASS="+c;
 	}
 
 	void activate(Link l) {
@@ -360,7 +370,6 @@ public class Bush {
 	private void markInactive(Link l) {
 		if (activeLinks.remove(l)) {
 			topoOrder = null;
-//			l.lock.release();
 		}
 	}
 	
