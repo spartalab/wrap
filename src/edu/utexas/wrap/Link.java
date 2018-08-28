@@ -4,7 +4,6 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Semaphore;
 
 /**
  * @author rahulpatel
@@ -18,7 +17,6 @@ public abstract class Link implements Priced {
 	private final Float length;
 	private final Float fftime;
 
-	public final Semaphore lock;
 	private Map<Bush,BigDecimal> flow;
 
 	private BigDecimal cachedFlow = null;
@@ -33,7 +31,6 @@ public abstract class Link implements Priced {
 		this.fftime = fftime;
 
 		this.flow = new HashMap<Bush,BigDecimal>();
-		lock = new Semaphore(1);
 	}
 
 

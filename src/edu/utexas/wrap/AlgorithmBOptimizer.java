@@ -1,7 +1,6 @@
 package edu.utexas.wrap;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -86,7 +85,6 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			b.changeFlow(z, deltaX.get(z));
 		}
 		
-//		network.releaseLocks();
 	}
 
 	@Override

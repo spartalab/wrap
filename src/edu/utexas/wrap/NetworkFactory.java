@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -317,7 +316,7 @@ public class NetworkFactory {
 //				Map<Double, 		// VOT
 //					Map<Integer,	// Destination
 //						Double>>>> origMap = new HashMap<Integer, Map<VehicleClass, Map<Double, Map<Integer, Double>>>>();
-		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
+		BufferedReader matrixFile = new BufferedReader(new FileReader(odMatrix));
 		String line;
 		Integer curOrig = null;
 		origins = new HashSet<Origin>();
@@ -337,7 +336,7 @@ public class NetworkFactory {
 		
 		// read each line and map to correct bush identity
 		while (true) {
-			line = of.readLine();
+			line = matrixFile.readLine();
 			if (line == null || line.trim().equals("")) {
 				if (curOrig != null) {
 					//build previous bushes
@@ -428,5 +427,6 @@ public class NetworkFactory {
 			if (mdtk > 0.0F) medTrucks.put(dest, mdtk);
 			if (hvtk > 0.0F) hvyTrucks.put(dest, hvtk);
 		}
+		matrixFile.close();
 	}
 }
