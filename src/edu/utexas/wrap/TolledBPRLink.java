@@ -2,6 +2,8 @@ package edu.utexas.wrap;
 
 import java.math.BigDecimal;
 
+import org.mapdb.DB;
+
 public class TolledBPRLink extends TolledLink {
 	
 	private final Float b;
@@ -9,8 +11,8 @@ public class TolledBPRLink extends TolledLink {
 	protected Float toll;
 
 	
-	public TolledBPRLink(Node tail, Node head, Float capacity, Float length, Float fftime, Float b, Float power, Float toll) {
-		super(tail,head,capacity,length,fftime);
+	public TolledBPRLink(DB db, Node tail, Node head, Float capacity, Float length, Float fftime, Float b, Float power, Float toll) {
+		super(db,tail,head,capacity,length,fftime);
 		
 		this.b = b;
 		this.power = power;

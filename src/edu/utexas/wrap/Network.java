@@ -9,8 +9,6 @@ import java.util.Set;
 
 public class Network {
 
-//	private Map<Integer, Node> nodes;
-//	protected Set<Link> links;
 	protected Set<Origin> origins;
 	protected Graph graph;
 	

@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.mapdb.DB;
+
 public class NetworkFactory {
 	private Graph g;
 	private Set<Origin> origins;
@@ -113,11 +115,12 @@ public class NetworkFactory {
 
 	/**
 	 * @param linkFile
+	 * @param db 
 	 * @return
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public void readTNTPGraph(File linkFile) throws FileNotFoundException, IOException {
+	public void readTNTPGraph(File linkFile, DB db) throws FileNotFoundException, IOException {
 		String line;
 		g = new Graph();
 		BufferedReader lf = new BufferedReader(new FileReader(linkFile));
@@ -148,7 +151,7 @@ public class NetworkFactory {
 			
 
 			//Construct new link and add to the list
-			Link link = new TolledBPRLink(nodes.get(tail), nodes.get(head), capacity, length, fftime, B, power, toll);
+			Link link = new TolledBPRLink(db, nodes.get(tail), nodes.get(head), capacity, length, fftime, B, power, toll);
 			g.addLink(link);
 
 			nodes.get(tail).addOutgoing(link);
@@ -190,9 +193,12 @@ public class NetworkFactory {
 		return votMap;
 	}
 
-	public void readEnhancedGraph(File f, Integer thruNode) throws FileNotFoundException, IOException {
+	public void readEnhancedGraph(File f, Integer thruNode, DB db) throws FileNotFoundException, IOException {
 		String line;
 		g = new Graph();
+		
+		
+		
 		numZones = 0;
 		BufferedReader lf = new BufferedReader(new FileReader(f));
 		Map<Integer,Node> nodes = new HashMap<Integer, Node>();
@@ -275,9 +281,9 @@ public class NetworkFactory {
 			if (aCap > 0.0) { 
 				Link AB = null;
 				if(satFlowA > 0) {
-					AB = new TolledEnhancedLink(nodes.get(nodeA), nodes.get(nodeB), aCap, length, ffTimeA, alpha, epsilon, sParA, uParA, satFlowA, minDel, opCostA, caA, cbA, ccA, cdA, allowed, tollsA);
+					AB = new TolledEnhancedLink(db, nodes.get(nodeA), nodes.get(nodeB), aCap, length, ffTimeA, alpha, epsilon, sParA, uParA, satFlowA, minDel, opCostA, caA, cbA, ccA, cdA, allowed, tollsA);
 				} else if (aCap > 0.0) {
-					AB = new CentroidConnector(nodes.get(nodeA), nodes.get(nodeB), aCap, length, ffTimeA, opCostA.floatValue());
+					AB = new CentroidConnector(db, nodes.get(nodeA), nodes.get(nodeB), aCap, length, ffTimeA, opCostA.floatValue());
 				}
 				g.addLink(AB);
 				nodes.get(nodeA).addOutgoing(AB);
@@ -289,9 +295,9 @@ public class NetworkFactory {
 			if (bCap > 0.0) { 
 				Link BA = null;
 				if (satFlowB > 0) {
-					BA = new TolledEnhancedLink(nodes.get(nodeB), nodes.get(nodeA), bCap, length, ffTimeB, alpha, epsilon, sParB, uParB, satFlowB, minDel, opCostB, caB, cbB, ccB, cdB, allowed, tollsB);
+					BA = new TolledEnhancedLink(db, nodes.get(nodeB), nodes.get(nodeA), bCap, length, ffTimeB, alpha, epsilon, sParB, uParB, satFlowB, minDel, opCostB, caB, cbB, ccB, cdB, allowed, tollsB);
 				} else {
-					BA = new CentroidConnector(nodes.get(nodeB),nodes.get(nodeA), bCap, length, ffTimeB, opCostB.floatValue());
+					BA = new CentroidConnector(db, nodes.get(nodeB),nodes.get(nodeA), bCap, length, ffTimeB, opCostB.floatValue());
 				}
 				g.addLink(BA);
 				nodes.get(nodeB).addOutgoing(BA);
@@ -311,11 +317,6 @@ public class NetworkFactory {
 	}
 
 	public void readEnhancedTrips(File odMatrix) throws FileNotFoundException, IOException {
-//		Map<Integer, 				// Origin
-//			Map<VehicleClass, 		// VehicleClass
-//				Map<Double, 		// VOT
-//					Map<Integer,	// Destination
-//						Double>>>> origMap = new HashMap<Integer, Map<VehicleClass, Map<Double, Map<Integer, Double>>>>();
 		BufferedReader matrixFile = new BufferedReader(new FileReader(odMatrix));
 		String line;
 		Integer curOrig = null;

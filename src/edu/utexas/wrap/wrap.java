@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
+
 /** wrap: an Algorithm B implementation
  * @author William E. Alexander
  * @author Rahul Patel
@@ -86,7 +89,7 @@ public class wrap{
 	static Boolean printFlows = false;
 
 	public static void main(String[] args) {
-
+		DB db = null;
 
 		Network network;
 		try {
@@ -98,12 +101,16 @@ public class wrap{
 				System.exit(3);
 			}
 			if ((args[0].trim().equals("-e") || args[0].trim().equals("--enhanced"))) {
+				db = DBMaker.tempFileDB()
+						//.fileMmapEnableIfSupported()
+						.make();
+				
 				File links		= new File(args[1]);
 				File odMatrix	= new File(args[2]);
 				Integer firstThruNode = Integer.parseInt(args[3]);
 				
 				System.out.println("Reading network...");
-				n.readEnhancedGraph(links, firstThruNode);
+				n.readEnhancedGraph(links, firstThruNode, db);
 				
 				System.out.println("Reading trips...");				
 				n.readEnhancedTrips(odMatrix);
@@ -114,7 +121,7 @@ public class wrap{
 				File votFile 	= new File(args[2]);
 				
 				System.out.println("Reading network...");
-				n.readTNTPGraph(links);
+				n.readTNTPGraph(links, db);
 				
 				System.out.println("Reading trips...");
 				n.readTNTPUniformVOTtrips(votFile, odMatrix);
@@ -141,6 +148,7 @@ public class wrap{
 
 		//System.setOut(new PrintStream("VOTflow.csv"));
 		if (printFlows) network.printFlows(System.out);
+		if (db != null) db.close();
 	}
 }
 

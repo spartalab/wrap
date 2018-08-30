@@ -5,6 +5,9 @@ import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.mapdb.DB;
+import org.mapdb.Serializer;
+
 /**
  * @author rahulpatel
  *
@@ -17,20 +20,21 @@ public abstract class Link implements Priced {
 	private final Float length;
 	private final Float fftime;
 
-	private Map<Bush,BigDecimal> flow;
+	private Map<String,BigDecimal> flow;
 
 	private BigDecimal cachedFlow = null;
 	protected BigDecimal cachedTT = null;
 	protected BigDecimal cachedPrice = null;
 
-	public Link(Node tail, Node head, Float capacity, Float length, Float fftime) {
+	public Link(DB db, Node tail, Node head, Float capacity, Float length, Float fftime) {
 		this.tail = tail;
 		this.head = head;
 		this.capacity = capacity;
 		this.length = length;
 		this.fftime = fftime;
-
-		this.flow = new HashMap<Bush,BigDecimal>();
+		if (db != null)
+		this.flow = db.<String,BigDecimal>hashMap(tail.toString()+head.toString(), Serializer.STRING, Serializer.BIG_DECIMAL).create();
+		else this.flow = new HashMap<String, BigDecimal>();
 	}
 
 
@@ -57,7 +61,7 @@ public abstract class Link implements Priced {
 	public BigDecimal getFlow() {
 		if (cachedFlow != null) return cachedFlow;
 		BigDecimal f = BigDecimal.ZERO;
-		for (Bush b : flow.keySet()) f = f.add(flow.get(b));
+		for (String b : flow.keySet()) f = f.add(flow.get(b));
 		if (f.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("Negative link flow");
 		cachedFlow = f;
 		return f;
@@ -89,11 +93,11 @@ public abstract class Link implements Priced {
 			cachedPrice = null;
 			cachedFlow = null;
 		}
-		BigDecimal newFlow = flow.getOrDefault(bush,BigDecimal.ZERO).add(delta).setScale(Optimizer.decimalPlaces, RoundingMode.HALF_EVEN);
+		BigDecimal newFlow = flow.getOrDefault(bush.toString(),BigDecimal.ZERO).add(delta).setScale(Optimizer.decimalPlaces, RoundingMode.HALF_EVEN);
 		if (newFlow.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("invalid alter request");
-		else if (newFlow.compareTo(BigDecimal.ZERO) > 0) flow.put(bush, newFlow);
+		else if (newFlow.compareTo(BigDecimal.ZERO) > 0) flow.put(bush.toString(), newFlow);
 		else {
-			flow.remove(bush);
+			flow.remove(bush.toString());
 			return false;
 		}
 		return true;
@@ -101,11 +105,11 @@ public abstract class Link implements Priced {
 	}
 
 	public BigDecimal getBushFlow(Bush bush) {
-		return flow.getOrDefault(bush, BigDecimal.ZERO);
+		return flow.getOrDefault(bush.toString(), BigDecimal.ZERO);
 	}
 
 	public Boolean hasFlow(Bush bush) {
-		return flow.get(bush) != null;
+		return flow.get(bush.toString()) != null;
 	}
 	
 	public abstract Boolean allowsClass(VehicleClass c);

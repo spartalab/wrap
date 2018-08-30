@@ -2,11 +2,13 @@ package edu.utexas.wrap;
 
 import java.math.BigDecimal;
 
+import org.mapdb.DB;
+
 public class CentroidConnector extends TolledLink {
 	private Float toll;
 
-	public CentroidConnector(Node tail, Node head, Float capacity, Float length, Float fftime, Float toll) {
-		super(tail, head, capacity, length, fftime);
+	public CentroidConnector(DB db, Node tail, Node head, Float capacity, Float length, Float fftime, Float toll) {
+		super(db, tail, head, capacity, length, fftime);
 		this.toll = toll;
 	}
 

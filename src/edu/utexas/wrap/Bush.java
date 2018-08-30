@@ -17,7 +17,6 @@ public class Bush {
 	private final Float vot;
 	private final VehicleClass c;
 
-//	private /*final*/ Map<Integer, Float>	destDemand;
 	private final Map<Integer, Node> 	nodes; 
 	private Set<Link> activeLinks; // Set of active links
 
@@ -32,7 +31,6 @@ public class Bush {
 		origin = o;
 		this.vot = vot;
 		this.c = c;
-//		this.destDemand = destDemand;
 		
 		//Initialize flow and status maps
 		activeLinks = new HashSet<Link>(links.size(),1.0f);
@@ -67,9 +65,7 @@ public class Bush {
 			try {
 				p = getShortestPath(nodes.get(node));
 			} catch (UnreachableException e) {
-				// TODO Auto-generated catch block
 				System.err.println("No path exists from Node "+origin.getID()+" to Node "+node+". Lost demand = "+x);
-//				destDemand.put(node, 0.0F);
 				continue;
 			}
 			for (Link l : p) {

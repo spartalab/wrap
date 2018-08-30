@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Map;
 
+import org.mapdb.DB;
+
 /**
  * @author SYSTEM
  *
@@ -15,7 +17,8 @@ public class TolledEnhancedLink extends TolledLink {
 	private final Map<VehicleClass, Float> classTolls;
 	
 	
-	public TolledEnhancedLink(	Node tail,
+	public TolledEnhancedLink(					DB db,
+												Node tail,
 												Node head,
 												Float capacity,
 												Float length,
@@ -33,7 +36,7 @@ public class TolledEnhancedLink extends TolledLink {
 												Float CD,
 												Map<VehicleClass, Boolean> allowedClasses,
 												Map<VehicleClass, Float> classTolls) {
-		super(tail, head, capacity, length, fftime);
+		super(db, tail, head, capacity, length, fftime);
 		this.conicalParam = conicalParam;
 		this.VDFshift = VDFShift;
 		this.s = sParam;

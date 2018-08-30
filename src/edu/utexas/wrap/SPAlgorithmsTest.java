@@ -8,6 +8,8 @@ import java.util.List;
 
 import org.junit.BeforeClass;
 import org.junit.jupiter.api.*;
+import org.mapdb.DB;
+import org.mapdb.DBMaker;
 
 class SPAlgorithmsTest {
 	static Graph graph;
@@ -16,6 +18,7 @@ class SPAlgorithmsTest {
 	
 	@BeforeClass
 	void setUpBraess(){
+		DB db = null;
 		graph = new Graph();
 		
 		A = new Node(1,false);
@@ -23,23 +26,23 @@ class SPAlgorithmsTest {
 		C = new Node(3,false);
 		D = new Node(4,false);
 		
-		AB = new TolledBPRLink(A, B, null, null, null, null, null,null) {
+		AB = new TolledBPRLink(db,A, B, null, null, null, null, null,null) {
 			@Override
 			public BigDecimal getTravelTime() { return new BigDecimal("15");}
 		};
-		AC = new TolledBPRLink(A, C, null, null, null, null, null, null) {
+		AC = new TolledBPRLink(db,A, C, null, null, null, null, null, null) {
 			@Override
 			public BigDecimal getTravelTime() { return new BigDecimal("22.0");}
 		};
-		BC = new TolledBPRLink(B, C, null, null, null, null, null, null) {
+		BC = new TolledBPRLink(db,B, C, null, null, null, null, null, null) {
 			@Override
 			public BigDecimal getTravelTime() { return new BigDecimal("5.0");}
 		};
-		CD = new TolledBPRLink(C, D, null, null, null, null, null, null) {
+		CD = new TolledBPRLink(db,C, D, null, null, null, null, null, null) {
 			@Override
 			public BigDecimal getTravelTime() { return new BigDecimal("6.0");}
 		};
-		BD = new TolledBPRLink(B, D, null, null, null, null, null, null) {
+		BD = new TolledBPRLink(db,B, D, null, null, null, null, null, null) {
 			@Override
 			public BigDecimal getTravelTime() { return new BigDecimal("17.0");}
 		};
