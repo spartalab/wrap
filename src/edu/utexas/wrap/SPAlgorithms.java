@@ -8,12 +8,12 @@ import java.util.PriorityQueue;
 
 
 public class SPAlgorithms {
-	public static Path dijkstra(Graph g, Node origin, Node destination) throws Exception{
+	public static Path dijkstra(Graph g, Node origin, Node destination) {
 		
 		Map<Node, Link> back = new HashMap<Node, Link>();
 		FibonacciHeap<Node> Q = new FibonacciHeap<Node>();
 		
-		for (Node n : g.vertices()) {
+		for (Node n : g.getNodes()) {
 			if (!n.equals(origin)) {
 				Q.add(n, Double.MAX_VALUE);
 			}
@@ -24,7 +24,7 @@ public class SPAlgorithms {
 			Leaf<Node> u = Q.poll();
 			for (Link uv : g.outLinks(u.n)) {
 				Leaf<Node> v = Q.getLeaf(uv.getHead());
-				Double alt = uv.getTravelTime() + u.key;
+				Double alt = uv.getTravelTime().doubleValue() + u.key;
 				if (alt < v.key) {
 					Q.decreaseKey(v, alt);
 					back.put(v.n, uv);

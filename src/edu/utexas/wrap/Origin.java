@@ -6,27 +6,18 @@ import java.util.Map;
 import java.util.Set;
 
 public class Origin extends Node{
-	//private Bush bush;
+
 	private List<Bush> bushes;
-	private final Set<Integer> destinations;
 	
-	public Origin(Node self, Set<Integer> dests) {
-		super(self.getIncomingLinks(), self.getOutgoingLinks(), self.getID());
-//		destDemand = dests;	// store demand HashMap
-		destinations = dests;
+	public Origin(Node self) {
+		super(self.getIncomingLinks(), self.getOutgoingLinks(), self.getID(), self.isCentroid());
 		bushes = new LinkedList<Bush>();
 	}
-
 
 	public List<Bush> getBushes() {
 		return bushes;
 	}
 
-	Set<Integer> getDests() {
-
-		return destinations;
-	}
-	
 	Double getDemand(Integer n) {
 		Double demand = 0.0;
 		for(Bush bush : this.bushes) {
@@ -47,8 +38,12 @@ public class Origin extends Node{
 	 * @param nodes all nodes in the network
 	 * @throws Exception 
 	 */
-	public void buildBush(Set<Link> links, Map<Integer, Node> nodes, Double vot, Map<Integer, Double> destDemand) throws Exception {
-		bushes.add(new Bush(this, nodes, links, vot, destDemand));
+	public void buildBush(Set<Link> links, Map<Integer, Node> nodes, Float vot, Map<Integer, Float> destDemand, VehicleClass c) {
+		bushes.add(new Bush(this, nodes, links, vot, destDemand, c));
+	}
+	
+	public void buildBush(Graph g, Float vot, Map<Integer, Float> destDemand, VehicleClass c) {
+		this.buildBush(g.getLinks(), g.getNodeMap(), vot, destDemand, c);
 	}
 	
 	public int hashCode() {

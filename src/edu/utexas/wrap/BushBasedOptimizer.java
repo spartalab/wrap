@@ -1,106 +1,107 @@
 package edu.utexas.wrap;
 
-import java.util.ArrayList;
+import java.math.BigDecimal;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class BushBasedOptimizer extends Optimizer {
 
-	protected List<Link> removedLinks;
 
 	public BushBasedOptimizer(Network network) {
 		super(network);
 	}
 
-	public void optimize() throws Exception {
+	public BushBasedOptimizer(Network network, Integer maxIters) {
+		super(network, maxIters, -6);
+	}
+	
+	public BushBasedOptimizer(Network network, Integer maxIters, Integer exp) {
+		super(network, maxIters, exp, 16);
+	}
+
+	public BushBasedOptimizer(Network network, Integer maxIters, Integer exp, Integer places) {
+		super(network,maxIters,exp,places);
+	}
+	
+	public void iterate() {
 		// A single general step iteration
+		// TODO explore which bushes should be examined 
+		
+		
+		Set<Thread> pool = new HashSet<Thread>();
+		
 		for (Origin o : network.getOrigins()) {
 			for (Bush b : o.getBushes()) {
-
-				// Step i: Build min- and max-path trees
-				LinkedList<Node> to = b.getTopologicalOrder();
-				b.topoSearch(false, to);
-				b.topoSearch(true, to);
-
-				// Step iia: Equilibrate bush
-				equilibrateBush(b, to);
+				
+				Thread t = new Thread() {
+					public void run() {
+						// Step ii: Improve bushes in parallel
+						improveBush(b);
+					}
+				};
+				pool.add(t);
+				t.start();
 			}
 		}
-
-		// Step iib: Recalculate U labels
-		for (Origin o : network.getOrigins()) {
-			for (Bush b : o.getBushes())
-				// Step iii: Improve bush
-				improveBush(b);
+		for (Thread t : pool) {
+			try {
+				t.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
-		// Step iv: Reiterate if bush changed
+		
+		
+		for (Origin o : network.getOrigins()) {
+			for (Bush b : o.getBushes()) {
+						// Step i: Equilibrate bushes sequentially
+						equilibrateBush(b);
+
+			}
+		}
 
 	}
 
-	protected abstract void equilibrateBush(Bush b, LinkedList<Node> to) throws Exception;
+	protected abstract void equilibrateBush(Bush b);
 
-	protected Boolean improveBush(Bush b) throws Exception {
+	protected Boolean improveBush(Bush b) {
+		//TODO cleanup
+
+		b.prune();
+
 		boolean modified = false;
-		Map<Link, Boolean> links = b.getLinks();
-		this.removedLinks = new ArrayList<>();
-
-		for (Link l : new HashSet<Link>(b.getLinks().keySet())){
-			if(b.getLinks().get(l)){
-				if(b.getBushFlow(l)<=0){
-					// Check to see if this link is needed for connectivity
-					Boolean needed = true;
-					for (Link i : l.getHead().getIncomingLinks()) {
-						if (!i.equals(l) && b.getLinks().get(i) && !removedLinks.contains(i)) {
-							needed = false;
-							break;
-						}
-					}
-					if (!needed) {
-						b.getLinks().put(l, false);	// deactivate link in bush if no flow left
-						removedLinks.add(l);
-					}
-				}
-			}
-		}
-
-		LinkedList<Node> to = new LinkedList<>();
-		to = b.getTopologicalOrder();
-		b.topoSearch(false, to);
-		b.topoSearch(true, to);
-
-		for (Link l : new HashSet<Link>(links.keySet())) {
+		Set<Link> usedLinks = new HashSet<Link>(b.getLinks());
+		Set<Link> unusedLinks = new HashSet<Link>(network.getLinks());
+		unusedLinks.removeAll(usedLinks);
+		
+//		network.acquireLocks();
+		b.topoSearch(false);
+		Map<Node, BigDecimal> cache = b.topoSearch(true);
+//		Map<Node, BigDecimal> cache = new HashMap<Node, BigDecimal>(network.numNodes());
+		
+		for (Link l : unusedLinks) {
 			// If link is active, do nothing (removing flow should mark as inactive)
 			//Could potentially delete both incoming links to a node
-			if (!links.get(l)) {
-
+			if (!l.allowsClass(b.getVehicleClass()) || b.isInvalidConnector(l)) continue;
+			try {
 				// Else if Ui + tij < Uj
-				if (b.getU(l.getTail()) + l.getPrice(b.getVOT()) < b.getU(l.getHead())) {
-					links.put(l, true);
-					if(!this.removedLinks.contains(l)) modified = true;
+				
+				BigDecimal tailU = b.getCachedU(l.getTail(), cache);
+				BigDecimal headU = b.getCachedU(l.getHead(), cache);
+			
+				
+				if (tailU.add(l.getPrice(b.getVOT(),b.getVehicleClass())).compareTo(headU)<0) {
+					b.activate(l);
+					modified = true;
 				}
+			} catch (UnreachableException e) {
+				if (e.demand > 0) e.printStackTrace();
+				continue;
 			}
+
 		}
+//		network.releaseLocks();
 		return modified;
 	}
-
-	public List<Double> getResults() throws Exception {
-		//TODO: Improve this method
-		List<Double> results = new ArrayList<>();
-		for(Origin o : network.getOrigins()) {
-			for (Bush b : o.getBushes()) {
-				LinkedList<Node> to = b.getTopologicalOrder();
-				b.topoSearch(false, to);
-			}
-		}
-
-		results.add(network.AEC());
-		results.add(network.tstt());
-		results.add(network.Beckmann());
-		results.add(network.relativeGap());
-		return results;
-
-	}
-
 }
