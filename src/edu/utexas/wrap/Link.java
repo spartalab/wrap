@@ -110,7 +110,3 @@ public abstract class Link implements Priced {
 	
 	public abstract Boolean allowsClass(VehicleClass c);
 }
-
-enum VehicleClass {
-	MED_TRUCK, HVY_TRUCK, SINGLE_OCC, HIGH_OCC
-}
