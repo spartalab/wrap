@@ -18,7 +18,7 @@ class FibonacciHeapTest {
 		for (Integer i = 0; i < numCases; i++) {
 			Double key = random.nextDouble();
 			//System.out.println(key);
-			Node p = new Node(i);
+			Node p = new Node(i,false);
 			map.put(i, p);
 			heap.add(p,key);
 		}

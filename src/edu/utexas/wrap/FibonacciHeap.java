@@ -31,8 +31,8 @@ public class FibonacciHeap<E> extends AbstractQueue<Leaf<E>>{
 		map = new HashMap<E,Leaf<E>>(size,loadFactor);
 	}
 	
-	public boolean add(E node, Double d) throws Exception{
-		if (map.get(node) != null) throw new Exception();
+	public boolean add(E node, Double d) {
+		if (map.get(node) != null) throw new UnsupportedOperationException("Duplicate node in Fibonacci Heap. Keys must be unique.");
 		Leaf<E> e = new Leaf<E>(node,d);
 		e.degree = 0;
 		e.parent = null;
@@ -134,7 +134,7 @@ public class FibonacciHeap<E> extends AbstractQueue<Leaf<E>>{
 		y.mark = false;
 	}
 
-	public void decreaseKey(Leaf<E> x, Double k) throws Exception {
+	public void decreaseKey(Leaf<E> x, Double k) {
 		if (k > x.key) return; //throw new Exception();
 		x.key = k;
 		Leaf<E> y = x.parent;

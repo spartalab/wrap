@@ -2,6 +2,7 @@ package edu.utexas.wrap;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -17,30 +18,30 @@ class SPAlgorithmsTest {
 	void setUpBraess(){
 		graph = new Graph();
 		
-		A = new Node(1);
-		B = new Node(2);
-		C = new Node(3);
-		D = new Node(4);
+		A = new Node(1,false);
+		B = new Node(2,false);
+		C = new Node(3,false);
+		D = new Node(4,false);
 		
-		AB = new Link(A, B, null, null, null, null, null,null) {
+		AB = new TolledBPRLink(A, B, null, null, null, null, null,null) {
 			@Override
-			public Double getTravelTime() { return 15.0;}
+			public BigDecimal getTravelTime() { return new BigDecimal("15");}
 		};
-		AC = new Link(A, C, null, null, null, null, null, null) {
+		AC = new TolledBPRLink(A, C, null, null, null, null, null, null) {
 			@Override
-			public Double getTravelTime() { return 22.0;}
+			public BigDecimal getTravelTime() { return new BigDecimal("22.0");}
 		};
-		BC = new Link(B, C, null, null, null, null, null, null) {
+		BC = new TolledBPRLink(B, C, null, null, null, null, null, null) {
 			@Override
-			public Double getTravelTime() { return 5.0;}
+			public BigDecimal getTravelTime() { return new BigDecimal("5.0");}
 		};
-		CD = new Link(C, D, null, null, null, null, null, null) {
+		CD = new TolledBPRLink(C, D, null, null, null, null, null, null) {
 			@Override
-			public Double getTravelTime() { return 6.0;}
+			public BigDecimal getTravelTime() { return new BigDecimal("6.0");}
 		};
-		BD = new Link(B, D, null, null, null, null, null, null) {
+		BD = new TolledBPRLink(B, D, null, null, null, null, null, null) {
 			@Override
-			public Double getTravelTime() { return 17.0;}
+			public BigDecimal getTravelTime() { return new BigDecimal("17.0");}
 		};
 
 		A.addOutgoing(AB);

@@ -1,9 +1,8 @@
 package edu.utexas.wrap;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintStream;
-import java.util.List;
 
 /** wrap: an Algorithm B implementation
  * @author William E. Alexander
@@ -80,71 +79,68 @@ import java.util.List;
  *   
  */
 public class wrap{
-	static Integer iteration = 1;
-	static Integer maxIterations = 105;
-	
+
+	/**
+	 * Whether flows should be printed once converged
+	 */
+	static Boolean printFlows = false;
+
 	public static void main(String[] args) {
-		// The very first line of code!
-		Long start = System.currentTimeMillis();
-		
-		File links = new File(args[0]);
-		File odMatrix = new File(args[1]);
-		File votBreakdown = new File(args[2]);
-		
+
+
 		Network network;
 		try {
-			System.out.println("Reading network...");
-			network = Network.fromFiles(links, odMatrix, votBreakdown);
-			System.out.println("Initializing optimizer...");
-			Optimizer opt = new AlgorithmBOptimizer(network);
-			
-			System.out.println("Starting " + opt.toString() + "...");
-			System.out.println();
-			System.out.println("ITERATION #\tAEC\t\t\tTSTT\t\t\tBeckmann\t\tRelative Gap");
-			System.out.println("-------------------------------------------------------------------------------------------------------------");
-//			System.out.println(opt.getResults());
-			while (!converged(network)) {
-//				System.out.println("Iteration "+iteration+"\t");
-				opt.optimize();
-				List<Double> results = opt.getResults();
-				System.out.println("Iteration "+iteration+"\t"+results.get(0) + "\t" + results.get(1)
-						+"\t"+results.get(2)+"\t"+results.get(3));
-				iteration ++;
+			NetworkFactory n = new NetworkFactory();
+			if (args.length < 3) {
+				System.err.println("Uniform VOT usage: wrap network.tntp odMatrix.tntp votSplit.tntp");
+				System.err.println("Variable VOT usage: wrap {-v || --variable} network.tntp odMatrix.tntp");
+				System.err.println("Enahnced usage: wrap {-e || --enhanced} network.csv odMatrix.csv");
+				System.exit(3);
 			}
-			Long end = System.currentTimeMillis();
-			Double runtime = (end - start)/1000.0;
-			System.out.println("Runtime "+runtime+" seconds");
-			
-			//System.setOut(new PrintStream("VOTflow.csv"));
-			System.out.println("\r\n\r\nLink,VOT0.2 Flow,VOT0.5 Flow,VOT0.8 Flow");
-			for (Link l : network.links) {
-				Double vot0 = 0.0;
-				Double vot1 = 0.0;
-				Double vot2 = 0.0;
-				for (Origin o : network.origins) {
-					for (Bush b : o.getBushes()) {
-							vot0 += b.getBushFlow(l);
-						
-						//System.out.println(l+"\t"+b.getVOT()+"\t"+b.getBushFlow(l));
-					}
-				}
-				System.out.println(l+","+vot0+","+vot1+","+vot2);
+			if ((args[0].trim().equals("-e") || args[0].trim().equals("--enhanced"))) {
+				File links		= new File(args[1]);
+				File odMatrix	= new File(args[2]);
+				Integer firstThruNode = Integer.parseInt(args[3]);
+				
+				System.out.println("Reading network...");
+				n.readEnhancedGraph(links, firstThruNode);
+				
+				System.out.println("Reading trips...");				
+				n.readEnhancedTrips(odMatrix);
 			}
+			else if (!( args[0].trim().equals("-v") || args[0].trim().equals("--variable") )) {
+				File links 		= new File(args[0]);
+				File odMatrix	= new File(args[1]);
+				File votFile 	= new File(args[2]);
+				
+				System.out.println("Reading network...");
+				n.readTNTPGraph(links);
+				
+				System.out.println("Reading trips...");
+				n.readTNTPUniformVOTtrips(votFile, odMatrix);
+			}
+			else {
+				//TODO handle variable VOT usage
+				System.err.println("Not yet implemented");
+			}
+			network = n.getNetwork();
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			return;
 		} catch (IOException e) {
 			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
+			return;
 		}
-	}
+		
+		System.out.println("Initializing optimizer...");
+		Optimizer opt = new AlgorithmBOptimizer(network);
 
-	private static Boolean converged(Network network) {
-		try {
-			return iteration > maxIterations || network.relativeGap() < Math.pow(10, -6);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return iteration > maxIterations;
-		}
+		System.out.println("Starting " + opt.toString() + "...");
+		opt.optimize();
+
+		//System.setOut(new PrintStream("VOTflow.csv"));
+		if (printFlows) network.printFlows(System.out);
 	}
 }
 

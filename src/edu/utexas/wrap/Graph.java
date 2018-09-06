@@ -1,5 +1,6 @@
 package edu.utexas.wrap;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -8,10 +9,12 @@ import java.util.Set;
 public class Graph {
 	private Map<Node, Set<Link>> outLinks;
 	private Map<Node, Set<Link>> inLinks;
+	private Map<Integer, Node> nodeMap;
 	
 	public Graph() {
 		outLinks = new HashMap<Node, Set<Link>>();
 		inLinks = new HashMap<Node, Set<Link>>();
+		nodeMap = new HashMap<Integer, Node>();
 	}
 	
 	public Graph(Graph g) {
@@ -23,6 +26,7 @@ public class Graph {
 		for (Node n : g.inLinks.keySet()) {
 			inLinks.put(n, new HashSet<Link>(g.inLinks.get(n)));
 		}
+		nodeMap = g.nodeMap;
 	}
 	
 	public void addLink(Link link) {
@@ -35,25 +39,33 @@ public class Graph {
 		tailOuts.add(link);
 		inLinks.put(head, headIns);
 		outLinks.put(tail, tailOuts);
-		
+		nodeMap.put(link.getHead().getID(), link.getHead());
+		nodeMap.put(link.getTail().getID(), link.getTail());
 	}
 	
-	public Set<Node> vertices(){
-		HashSet<Node> ret = new HashSet<Node>();
-		Set<Node> out = outLinks.keySet();
-		Set<Node> in = inLinks.keySet();
-		ret.addAll(in);
-		ret.addAll(out);
+	public Collection<Node> getNodes(){
+		return nodeMap.values();
+	}
+	
+	public Node getNode(Integer id) {
+		return nodeMap.get(id);
+	}
+	
+	public Map<Integer, Node> getNodeMap(){
+		return nodeMap;
+	}
+	
+	public Set<Link> getLinks(){
+		HashSet<Link> ret = new HashSet<Link>();
+		for (Node n : outLinks.keySet()) ret.addAll(outLinks.get(n));
 		return ret;
 	}
 
 	public Set<Link> outLinks(Node u) {
-		// TODO Auto-generated method stub
 		return outLinks.getOrDefault(u, new HashSet<Link>());
 	}
 
 	public void remove(Link link) {
-		// TODO Auto-generated method stub
 		outLinks.get(link.getTail()).remove(link);
 		inLinks.get(link.getHead()).remove(link);
 	}
@@ -67,6 +79,11 @@ public class Graph {
 		}
 		inLinks.remove(node);
 		outLinks.remove(node);
+	}
+
+	public Integer numNodes() {
+		// TODO Auto-generated method stub
+		return nodeMap.size();
 	}
 
 }
