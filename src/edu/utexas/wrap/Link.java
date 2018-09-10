@@ -2,7 +2,8 @@ package edu.utexas.wrap;
 
 import java.util.HashMap;
 import java.util.Map;
-
+import java.sql.*;
+//import java.sql.DriverManager;
 /**
  * @author rahulpatel
  *
@@ -15,9 +16,9 @@ public abstract class Link implements Priced {
 
 	private Map<AssignmentContainer,Double> flow;
 
-	private Double cachedFlow = null;
-	protected Double cachedTT = null;
-	protected Double cachedPrice = null;
+	private BigDecimal cachedFlow = null;
+	protected BigDecimal cachedTT = null;
+	protected BigDecimal cachedPrice = null;
 
 	public Link(Node tail, Node head, Float capacity, Float length, Float fftime) {
 		this.tail = tail;
@@ -26,7 +27,24 @@ public abstract class Link implements Priced {
 		this.length = length;
 		this.fftime = fftime;
 
-		this.flow = new HashMap<AssignmentContainer,Double>();
+		this.flow = new HashMap<Bush,BigDecimal>();
+	}
+
+
+	public Float getCapacity() {
+		return capacity;
+	}
+
+	public Float freeFlowTime() {
+		return fftime;
+	}
+
+	public Node getHead() {
+		return head;
+	}
+
+	public Node getTail() {
+		return tail;
 	}
 
 
@@ -82,7 +100,7 @@ public abstract class Link implements Priced {
 	public Float getLength() {
 		return length;
 	}
-	
+
 	public abstract Double getPrice(Float vot, VehicleClass c);
 
 	public Node getTail() {
@@ -102,6 +120,6 @@ public abstract class Link implements Priced {
 	public String toString() {
 		return tail.toString() + "\t" + head.toString();
 	}
-	
-	public abstract Double tPrime();
+
+	public abstract Boolean allowsClass(VehicleClass c);
 }
