@@ -4,7 +4,8 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
-
+import java.sql.*;
+//import java.sql.DriverManager;
 /**
  * @author rahulpatel
  *
@@ -22,6 +23,7 @@ public abstract class Link implements Priced {
 	private BigDecimal cachedFlow = null;
 	protected BigDecimal cachedTT = null;
 	protected BigDecimal cachedPrice = null;
+	protected Connection databaseCon = null;
 
 	public Link(Node tail, Node head, Float capacity, Float length, Float fftime) {
 		this.tail = tail;
@@ -31,6 +33,15 @@ public abstract class Link implements Priced {
 		this.fftime = fftime;
 
 		this.flow = new HashMap<Bush,BigDecimal>();
+		try {
+			Class.forName("org.postgresql.Driver");
+			databaseCon = DriverManager.getConnection("jdbc:postgresql://localhost:5432/network");
+			System.out.println("Able to connect to database");
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("Could not find database/table to connect to");
+			System.exit(3);
+		}
 	}
 
 
@@ -109,4 +120,8 @@ public abstract class Link implements Priced {
 	}
 	
 	public abstract Boolean allowsClass(VehicleClass c);
+
+	public int hashCode() {
+
+	}
 }
