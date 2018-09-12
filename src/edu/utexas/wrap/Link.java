@@ -48,21 +48,17 @@ public abstract class Link implements Priced {
 	private BigDecimal totalFlowFromTable() {
 		Statement stm;
 		try {
-			stm = databaseCon.createStatement();
-			BigDecimal total = null;
-			ResultSet result = stm.executeQuery(sumQuery);
-			if(result.next()) {
-				total = result.getBigDecimal("totalFlow");
-			}
-			if (total == null)
-				return BigDecimal.ZERO;
-			return total;
-		} catch (SQLException e) {
+			Class.forName("org.postgresql.Driver");
+			databaseCon = DriverManager.getConnection("jdbc:postgresql://localhost:5432/network");
+			System.out.println("Able to connect to database");
+		} catch (Exception e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
 		return BigDecimal.ZERO;
 	}
+
+
 	public Float getCapacity() {
 		return capacity;
 	}
@@ -236,8 +232,4 @@ public abstract class Link implements Priced {
 	}
 
 	public abstract Boolean allowsClass(VehicleClass c);
-
-	public int hashCode() {
-
-	}
 }
