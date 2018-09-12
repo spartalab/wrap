@@ -10,7 +10,7 @@ import java.sql.*;
  */
 public abstract class Link implements Priced {
 
-	private final float capacity, length, fftime;
+	private final Float capacity;
 	private final Node head;
 	private final Node tail;
 
@@ -28,8 +28,33 @@ public abstract class Link implements Priced {
 		this.fftime = fftime;
 
 		this.flow = new HashMap<Bush,BigDecimal>();
+		try {
+			Class.forName("org.postgresql.Driver");
+			databaseCon = DriverManager.getConnection("jdbc:postgresql://localhost:5432/network");
+			System.out.println("Able to connect to database");
+		} catch (Exception e) {
+			e.printStackTrace();
+			System.out.println("Could not find database/table to connect to");
+			System.exit(3);
+		}
 	}
 
+
+	private void createTable(Connection con) {
+		Statement stm = null;
+		String query = "CREATE TABLE " + hashCode() + "(" +
+				"bush_origin_id integer" +
+				"vot real" +
+				"vehicle_class integer" +
+                "flow decimal(" + Optimizer.defMC.getPrecision() + ")" +
+				")";
+		try {
+		    stm = con.createStatement();
+		    stm.execute(query);
+        } catch (SQLException e) {
+
+        }
+	}
 
 	public Float getCapacity() {
 		return capacity;
