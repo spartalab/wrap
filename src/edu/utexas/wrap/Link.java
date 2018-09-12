@@ -12,6 +12,7 @@ import java.sql.*;
  */
 public abstract class Link implements Priced {
 
+	private static final String dbName = "network";
 	private final Float capacity;
 	private final Node head;
 	private final Node tail;
@@ -35,8 +36,9 @@ public abstract class Link implements Priced {
 		this.flow = new HashMap<Bush,BigDecimal>();
 		try {
 			Class.forName("org.postgresql.Driver");
-			databaseCon = DriverManager.getConnection("jdbc:postgresql://localhost:5432/network");
+			databaseCon = DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + dbName);
 			System.out.println("Able to connect to database");
+            createTable(databaseCon);
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("Could not find database/table to connect to");
@@ -44,6 +46,22 @@ public abstract class Link implements Priced {
 		}
 	}
 
+
+	private void createTable(Connection con) {
+		Statement stm = null;
+		String query = "CREATE TABLE " + hashCode() + "(" +
+				"bush_origin_id integer" +
+				"vot real" +
+				"vehicle_class integer" +
+                "flow decimal(" + Optimizer.defMC.getPrecision() + ")" +
+				")";
+		try {
+		    stm = con.createStatement();
+		    stm.execute(query);
+        } catch (SQLException e) {
+
+        }
+	}
 
 	public Float getCapacity() {
 		return capacity;
@@ -120,8 +138,4 @@ public abstract class Link implements Priced {
 	}
 	
 	public abstract Boolean allowsClass(VehicleClass c);
-
-	public int hashCode() {
-
-	}
 }
