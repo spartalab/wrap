@@ -3,7 +3,6 @@ package edu.utexas.wrap;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintStream;
 
 /** wrap: an Algorithm B implementation
  * @author William E. Alexander
@@ -11,13 +10,7 @@ import java.io.PrintStream;
  * @author Adam Nodjomian
  * @author Prashanth Venkatraman
  * 
- * 
- * This project began as part of the requirements for the 
- * CE 392C Transportation Network Analysis course at 
- * The University of Texas at Austin during the Fall 2017
- * semester, with further development thereafter.
- * 
- * This project implements Algorithm B, as presented 
+ * This project will implement Algorithm B, as presented 
  * by Dial (2006) in order to create a solver for the
  * Traffic Assignment Problem as defined by Beckmann et 
  * al. (1956). The aim for this project is to implement a
@@ -28,7 +21,11 @@ import java.io.PrintStream;
  * good exercise in practicing proper software development
  * techniques. 
  * 
-
+ * This project will be completed as part of the requirements
+ * for the CE 392C Transportation Network Analysis course 
+ * at the University of Texas at Austin during the Fall 2017
+ * semester, with the potential for further development to
+ * follow. 
  * 
  *            _______
  *          _|_______|_
@@ -86,9 +83,10 @@ public class wrap{
 	/**
 	 * Whether flows should be printed once converged
 	 */
-	static Boolean printFlows = true;
+	static Boolean printFlows = false;
 
 	public static void main(String[] args) {
+
 
 		Network network;
 		try {
@@ -117,7 +115,7 @@ public class wrap{
 				
 				System.out.println("Reading network...");
 				n.readTNTPGraph(links);
-				 
+				
 				System.out.println("Reading trips...");
 				n.readTNTPUniformVOTtrips(votFile, odMatrix);
 			}
@@ -126,7 +124,7 @@ public class wrap{
 				System.err.println("Not yet implemented");
 			}
 			network = n.getNetwork();
- 
+
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			return;
@@ -141,13 +139,11 @@ public class wrap{
 		System.out.println("Starting " + opt.toString() + "...");
 		opt.optimize();
 
-		try {
-			System.setOut(new PrintStream("VOTflow.txt"));
-			if (printFlows) network.printFlows(System.out);
+		//System.setOut(new PrintStream("VOTflow.csv"));
+		if (printFlows) network.printFlows(System.out);
 
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		for(Link l: network.getGraph().getLinks()) {
+			l.removeTable();
 		}
 	}
 }
