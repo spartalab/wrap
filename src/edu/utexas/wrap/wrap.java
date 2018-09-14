@@ -141,6 +141,10 @@ public class wrap{
 
 		//System.setOut(new PrintStream("VOTflow.csv"));
 		if (printFlows) network.printFlows(System.out);
+
+		for(Link l: network.getGraph().getLinks()) {
+			l.removeTable();
+		}
 	}
 }
 
