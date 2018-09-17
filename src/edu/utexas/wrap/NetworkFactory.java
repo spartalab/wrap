@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-@SuppressWarnings("ALL")
 public class NetworkFactory {
 	private Graph g;
 	private Set<Origin> origins;
