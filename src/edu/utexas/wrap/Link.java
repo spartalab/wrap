@@ -250,7 +250,7 @@ public abstract class Link implements Priced {
 		String query = "DROP TABLE t" + hashCode();
 		try{
 			Statement stm = databaseCon.createStatement();
-			stm.executeQuery(query);
+			stm.executeUpdate(query);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.exit(1);
