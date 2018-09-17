@@ -62,14 +62,14 @@ public abstract class Link implements Priced {
 	}
 
 
-	private void createTable(Connection con) {
+	private void createTable() {
 		Statement stm = null;
-		String query = "CREATE TABLE " + hashCode() + "(" +
-				"bush_origin_id integer" +
-				"vot real" +
-				"vehicle_class integer" +
-                "flow decimal(" + Optimizer.defMC.getPrecision() + ")" +
-				")";
+		String query = "CREATE TABLE t" + hashCode() + " (" +
+				"bush_origin_id integer, " +
+				"vot real, " +
+				"vehicle_class text, " +
+                "flow decimal(" + Optimizer.defMC.getPrecision() + ")," +
+				"UNIQUE (bush_origin_id, vot, vehicle_class))";
 		try {
 		    stm = con.createStatement();
 		    stm.execute(query);
@@ -79,15 +79,17 @@ public abstract class Link implements Priced {
 	}
 
 	private BigDecimal totalFlowFromTable() {
-		Statement stm = null;
+		Statement stm;
 		String query = "SELECT SUM (flow) AS totalFlow FROM t" + hashCode();
 		try {
 			stm = databaseCon.createStatement();
-			BigDecimal total = BigDecimal.ZERO;
+			BigDecimal total = null;
 			ResultSet result = stm.executeQuery(query);
 			if(result.next()) {
 				total = result.getBigDecimal("totalFlow");
 			}
+			if (total == null)
+				return BigDecimal.ZERO;
 			return total;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -147,11 +149,52 @@ public abstract class Link implements Priced {
 			cachedPrice = null;
 			cachedFlow = null;
 		}
-		BigDecimal newFlow = flow.getOrDefault(bush,BigDecimal.ZERO).add(delta).setScale(Optimizer.decimalPlaces, RoundingMode.HALF_EVEN);
-		if (newFlow.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("invalid alter request");
-		else if (newFlow.compareTo(BigDecimal.ZERO) > 0) flow.put(bush, newFlow);
-		else {
-			flow.remove(bush);
+		//Retrieve Bush with the specified parameters
+		PreparedStatement stm;
+		BigDecimal updateFlow = getBushFlow(bush);
+		String query = "INSERT INTO t" + hashCode() + " (bush_origin_id, vot, vehicle_class, flow) " +
+				"VALUES (" +
+				"?,?,?,?)" +
+				"ON CONFLICT (bush_origin_id, vot, vehicle_class)" +
+				"DO UPDATE " +
+				"SET flow = ? " +
+				"WHERE " +
+				"t" +hashCode()+".bush_origin_id = ? " +
+				"AND t"+hashCode()+".vot = ? " +
+				"AND t"+hashCode()+".vehicle_class = ?";
+		try {
+			updateFlow = updateFlow.add(delta).setScale(Optimizer.decimalPlaces, RoundingMode.HALF_EVEN);
+			if(updateFlow.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("invalid alter request");
+			else if(updateFlow.compareTo(BigDecimal.ZERO) > 0) {
+				stm = databaseCon.prepareStatement(query);
+				stm.setInt(1, bush.getOrigin().getID());
+				stm.setFloat(2, bush.getVOT());
+				stm.setString(3, bush.toString());
+				stm.setBigDecimal(4, updateFlow);
+				stm.setBigDecimal(5, updateFlow);
+				stm.setInt(6, bush.getOrigin().getID());
+				stm.setFloat(7, bush.getVOT());
+				stm.setString(8, bush.toString());
+				stm.executeUpdate();
+				return true;
+			} else {
+				query = "DELETE FROM t" + hashCode() +
+						" WHERE " +
+						"bush_origin_id = ? " +
+						"AND vot = ? " +
+						"AND vehicle_class = ?";
+				stm = databaseCon.prepareStatement(query);
+				stm.setInt(1, bush.getOrigin().getID());
+				stm.setFloat(2, bush.getVOT());
+				stm.setString(3, bush.toString());
+				stm.executeUpdate();
+				return false;
+			}
+		} catch (SQLException e) {
+			//System.out.println("alter bush flow");
+			//System.out.println("SQL Error Code: " + e.getErrorCode());
+			e.printStackTrace();
+			System.exit(1);
 			return false;
 		}
 		return true;
@@ -159,13 +202,71 @@ public abstract class Link implements Priced {
 	}
 
 	public BigDecimal getBushFlow(Bush bush) {
-		return flow.getOrDefault(bush, BigDecimal.ZERO);
+		PreparedStatement stm;
+		String query = "SELECT * FROM t" + hashCode() +
+				" WHERE " +
+				"bush_origin_id = ? " +
+				"AND vot = ? " +
+				"AND vehicle_class = ?";
+
+		try {
+			stm = databaseCon.prepareStatement(query);
+			stm.setInt(1, bush.getOrigin().getID());
+			stm.setFloat(2, bush.getVOT());
+			//System.out.println(bush.toString());
+			stm.setString(3, bush.toString());
+			ResultSet result = stm.executeQuery();
+			if(result.next()) {
+				return result.getBigDecimal("flow");
+			}
+		} catch (Exception e) {
+			//System.out.println("getBush flow");
+			//System.out.println("SQL Error Code: " + e.getErrorCode());
+			e.printStackTrace();
+			System.exit(1);
+			return BigDecimal.ZERO;
+		}
+		return BigDecimal.ZERO;
 	}
 
 	public abstract Double getTravelTime();
 
 	public Boolean hasFlow(Bush bush) {
-		return flow.get(bush) != null;
+		PreparedStatement stm;
+		String query = "SELECT * FROM t" + hashCode() +
+				" WHERE " +
+				"bush_origin_id = ? " +
+				"AND vot = ? " +
+				"AND vehicle_class = ?";
+
+		try {
+			stm = databaseCon.prepareStatement(query);
+			stm.setInt(1, bush.getOrigin().getID());
+			stm.setFloat(2, bush.getVOT());
+			stm.setString(3, bush.toString());
+			return stm.executeQuery().next();
+		} catch (SQLException e) {
+			//System.out.println("has flow");
+			//System.out.println("SQL Error Code: " + e.getErrorCode());
+			e.printStackTrace();
+			System.exit(1);
+			return false;
+		}
+		//return flow.get(bush) != null;
+	}
+
+	public void removeTable() {
+		String query = "DROP TABLE t" + hashCode();
+		try{
+			Statement stm = databaseCon.createStatement();
+			stm.executeQuery(query);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.exit(1);
+			//System.out.println("removeTable");
+			//System.out.println("SQL Error Code: " + e.getErrorCode());
+		}
+
 	}
 
 	public abstract Boolean allowsClass(VehicleClass c);
