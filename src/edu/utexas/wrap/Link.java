@@ -50,7 +50,7 @@ public abstract class Link implements Priced {
 
 
 	private void createTable() {
-		Statement stm = null;
+		Statement stm;
 		String query = "CREATE TABLE t" + hashCode() + " (" +
 				"bush_origin_id integer, " +
 				"vot real, " +
@@ -67,15 +67,17 @@ public abstract class Link implements Priced {
 	}
 
 	private BigDecimal totalFlowFromTable() {
-		Statement stm = null;
+		Statement stm;
 		String query = "SELECT SUM (flow) AS totalFlow FROM t" + hashCode();
 		try {
 			stm = databaseCon.createStatement();
-			BigDecimal total = BigDecimal.ZERO;
+			BigDecimal total = null;
 			ResultSet result = stm.executeQuery(query);
 			if(result.next()) {
 				total = result.getBigDecimal("totalFlow");
 			}
+			if (total == null)
+				return BigDecimal.ZERO;
 			return total;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -159,12 +161,17 @@ public abstract class Link implements Priced {
 				stm = databaseCon.prepareStatement(query);
 				stm.setInt(1, bush.getOrigin().getID());
 				stm.setFloat(2, bush.getVOT());
-				stm.setString(3, bush.toString());
-				stm.setBigDecimal(4, updateFlow);
+                if(bush.getVehicleClass() != null)
+                    stm.setString(3, bush.getVehicleClass().name());
+                else
+                    stm.setString(3, bush.toString());				stm.setBigDecimal(4, updateFlow);
 				stm.setBigDecimal(5, updateFlow);
 				stm.setInt(6, bush.getOrigin().getID());
 				stm.setFloat(7, bush.getVOT());
-				stm.setString(8, bush.toString());
+				if(bush.getVehicleClass() != null)
+				    stm.setString(8, bush.getVehicleClass().name());
+				else
+				    stm.setString(8, bush.toString());
 				stm.executeUpdate();
 				return true;
 			} else {
@@ -176,7 +183,10 @@ public abstract class Link implements Priced {
 				stm = databaseCon.prepareStatement(query);
 				stm.setInt(1, bush.getOrigin().getID());
 				stm.setFloat(2, bush.getVOT());
-				stm.setString(3, bush.toString());
+				if(bush.getVehicleClass() != null)
+				    stm.setString(3, bush.getVehicleClass().name());
+				else
+				    stm.setString(3, bush.toString());
 				stm.executeUpdate();
 				return false;
 			}
@@ -214,8 +224,10 @@ public abstract class Link implements Priced {
 			stm = databaseCon.prepareStatement(query);
 			stm.setInt(1, bush.getOrigin().getID());
 			stm.setFloat(2, bush.getVOT());
-			//System.out.println(bush.toString());
-			stm.setString(3, bush.toString());
+			if(bush.getVehicleClass() != null)
+			    stm.setString(3, bush.getVehicleClass().name());
+			else
+			    stm.setString(3, bush.toString());
 			ResultSet result = stm.executeQuery();
 			if(result.next()) {
 				return result.getBigDecimal("flow");
@@ -242,7 +254,10 @@ public abstract class Link implements Priced {
 			stm = databaseCon.prepareStatement(query);
 			stm.setInt(1, bush.getOrigin().getID());
 			stm.setFloat(2, bush.getVOT());
-			stm.setString(3, bush.toString());
+			if(bush.getVehicleClass() != null)
+			    stm.setString(3, bush.getVehicleClass().name());
+			else
+			    stm.setString(3, bush.toString());
 			return stm.executeQuery().next();
 		} catch (SQLException e) {
 			//System.out.println("has flow");
