@@ -80,7 +80,7 @@ public class Origin extends Node{
 				//If this link doesn't allow this bush's class of driver on the link, don't consider it
 				
 				Leaf<Integer> v = Q.getLeaf(uv.getHead().getID());
-				BigDecimal alt = uv.getTravelTime().add(BigDecimal.valueOf(u.key));
+				BigDecimal alt = BigDecimal.valueOf(uv.freeFlowTime()).add(BigDecimal.valueOf(u.key));
 				if (alt.compareTo(BigDecimal.valueOf(v.key)) < 0) {
 					Q.decreaseKey(v, alt.doubleValue());
 					back.put(v.n, uv);

@@ -51,7 +51,7 @@ public class NetworkFactory {
 		/////////////////////////////////////
 		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
 		String line;
-
+		Set<BushBuilder> pool = new HashSet<BushBuilder>();
 		HashMap<Integer, Float> bushDests;
 		origins = new HashSet<Origin>();
 
@@ -67,20 +67,41 @@ public class NetworkFactory {
 			Node root = g.getNode(origID);	// Retrieve the existing node with that ID
 
 			HashMap<Integer, Float> dests = readDestinationDemand(of);
-			Origin o = new Origin(root); 	// Construct an origin to replace it
+			
+			
+//			Origin o = new Origin(root); 	// Construct an origin to replace it
 
+			Map<Float, Map<Integer, Float>> nmap = new HashMap<Float, Map<Integer, Float>>();
 			for (Float[] entry : VOTs.get(root)) {
 				bushDests = new HashMap<Integer, Float>();
 				for (Integer temp : dests.keySet()) {
 					bushDests.put(temp, entry[1] * dests.get(temp));
 				}
-				o.buildBush(g, entry[0], bushDests, null);
+				nmap.put(entry[0], bushDests);
+//				o.buildBush(g, entry[0], bushDests, null);
 			}
-			origins.add(o);
+			
+			Map<VehicleClass, Map<Float, Map<Integer, Float>>> omap = new HashMap<VehicleClass, Map<Float, Map<Integer, Float>>>();
+			omap.put(null, nmap);
+			BushBuilder t = new BushBuilder(g,root,omap);
+			pool.add(t);
+			t.start();
+			
+			
 			line = of.readLine();
 
 		}
 		of.close();
+		
+		try {
+			for (BushBuilder t : pool) {
+				t.join();
+				origins.add(t.orig);
+			}
+		}
+		catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 
@@ -311,15 +332,15 @@ public class NetworkFactory {
 	}
 
 	public void readEnhancedTrips(File odMatrix) throws FileNotFoundException, IOException {
-//		Map<Integer, 				// Origin
-//			Map<VehicleClass, 		// VehicleClass
-//				Map<Double, 		// VOT
-//					Map<Integer,	// Destination
-//						Double>>>> origMap = new HashMap<Integer, Map<VehicleClass, Map<Double, Map<Integer, Double>>>>();
+			Map<VehicleClass, 		// VehicleClass
+				Map<Float, 		// VOT
+					Map<Integer,	// Destination
+						Float>>> origMap = null;
 		BufferedReader matrixFile = new BufferedReader(new FileReader(odMatrix));
 		String line;
 		Integer curOrig = null;
 		origins = new HashSet<Origin>();
+		Set<BushBuilder> pool = new HashSet<BushBuilder>();
 		Map<Integer, Float> 
 				solo17 = null,
 				solo35 = null,
@@ -341,21 +362,35 @@ public class NetworkFactory {
 				if (curOrig != null) {
 					//build previous bushes
 					
-					Origin o = new Origin(g.getNode(curOrig));
-					o.buildBush(g, 0.17F, solo17, VehicleClass.SINGLE_OCC);
-					o.buildBush(g, 0.35F, solo35, VehicleClass.SINGLE_OCC);
-					o.buildBush(g, 0.45F, solo45, VehicleClass.SINGLE_OCC);
-					o.buildBush(g, 0.90F, solo90, VehicleClass.SINGLE_OCC);
+					origMap = new HashMap<VehicleClass, Map<Float, Map<Integer, Float>>>();
 					
-					o.buildBush(g, 0.17F, hov17, VehicleClass.HIGH_OCC);
-					o.buildBush(g, 0.35F, hov35, VehicleClass.HIGH_OCC);
-					o.buildBush(g, 0.45F, hov45, VehicleClass.HIGH_OCC);
-					o.buildBush(g, 0.90F, hov90, VehicleClass.HIGH_OCC);
+					Map<Float, Map<Integer, Float>> soMap = new HashMap<Float, Map<Integer, Float>>();
+					Map<Float, Map<Integer, Float>> hoMap = new HashMap<Float, Map<Integer, Float>>();
+					Map<Float, Map<Integer, Float>> mtMap = new HashMap<Float, Map<Integer, Float>>();
+					Map<Float, Map<Integer, Float>> htMap = new HashMap<Float, Map<Integer, Float>>();
 					
-					o.buildBush(g, 1.0F, medTrucks, VehicleClass.MED_TRUCK);
-					o.buildBush(g, 1.0F, hvyTrucks, VehicleClass.HVY_TRUCK);
+					soMap.put(0.17F, solo17);
+					soMap.put(0.35F, solo35);
+					soMap.put(0.45F, solo45);
+					soMap.put(0.90F, solo90);
 					
-					origins.add(o);
+					hoMap.put(0.17F, hov17);
+					hoMap.put(0.35F, hov35);
+					hoMap.put(0.45F, hov45);
+					hoMap.put(0.90F, hov90);
+					
+					mtMap.put(1.0F, medTrucks);
+					htMap.put(1.0F, hvyTrucks);
+					
+					origMap.put(VehicleClass.SINGLE_OCC, soMap);
+					origMap.put(VehicleClass.HIGH_OCC, hoMap);
+					origMap.put(VehicleClass.MED_TRUCK, mtMap);
+					origMap.put(VehicleClass.HVY_TRUCK, htMap);
+					
+					BushBuilder t = new BushBuilder(g,g.getNode(curOrig),origMap);
+					pool.add(t);
+					t.start();
+					
 				}
 				break;
 			}
@@ -378,23 +413,37 @@ public class NetworkFactory {
 			if (curOrig == null || !orig.equals(curOrig)) {
 				//Moving on to next origin
 				if (curOrig != null) {
-					//build previous bushes
+					//build previous origin's bushes
+					origMap = new HashMap<VehicleClass, Map<Float, Map<Integer, Float>>>();
 					
-					Origin o = new Origin(g.getNode(curOrig));
-					o.buildBush(g, 0.17F, solo17, VehicleClass.SINGLE_OCC);
-					o.buildBush(g, 0.35F, solo35, VehicleClass.SINGLE_OCC);
-					o.buildBush(g, 0.45F, solo45, VehicleClass.SINGLE_OCC);
-					o.buildBush(g, 0.90F, solo90, VehicleClass.SINGLE_OCC);
+					Map<Float, Map<Integer, Float>> soMap = new HashMap<Float, Map<Integer, Float>>();
+					Map<Float, Map<Integer, Float>> hoMap = new HashMap<Float, Map<Integer, Float>>();
+					Map<Float, Map<Integer, Float>> mtMap = new HashMap<Float, Map<Integer, Float>>();
+					Map<Float, Map<Integer, Float>> htMap = new HashMap<Float, Map<Integer, Float>>();
 					
-					o.buildBush(g, 0.17F, hov17, VehicleClass.HIGH_OCC);
-					o.buildBush(g, 0.35F, hov35, VehicleClass.HIGH_OCC);
-					o.buildBush(g, 0.45F, hov45, VehicleClass.HIGH_OCC);
-					o.buildBush(g, 0.90F, hov90, VehicleClass.HIGH_OCC);
+					soMap.put(0.17F, solo17);
+					soMap.put(0.35F, solo35);
+					soMap.put(0.45F, solo45);
+					soMap.put(0.90F, solo90);
 					
-					o.buildBush(g, 1.0F, medTrucks, VehicleClass.MED_TRUCK);
-					o.buildBush(g, 1.0F, hvyTrucks, VehicleClass.HVY_TRUCK);
+					hoMap.put(0.17F, hov17);
+					hoMap.put(0.35F, hov35);
+					hoMap.put(0.45F, hov45);
+					hoMap.put(0.90F, hov90);
 					
-					origins.add(o);
+					mtMap.put(1.0F, medTrucks);
+					htMap.put(1.0F, hvyTrucks);
+					
+					origMap.put(VehicleClass.SINGLE_OCC, soMap);
+					origMap.put(VehicleClass.HIGH_OCC, hoMap);
+					origMap.put(VehicleClass.MED_TRUCK, mtMap);
+					origMap.put(VehicleClass.HVY_TRUCK, htMap);
+					
+					
+					BushBuilder t = new BushBuilder(g,g.getNode(curOrig),origMap);
+					pool.add(t);
+					t.start();
+					
 				}
 				
 				//Reset maps
@@ -428,5 +477,36 @@ public class NetworkFactory {
 			if (hvtk > 0.0F) hvyTrucks.put(dest, hvtk);
 		}
 		matrixFile.close();
+		try {
+			for (BushBuilder t : pool) {
+				t.join();
+				origins.add(t.orig);
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+}
+
+
+class BushBuilder extends Thread {
+	 Map<VehicleClass, Map<Float, Map<Integer, Float>>> map;
+	 Node o;
+	 Graph g;
+	 Origin orig;
+	 
+	 public BushBuilder(Graph g, Node o,  Map<VehicleClass, Map<Float, Map<Integer, Float>>> map) {
+		 this.o = o;
+		 this.map = map;
+		 this.g = g;
+	 }
+	 
+	 public void run() {
+			orig = new Origin(o);
+			for (VehicleClass c : map.keySet()) {
+				for (Float vot : map.get(c).keySet()) {
+					orig.buildBush(g, vot, map.get(c).get(vot), c);
+				}
+			}
 	}
 }
