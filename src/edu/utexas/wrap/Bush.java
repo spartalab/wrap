@@ -17,7 +17,6 @@ public class Bush {
 	private final Float vot;
 	private final VehicleClass c;
 
-//	private /*final*/ Map<Integer, Float>	destDemand;
 	private final Map<Integer, Node> 	nodes; 
 	private Set<Link> activeLinks; // Set of active links
 
@@ -32,15 +31,14 @@ public class Bush {
 		origin = o;
 		this.vot = vot;
 		this.c = c;
-//		this.destDemand = destDemand;
 		
 		//Initialize flow and status maps
 		activeLinks = new HashSet<Link>(links.size(),1.0f);
 		this.nodes	= nodes;
-		qShort	= new HashMap<Integer, Link>(nodes.size(),1.0f);
+		qShort	= origin.getInitMap(nodes);//new HashMap<Integer, Link>(nodes.size(),1.0f);
 		qLong	= new HashMap<Integer, Link>(nodes.size(),1.0f);
 		
-		runDijkstras();
+//		runDijkstras();
 		dumpFlow(destDemand);
 	}
 
@@ -132,45 +130,6 @@ public class Bush {
 		if (!currentLinks.isEmpty()) throw new RuntimeException("Cyclic graph error");
 		
 		return to;
-	}
-
-
-	/**Generate an initial bush (dag) by solving Dijkstra's Shortest Paths
-	 * 
-	 * To be called on initialization. Overwrites nodeL and qShort.
-	 * @throws Exception if link travel times are unavailable
-	 */
-	private void runDijkstras() {
-		// Initialize every nodeL to infinity except this, the origin
-		// Initialize the empty map of finalized nodes, the map of 
-		// eligible nodes to contain this origin only, and the 
-		// back-link mapping to be empty
-		Map<Integer, Link> back = new HashMap<Integer, Link>(nodes.size(),1.0f);
-		FibonacciHeap<Integer> Q = new FibonacciHeap<Integer>(nodes.size(),1.0f);
-		for (Node n : nodes.values()) {
-			if (!n.equals(origin)) {
-				Q.add(n.getID(), Double.MAX_VALUE);
-			}
-		}
-		Q.add(origin.getID(), 0.0);
-
-		while (!Q.isEmpty()) {
-			Leaf<Integer> u = Q.poll();
-			
-			
-			for (Link uv : nodes.get(u.n).getOutgoingLinks()) {
-				if (!uv.allowsClass(c) || isInvalidConnector(uv)) continue;
-				//If this link doesn't allow this bush's class of driver on the link, don't consider it
-				
-				Leaf<Integer> v = Q.getLeaf(uv.getHead().getID());
-				BigDecimal alt = uv.getPrice(vot,c).add(BigDecimal.valueOf(u.key));
-				if (alt.compareTo(BigDecimal.valueOf(v.key)) < 0) {
-					Q.decreaseKey(v, alt.doubleValue());
-					back.put(v.n, uv);
-				}
-			}
-		}
-		qShort = back;
 	}
 
 
@@ -403,16 +362,16 @@ public class Bush {
 		}
 	}
 	
-	private Integer depthL(Node n) {
-		if (n.equals(origin)) return 0;
-		return depthL(getqShort(n).getTail())+1;
-	}
-	
-	private Integer depthU(Node n) {
-		if (n.equals(origin)) return 0;
-		return depthU(getqLong(n).getTail())+1;
-	}
-	
+//	private Integer depthL(Node n) {
+//		if (n.equals(origin)) return 0;
+//		return depthL(getqShort(n).getTail())+1;
+//	}
+//	
+//	private Integer depthU(Node n) {
+//		if (n.equals(origin)) return 0;
+//		return depthU(getqLong(n).getTail())+1;
+//	}
+//	
 	Node divergeNode(Node l, Node u) {
 		if (l.equals(origin) || u.equals(origin)) return origin;
 		

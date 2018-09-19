@@ -1,5 +1,7 @@
 package edu.utexas.wrap;
 
+import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +10,7 @@ import java.util.Set;
 public class Origin extends Node{
 
 	private List<Bush> bushes;
+	private Map<Integer, Link> initMap;
 	
 	public Origin(Node self) {
 		super(self.getIncomingLinks(), self.getOutgoingLinks(), self.getID(), self.isCentroid());
@@ -48,5 +51,47 @@ public class Origin extends Node{
 	
 	public int hashCode() {
 		return getID();
+	}
+	
+	/**Generate an initial bush (dag) by solving Dijkstra's Shortest Paths
+	 * 
+	 * To be called on initialization. Overwrites nodeL and qShort.
+	 */
+	public void buildInitMap(Map<Integer, Node> nodes) {
+		// Initialize every nodeL to infinity except this, the origin
+		// Initialize the empty map of finalized nodes, the map of 
+		// eligible nodes to contain this origin only, and the 
+		// back-link mapping to be empty
+		Map<Integer, Link> back = new HashMap<Integer, Link>(nodes.size(),1.0f);
+		FibonacciHeap<Integer> Q = new FibonacciHeap<Integer>(nodes.size(),1.0f);
+		for (Node n : nodes.values()) {
+			if (!n.equals(this)) {
+				Q.add(n.getID(), Double.MAX_VALUE);
+			}
+		}
+		Q.add(getID(), 0.0);
+
+		while (!Q.isEmpty()) {
+			Leaf<Integer> u = Q.poll();
+			
+			
+			for (Link uv : nodes.get(u.n).getOutgoingLinks()) {
+//				if (!uv.allowsClass(c) || isInvalidConnector(uv)) continue;
+				//If this link doesn't allow this bush's class of driver on the link, don't consider it
+				
+				Leaf<Integer> v = Q.getLeaf(uv.getHead().getID());
+				BigDecimal alt = uv.getTravelTime().add(BigDecimal.valueOf(u.key));
+				if (alt.compareTo(BigDecimal.valueOf(v.key)) < 0) {
+					Q.decreaseKey(v, alt.doubleValue());
+					back.put(v.n, uv);
+				}
+			}
+		}
+		initMap = back;
+	}
+
+	public Map<Integer, Link> getInitMap(Map<Integer, Node> nodes) {
+		if (initMap == null) buildInitMap(nodes);
+		return initMap;
 	}
 }

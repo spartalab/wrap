@@ -72,6 +72,7 @@ public class TolledBPRLink extends TolledLink {
 	}
 	
 	public Float getToll(VehicleClass c) {
+		if (!allowsClass(c)) return Float.MAX_VALUE;
 		return toll;
 	}
 	

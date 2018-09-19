@@ -159,14 +159,9 @@ public class Network {
 	}
 
 	public void printFlows(PrintStream out) {
-		System.out.println("\r\n\r\nTail\tHead\tflow");
+		out.println("\r\nTail\tHead\tflow");
 		for (Link l : getLinks()) {
-			Double sum = 0.0;
-			for (Origin o : origins) {
-				for (Bush b : o.getBushes()) {
-						sum += l.getBushFlow(b).doubleValue();	
-				}
-			}
+			Double sum = l.getFlow().doubleValue();
 			out.println(l+"\t"+sum);
 		}
 	}

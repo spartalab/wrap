@@ -42,6 +42,7 @@ public class CentroidConnector extends TolledLink {
 
 	@Override
 	public Float getToll(VehicleClass c) {
+		if (!allowsClass(c)) return Float.MAX_VALUE;
 		return toll;
 	}
 

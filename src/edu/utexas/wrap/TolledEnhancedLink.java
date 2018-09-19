@@ -63,6 +63,7 @@ public class TolledEnhancedLink extends TolledLink {
 
 	@Override
 	public Float getToll(VehicleClass c) {
+		if (!allowsClass(c)) return Float.MAX_VALUE;
 		return classTolls.get(c) + operCost;
 	}
 
