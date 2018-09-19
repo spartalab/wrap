@@ -15,6 +15,7 @@ import java.sql.*;
 public abstract class Link implements Priced {
 
 	private static final String dbName = "network";
+
 	private final Float capacity;
 	private final Node head;
 	private final Node tail;
@@ -26,7 +27,21 @@ public abstract class Link implements Priced {
 	private BigDecimal cachedFlow = null;
 	protected BigDecimal cachedTT = null;
 	protected BigDecimal cachedPrice = null;
-	protected Connection databaseCon = null;
+	private static Connection databaseCon;
+
+	static {
+		try {
+			Class.forName("org.postgresql.Driver");
+			databaseCon = DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + dbName);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Could not find database/table to connect to");
+			System.exit(3);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
 
 	public Link(Node tail, Node head, Float capacity, Float length, Float fftime) {
 		this.tail = tail;
@@ -36,16 +51,7 @@ public abstract class Link implements Priced {
 		this.fftime = fftime;
 
 		this.flow = new HashMap<Bush,BigDecimal>();
-		try {
-			Class.forName("org.postgresql.Driver");
-			databaseCon = DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + dbName);
-			//System.out.println("Able to connect to database");
-            createTable();
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println("Could not find database/table to connect to");
-			System.exit(3);
-		}
+		createTable();
 	}
 
 
