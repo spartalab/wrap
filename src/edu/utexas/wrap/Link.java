@@ -17,12 +17,26 @@ public abstract class Link implements Priced {
 	private final Node head;
 	private final Node tail;
 
-	private Map<AssignmentContainer,Double> flow;
+	private Map<Bush,BigDecimal> flow;
 
 	private BigDecimal cachedFlow = null;
 	protected BigDecimal cachedTT = null;
 	protected BigDecimal cachedPrice = null;
-	protected Connection databaseCon = null;
+	private static Connection databaseCon;
+
+	static {
+		try {
+			Class.forName("org.postgresql.Driver");
+			databaseCon = DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + dbName);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			System.out.println("Could not find database/table to connect to");
+			System.exit(3);
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+			System.exit(1);
+		}
+	}
 
 	public Link(Node tail, Node head, Float capacity, Float length, Float fftime) {
 		this.tail = tail;
@@ -32,30 +46,15 @@ public abstract class Link implements Priced {
 		this.fftime = fftime;
 
 		this.flow = new HashMap<Bush,BigDecimal>();
-		try {
-			Class.forName("org.postgresql.Driver");
-			databaseCon = DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + dbName);
-			//System.out.println("Able to connect to database");
-            createTable();
-		} catch (Exception e) {
-			e.printStackTrace();
-			System.out.println("Could not find database/table to connect to");
-			System.exit(3);
-		}
+		createTable();
 	}
 
 
 	private void createTable() {
 		Statement stm;
-		String query = "CREATE TABLE t" + hashCode() + " (" +
-				"bush_origin_id integer, " +
-				"vot real, " +
-				"vehicle_class text, " +
-                "flow decimal(" + Optimizer.defMC.getPrecision() + ")," +
-				"UNIQUE (bush_origin_id, vot, vehicle_class))";
 		try {
 		    stm = databaseCon.createStatement();
-		    stm.execute(query);
+		    stm.execute(createQuery);
         } catch (SQLException e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -64,11 +63,10 @@ public abstract class Link implements Priced {
 
 	private BigDecimal totalFlowFromTable() {
 		Statement stm;
-		String query = "SELECT SUM (flow) AS totalFlow FROM t" + hashCode();
 		try {
 			stm = databaseCon.createStatement();
 			BigDecimal total = null;
-			ResultSet result = stm.executeQuery(query);
+			ResultSet result = stm.executeQuery(sumQuery);
 			if(result.next()) {
 				total = result.getBigDecimal("totalFlow");
 			}
@@ -135,21 +133,11 @@ public abstract class Link implements Priced {
 		//Retrieve Bush with the specified parameters
 		PreparedStatement stm;
 		BigDecimal updateFlow = getBushFlow(bush);
-		String query = "INSERT INTO t" + hashCode() + " (bush_origin_id, vot, vehicle_class, flow) " +
-				"VALUES (" +
-				"?,?,?,?)" +
-				"ON CONFLICT (bush_origin_id, vot, vehicle_class)" +
-				"DO UPDATE " +
-				"SET flow = ? " +
-				"WHERE " +
-				"t" +hashCode()+".bush_origin_id = ? " +
-				"AND t"+hashCode()+".vot = ? " +
-				"AND t"+hashCode()+".vehicle_class = ?";
 		try {
 			updateFlow = updateFlow.add(delta).setScale(Optimizer.decimalPlaces, RoundingMode.HALF_EVEN);
 			if(updateFlow.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("invalid alter request");
 			else if(updateFlow.compareTo(BigDecimal.ZERO) > 0) {
-				stm = databaseCon.prepareStatement(query);
+				stm = databaseCon.prepareStatement(updateQuery);
 				stm.setInt(1, bush.getOrigin().getID());
 				stm.setFloat(2, bush.getVOT());
 				stm.setString(3, bush.toString());
@@ -161,12 +149,8 @@ public abstract class Link implements Priced {
 				stm.executeUpdate();
 				return true;
 			} else {
-				query = "DELETE FROM t" + hashCode() +
-						" WHERE " +
-						"bush_origin_id = ? " +
-						"AND vot = ? " +
-						"AND vehicle_class = ?";
-				stm = databaseCon.prepareStatement(query);
+
+				stm = databaseCon.prepareStatement(deleteQuery);
 				stm.setInt(1, bush.getOrigin().getID());
 				stm.setFloat(2, bush.getVOT());
 				stm.setString(3, bush.toString());
@@ -196,11 +180,15 @@ public abstract class Link implements Priced {
 	}
 
 	public BigDecimal getBushFlow(Bush bush) {
-		return flow.getOrDefault(bush, BigDecimal.ZERO);
-	}
+		PreparedStatement stm;
+		String query = "SELECT * FROM t" + hashCode() +
+				" WHERE " +
+				"bush_origin_id = ? " +
+				"AND vot = ? " +
+				"AND vehicle_class = ?";
 
 		try {
-			stm = databaseCon.prepareStatement(query);
+			stm = databaseCon.prepareStatement(selectQuery);
 			stm.setInt(1, bush.getOrigin().getID());
 			stm.setFloat(2, bush.getVOT());
 			//System.out.println(bush.toString());
@@ -223,14 +211,8 @@ public abstract class Link implements Priced {
 
 	public Boolean hasFlow(Bush bush) {
 		PreparedStatement stm;
-		String query = "SELECT * FROM t" + hashCode() +
-				" WHERE " +
-				"bush_origin_id = ? " +
-				"AND vot = ? " +
-				"AND vehicle_class = ?";
-
 		try {
-			stm = databaseCon.prepareStatement(query);
+			stm = databaseCon.prepareStatement(selectQuery);
 			stm.setInt(1, bush.getOrigin().getID());
 			stm.setFloat(2, bush.getVOT());
 			if(bush.getVehicleClass() != null)
@@ -249,10 +231,9 @@ public abstract class Link implements Priced {
 	}
 
 	public void removeTable() {
-		String query = "DROP TABLE t" + hashCode();
 		try{
 			Statement stm = databaseCon.createStatement();
-			stm.executeUpdate(query);
+			stm.executeUpdate(dropQuery);
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.exit(1);
