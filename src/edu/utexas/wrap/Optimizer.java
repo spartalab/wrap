@@ -64,11 +64,11 @@ public abstract class Optimizer {
 			runtime = (end - start)/1000.0;
 			System.out.println("\t"+String.format("%4.3f", runtime)+" s");
 			
-			if (wrap.printFlows) try {
-				network.printFlows(new PrintStream("flows.txt"));
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			}
+//			if (wrap.printFlows) try {
+//				network.printFlows(new PrintStream("flows-iter-"+iteration+".txt"));
+//			} catch (FileNotFoundException e) {
+//				e.printStackTrace();
+//			}
 			iteration++;
 			start = System.currentTimeMillis();
 

@@ -33,9 +33,10 @@ public class Bush {
 		this.c = c;
 		
 		//Initialize flow and status maps
-		activeLinks = new HashSet<Link>(links.size(),1.0f);
+		
 		this.nodes	= nodes;
 		qShort	= origin.getInitMap(nodes);//new HashMap<Integer, Link>(nodes.size(),1.0f);
+		activeLinks = new HashSet<Link>(qShort.values());
 		qLong	= new HashMap<Integer, Link>(nodes.size(),1.0f);
 		
 //		runDijkstras();

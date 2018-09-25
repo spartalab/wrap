@@ -3,6 +3,7 @@ package edu.utexas.wrap;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintStream;
 
 /** wrap: an Algorithm B implementation
  * @author William E. Alexander
@@ -83,7 +84,7 @@ public class wrap{
 	/**
 	 * Whether flows should be printed once converged
 	 */
-	static Boolean printFlows = false;
+	static Boolean printFlows = true;
 
 	public static void main(String[] args) {
 
@@ -139,8 +140,14 @@ public class wrap{
 		System.out.println("Starting " + opt.toString() + "...");
 		opt.optimize();
 
-		//System.setOut(new PrintStream("VOTflow.csv"));
-		if (printFlows) network.printFlows(System.out);
+		try {
+			System.setOut(new PrintStream("VOTflow.txt"));
+			if (printFlows) network.printFlows(System.out);
+
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }
 
