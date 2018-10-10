@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.sql.*;
 //import java.sql.DriverManager;
+//import java.sql.SQLException;
 /**
  * @author rahulpatel
  *
@@ -37,8 +38,8 @@ public abstract class Link implements Priced {
 
 	private final String updateQuery = "INSERT INTO t" + hashCode() + " (bush_origin_id, vot, vehicle_class, flow) " +
 			"VALUES (" +
-			"?,?,?,?)" +
-			"ON CONFLICT (bush_origin_id, vot, vehicle_class)" +
+			"?,?,?,?) " +
+			"ON CONFLICT (bush_origin_id, vot, vehicle_class) " +
 			"DO UPDATE " +
 			"SET flow = ? " +
 			"WHERE " +
@@ -62,14 +63,12 @@ public abstract class Link implements Priced {
 	private final String dropQuery = "DROP TABLE t" + hashCode();
 	static {
 		try {
-			Class.forName("org.postgresql.Driver");
-			databaseCon = DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + dbName);
+			String url = "jdbc:sqlite:network.db";
+			databaseCon = DriverManager.getConnection(url);
+			System.out.println("Connection to table established....");
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.out.println("Could not find database/table to connect to");
-			System.exit(3);
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
 			System.exit(1);
 		}
 	}
@@ -170,12 +169,13 @@ public abstract class Link implements Priced {
 			cachedFlow = null;
 		}
 		//Retrieve Bush with the specified parameters
-		PreparedStatement stm;
+		PreparedStatement stm = null;
 		BigDecimal updateFlow = getBushFlow(bush);
 		try {
 			updateFlow = updateFlow.add(delta).setScale(Optimizer.decimalPlaces, RoundingMode.HALF_EVEN);
 			if(updateFlow.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("invalid alter request");
 			else if(updateFlow.compareTo(BigDecimal.ZERO) > 0) {
+				System.out.println(updateQuery);
 				stm = databaseCon.prepareStatement(updateQuery);
 				stm.setInt(1, bush.getOrigin().getID());
 				stm.setFloat(2, bush.getVOT());
@@ -207,6 +207,7 @@ public abstract class Link implements Priced {
 		} catch (SQLException e) {
 			//System.out.println("alter bush flow");
 			//System.out.println("SQL Error Code: " + e.getErrorCode());
+			//System.out.println(stm.toString());
 			e.printStackTrace();
 			System.exit(1);
 			return false;
