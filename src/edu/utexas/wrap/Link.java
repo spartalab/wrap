@@ -4,8 +4,6 @@ import org.postgresql.core.SqlCommand;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.Map;
 import java.sql.*;
 //import java.sql.DriverManager;
 //import java.sql.SQLException;
@@ -28,6 +26,7 @@ public abstract class Link implements Priced {
 	protected BigDecimal cachedPrice = null;
 	private static Connection databaseCon;
 
+	private static final String url = "jdbc:sqlite:network.db";
 	private final String createQuery = "CREATE TABLE t" + hashCode() + " (" +
 			"bush_origin_id integer, " +
 			"vot real, " +
@@ -63,7 +62,6 @@ public abstract class Link implements Priced {
 	private final String dropQuery = "DROP TABLE t" + hashCode();
 	static {
 		try {
-			String url = "jdbc:sqlite:network.db";
 			databaseCon = DriverManager.getConnection(url);
 			System.out.println("Connection to table established....");
 		} catch (SQLException e) {
@@ -175,7 +173,6 @@ public abstract class Link implements Priced {
 			updateFlow = updateFlow.add(delta).setScale(Optimizer.decimalPlaces, RoundingMode.HALF_EVEN);
 			if(updateFlow.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("invalid alter request");
 			else if(updateFlow.compareTo(BigDecimal.ZERO) > 0) {
-				System.out.println(updateQuery);
 				stm = databaseCon.prepareStatement(updateQuery);
 				stm.setInt(1, bush.getOrigin().getID());
 				stm.setFloat(2, bush.getVOT());
@@ -274,6 +271,8 @@ public abstract class Link implements Priced {
 
 	public void removeTable() {
 		try{
+			databaseCon.close();
+			databaseCon = DriverManager.getConnection(url);
 			Statement stm = databaseCon.createStatement();
 			stm.executeUpdate(dropQuery);
 		} catch (SQLException e) {
