@@ -5,12 +5,25 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class Path extends LinkedList<Link> implements Priced {
+public class Path extends LinkedList<Link> implements Priced, AssignmentContainer {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 8522817449668927596L;
+	
+	private final VehicleClass c;
+	private final Float vot;
+	
+	public Path(VehicleClass c, Float vot) {
+		this.c=c;
+		this.vot=vot;
+	}
+	
+	public Path() {
+		this.c = null;
+		this.vot = null;
+	}
 
 	public Node node(Integer index) {
 		if (index == size()) return getLast().getHead();
@@ -18,7 +31,7 @@ public class Path extends LinkedList<Link> implements Priced {
 	}
 
 	public Path subPath(Integer start, Integer end) {
-		Path sp = new Path();
+		Path sp = new Path(getVehicleClass(), getVOT());
 		for (Integer i = start; i < size() && i < end; i++) {
 			sp.add(get(i));
 		}
@@ -74,6 +87,16 @@ public class Path extends LinkedList<Link> implements Priced {
 			}
 		}
 		return maxDelta;
+	}
+
+	@Override
+	public VehicleClass getVehicleClass() {
+		return c;
+	}
+
+	@Override
+	public Float getVOT() {
+		return vot;
 	}
 
 }

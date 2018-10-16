@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class Bush {
+public class Bush implements AssignmentContainer {
 
 	// Bush structure
 	private final Origin origin;
@@ -64,7 +64,7 @@ public class Bush {
 			if (x <= 0.0) continue;
 			Path p;
 			try {
-				p = getShortestPath(nodes.get(node));
+				p = getShortPath(nodes.get(node));
 			} catch (UnreachableException e) {
 				// TODO Auto-generated catch block
 				System.err.println("No path exists from Node "+origin.getID()+" to Node "+node+". Lost demand = "+x);
@@ -215,11 +215,11 @@ public class Bush {
 		return qLong.get(n.getID());
 	}
 
-	public Path getShortestPath(Node n) throws UnreachableException {
-		return getShortestPath(n, origin);
+	public Path getShortPath(Node n) throws UnreachableException {
+		return getShortPath(n, origin);
 	}
 	
-	public Path getShortestPath(Node end, Node start) throws UnreachableException {
+	public Path getShortPath(Node end, Node start) throws UnreachableException {
 		Path p = new Path();
 		if (end.equals(start)) return p;
 		Link curLink = getqShort(end);
@@ -231,11 +231,11 @@ public class Bush {
 		return p;
 	}
 	
-	public Path getLongestPath(Node n) {
-		return getLongestPath(n,origin);
+	public Path getLongPath(Node n) {
+		return getLongPath(n,origin);
 	}
 	
-	public Path getLongestPath(Node end, Node start) {
+	public Path getLongPath(Node end, Node start) {
 		
 		Path p = new Path();
 		if (end.equals(start)) return p;
@@ -280,7 +280,8 @@ public class Bush {
 	public BigDecimal getCachedL(Node n, Map<Node, BigDecimal> cache) throws UnreachableException {
 		Link back = qShort.get(n.getID());
 		if (n.equals(origin)) return BigDecimal.ZERO;
-		else if (back == null) throw new UnreachableException(n,this);
+		else if (back == null)
+			throw new UnreachableException(n,this);
 		else if (cache.containsKey(n)) return cache.get(n);
 		else {
 			BigDecimal newL = getCachedL(back.getTail(), cache).add(back.getPrice(vot,c));
@@ -378,13 +379,13 @@ public class Bush {
 		
 		Path lPath;
 		try {
-			lPath = getShortestPath(l);
+			lPath = getShortPath(l);
 		} catch (UnreachableException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return null;
 		}
-		Path uPath = getLongestPath(u);
+		Path uPath = getLongPath(u);
 		
 		Set<Node> lNodes = new HashSet<Node>();
 		Set<Node> uNodes = new HashSet<Node>();
@@ -427,7 +428,7 @@ public class Bush {
 		
 		Node diverge = divergeNode(shortLink.getTail(), longLink.getTail());
 		try {
-			return new AlternateSegmentPair(getShortestPath(terminus, diverge), getLongestPath(terminus,diverge), this);
+			return new AlternateSegmentPair(getShortPath(terminus, diverge), getLongPath(terminus,diverge), this);
 		} catch (UnreachableException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

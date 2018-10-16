@@ -1,7 +1,5 @@
 package edu.utexas.wrap;
 
-import java.io.FileNotFoundException;
-import java.io.PrintStream;
 import java.math.MathContext;
 
 public abstract class Optimizer {
@@ -47,8 +45,12 @@ public abstract class Optimizer {
 	public void optimize(){
 		
 		System.out.println();
-		System.out.println("Iter. #\tAEC\t\t\tTSTT\t\t\tBeckmann\t\tRelative Gap\t\tRuntime");
-		System.out.println("---------------------------------------------------------------------------------------------------------------");
+		System.out.println("Iter. #\tAEC\t\t\tTSTT\t\t\tBeckmann\t\tRelative Gap\t\tTSGC\t\t\tRuntime");
+		System.out.println("----------------------"+
+				"---------------------------------"+
+				"---------------------------------"+
+				"---------------------------------"+
+				"--------------");
 		
 		Long start = System.currentTimeMillis();
 		Long end; Double runtime;
@@ -79,7 +81,8 @@ public abstract class Optimizer {
 	private Boolean converged() {
 		try {
 			
-			return iteration > maxIterations || network.relativeGap() < Math.pow(10, relativeGapExp);
+			return iteration > maxIterations || 
+					network.relativeGap(null) < Math.pow(10, relativeGapExp);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return iteration > maxIterations;

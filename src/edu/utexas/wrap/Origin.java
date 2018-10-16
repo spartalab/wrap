@@ -1,6 +1,5 @@
 package edu.utexas.wrap;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -62,7 +61,7 @@ public class Origin extends Node{
 		// Initialize the empty map of finalized nodes, the map of 
 		// eligible nodes to contain this origin only, and the 
 		// back-link mapping to be empty
-		Map<Integer, Link> back = new HashMap<Integer, Link>(nodes.size(),1.0f);
+		initMap = new HashMap<Integer, Link>(nodes.size(),1.0f);
 		FibonacciHeap<Integer> Q = new FibonacciHeap<Integer>(nodes.size(),1.0f);
 		for (Node n : nodes.values()) {
 			if (!n.equals(this)) {
@@ -80,14 +79,13 @@ public class Origin extends Node{
 				//If this link doesn't allow this bush's class of driver on the link, don't consider it
 				
 				Leaf<Integer> v = Q.getLeaf(uv.getHead().getID());
-				BigDecimal alt = BigDecimal.valueOf(uv.freeFlowTime()).add(BigDecimal.valueOf(u.key));
-				if (alt.compareTo(BigDecimal.valueOf(v.key)) < 0) {
-					Q.decreaseKey(v, alt.doubleValue());
-					back.put(v.n, uv);
+				Double alt = uv.freeFlowTime()+u.key;
+				if (alt<v.key) {
+					Q.decreaseKey(v, alt);
+					initMap.put(v.n, uv);
 				}
 			}
 		}
-		initMap = back;
 	}
 
 	public Map<Integer, Link> getInitMap(Map<Integer, Node> nodes) {

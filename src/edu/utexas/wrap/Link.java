@@ -17,7 +17,7 @@ public abstract class Link implements Priced {
 	private final Float length;
 	private final Float fftime;
 
-	private Map<Bush,BigDecimal> flow;
+	private Map<AssignmentContainer,BigDecimal> flow;
 
 	private BigDecimal cachedFlow = null;
 	protected BigDecimal cachedTT = null;
@@ -30,7 +30,7 @@ public abstract class Link implements Priced {
 		this.length = length;
 		this.fftime = fftime;
 
-		this.flow = new HashMap<Bush,BigDecimal>();
+		this.flow = new HashMap<AssignmentContainer,BigDecimal>();
 	}
 
 
@@ -57,7 +57,7 @@ public abstract class Link implements Priced {
 	public BigDecimal getFlow() {
 		if (cachedFlow != null) return cachedFlow;
 		BigDecimal f = BigDecimal.ZERO;
-		for (Bush b : flow.keySet()) f = f.add(flow.get(b));
+		for (AssignmentContainer b : flow.keySet()) f = f.add(flow.get(b));
 		if (f.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("Negative link flow");
 		cachedFlow = f;
 		return f;

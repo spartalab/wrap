@@ -20,6 +20,8 @@ public class Network {
 	private GapCalculator gc;
 	private TSTTCalculator tc;
 	private BeckmannCalculator bc;
+	private TSGCCalculator cc;
+	private AECCalculator ac;
 	
 	public Network(Set<Origin> origins, Graph g) {
 		this.origins = origins;
@@ -67,18 +69,15 @@ public class Network {
 		return tsgc;
 	}
 	
-	public Double relativeGap() {
+	public Double relativeGap(TSGCCalculator cc) {
 		if (cachedRelGap != null) return cachedRelGap;
-		Double numerator = 0.0;
+
 		Double denominator = 0.0;
-		
-		for (Link l : getLinks()) {
-			for (Origin o : origins) {
-				for (Bush b : o.getBushes()) {
-					numerator += l.getBushFlow(b).doubleValue() * l.getPrice(b.getVOT(),b.getVehicleClass()).doubleValue();
-				}
-			}
+		if (cc == null) {
+			cc = new TSGCCalculator(this);
+		cc.start();
 		}
+
 		
 		for (Origin o : origins) {
 			for (Bush b : o.getBushes()) {
@@ -95,29 +94,42 @@ public class Network {
 				}
 			}
 		}
-		
-		cachedRelGap = (numerator/denominator) - 1.0;
-		return cachedRelGap;
+		try{
+			cc.join();
+			cachedRelGap = (cc.val/denominator) - 1.0;
+			return cachedRelGap;
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 	
-	public Double AEC() throws Exception {
+	public Double AEC(TSGCCalculator cc) throws Exception {
 		//TODO: Modify for generalized cost
-		throw new Exception();
-//		Double numerator = tsgc();
-//		Double denominator = 0.0;
-//		
-//		for (Origin o : origins) {
-//			for (Bush b : o.getBushes()) {
-//				for (Node d : b.getNodes()) {
-//					Double demand = o.getDemand(d.getID());
-//					Map<Node, BigDecimal> cache = new HashMap<Node, BigDecimal>();
-//					if (demand > 0.0) numerator -= b.getCachedL(d, cache).doubleValue() * demand;
-//					denominator += demand;
-//				}
-//			}
-//		}
-//		
-//		return numerator/denominator;
+		if (cc == null) {
+			cc = new TSGCCalculator(this);
+			cc.start();
+		}
+		
+		Double numerator = 0.0;
+		Double denominator = 0.0;
+		
+		for (Origin o : origins) {
+			for (Bush b : o.getBushes()) {
+				for (Node d : b.getNodes()) {
+					Double demand = o.getDemand(d.getID());
+					if (demand > 0.0) {
+						Map<Node, BigDecimal> cache = new HashMap<Node, BigDecimal>();
+						numerator -= b.getCachedL(d, cache).doubleValue() * demand;
+						denominator += demand;
+					}
+				}
+			}
+		}
+		
+		cc.join();
+		numerator += cc.val;
+		return numerator/denominator;
 	}
 	
 	public Double Beckmann() {
@@ -130,30 +142,26 @@ public class Network {
 	
 	public String toString() {
 		String out = "";
-		try {
-			out += String.format("%6.10E", AEC()) + "\t";
-		} catch (Exception e) {
-			out += "Error           \t";
-		}
-		
-//		Double tstt = tstt();
-//		Double beck = Beckmann();
-//		Double relg = relativeGap();
-	
-		gc = new GapCalculator(this);
+
 		tc = new TSTTCalculator(this);
 		bc = new BeckmannCalculator(this);
+		cc = new TSGCCalculator(this);
+//		ac = new AECCalculator(this,cc);
+		gc = new GapCalculator(this,cc);
 
-		tc.start();gc.start();bc.start();
+		cc.start();tc.start();gc.start();bc.start();//ac.start();
 		try {
-			tc.join();gc.join();bc.join();
+			tc.join();gc.join();bc.join();cc.join();//ac.join();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+//		out += String.format("%6.10E",ac.val) + "\t";
+		out += "\t\t\t";
 		
-		out += String.format("%6.10E",tc.tstt) + "\t";
-		out += String.format("%6.10E",bc.beck) + "\t";
-		out += String.format("%6.10E",gc.gap);
+		out += String.format("%6.10E",tc.val) + "\t";
+		out += String.format("%6.10E",bc.val) + "\t";
+		out += String.format("%6.10E",gc.val) + "\t";
+		out += String.format("%6.10E", cc.val);
 	
 		return out;
 	}
@@ -175,7 +183,7 @@ public class Network {
 }
 
 class TSTTCalculator extends Thread {
-	Double tstt;
+	Double val;
 	Network net;
 	
 	public TSTTCalculator(Network net) {
@@ -184,12 +192,12 @@ class TSTTCalculator extends Thread {
 	
 	@Override
 	public void run() {
-		tstt = net.tstt();
+		val = net.tstt();
 	}
 }
 
 class TSGCCalculator extends Thread {
-	Double tsgc;
+	Double val;
 	Network net;
 	
 	public TSGCCalculator(Network net) {
@@ -198,12 +206,12 @@ class TSGCCalculator extends Thread {
 	
 	@Override
 	public void run() {
-		tsgc = net.tsgc();
+		val = net.tsgc();
 	}
 }
 
 class BeckmannCalculator extends Thread {
-	Double beck;
+	Double val;
 	Network net;
 	
 	public BeckmannCalculator(Network net) {
@@ -212,20 +220,41 @@ class BeckmannCalculator extends Thread {
 	
 	@Override
 	public void run() {
-		beck = net.Beckmann();
+		val = net.Beckmann();
 	}
 }
 
 class GapCalculator extends Thread {
-	Double gap;
+	Double val;
 	Network net;
+	TSGCCalculator cc;
 	
-	public GapCalculator(Network net) {
+	public GapCalculator(Network net, TSGCCalculator tc) {
 		this.net = net;
 	}
 	
 	@Override
 	public void run() {
-		gap = net.relativeGap();
+		val = net.relativeGap(cc);
+	}
+}
+
+class AECCalculator extends Thread {
+	Double val;
+	Network net;
+	TSGCCalculator cc;
+	
+	public AECCalculator(Network net, TSGCCalculator tc) {
+		this.net = net;
+		this.cc = tc;
+	}
+	
+	@Override
+	public void run() {
+		try {
+			val = net.AEC(cc);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 }
