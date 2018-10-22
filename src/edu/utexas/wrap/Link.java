@@ -30,21 +30,21 @@ public abstract class Link implements Priced {
 	private final String createQuery = "CREATE TABLE t" + hashCode() + " (" +
 			"bush_origin_id integer, " +
 			"vot real, " +
-			"vehicle_class text, " +
+			"vehicle_class varchar(200), " +
 			"flow decimal(" + Optimizer.defMC.getPrecision() + ")," +
-			"UNIQUE (bush_origin_id, vot, vehicle_class))";
-	private final String sumQuery = "SELECT SUM (flow) AS totalFlow FROM t" + hashCode();
+            "PRIMARY KEY (bush_origin_id, vot, vehicle_class)," +
+			"CONSTRAINT U_Bushes UNIQUE (bush_origin_id, vot, vehicle_class))";
+	private final String sumQuery = "SELECT SUM(flow) AS totalFlow FROM t" + hashCode();
 
 	private final String updateQuery = "INSERT INTO t" + hashCode() + " (bush_origin_id, vot, vehicle_class, flow) " +
 			"VALUES (" +
 			"?,?,?,?)" +
-			"ON CONFLICT (bush_origin_id, vot, vehicle_class)" +
-			"DO UPDATE " +
-			"SET flow = ? " +
-			"WHERE " +
-			"t" +hashCode()+".bush_origin_id = ? " +
-			"AND t"+hashCode()+".vot = ? " +
-			"AND t"+hashCode()+".vehicle_class = ?";
+			"ON DUPLICATE KEY" +
+			" " +
+			"UPDATE flow = ?, " +
+			"bush_origin_id = ?, " +
+			"vot = ?, " +
+			"vehicle_class = ?";
 
 	private final String deleteQuery = "DELETE FROM t" + hashCode() +
 			" WHERE " +
@@ -62,8 +62,9 @@ public abstract class Link implements Priced {
 	private final String dropQuery = "DROP TABLE t" + hashCode();
 	static {
 		try {
-			Class.forName("org.postgresql.Driver");
-			databaseCon = DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + dbName);
+			Class.forName("com.mysql.jdbc.Driver");
+
+			databaseCon = DriverManager.getConnection("jdbc:mysql://localhost:3306/" + dbName + "?useSSL=false", "root","rootroot");
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.out.println("Could not find database/table to connect to");
@@ -182,7 +183,8 @@ public abstract class Link implements Priced {
                 if(bush.getVehicleClass() != null)
                     stm.setString(3, bush.getVehicleClass().name());
                 else
-                    stm.setString(3, bush.toString());				stm.setBigDecimal(4, updateFlow);
+                    stm.setString(3, bush.toString());
+                stm.setBigDecimal(4, updateFlow);
 				stm.setBigDecimal(5, updateFlow);
 				stm.setInt(6, bush.getOrigin().getID());
 				stm.setFloat(7, bush.getVOT());
