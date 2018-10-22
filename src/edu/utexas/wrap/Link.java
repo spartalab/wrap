@@ -57,7 +57,7 @@ public abstract class Link implements Priced {
 			"bush_origin_id = ? " +
 			"AND vot = ? " +
 			"AND vehicle_class = ?" +
-			"LIMIT 1";
+			" LIMIT 1";
 
 	private final String dropQuery = "DROP TABLE t" + hashCode();
 	static {
