@@ -25,6 +25,39 @@ public abstract class Link implements Priced {
 	protected BigDecimal cachedPrice = null;
 	private static Connection databaseCon;
 
+	private final String createQuery = "CREATE TABLE t" + hashCode() + " (" +
+			"bush_origin_id integer, " +
+			"vot real, " +
+			"vehicle_class text, " +
+			"flow decimal(" + Optimizer.defMC.getPrecision() + ")," +
+			"UNIQUE (bush_origin_id, vot, vehicle_class))";
+	private final String sumQuery = "SELECT SUM (flow) AS totalFlow FROM t" + hashCode();
+
+	private final String updateQuery = "INSERT INTO t" + hashCode() + " (bush_origin_id, vot, vehicle_class, flow) " +
+			"VALUES (" +
+			"?,?,?,?)" +
+			"ON CONFLICT (bush_origin_id, vot, vehicle_class)" +
+			"DO UPDATE " +
+			"SET flow = ? " +
+			"WHERE " +
+			"t" +hashCode()+".bush_origin_id = ? " +
+			"AND t"+hashCode()+".vot = ? " +
+			"AND t"+hashCode()+".vehicle_class = ?";
+
+	private final String deleteQuery = "DELETE FROM t" + hashCode() +
+			" WHERE " +
+			"bush_origin_id = ? " +
+			"AND vot = ? " +
+			"AND vehicle_class = ?";
+
+	private final String selectQuery = "SELECT * FROM t" + hashCode() +
+			" WHERE " +
+			"bush_origin_id = ? " +
+			"AND vot = ? " +
+			"AND vehicle_class = ?" +
+			"LIMIT 1";
+
+	private final String dropQuery = "DROP TABLE t" + hashCode();
 	static {
 		try {
 			Class.forName("org.postgresql.Driver");
