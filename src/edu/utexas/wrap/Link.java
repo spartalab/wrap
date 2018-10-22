@@ -26,8 +26,8 @@ public abstract class Link implements Priced {
 	protected BigDecimal cachedTT = null;
 	protected BigDecimal cachedPrice = null;
 	private static Connection databaseCon;
-
-	private final String createQuery = "CREATE TABLE t" + hashCode() + " (" +
+//HEY!
+	 private final String createQuery = "CREATE TABLE t" + hashCode() + " (" +
 			"bush_origin_id integer, " +
 			"vot real, " +
 			"vehicle_class text, " +
