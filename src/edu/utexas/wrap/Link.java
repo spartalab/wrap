@@ -1,13 +1,8 @@
 package edu.utexas.wrap;
 
-import org.postgresql.core.SqlCommand;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.Map;
 import java.sql.*;
-//import java.sql.DriverManager;
 /**
  * @author rahulpatel
  *
@@ -30,21 +25,14 @@ public abstract class Link implements Priced {
 	 private final String createQuery = "CREATE TABLE t" + hashCode() + " (" +
 			"bush_origin_id integer, " +
 			"vot real, " +
-			"vehicle_class text, " +
+			"vehicle_class char(100), " +
 			"flow decimal(" + Optimizer.defMC.getPrecision() + ")," +
 			"UNIQUE (bush_origin_id, vot, vehicle_class))";
 	private final String sumQuery = "SELECT SUM (flow) AS totalFlow FROM t" + hashCode();
 
-	private final String updateQuery = "INSERT INTO t" + hashCode() + " (bush_origin_id, vot, vehicle_class, flow) " +
+	private final String insertQuery = "INSERT INTO t" + hashCode() + " (bush_origin_id, vot, vehicle_class, flow) " +
 			"VALUES (" +
-			"?,?,?,?)" +
-			"ON CONFLICT (bush_origin_id, vot, vehicle_class)" +
-			"DO UPDATE " +
-			"SET flow = ? " +
-			"WHERE " +
-			"t" +hashCode()+".bush_origin_id = ? " +
-			"AND t"+hashCode()+".vot = ? " +
-			"AND t"+hashCode()+".vehicle_class = ?";
+			"?,?,?,?)";
 
 	private final String deleteQuery = "DELETE FROM t" + hashCode() +
 			" WHERE " +
@@ -52,25 +40,20 @@ public abstract class Link implements Priced {
 			"AND vot = ? " +
 			"AND vehicle_class = ?";
 
-	private final String selectQuery = "SELECT * FROM t" + hashCode() +
+	private final String selectQuery = "SELECT  * FROM t" + hashCode() +
 			" WHERE " +
 			"bush_origin_id = ? " +
 			"AND vot = ? " +
-			"AND vehicle_class = ?" +
-			"LIMIT 1";
+			"AND vehicle_class = ?";
 
 	private final String dropQuery = "DROP TABLE t" + hashCode();
 	static {
 		try {
-			Class.forName("org.postgresql.Driver");
-			databaseCon = DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + dbName);
+			databaseCon = DriverManager.getConnection("jdbc:derby:" + dbName + ";create=true");
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.out.println("Could not find database/table to connect to");
 			System.exit(3);
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-			System.exit(1);
 		}
 	}
 
@@ -176,20 +159,22 @@ public abstract class Link implements Priced {
 			updateFlow = updateFlow.add(delta).setScale(Optimizer.decimalPlaces, RoundingMode.HALF_EVEN);
 			if(updateFlow.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("invalid alter request");
 			else if(updateFlow.compareTo(BigDecimal.ZERO) > 0) {
-				stm = databaseCon.prepareStatement(updateQuery);
+				stm = databaseCon.prepareStatement(deleteQuery);
+				stm.setInt(1, bush.getOrigin().getID());
+				stm.setFloat(2, bush.getVOT());
+				if (bush.getVehicleClass() != null)
+					stm.setString(3, bush.getVehicleClass().name());
+				else
+					stm.setString(3, bush.toString());
+				stm.executeUpdate();
+			    stm = databaseCon.prepareStatement(insertQuery);
 				stm.setInt(1, bush.getOrigin().getID());
 				stm.setFloat(2, bush.getVOT());
                 if(bush.getVehicleClass() != null)
                     stm.setString(3, bush.getVehicleClass().name());
                 else
-                    stm.setString(3, bush.toString());				stm.setBigDecimal(4, updateFlow);
-				stm.setBigDecimal(5, updateFlow);
-				stm.setInt(6, bush.getOrigin().getID());
-				stm.setFloat(7, bush.getVOT());
-				if(bush.getVehicleClass() != null)
-				    stm.setString(8, bush.getVehicleClass().name());
-				else
-				    stm.setString(8, bush.toString());
+                    stm.setString(3, bush.toString());
+                stm.setBigDecimal(4, updateFlow);
 				stm.executeUpdate();
 				return true;
 			} else {
@@ -226,7 +211,7 @@ public abstract class Link implements Priced {
 //		return true;
 	}
 
-	public BigDecimal getBushFlow(Bush bush) {
+	public synchronized BigDecimal getBushFlow(Bush bush) {
 		PreparedStatement stm;
 		try {
 			stm = databaseCon.prepareStatement(selectQuery);
@@ -250,7 +235,7 @@ public abstract class Link implements Priced {
 		return BigDecimal.ZERO;
 	}
 
-	public Boolean hasFlow(Bush bush) {
+	public synchronized Boolean hasFlow(Bush bush) {
 		PreparedStatement stm;
 		try {
 			stm = databaseCon.prepareStatement(selectQuery);
@@ -271,7 +256,7 @@ public abstract class Link implements Priced {
 		//return flow.get(bush) != null;
 	}
 
-	public void removeTable() {
+	public synchronized void removeTable() {
 		try{
 			Statement stm = databaseCon.createStatement();
 			stm.executeUpdate(dropQuery);
