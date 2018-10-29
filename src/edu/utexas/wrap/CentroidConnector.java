@@ -1,7 +1,5 @@
 package edu.utexas.wrap;
 
-import java.math.BigDecimal;
-
 public class CentroidConnector extends TolledLink {
 	private Float toll;
 
@@ -11,28 +9,28 @@ public class CentroidConnector extends TolledLink {
 	}
 
 	@Override
-	public BigDecimal getTravelTime() {
-		return BigDecimal.valueOf(freeFlowTime());
+	public Double getTravelTime() {
+		return (double) freeFlowTime();
 	}
 
 	@Override
-	public BigDecimal tPrime() {
-		return BigDecimal.ZERO;
+	public Double tPrime() {
+		return 0.0;
 	}
 
 	@Override
-	public BigDecimal tIntegral() {
-		return BigDecimal.valueOf(freeFlowTime()).multiply(getFlow(), Optimizer.defMC);
+	public Double tIntegral() {
+		return freeFlowTime()*getFlow();
 	}
 
 	@Override
-	public BigDecimal getPrice(Float vot, VehicleClass c) {
-		return BigDecimal.valueOf(vot*freeFlowTime() + toll);
+	public Double getPrice(Float vot, VehicleClass c) {
+		return (double) (vot*freeFlowTime() + toll);
 	}
 
 	@Override
-	public BigDecimal pricePrime(Float vot) {
-		return BigDecimal.ZERO;
+	public Double pricePrime(Float vot) {
+		return 0.0;
 	}
 
 	@Override
@@ -47,8 +45,8 @@ public class CentroidConnector extends TolledLink {
 	}
 
 	@Override
-	public BigDecimal tollPrime() {
-		return BigDecimal.ZERO;
+	public Double tollPrime() {
+		return 0.0;
 	}
 
 }

@@ -1,6 +1,5 @@
 package edu.utexas.wrap;
 
-import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,7 +33,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 //		network.acquireLocks();
 		LinkedList<Node> to = b.getTopologicalOrder();
 		Node cur;
-		HashMap<Link, BigDecimal> deltaX = new HashMap<Link, BigDecimal>();
+		HashMap<Link, Double> deltaX = new HashMap<Link, Double>();
 		b.topoSearch(false);
 		b.topoSearch(true);
 
@@ -45,7 +44,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 
 
 			AlternateSegmentPair asp = b.getShortLongASP(cur);
-			if (asp == null || asp.getMaxDelta(deltaX).compareTo(BigDecimal.ZERO) <= 0) continue;
+			if (asp == null || asp.getMaxDelta(deltaX) <= 0) continue;
 
 
 			//Iterate through longest paths until reaching a node in shortest path
@@ -54,30 +53,37 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 			//The two paths constitute a Pair of Alternate Segments
 
 			//calculate delta h, capping at maxDelta
-			BigDecimal denom = BigDecimal.ZERO;
-			for (Link l : asp.getShortPath()) denom = denom.add(l.pricePrime(b.getVOT()));			
-			for (Link l : asp.getLongPath()) denom = denom.add(l.pricePrime(b.getVOT()));
+			Double denom = 0.0;
+			for (Link l : asp.getShortPath()) denom += (l.pricePrime(b.getVOT()));			
+			for (Link l : asp.getLongPath()) denom += (l.pricePrime(b.getVOT()));
 
-			BigDecimal deltaH = asp.getMaxDelta(deltaX).min(
-					asp.getPriceDiff().divide(denom,Optimizer.defMC));
+			Double deltaH = Math.min(asp.getMaxDelta(deltaX),
+					asp.getPriceDiff()/denom);
 
 			
 			//add delta h to all x values in pi_L
 			for (Link l : asp.getShortPath()) {
-				BigDecimal t = deltaX.getOrDefault(l, BigDecimal.ZERO).add(deltaH);
+				Double t = deltaX.getOrDefault(l, 0.0)+deltaH.doubleValue();
 
-				deltaX.put(l, t);
+				deltaX.put(l, t.doubleValue());
 			}
 
 			//subtract delta h from all x values in pi_U
 			for (Link l : asp.getLongPath()) {
 				//				b.subtractFlow(l, deltaH);
-				BigDecimal t = deltaX.getOrDefault(l, BigDecimal.ZERO).subtract(deltaH);
+				Double td = deltaX.getOrDefault(l, 0.0)-deltaH.doubleValue();
+				Double ld = -l.getBushFlow(b);
+				Double ud = Math.max(Math.ulp(ld),Math.ulp(td));
 
-				if (t.compareTo( l.getBushFlow(b).negate() ) < 0) throw new NegativeFlowException("too much bush flow removed");
-				if (t.compareTo( l.getFlow().negate() ) < 0 ) throw new NegativeFlowException("too much link flow removed");
+				if (td < ld) {
+					if (ld-td <= 2*ud) {
+						td = ld;
+					}
+					else throw new NegativeFlowException("too much bush flow removed: "+(ld-td)+"\tEps: "+ud);
+				}
+				if (td < -l.getFlow().doubleValue()) throw new NegativeFlowException("too much link flow removed");
 
-				deltaX.put(l,t);
+				deltaX.put(l,td);
 			}
 		}
 

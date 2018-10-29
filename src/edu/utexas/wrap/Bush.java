@@ -1,6 +1,5 @@
 package edu.utexas.wrap;
 
-import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,7 +46,7 @@ public class Bush implements AssignmentContainer {
 		this(o, g.getNodeMap(), g.getLinks(), vot, destDemand, c);
 	}
 
-	public void changeFlow(Link l, BigDecimal delta) {
+	public void changeFlow(Link l, Double delta) {
 		if (l.alterBushFlow(delta, this)) activate(l);
 		else deactivate(l);
 	}
@@ -72,7 +71,7 @@ public class Bush implements AssignmentContainer {
 				continue;
 			}
 			for (Link l : p) {
-				changeFlow(l, BigDecimal.valueOf(x));
+				changeFlow(l, (double) x);
 			}
 		}
 
@@ -150,10 +149,10 @@ public class Bush implements AssignmentContainer {
 	 * @param longest switch for Longest/Shortest
 	 * @param to a topological ordering of the nodes
 	 */
-	public Map<Node, BigDecimal> topoSearch(Boolean longest)  {
+	public Map<Node, Double> topoSearch(Boolean longest)  {
 		// Initialize all nodeU values as 0 and all nodes as not visited
 		List<Node> to = getTopologicalOrder();
-		Map<Node, BigDecimal> cache = new HashMap<Node, BigDecimal>(nodes.size());
+		Map<Node, Double> cache = new HashMap<Node, Double>(nodes.size());
 		//SHORTEST PATHS
 		if(!longest) {
 			//Initialize infinity-filled nodeL and empty qShort
@@ -163,11 +162,11 @@ public class Bush implements AssignmentContainer {
 				for (Link l : d.getOutgoingLinks()) {
 					if (isActive(l)) {
 						try {
-							BigDecimal Licij = l.getPrice(vot,c).add(getCachedL(d,cache));
+							Double Licij = l.getPrice(vot,c) + getCachedL(d,cache);
 
 							Node head = l.getHead();
 							Integer id = l.getHead().getID();
-							if (qShort.get(id) == null || Licij.compareTo(getCachedL(head,cache)) < 0) {
+							if (qShort.get(id) == null || Licij < getCachedL(head,cache)) {
 								qShort.put(id, l);
 								cache.put(head, Licij);
 							}
@@ -188,10 +187,10 @@ public class Bush implements AssignmentContainer {
 				for (Link l : d.getOutgoingLinks()) {
 					if (isActive(l)) {
 						try {
-							BigDecimal Uicij = l.getPrice(vot,c).add(getCachedU(d,cache));
+							Double Uicij = l.getPrice(vot,c) + getCachedU(d,cache);
 							Node head = l.getHead();
 							Integer id = l.getHead().getID();
-							if (qLong.get(id) == null || Uicij.compareTo(getCachedU(head,cache)) > 0) {
+							if (qLong.get(id) == null || Uicij > getCachedU(head,cache)) {
 								qLong.put(id, l);
 								cache.put(head, Uicij);
 							}
@@ -248,43 +247,43 @@ public class Bush implements AssignmentContainer {
 		
 	}
 
-	public BigDecimal getU(Node n) throws UnreachableException {
+	public Double getU(Node n) throws UnreachableException {
 
 		Link back = qLong.get(n.getID());
-		if (n.equals(origin)) return BigDecimal.ZERO;
+		if (n.equals(origin)) return 0.0;
 		else if (back == null) throw new UnreachableException(n,this);
-		else return getU(back.getTail()).add(back.getPrice(vot,c));
+		else return getU(back.getTail()) + back.getPrice(vot,c);
 
 	}
 
-	public BigDecimal getL(Node n) throws UnreachableException {
+	public Double getL(Node n) throws UnreachableException {
 
 		Link back = qShort.get(n.getID());
-		if (n.equals(origin)) return BigDecimal.ZERO;
+		if (n.equals(origin)) return 0.0;
 		else if (back == null) throw new UnreachableException(n,this);
-		else return getL(back.getTail()).add(back.getPrice(vot,c));
+		else return getL(back.getTail()) + back.getPrice(vot,c);
 	}
 	
-	public BigDecimal getCachedU(Node n, Map<Node, BigDecimal> cache) throws UnreachableException {
+	public Double getCachedU(Node n, Map<Node, Double> cache) throws UnreachableException {
 		Link back = qLong.get(n.getID());
-		if (n.equals(origin)) return BigDecimal.ZERO;
+		if (n.equals(origin)) return 0.0;
 		else if (back == null) throw new UnreachableException(n, this);
 		else if (cache.containsKey(n)) return cache.get(n);
 		else {
-			BigDecimal newU = getCachedU(back.getTail(),cache).add(back.getPrice(vot,c));
+			Double newU = getCachedU(back.getTail(),cache) + back.getPrice(vot,c);
 			cache.put(n, newU);
 			return newU;
 		}
 	}
 	
-	public BigDecimal getCachedL(Node n, Map<Node, BigDecimal> cache) throws UnreachableException {
+	public Double getCachedL(Node n, Map<Node, Double> cache) throws UnreachableException {
 		Link back = qShort.get(n.getID());
-		if (n.equals(origin)) return BigDecimal.ZERO;
+		if (n.equals(origin)) return 0.0;
 		else if (back == null)
 			throw new UnreachableException(n,this);
 		else if (cache.containsKey(n)) return cache.get(n);
 		else {
-			BigDecimal newL = getCachedL(back.getTail(), cache).add(back.getPrice(vot,c));
+			Double newL = getCachedL(back.getTail(), cache) + back.getPrice(vot,c);
 			cache.put(n,newL);
 			return newL;
 		}
@@ -309,15 +308,15 @@ public class Bush implements AssignmentContainer {
 
 	public Float getDemand(Integer n) {
 		Node node = nodes.get(n);
-		BigDecimal inFlow = BigDecimal.ZERO;
+		Double inFlow = 0.0;
 		for (Link l : node.getIncomingLinks()) {
-			inFlow = inFlow.add(l.getBushFlow(this));
+			inFlow += l.getBushFlow(this);
 		}
-		BigDecimal outFlow = BigDecimal.ZERO;
+		Double outFlow = 0.0;
 		for (Link l : node.getOutgoingLinks()) {
-			outFlow = outFlow.add(l.getBushFlow(this));
+			outFlow += l.getBushFlow(this);
 		}
-		return inFlow.subtract(outFlow).floatValue();
+		return (float) (inFlow - outFlow);
 	}
 
 	public String toString() {

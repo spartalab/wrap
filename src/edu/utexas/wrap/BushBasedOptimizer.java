@@ -1,27 +1,35 @@
 package edu.utexas.wrap;
 
-import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 public abstract class BushBasedOptimizer extends Optimizer {
-
+	private int innerIters;
 
 	public BushBasedOptimizer(Network network) {
 		super(network);
+		innerIters = 10;
 	}
 
 	public BushBasedOptimizer(Network network, Integer maxIters) {
 		super(network, maxIters, -6);
+		innerIters = 10;
 	}
 	
 	public BushBasedOptimizer(Network network, Integer maxIters, Integer exp) {
 		super(network, maxIters, exp, 16);
+		innerIters = 10;
 	}
 
 	public BushBasedOptimizer(Network network, Integer maxIters, Integer exp, Integer places) {
 		super(network,maxIters,exp,places);
+		innerIters = 10;
+	}
+	
+	public BushBasedOptimizer(Network network, Integer maxIters, Integer exp, Integer places, Integer innerIters) {
+		super(network,maxIters,exp,places);
+		this.innerIters = innerIters;
 	}
 	
 	public void iterate() {
@@ -52,15 +60,14 @@ public abstract class BushBasedOptimizer extends Optimizer {
 			}
 		}
 		
-		
-		for (Origin o : network.getOrigins()) {
-			for (Bush b : o.getBushes()) {
-						// Step i: Equilibrate bushes sequentially
-						equilibrateBush(b);
-
+		for (int i = 0; i < innerIters; i++) {
+			for (Origin o : network.getOrigins()) {
+				for (Bush b : o.getBushes()) {
+					// Step i: Equilibrate bushes sequentially
+					equilibrateBush(b);
+				}
 			}
 		}
-
 	}
 
 	protected abstract void equilibrateBush(Bush b);
@@ -77,8 +84,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		
 //		network.acquireLocks();
 		b.topoSearch(false);
-		Map<Node, BigDecimal> cache = b.topoSearch(true);
-//		Map<Node, BigDecimal> cache = new HashMap<Node, BigDecimal>(network.numNodes());
+		Map<Node, Double> cache = b.topoSearch(true);
 		
 		for (Link l : unusedLinks) {
 			// If link is active, do nothing (removing flow should mark as inactive)
@@ -87,11 +93,11 @@ public abstract class BushBasedOptimizer extends Optimizer {
 			try {
 				// Else if Ui + tij < Uj
 				
-				BigDecimal tailU = b.getCachedU(l.getTail(), cache);
-				BigDecimal headU = b.getCachedU(l.getHead(), cache);
+				Double tailU = b.getCachedU(l.getTail(), cache);
+				Double headU = b.getCachedU(l.getHead(), cache);
 			
 				
-				if (tailU.add(l.getPrice(b.getVOT(),b.getVehicleClass())).compareTo(headU)<0) {
+				if (tailU + (l.getPrice(b.getVOT(),b.getVehicleClass())) < headU) {
 					b.activate(l);
 					modified = true;
 				}
