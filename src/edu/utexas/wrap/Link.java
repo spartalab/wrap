@@ -1,11 +1,16 @@
 package edu.utexas.wrap;
 
-import org.postgresql.core.SqlCommand;
+import com.mongodb.*;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.bson.Document;
+
 import java.sql.*;
 //import java.sql.DriverManager;
 /**
@@ -25,53 +30,45 @@ public abstract class Link implements Priced {
 	private BigDecimal cachedFlow = null;
 	protected BigDecimal cachedTT = null;
 	protected BigDecimal cachedPrice = null;
-	private static Connection databaseCon;
+	private static MongoDatabase databaseCon;
 //HEY!
-	 private final String createQuery = "CREATE TABLE t" + hashCode() + " (" +
-			"bush_origin_id integer, " +
-			"vot real, " +
-			"vehicle_class text, " +
-			"flow decimal(" + Optimizer.defMC.getPrecision() + ")," +
-			"UNIQUE (bush_origin_id, vot, vehicle_class))";
-	private final String sumQuery = "SELECT SUM (flow) AS totalFlow FROM t" + hashCode();
-
-	private final String updateQuery = "INSERT INTO t" + hashCode() + " (bush_origin_id, vot, vehicle_class, flow) " +
-			"VALUES (" +
-			"?,?,?,?)" +
-			"ON CONFLICT (bush_origin_id, vot, vehicle_class)" +
-			"DO UPDATE " +
-			"SET flow = ? " +
-			"WHERE " +
-			"t" +hashCode()+".bush_origin_id = ? " +
-			"AND t"+hashCode()+".vot = ? " +
-			"AND t"+hashCode()+".vehicle_class = ?";
-
-	private final String deleteQuery = "DELETE FROM t" + hashCode() +
-			" WHERE " +
-			"bush_origin_id = ? " +
-			"AND vot = ? " +
-			"AND vehicle_class = ?";
-
-	private final String selectQuery = "SELECT * FROM t" + hashCode() +
-			" WHERE " +
-			"bush_origin_id = ? " +
-			"AND vot = ? " +
-			"AND vehicle_class = ?" +
-			"LIMIT 1";
-
-	private final String dropQuery = "DROP TABLE t" + hashCode();
+//	 private final String createQuery = "CREATE TABLE t" + hashCode() + " (" +
+//			"bush_origin_id integer, " +
+//			"vot real, " +
+//			"vehicle_class text, " +
+//			"flow decimal(" + Optimizer.defMC.getPrecision() + ")," +
+//			"UNIQUE (bush_origin_id, vot, vehicle_class))";
+//	private final String sumQuery = "SELECT SUM (flow) AS totalFlow FROM t" + hashCode();
+//
+//	private final String updateQuery = "INSERT INTO t" + hashCode() + " (bush_origin_id, vot, vehicle_class, flow) " +
+//			"VALUES (" +
+//			"?,?,?,?)" +
+//			"ON CONFLICT (bush_origin_id, vot, vehicle_class)" +
+//			"DO UPDATE " +
+//			"SET flow = ? " +
+//			"WHERE " +
+//			"t" +hashCode()+".bush_origin_id = ? " +
+//			"AND t"+hashCode()+".vot = ? " +
+//			"AND t"+hashCode()+".vehicle_class = ?";
+//
+//	private final String deleteQuery = "DELETE FROM t" + hashCode() +
+//			" WHERE " +
+//			"bush_origin_id = ? " +
+//			"AND vot = ? " +
+//			"AND vehicle_class = ?";
+//
+//	private final String selectQuery = "SELECT * FROM t" + hashCode() +
+//			" WHERE " +
+//			"bush_origin_id = ? " +
+//			"AND vot = ? " +
+//			"AND vehicle_class = ?" +
+//			"LIMIT 1";
+//
+//	private final String dropQuery = "DROP TABLE t" + hashCode();
 	static {
-		try {
-			Class.forName("org.postgresql.Driver");
-			databaseCon = DriverManager.getConnection("jdbc:postgresql://localhost:5432/" + dbName);
-		} catch (SQLException e) {
-			e.printStackTrace();
-			System.out.println("Could not find database/table to connect to");
-			System.exit(3);
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
+		MongoClient server = new MongoClient ("local host", 27107);
+		MongoDatabase databaseCon = server.getDatabase(dbName);
+		
 	}
 
 	public Link(Node tail, Node head, Float capacity, Float length, Float fftime) {
@@ -85,33 +82,23 @@ public abstract class Link implements Priced {
 
 
 	private void createTable() {
-		Statement stm;
-		try {
-		    stm = databaseCon.createStatement();
-		    stm.execute(createQuery);
-        } catch (SQLException e) {
-			e.printStackTrace();
-			System.exit(1);
-        }
+        databaseCon.createCollection("t" + hashCode());
+        
 	}
 
 	private BigDecimal totalFlowFromTable() {
-		Statement stm;
-		try {
-			stm = databaseCon.createStatement();
-			BigDecimal total = null;
-			ResultSet result = stm.executeQuery(sumQuery);
-			if(result.next()) {
-				total = result.getBigDecimal("totalFlow");
+		
+			MongoCollection<Document> collection = databaseCon.getCollection("t" + hashCode());
+			BigDecimal total = BigDecimal.ZERO;
+			MongoCursor<Document> cursor = collection.find().iterator();
+			try {
+				while (cursor.hasNext()) {
+					
+				}
 			}
-			if (total == null)
-				return BigDecimal.ZERO;
-			return total;
-		} catch (SQLException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-		return BigDecimal.ZERO;
+			
+		
+		return total;
 	}
 	public Float getCapacity() {
 		return capacity;
