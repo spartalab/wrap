@@ -1,6 +1,5 @@
 package edu.utexas.wrap;
 
-import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -60,9 +59,9 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	}
 
 	@Override
-	public BigDecimal getPrice(Float vot, VehicleClass c) {
-		BigDecimal sum = BigDecimal.ZERO;
-		for (Link l : this) sum = sum.add(l.getPrice(vot,c));
+	public Double getPrice(Float vot, VehicleClass c) {
+		Double sum = 0.0;
+		for (Link l : this) sum += l.getPrice(vot,c);
 		return sum;
 	}
 
@@ -78,10 +77,10 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 		return sum;
 	}
 
-	public BigDecimal getMinFlow(Bush b, Map<Link, BigDecimal> deltaX) {
-		BigDecimal maxDelta = null;
+	public Double getMinFlow(Bush b, Map<Link, Double> deltaX) {
+		Double maxDelta = null;
 		for (Link l : this) {
-			BigDecimal x = l.getBushFlow(b).add(deltaX.getOrDefault(l, BigDecimal.ZERO));
+			Double x = l.getBushFlow(b) + deltaX.getOrDefault(l, 0.0);
 			if (maxDelta == null || x.compareTo(maxDelta) < 0) {
 				maxDelta = x;
 			}

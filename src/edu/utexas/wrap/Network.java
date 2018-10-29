@@ -1,7 +1,6 @@
 package edu.utexas.wrap;
 
 import java.io.PrintStream;
-import java.math.BigDecimal;
 import java.util.HashMap;
 
 import java.util.Map;
@@ -82,7 +81,7 @@ public class Network {
 		for (Origin o : origins) {
 			for (Bush b : o.getBushes()) {
 				b.topoSearch(false);
-				Map<Node, BigDecimal> cache = new HashMap<Node, BigDecimal>(graph.numNodes());
+				Map<Node, Double> cache = new HashMap<Node, Double>(graph.numNodes());
 				for (Node d : b.getNodes()) {
 					
 					Float demand = b.getDemand(d.getID());
@@ -119,7 +118,7 @@ public class Network {
 				for (Node d : b.getNodes()) {
 					Double demand = o.getDemand(d.getID());
 					if (demand > 0.0) {
-						Map<Node, BigDecimal> cache = new HashMap<Node, BigDecimal>();
+						Map<Node, Double> cache = new HashMap<Node, Double>();
 						numerator -= b.getCachedL(d, cache).doubleValue() * demand;
 						denominator += demand;
 					}

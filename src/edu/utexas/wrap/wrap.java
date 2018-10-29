@@ -118,7 +118,7 @@ public class wrap{
 				
 				System.out.println("Reading network...");
 				n.readTNTPGraph(links);
-				
+				 
 				System.out.println("Reading trips...");
 				n.readTNTPUniformVOTtrips(votFile, odMatrix);
 			}
@@ -127,7 +127,7 @@ public class wrap{
 				System.err.println("Not yet implemented");
 			}
 			network = n.getNetwork();
-
+ 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			return;
