@@ -52,14 +52,14 @@ public abstract class BushBasedOptimizer extends Optimizer {
 				t.start();
 			}
 		}
-		for (Thread t : pool) {
-			try {
+		try {
+			for (Thread t : pool) {
 				t.join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+
 			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
-		
 		for (int i = 0; i < innerIters; i++) {
 			for (Origin o : network.getOrigins()) {
 				for (Bush b : o.getBushes()) {
@@ -82,7 +82,6 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		Set<Link> unusedLinks = new HashSet<Link>(network.getLinks());
 		unusedLinks.removeAll(usedLinks);
 		
-//		network.acquireLocks();
 		b.topoSearch(false);
 		Map<Node, Double> cache = b.topoSearch(true);
 		
@@ -107,7 +106,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 			}
 
 		}
-//		network.releaseLocks();
+
 		return modified;
 	}
 }

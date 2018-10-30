@@ -54,8 +54,7 @@ public abstract class Link implements Priced {
 
 	public Double getFlow() {
 		if (cachedFlow != null) return cachedFlow;
-		Double f = 0.0;
-		for (AssignmentContainer b : flow.keySet()) f += flow.get(b);
+		Double f = flow.values().stream().mapToDouble(Double::doubleValue).sum();
 		if (f < 0) throw new NegativeFlowException("Negative link flow");
 		cachedFlow = f;
 		return f;

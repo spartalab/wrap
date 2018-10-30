@@ -8,6 +8,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class Bush implements AssignmentContainer {
 
@@ -30,15 +31,15 @@ public class Bush implements AssignmentContainer {
 		origin = o;
 		this.vot = vot;
 		this.c = c;
-		
+
 		//Initialize flow and status maps
-		
+
 		this.nodes	= nodes;
 		qShort	= origin.getInitMap(nodes);//new HashMap<Integer, Link>(nodes.size(),1.0f);
 		activeLinks = new HashSet<Link>(qShort.values());
 		qLong	= new HashMap<Integer, Link>(nodes.size(),1.0f);
-		
-//		runDijkstras();
+
+		//		runDijkstras();
 		dumpFlow(destDemand);
 	}
 
@@ -67,7 +68,7 @@ public class Bush implements AssignmentContainer {
 			} catch (UnreachableException e) {
 				// TODO Auto-generated catch block
 				System.err.println("No path exists from Node "+origin.getID()+" to Node "+node+". Lost demand = "+x);
-//				destDemand.put(node, 0.0F);
+				//				destDemand.put(node, 0.0F);
 				continue;
 			}
 			for (Link l : p) {
@@ -128,7 +129,7 @@ public class Bush implements AssignmentContainer {
 			}
 		}
 		if (!currentLinks.isEmpty()) throw new RuntimeException("Cyclic graph error");
-		
+		topoOrder = to;
 		return to;
 	}
 
@@ -158,23 +159,20 @@ public class Bush implements AssignmentContainer {
 			//Initialize infinity-filled nodeL and empty qShort
 			qShort = new HashMap<Integer, Link>(nodes.size(),1.0f);
 			for (Node d : to) {
+				try {
+					for (Link l :  d.getOutgoingLinks().stream().filter(activeLinks::contains).collect(Collectors.toSet())) {
+						Double Licij = l.getPrice(vot,c) + getCachedL(d,cache);
 
-				for (Link l : d.getOutgoingLinks()) {
-					if (isActive(l)) {
-						try {
-							Double Licij = l.getPrice(vot,c) + getCachedL(d,cache);
-
-							Node head = l.getHead();
-							Integer id = l.getHead().getID();
-							if (qShort.get(id) == null || Licij < getCachedL(head,cache)) {
-								qShort.put(id, l);
-								cache.put(head, Licij);
-							}
-						} catch (UnreachableException e) {
-							if (getDemand(d.getID()) > 0.0) {
-								throw new RuntimeException();
-							}
-						}
+						Node head = l.getHead();
+						Integer id = head.getID();
+						if (qShort.get(id) == null || Licij < getCachedL(head,cache)) {
+							qShort.put(id, l);
+							cache.put(head, Licij);
+						}					
+					}
+				} catch (UnreachableException e) {
+					if (getDemand(d.getID()) > 0.0) {
+						throw new RuntimeException();
 					}
 				}
 			}
@@ -184,21 +182,21 @@ public class Bush implements AssignmentContainer {
 		else  {
 			qLong = new HashMap<Integer, Link>(nodes.size(),1.0f);
 			for (Node d : to) {
-				for (Link l : d.getOutgoingLinks()) {
-					if (isActive(l)) {
-						try {
-							Double Uicij = l.getPrice(vot,c) + getCachedU(d,cache);
-							Node head = l.getHead();
-							Integer id = l.getHead().getID();
-							if (qLong.get(id) == null || Uicij > getCachedU(head,cache)) {
-								qLong.put(id, l);
-								cache.put(head, Uicij);
-							}
-						} catch (UnreachableException e) {
-							if (getDemand(d.getID()) > 0.0) {
-								throw new RuntimeException();
-							}
+				try {
+					for (Link l : d.getOutgoingLinks().stream().filter(activeLinks::contains).collect(Collectors.toSet())) {
+
+						Double Uicij = l.getPrice(vot,c) + getCachedU(d,cache);
+						Node head = l.getHead();
+						Integer id = l.getHead().getID();
+						if (qLong.get(id) == null || Uicij > getCachedU(head,cache)) {
+							qLong.put(id, l);
+							cache.put(head, Uicij);
 						}
+
+					}
+				} catch (UnreachableException e) {
+					if (getDemand(d.getID()) > 0.0) {
+						throw new RuntimeException();
 					}
 				}
 			}
@@ -217,7 +215,7 @@ public class Bush implements AssignmentContainer {
 	public Path getShortPath(Node n) throws UnreachableException {
 		return getShortPath(n, origin);
 	}
-	
+
 	public Path getShortPath(Node end, Node start) throws UnreachableException {
 		Path p = new Path();
 		if (end.equals(start)) return p;
@@ -229,13 +227,13 @@ public class Bush implements AssignmentContainer {
 		if (p.isEmpty() || !p.getFirst().getTail().equals(start)) throw new UnreachableException();
 		return p;
 	}
-	
+
 	public Path getLongPath(Node n) {
 		return getLongPath(n,origin);
 	}
-	
+
 	public Path getLongPath(Node end, Node start) {
-		
+
 		Path p = new Path();
 		if (end.equals(start)) return p;
 		Link curLink = getqLong(end);
@@ -244,7 +242,7 @@ public class Bush implements AssignmentContainer {
 			curLink = getqLong(curLink.getTail());
 		}
 		return p;
-		
+
 	}
 
 	public Double getU(Node n) throws UnreachableException {
@@ -263,7 +261,7 @@ public class Bush implements AssignmentContainer {
 		else if (back == null) throw new UnreachableException(n,this);
 		else return getL(back.getTail()) + back.getPrice(vot,c);
 	}
-	
+
 	public Double getCachedU(Node n, Map<Node, Double> cache) throws UnreachableException {
 		Link back = qLong.get(n.getID());
 		if (n.equals(origin)) return 0.0;
@@ -275,7 +273,7 @@ public class Bush implements AssignmentContainer {
 			return newU;
 		}
 	}
-	
+
 	public Double getCachedL(Node n, Map<Node, Double> cache) throws UnreachableException {
 		Link back = qShort.get(n.getID());
 		if (n.equals(origin)) return 0.0;
@@ -332,7 +330,7 @@ public class Bush implements AssignmentContainer {
 			topoOrder = null;
 		}
 	}
-	
+
 	Boolean deactivate(Link l) {
 		Node head = l.getHead();
 		for (Link i : head.getIncomingLinks()) {
@@ -343,16 +341,12 @@ public class Bush implements AssignmentContainer {
 		}
 		return false;
 	}
-	
-	private boolean isActive(Link l) {
-		return activeLinks.contains(l);
-	}
 
 	public void setActive(Set<Link> m) {
 		activeLinks = m;
 		topoOrder = null;
 	}
-	
+
 	void prune() {
 		for (Link l : new HashSet<Link>(activeLinks)){
 			if(!l.hasFlow(this)){
@@ -362,20 +356,20 @@ public class Bush implements AssignmentContainer {
 
 		}
 	}
-	
-//	private Integer depthL(Node n) {
-//		if (n.equals(origin)) return 0;
-//		return depthL(getqShort(n).getTail())+1;
-//	}
-//	
-//	private Integer depthU(Node n) {
-//		if (n.equals(origin)) return 0;
-//		return depthU(getqLong(n).getTail())+1;
-//	}
-//	
+
+	//	private Integer depthL(Node n) {
+	//		if (n.equals(origin)) return 0;
+	//		return depthL(getqShort(n).getTail())+1;
+	//	}
+	//	
+	//	private Integer depthU(Node n) {
+	//		if (n.equals(origin)) return 0;
+	//		return depthU(getqLong(n).getTail())+1;
+	//	}
+	//	
 	Node divergeNode(Node l, Node u) {
 		if (l.equals(origin) || u.equals(origin)) return origin;
-		
+
 		Path lPath;
 		try {
 			lPath = getShortPath(l);
@@ -385,18 +379,18 @@ public class Bush implements AssignmentContainer {
 			return null;
 		}
 		Path uPath = getLongPath(u);
-		
+
 		Set<Node> lNodes = new HashSet<Node>();
 		Set<Node> uNodes = new HashSet<Node>();
-		
+
 		Iterator<Link> lIter = lPath.descendingIterator();
 		Iterator<Link> uIter = uPath.descendingIterator();
-		
+
 		Link uLink, lLink;
 		while (lIter.hasNext() && uIter.hasNext()) {
 			lLink = lIter.next();
 			uLink = uIter.next();
-			
+
 			if (lLink.getTail().equals(uLink.getTail())) return lLink.getTail();
 			else if (uNodes.contains(lLink.getTail())) return lLink.getTail();
 			else if (lNodes.contains(uLink.getTail())) return uLink.getTail();
@@ -415,7 +409,7 @@ public class Bush implements AssignmentContainer {
 		}
 		return null;
 	}
-	
+
 	public AlternateSegmentPair getShortLongASP(Node terminus) {
 		Link shortLink = getqShort(terminus);
 		Link longLink = getqLong(terminus);
@@ -424,7 +418,7 @@ public class Bush implements AssignmentContainer {
 		if (longLink.equals(shortLink)) return null;
 
 		//Else calculate divergence node
-		
+
 		Node diverge = divergeNode(shortLink.getTail(), longLink.getTail());
 		try {
 			return new AlternateSegmentPair(getShortPath(terminus, diverge), getLongPath(terminus,diverge), this);
@@ -434,7 +428,7 @@ public class Bush implements AssignmentContainer {
 			return null;
 		}
 	}
-	
+
 	public VehicleClass getVehicleClass() {
 		return c;
 	}
