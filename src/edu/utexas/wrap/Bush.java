@@ -8,18 +8,15 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-public class Bush implements AssignmentContainer {
+public class Bush extends Graph implements AssignmentContainer  {
 
 	// Bush structure
 	private final Origin origin;
 	private final Float vot;
 	private final VehicleClass c;
 
-	private final Map<Integer, Node> 	nodes; 
-	private Set<Link> activeLinks; // Set of active links
-
+	
 	// Back vector maps
 	private Map<Integer, Link> 		qShort;
 	private Map<Integer, Link>		qLong;
@@ -28,15 +25,15 @@ public class Bush implements AssignmentContainer {
 
 
 	public Bush(Origin o, Map<Integer,Node> nodes, Set<Link> links, Float vot, Map<Integer, Float> destDemand, VehicleClass c) {
+		super();
 		origin = o;
 		this.vot = vot;
 		this.c = c;
 
 		//Initialize flow and status maps
 
-		this.nodes	= nodes;
+		this.nodeMap	= nodes;
 		qShort	= origin.getInitMap(nodes);//new HashMap<Integer, Link>(nodes.size(),1.0f);
-		activeLinks = new HashSet<Link>(qShort.values());
 		qLong	= new HashMap<Integer, Link>(nodes.size(),1.0f);
 
 		//		runDijkstras();
@@ -57,14 +54,14 @@ public class Bush implements AssignmentContainer {
 	 * @param destDemand 
 	 * */
 	private void dumpFlow(Map<Integer, Float> destDemand) {
-		for (Integer node : nodes.keySet()) {
+		for (Integer node : nodeMap.keySet()) {
 
 
 			Float x = destDemand.getOrDefault(node, 0.0F);
 			if (x <= 0.0) continue;
 			Path p;
 			try {
-				p = getShortPath(nodes.get(node));
+				p = getShortPath(nodeMap.get(node));
 			} catch (UnreachableException e) {
 				// TODO Auto-generated catch block
 				System.err.println("No path exists from Node "+origin.getID()+" to Node "+node+". Lost demand = "+x);
@@ -94,7 +91,7 @@ public class Bush implements AssignmentContainer {
 	 */
 	private LinkedList<Node> generateTopoOrder() {
 		// Start with a set of all bush edges
-		Set<Link> currentLinks = new HashSet<Link>(activeLinks);
+		Set<Link> currentLinks = getLinks();
 
 		LinkedList<Node> to = new LinkedList<Node>();
 		LinkedList<Node> S = new LinkedList<Node>();
@@ -153,14 +150,14 @@ public class Bush implements AssignmentContainer {
 	public Map<Node, Double> topoSearch(Boolean longest)  {
 		// Initialize all nodeU values as 0 and all nodes as not visited
 		List<Node> to = getTopologicalOrder();
-		Map<Node, Double> cache = new HashMap<Node, Double>(nodes.size());
+		Map<Node, Double> cache = new HashMap<Node, Double>(nodeMap.size());
 		//SHORTEST PATHS
 		if(!longest) {
 			//Initialize infinity-filled nodeL and empty qShort
-			qShort = new HashMap<Integer, Link>(nodes.size(),1.0f);
+			qShort = new HashMap<Integer, Link>(nodeMap.size(),1.0f);
 			for (Node d : to) {
 				try {
-					for (Link l :  d.getOutgoingLinks().stream().filter(activeLinks::contains).collect(Collectors.toSet())) {
+					for (Link l :  outLinks(d)) {
 						Double Licij = l.getPrice(vot,c) + getCachedL(d,cache);
 
 						Node head = l.getHead();
@@ -180,10 +177,10 @@ public class Bush implements AssignmentContainer {
 
 		//LONGEST PATHS
 		else  {
-			qLong = new HashMap<Integer, Link>(nodes.size(),1.0f);
+			qLong = new HashMap<Integer, Link>(nodeMap.size(),1.0f);
 			for (Node d : to) {
 				try {
-					for (Link l : d.getOutgoingLinks().stream().filter(activeLinks::contains).collect(Collectors.toSet())) {
+					for (Link l : outLinks(d)) {
 
 						Double Uicij = l.getPrice(vot,c) + getCachedU(d,cache);
 						Node head = l.getHead();
@@ -203,6 +200,7 @@ public class Bush implements AssignmentContainer {
 		}
 		return cache;
 	}
+
 
 	public Link getqShort(Node n) {
 		return qShort.get(n.getID());
@@ -292,12 +290,8 @@ public class Bush implements AssignmentContainer {
 		return origin;
 	}
 
-	public Set<Link> getLinks(){
-		return activeLinks;
-	}
-
 	public Collection<Node> getNodes() {
-		return nodes.values();
+		return nodeMap.values();
 	}
 
 	public Float getVOT() {
@@ -305,7 +299,7 @@ public class Bush implements AssignmentContainer {
 	}
 
 	public Float getDemand(Integer n) {
-		Node node = nodes.get(n);
+		Node node = nodeMap.get(n);
 		Double inFlow = 0.0;
 		for (Link l : node.getIncomingLinks()) {
 			inFlow += l.getBushFlow(this);
@@ -322,11 +316,11 @@ public class Bush implements AssignmentContainer {
 	}
 
 	void activate(Link l) {
-		if (activeLinks.add(l)) topoOrder = null;
+		if (add(l)) topoOrder = null;
 	}
 
 	private void markInactive(Link l) {
-		if (activeLinks.remove(l)) {
+		if (remove(l)) {
 			topoOrder = null;
 		}
 	}
@@ -334,7 +328,7 @@ public class Bush implements AssignmentContainer {
 	Boolean deactivate(Link l) {
 		Node head = l.getHead();
 		for (Link i : head.getIncomingLinks()) {
-			if (activeLinks.contains(i) && !i.equals(l)) {
+			if (contains(i) && !i.equals(l)) {
 				markInactive(l);
 				return true;
 			}
@@ -342,13 +336,8 @@ public class Bush implements AssignmentContainer {
 		return false;
 	}
 
-	public void setActive(Set<Link> m) {
-		activeLinks = m;
-		topoOrder = null;
-	}
-
 	void prune() {
-		for (Link l : new HashSet<Link>(activeLinks)){
+		for (Link l : getLinks()){
 			if(!l.hasFlow(this)){
 				// Check to see if this link is needed for connectivity, deactivate link in bush if no flow left
 				deactivate(l);

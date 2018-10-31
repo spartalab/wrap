@@ -170,7 +170,7 @@ public class NetworkFactory {
 
 			//Construct new link and add to the list
 			Link link = new TolledBPRLink(nodes.get(tail), nodes.get(head), capacity, length, fftime, B, power, toll);
-			g.addLink(link);
+			g.add(link);
 
 			nodes.get(tail).addOutgoing(link);
 			nodes.get(head).addIncoming(link);
@@ -300,7 +300,7 @@ public class NetworkFactory {
 				} else if (aCap > 0.0) {
 					AB = new CentroidConnector(nodes.get(nodeA), nodes.get(nodeB), aCap, length, ffTimeA, opCostA.floatValue());
 				}
-				g.addLink(AB);
+				g.add(AB);
 				nodes.get(nodeA).addOutgoing(AB);
 				nodes.get(nodeB).addIncoming(AB);
 
@@ -314,7 +314,7 @@ public class NetworkFactory {
 				} else {
 					BA = new CentroidConnector(nodes.get(nodeB),nodes.get(nodeA), bCap, length, ffTimeB, opCostB.floatValue());
 				}
-				g.addLink(BA);
+				g.add(BA);
 				nodes.get(nodeB).addOutgoing(BA);
 				nodes.get(nodeA).addIncoming(BA);
 

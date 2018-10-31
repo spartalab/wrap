@@ -7,9 +7,9 @@ import java.util.Map;
 import java.util.Set;
 
 public class Graph {
-	private Map<Node, Set<Link>> outLinks;
-	private Map<Node, Set<Link>> inLinks;
-	private Map<Integer, Node> nodeMap;
+	protected Map<Node, Set<Link>> outLinks;
+	protected Map<Node, Set<Link>> inLinks;
+	protected Map<Integer, Node> nodeMap;
 	
 	public Graph() {
 		outLinks = new HashMap<Node, Set<Link>>();
@@ -29,18 +29,21 @@ public class Graph {
 		nodeMap = g.nodeMap;
 	}
 	
-	public void addLink(Link link) {
+	public Boolean add(Link link) {
 		Node head = link.getHead();
 		Node tail = link.getTail();
 		Set<Link> headIns = inLinks.getOrDefault(head, new HashSet<Link>());
 		Set<Link> tailOuts= outLinks.getOrDefault(tail, new HashSet<Link>());
 		
-		headIns.add(link);
-		tailOuts.add(link);
-		inLinks.put(head, headIns);
-		outLinks.put(tail, tailOuts);
-		nodeMap.put(link.getHead().getID(), link.getHead());
-		nodeMap.put(link.getTail().getID(), link.getTail());
+		Boolean altered = headIns.add(link);
+		altered |= tailOuts.add(link);
+		if (altered) {
+			inLinks.put(head, headIns);
+			outLinks.put(tail, tailOuts);
+			nodeMap.put(link.getHead().getID(), link.getHead());
+			nodeMap.put(link.getTail().getID(), link.getTail());
+		}
+		return altered;
 	}
 	
 	public Collection<Node> getNodes(){
@@ -65,9 +68,10 @@ public class Graph {
 		return outLinks.getOrDefault(u, new HashSet<Link>());
 	}
 
-	public void remove(Link link) {
-		outLinks.get(link.getTail()).remove(link);
-		inLinks.get(link.getHead()).remove(link);
+	public Boolean remove(Link link) {
+		Boolean altered = outLinks.get(link.getTail()).remove(link);
+		altered |= inLinks.get(link.getHead()).remove(link);
+		return altered;
 	}
 
 	public void remove(Node node) {
@@ -84,6 +88,10 @@ public class Graph {
 	public Integer numNodes() {
 		// TODO Auto-generated method stub
 		return nodeMap.size();
+	}
+	
+	public Boolean contains(Link l) {
+		return outLinks.get(l.getTail()).contains(l) || inLinks.get(l.getHead()).contains(l);
 	}
 
 }
