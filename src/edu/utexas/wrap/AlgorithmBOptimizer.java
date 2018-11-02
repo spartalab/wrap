@@ -34,13 +34,13 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 		LinkedList<Node> to = b.getTopologicalOrder();
 		Node cur;
 		HashMap<Link, Double> deltaX = new HashMap<Link, Double>();
-		b.topoSearch(false);
-		b.topoSearch(true);
+		b.shortTopoSearch();
+		b.longTopoSearch();
 
 		Iterator<Node> it = to.descendingIterator();
 		while (it.hasNext()) {
 			cur = it.next();
-			if (cur.equals(b.getOrigin())) continue;
+			if (cur.equals(b.getOrigin().getNode())) continue;
 
 
 			AlternateSegmentPair asp = b.getShortLongASP(cur);

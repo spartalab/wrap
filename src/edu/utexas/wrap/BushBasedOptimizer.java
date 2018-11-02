@@ -82,8 +82,8 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		Set<Link> unusedLinks = new HashSet<Link>(network.getLinks());
 		unusedLinks.removeAll(usedLinks);
 		
-		b.topoSearch(false);
-		Map<Node, Double> cache = b.topoSearch(true);
+		b.shortTopoSearch();
+		Map<Node, Double> cache = b.longTopoSearch();
 		
 		for (Link l : unusedLinks) {
 			// If link is active, do nothing (removing flow should mark as inactive)

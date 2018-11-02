@@ -6,13 +6,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class Origin extends Node{
+public class Origin {
 
 	private List<Bush> bushes;
 	private Map<Integer, Link> initMap;
+	private final Node self;
 	
 	public Origin(Node self) {
-		super(self.getIncomingLinks(), self.getOutgoingLinks(), self.getID(), self.isCentroid());
+		this.self = self;
 		bushes = new LinkedList<Bush>();
 	}
 
@@ -49,7 +50,7 @@ public class Origin extends Node{
 	}
 	
 	public int hashCode() {
-		return getID();
+		return self.getID();
 	}
 	
 	/**Generate an initial bush (dag) by solving Dijkstra's Shortest Paths
@@ -64,11 +65,11 @@ public class Origin extends Node{
 		initMap = new HashMap<Integer, Link>(nodes.size(),1.0f);
 		FibonacciHeap<Integer> Q = new FibonacciHeap<Integer>(nodes.size(),1.0f);
 		for (Node n : nodes.values()) {
-			if (!n.equals(this)) {
+			if (!n.equals(self)) {
 				Q.add(n.getID(), Double.MAX_VALUE);
 			}
 		}
-		Q.add(getID(), 0.0);
+		Q.add(self.getID(), 0.0);
 
 		while (!Q.isEmpty()) {
 			Leaf<Integer> u = Q.poll();
@@ -91,5 +92,9 @@ public class Origin extends Node{
 	public Map<Integer, Link> getInitMap(Map<Integer, Node> nodes) {
 		if (initMap == null) buildInitMap(nodes);
 		return initMap;
+	}
+	
+	public Node getNode() {
+		return self;
 	}
 }

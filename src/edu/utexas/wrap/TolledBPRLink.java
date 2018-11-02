@@ -30,8 +30,7 @@ public class TolledBPRLink extends TolledLink {
 	 * @return travel time for the link at current flow
 	 */
 	public Double getTravelTime() {
-		if (cachedTT != null) return cachedTT;
-		cachedTT = freeFlowTime()*(1+
+		if (cachedTT == null) cachedTT = freeFlowTime()*(1+
 				getBValue()*Math.pow(getFlow().doubleValue()/getCapacity(), getPower()));
 		return cachedTT;
 	}
@@ -74,14 +73,11 @@ public class TolledBPRLink extends TolledLink {
 	
 	@Override
 	public Double getPrice(Float vot, VehicleClass c) {
-		if (cachedPrice != null) return cachedPrice;
-		try {
-			return getTravelTime() * vot + getToll(null);
-		}
-		catch (Exception e) {
-			e.printStackTrace();
-			return 0.0;
-		}
+//		if (cachedPrice != null) return cachedPrice; // Causes a convergence failure for some reason
+
+		cachedPrice = getTravelTime() * vot + getToll(null);
+		return cachedPrice;
+		
 	}
 	
 	public Double pricePrime(Float vot) {

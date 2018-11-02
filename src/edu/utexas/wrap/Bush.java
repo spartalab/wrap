@@ -8,9 +8,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-public class Bush implements AssignmentContainer {
+public class Bush extends Graph implements AssignmentContainer {
 
 	// Bush structure
 	private final Origin origin;
@@ -18,7 +17,6 @@ public class Bush implements AssignmentContainer {
 	private final VehicleClass c;
 
 	private final Map<Integer, Node> 	nodes; 
-	private Set<Link> activeLinks; // Set of active links
 
 	// Back vector maps
 	private Map<Integer, Link> 		qShort;
@@ -28,6 +26,7 @@ public class Bush implements AssignmentContainer {
 
 
 	public Bush(Origin o, Map<Integer,Node> nodes, Set<Link> links, Float vot, Map<Integer, Float> destDemand, VehicleClass c) {
+		super();
 		origin = o;
 		this.vot = vot;
 		this.c = c;
@@ -36,7 +35,7 @@ public class Bush implements AssignmentContainer {
 
 		this.nodes	= nodes;
 		qShort	= origin.getInitMap(nodes);//new HashMap<Integer, Link>(nodes.size(),1.0f);
-		activeLinks = new HashSet<Link>(qShort.values());
+		addAll(qShort.values());
 		qLong	= new HashMap<Integer, Link>(nodes.size(),1.0f);
 
 		//		runDijkstras();
@@ -67,8 +66,9 @@ public class Bush implements AssignmentContainer {
 				p = getShortPath(nodes.get(node));
 			} catch (UnreachableException e) {
 				// TODO Auto-generated catch block
-				System.err.println("No path exists from Node "+origin.getID()+" to Node "+node+". Lost demand = "+x);
-				//				destDemand.put(node, 0.0F);
+
+				System.err.println("No path exists from Node "+origin.getNode().getID()+" to Node "+node+". Lost demand = "+x);
+//				destDemand.put(node, 0.0F);
 				continue;
 			}
 			for (Link l : p) {
@@ -94,12 +94,12 @@ public class Bush implements AssignmentContainer {
 	 */
 	private LinkedList<Node> generateTopoOrder() {
 		// Start with a set of all bush edges
-		Set<Link> currentLinks = new HashSet<Link>(activeLinks);
+		Set<Link> currentLinks = getLinks();
 
 		LinkedList<Node> to = new LinkedList<Node>();
 		LinkedList<Node> S = new LinkedList<Node>();
 		// "start nodes"
-		S.add(origin);
+		S.add(origin.getNode());
 		Node n;
 
 		while (!S.isEmpty()) {
@@ -136,72 +136,79 @@ public class Bush implements AssignmentContainer {
 
 	public boolean isInvalidConnector(Link uv) {
 		if (!(uv instanceof CentroidConnector) || 
-				uv.getTail().equals(origin) || 
+				uv.getTail().equals(origin.getNode()) || 
 				(uv.getHead().isCentroid() && !uv.getTail().isCentroid())
 				) return false;
 		else return true;
 	}
 
-	/**Calculate shortest or longest paths in bush (DAG) using topological search
+	/**Calculate shortest paths in bush (DAG) using topological search
 	 * 
-	 * Leverage the presence of a topological order to decrease search time for 
-	 * shortest/longest paths calculation
-	 * 
-	 * @param longest switch for Longest/Shortest
-	 * @param to a topological ordering of the nodes
+	 * Leverage the presence of a topological order to decrease search 
+	 * time for shortest paths calculation
 	 */
-	public Map<Node, Double> topoSearch(Boolean longest)  {
-		// Initialize all nodeU values as 0 and all nodes as not visited
+	public Map<Node, Double> shortTopoSearch(){
 		List<Node> to = getTopologicalOrder();
 		Map<Node, Double> cache = new HashMap<Node, Double>(nodes.size());
-		//SHORTEST PATHS
-		if(!longest) {
-			//Initialize infinity-filled nodeL and empty qShort
-			qShort = new HashMap<Integer, Link>(nodes.size(),1.0f);
-			for (Node d : to) {
-				try {
-					for (Link l :  d.getOutgoingLinks().stream().filter(activeLinks::contains).collect(Collectors.toSet())) {
-						Double Licij = l.getPrice(vot,c) + getCachedL(d,cache);
-
-						Node head = l.getHead();
-						Integer id = head.getID();
-						if (qShort.get(id) == null || Licij < getCachedL(head,cache)) {
-							qShort.put(id, l);
-							cache.put(head, Licij);
-						}					
-					}
-				} catch (UnreachableException e) {
-					if (getDemand(d.getID()) > 0.0) {
-						throw new RuntimeException();
-					}
+		
+		qShort = new HashMap<Integer, Link>(nodes.size(),1.0f);
+		for (Node d : to) {
+			try {
+				for (Link l :  outLinks(d)) {
+					shortRelax(l, cache);
 				}
-			}
-		}
-
-		//LONGEST PATHS
-		else  {
-			qLong = new HashMap<Integer, Link>(nodes.size(),1.0f);
-			for (Node d : to) {
-				try {
-					for (Link l : d.getOutgoingLinks().stream().filter(activeLinks::contains).collect(Collectors.toSet())) {
-
-						Double Uicij = l.getPrice(vot,c) + getCachedU(d,cache);
-						Node head = l.getHead();
-						Integer id = l.getHead().getID();
-						if (qLong.get(id) == null || Uicij > getCachedU(head,cache)) {
-							qLong.put(id, l);
-							cache.put(head, Uicij);
-						}
-
-					}
-				} catch (UnreachableException e) {
-					if (getDemand(d.getID()) > 0.0) {
-						throw new RuntimeException();
-					}
+			} catch (UnreachableException e) {
+				if (getDemand(d.getID()) > 0.0) {
+					throw new RuntimeException();
 				}
 			}
 		}
 		return cache;
+	}
+	
+	/**Calculate longest paths in bush (DAG) using topological search
+	 * 
+	 * Leverage the presence of a topological order to decrease search
+	 * time for longest paths calculation
+	 */
+	public Map<Node, Double> longTopoSearch(){
+		List<Node> to = getTopologicalOrder();
+		Map<Node, Double> cache = new HashMap<Node, Double>(nodes.size());
+		
+		qLong = new HashMap<Integer, Link>(nodes.size(),1.0f);
+		for (Node d : to) {
+			try {
+				for (Link l : outLinks(d)) {
+					longRelax(l, cache);
+				}
+			} catch (UnreachableException e) {
+				if (getDemand(d.getID()) > 0.0) {
+					throw new RuntimeException();
+				}
+			}
+		}
+		return cache;
+	}
+	
+	private void longRelax(Link l, Map<Node, Double> cache) throws UnreachableException {
+		Double Uicij = l.getPrice(vot,c) + getCachedU(l.getTail(),cache);
+		Node head = l.getHead();
+		Integer id = head.getID();
+		if (qLong.get(id) == null || Uicij > getCachedU(head,cache)) {
+			qLong.put(id, l);
+			cache.put(head, Uicij);
+		}
+	}
+
+	private void shortRelax(Link l, Map<Node, Double> cache) throws UnreachableException {
+		Double Licij = l.getPrice(vot,c) + getCachedL(l.getTail(),cache);
+
+		Node head = l.getHead();
+		Integer id = head.getID();
+		if (qShort.get(id) == null || Licij < getCachedL(head,cache)) {
+			qShort.put(id, l);
+			cache.put(head, Licij);
+		}
 	}
 
 	public Link getqShort(Node n) {
@@ -213,7 +220,7 @@ public class Bush implements AssignmentContainer {
 	}
 
 	public Path getShortPath(Node n) throws UnreachableException {
-		return getShortPath(n, origin);
+		return getShortPath(n, origin.getNode());
 	}
 
 	public Path getShortPath(Node end, Node start) throws UnreachableException {
@@ -229,7 +236,7 @@ public class Bush implements AssignmentContainer {
 	}
 
 	public Path getLongPath(Node n) {
-		return getLongPath(n,origin);
+		return getLongPath(n,origin.getNode());
 	}
 
 	public Path getLongPath(Node end, Node start) {
@@ -248,7 +255,7 @@ public class Bush implements AssignmentContainer {
 	public Double getU(Node n) throws UnreachableException {
 
 		Link back = qLong.get(n.getID());
-		if (n.equals(origin)) return 0.0;
+		if (n.equals(origin.getNode())) return 0.0;
 		else if (back == null) throw new UnreachableException(n,this);
 		else return getU(back.getTail()) + back.getPrice(vot,c);
 
@@ -257,14 +264,14 @@ public class Bush implements AssignmentContainer {
 	public Double getL(Node n) throws UnreachableException {
 
 		Link back = qShort.get(n.getID());
-		if (n.equals(origin)) return 0.0;
+		if (n.equals(origin.getNode())) return 0.0;
 		else if (back == null) throw new UnreachableException(n,this);
 		else return getL(back.getTail()) + back.getPrice(vot,c);
 	}
 
 	public Double getCachedU(Node n, Map<Node, Double> cache) throws UnreachableException {
 		Link back = qLong.get(n.getID());
-		if (n.equals(origin)) return 0.0;
+		if (n.equals(origin.getNode())) return 0.0;
 		else if (back == null) throw new UnreachableException(n, this);
 		else if (cache.containsKey(n)) return cache.get(n);
 		else {
@@ -276,7 +283,7 @@ public class Bush implements AssignmentContainer {
 
 	public Double getCachedL(Node n, Map<Node, Double> cache) throws UnreachableException {
 		Link back = qShort.get(n.getID());
-		if (n.equals(origin)) return 0.0;
+		if (n.equals(origin.getNode())) return 0.0;
 		else if (back == null)
 			throw new UnreachableException(n,this);
 		else if (cache.containsKey(n)) return cache.get(n);
@@ -288,12 +295,8 @@ public class Bush implements AssignmentContainer {
 	}
 
 
-	public Node getOrigin() {
+	public Origin getOrigin() {
 		return origin;
-	}
-
-	public Set<Link> getLinks(){
-		return activeLinks;
 	}
 
 	public Collection<Node> getNodes() {
@@ -318,23 +321,23 @@ public class Bush implements AssignmentContainer {
 	}
 
 	public String toString() {
-		return "ORIG="+origin.getID()+"\tVOT="+vot+"\tCLASS="+c;
+		return "ORIG="+origin.getNode().getID()+"\tVOT="+vot+"\tCLASS="+c;
 	}
 
 	void activate(Link l) {
-		if (activeLinks.add(l)) topoOrder = null;
+		if (add(l)) topoOrder = null;
 	}
 
 	private void markInactive(Link l) {
-		if (activeLinks.remove(l)) {
+		if (remove(l)) {
 			topoOrder = null;
 		}
 	}
 
-	Boolean deactivate(Link l) {
+	private Boolean deactivate(Link l) {
 		Node head = l.getHead();
 		for (Link i : head.getIncomingLinks()) {
-			if (activeLinks.contains(i) && !i.equals(l)) {
+			if (contains(i) && !i.equals(l)) {
 				markInactive(l);
 				return true;
 			}
@@ -342,13 +345,8 @@ public class Bush implements AssignmentContainer {
 		return false;
 	}
 
-	public void setActive(Set<Link> m) {
-		activeLinks = m;
-		topoOrder = null;
-	}
-
 	void prune() {
-		for (Link l : new HashSet<Link>(activeLinks)){
+		for (Link l : getLinks()){
 			if(!l.hasFlow(this)){
 				// Check to see if this link is needed for connectivity, deactivate link in bush if no flow left
 				deactivate(l);
@@ -368,8 +366,8 @@ public class Bush implements AssignmentContainer {
 	//	}
 	//	
 	Node divergeNode(Node l, Node u) {
-		if (l.equals(origin) || u.equals(origin)) return origin;
-
+		if (l.equals(origin.getNode()) || u.equals(origin.getNode())) return origin.getNode();
+		
 		Path lPath;
 		try {
 			lPath = getShortPath(l);

@@ -54,11 +54,11 @@ class SPAlgorithmsTest {
 		D.addIncoming(BD);
 		D.addIncoming(CD);
 		
-		graph.addLink(AB);
-		graph.addLink(AC);
-		graph.addLink(BC);
-		graph.addLink(BD);
-		graph.addLink(CD);
+		graph.add(AB);
+		graph.add(AC);
+		graph.add(BC);
+		graph.add(BD);
+		graph.add(CD);
 		
 	}
 

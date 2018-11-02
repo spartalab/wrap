@@ -20,7 +20,7 @@ public class Network {
 	private TSTTCalculator tc;
 	private BeckmannCalculator bc;
 	private TSGCCalculator cc;
-	private AECCalculator ac;
+//	private AECCalculator ac;
 	
 	public Network(Set<Origin> origins, Graph g) {
 		this.origins = origins;
@@ -80,7 +80,7 @@ public class Network {
 		
 		for (Origin o : origins) {
 			for (Bush b : o.getBushes()) {
-				b.topoSearch(false);
+				b.shortTopoSearch();
 				Map<Node, Double> cache = new HashMap<Node, Double>(graph.numNodes());
 				for (Node d : b.getNodes()) {
 					
