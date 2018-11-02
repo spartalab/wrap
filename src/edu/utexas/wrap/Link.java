@@ -32,47 +32,7 @@ public abstract class Link implements Priced {
 	}
 
 
-	public Float getCapacity() {
-		return capacity;
-	}
-
-	public Float freeFlowTime() {
-		return fftime;
-	}
-
-	public Node getHead() {
-		return head;
-	}
-
-	public Node getTail() {
-		return tail;
-	}
-
-	public Float getLength() {
-		return length;
-	}
-
-	public Double getFlow() {
-		if (cachedFlow != null) return cachedFlow;
-		Double f = flow.values().stream().mapToDouble(Double::doubleValue).sum();
-		if (f < 0) throw new NegativeFlowException("Negative link flow");
-		cachedFlow = f;
-		return f;
-	}
-
-	public String toString() {
-		return tail.toString() + "\t" + head.toString();
-	}
-
-	public abstract Double getTravelTime();
-	
-	public abstract Double tPrime();
-
-	public abstract Double tIntegral();
-
-	public abstract Double getPrice(Float vot, VehicleClass c);
-
-	public abstract Double pricePrime(Float float1);
+	public abstract Boolean allowsClass(VehicleClass c);
 
 	/** Modifies the flow on a link which comes from a specified bush. 
 	 * <b> THIS METHOD SHOULD ONLY BE CALLED BY THE {@link edu.utexas.wrap.Bush}'s {@link edu.utexas.wrap.Bush.changeFlow} METHOD </b>
@@ -97,13 +57,53 @@ public abstract class Link implements Priced {
 
 	}
 
+	public Float freeFlowTime() {
+		return fftime;
+	}
+
 	public Double getBushFlow(Bush bush) {
 		return flow.getOrDefault(bush, 0.0);
 	}
 
+	public Float getCapacity() {
+		return capacity;
+	}
+
+	public Double getFlow() {
+		if (cachedFlow != null) return cachedFlow;
+		Double f = flow.values().stream().mapToDouble(Double::doubleValue).sum();
+		if (f < 0) throw new NegativeFlowException("Negative link flow");
+		cachedFlow = f;
+		return f;
+	}
+
+	public Node getHead() {
+		return head;
+	}
+
+	public Float getLength() {
+		return length;
+	}
+	
+	public abstract Double getPrice(Float vot, VehicleClass c);
+
+	public Node getTail() {
+		return tail;
+	}
+
+	public abstract Double getTravelTime();
+
 	public Boolean hasFlow(Bush bush) {
 		return flow.get(bush) != null;
 	}
+
+	public abstract Double pricePrime(Float float1);
+
+	public abstract Double tIntegral();
+
+	public String toString() {
+		return tail.toString() + "\t" + head.toString();
+	}
 	
-	public abstract Boolean allowsClass(VehicleClass c);
+	public abstract Double tPrime();
 }

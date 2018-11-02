@@ -3,10 +3,6 @@ package edu.utexas.wrap;
 import java.math.MathContext;
 
 public abstract class Optimizer {
-	private Integer iteration = 1;
-	protected final Integer maxIterations;
-	protected final Integer relativeGapExp;
-	protected final Network network;
 	/**
 	 * Maximum number of decimal places past zero that 
 	 * links should care about for flow values. Default
@@ -14,6 +10,10 @@ public abstract class Optimizer {
 	 */
 	static Integer decimalPlaces = 16;
 	static MathContext defMC = MathContext.DECIMAL64;
+	private Integer iteration = 1;
+	protected final Integer maxIterations;
+	protected final Integer relativeGapExp;
+	protected final Network network;
 	
 	public Optimizer(Network network) {
 		this(network, 1000);
@@ -34,13 +34,22 @@ public abstract class Optimizer {
 		decimalPlaces	= places;
 	}
 	
+	private Boolean converged() {
+		try {
+			
+			return iteration > maxIterations || 
+					network.relativeGap(null) < Math.pow(10, relativeGapExp);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return iteration > maxIterations;
+		}
+	}
+
 	public Network getNetwork() {
 		return network;
 	}
-
-	public abstract void iterate();
 		
-	public abstract String toString();
+	public abstract void iterate();
 	
 	public void optimize(){
 		
@@ -54,7 +63,6 @@ public abstract class Optimizer {
 		
 		Long start = System.currentTimeMillis();
 		Long end; Double runtime;
-		
 		
 		do {
 			network.clearCache();
@@ -78,14 +86,5 @@ public abstract class Optimizer {
 		
 	}
 	
-	private Boolean converged() {
-		try {
-			
-			return iteration > maxIterations || 
-					network.relativeGap(null) < Math.pow(10, relativeGapExp);
-		} catch (Exception e) {
-			e.printStackTrace();
-			return iteration > maxIterations;
-		}
-	}
+	public abstract String toString();
 }

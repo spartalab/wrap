@@ -6,6 +6,55 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+class AECCalculator extends Thread {
+	Double val;
+	Network net;
+	TSGCCalculator cc;
+	
+	public AECCalculator(Network net, TSGCCalculator tc) {
+		this.net = net;
+		this.cc = tc;
+	}
+	
+	@Override
+	public void run() {
+		try {
+			val = net.AEC(cc);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+}
+
+class BeckmannCalculator extends Thread {
+	Double val;
+	Network net;
+	
+	public BeckmannCalculator(Network net) {
+		this.net = net;
+	}
+	
+	@Override
+	public void run() {
+		val = net.Beckmann();
+	}
+}
+
+class GapCalculator extends Thread {
+	Double val;
+	Network net;
+	TSGCCalculator cc;
+	
+	public GapCalculator(Network net, TSGCCalculator tc) {
+		this.net = net;
+	}
+	
+	@Override
+	public void run() {
+		val = net.relativeGap(cc);
+	}
+}
+
 public class Network {
 
 //	private Map<Integer, Node> nodes;
@@ -26,81 +75,6 @@ public class Network {
 		this.origins = origins;
 		graph = g;
 
-	}
-	
-	public Graph getGraph() {
-		return new Graph(graph);
-	}
-	
-	public Integer numNodes() {
-		return graph.numNodes();
-	}
-	
-	public Set<Link> getLinks() {
-		return graph.getLinks();
-	}
-
-	public Set<Origin> getOrigins() {
-		return origins;
-	}
-	
-	public Double tstt() {
-		if (cachedTSTT != null) return cachedTSTT;
-		Double tstt = 0.0;
-		
-		for(Link l: getLinks()){
-			tstt += l.getFlow().doubleValue() * l.getTravelTime().doubleValue();
-		}
-		cachedTSTT = tstt;
-		return tstt;
-	}
-	
-	public Double tsgc() {
-		double tsgc = 0.0;
-		
-		for (Origin o : origins) {
-			for (Bush b : o.getBushes()) {
-				for (Link l : b.getLinks()) {
-					tsgc += l.getBushFlow(b).doubleValue() * l.getPrice(b.getVOT(),b.getVehicleClass()).doubleValue();
-				}
-			}
-		}
-		return tsgc;
-	}
-	
-	public Double relativeGap(TSGCCalculator cc) {
-		if (cachedRelGap != null) return cachedRelGap;
-
-		Double denominator = 0.0;
-		if (cc == null) {
-			cc = new TSGCCalculator(this);
-		cc.start();
-		}
-
-		
-		for (Origin o : origins) {
-			for (Bush b : o.getBushes()) {
-				b.shortTopoSearch();
-				Map<Node, Double> cache = new HashMap<Node, Double>(graph.numNodes());
-				for (Node d : b.getNodes()) {
-					
-					Float demand = b.getDemand(d.getID());
-					if (demand > 0.0F) try {
-						denominator += b.getCachedL(d,cache).doubleValue() * demand;
-					} catch (UnreachableException e) {
-							e.printStackTrace();
-					}
-				}
-			}
-		}
-		try{
-			cc.join();
-			cachedRelGap = (cc.val/denominator) - 1.0;
-			return cachedRelGap;
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			return null;
-		}
 	}
 	
 	public Double AEC(TSGCCalculator cc) throws Exception {
@@ -139,6 +113,71 @@ public class Network {
 		return b;
 	}
 	
+	public void clearCache() {
+		cachedRelGap = null;
+		cachedTSTT = null;
+//		cachedTSGC = null;
+	}
+
+	public Graph getGraph() {
+		return new Graph(graph);
+	}
+	
+	public Set<Link> getLinks() {
+		return graph.getLinks();
+	}
+	
+	public Set<Origin> getOrigins() {
+		return origins;
+	}
+	
+	public Integer numNodes() {
+		return graph.numNodes();
+	}
+	
+	public void printFlows(PrintStream out) {
+		out.println("\r\nTail\tHead\tflow");
+		for (Link l : getLinks()) {
+			Double sum = l.getFlow().doubleValue();
+			out.println(l+"\t"+sum);
+		}
+	}
+	
+	public Double relativeGap(TSGCCalculator cc) {
+		if (cachedRelGap != null) return cachedRelGap;
+
+		Double denominator = 0.0;
+		if (cc == null) {
+			cc = new TSGCCalculator(this);
+		cc.start();
+		}
+
+		
+		for (Origin o : origins) {
+			for (Bush b : o.getBushes()) {
+				b.shortTopoSearch();
+				Map<Node, Double> cache = new HashMap<Node, Double>(graph.numNodes());
+				for (Node d : b.getNodes()) {
+					
+					Float demand = b.getDemand(d.getID());
+					if (demand > 0.0F) try {
+						denominator += b.getCachedL(d,cache).doubleValue() * demand;
+					} catch (UnreachableException e) {
+							e.printStackTrace();
+					}
+				}
+			}
+		}
+		try{
+			cc.join();
+			cachedRelGap = (cc.val/denominator) - 1.0;
+			return cachedRelGap;
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+			return null;
+		}
+	}
+	
 	public String toString() {
 		String out = "";
 
@@ -165,34 +204,30 @@ public class Network {
 		return out;
 	}
 
-	public void printFlows(PrintStream out) {
-		out.println("\r\nTail\tHead\tflow");
-		for (Link l : getLinks()) {
-			Double sum = l.getFlow().doubleValue();
-			out.println(l+"\t"+sum);
+	public Double tsgc() {
+		double tsgc = 0.0;
+		
+		for (Origin o : origins) {
+			for (Bush b : o.getBushes()) {
+				for (Link l : b.getLinks()) {
+					tsgc += l.getBushFlow(b).doubleValue() * l.getPrice(b.getVOT(),b.getVehicleClass()).doubleValue();
+				}
+			}
 		}
+		return tsgc;
 	}
 
-	public void clearCache() {
-		cachedRelGap = null;
-		cachedTSTT = null;
-//		cachedTSGC = null;
+	public Double tstt() {
+		if (cachedTSTT != null) return cachedTSTT;
+		Double tstt = 0.0;
+		
+		for(Link l: getLinks()){
+			tstt += l.getFlow().doubleValue() * l.getTravelTime().doubleValue();
+		}
+		cachedTSTT = tstt;
+		return tstt;
 	}
 
-}
-
-class TSTTCalculator extends Thread {
-	Double val;
-	Network net;
-	
-	public TSTTCalculator(Network net) {
-		this.net = net;
-	}
-	
-	@Override
-	public void run() {
-		val = net.tstt();
-	}
 }
 
 class TSGCCalculator extends Thread {
@@ -209,51 +244,16 @@ class TSGCCalculator extends Thread {
 	}
 }
 
-class BeckmannCalculator extends Thread {
+class TSTTCalculator extends Thread {
 	Double val;
 	Network net;
 	
-	public BeckmannCalculator(Network net) {
+	public TSTTCalculator(Network net) {
 		this.net = net;
 	}
 	
 	@Override
 	public void run() {
-		val = net.Beckmann();
-	}
-}
-
-class GapCalculator extends Thread {
-	Double val;
-	Network net;
-	TSGCCalculator cc;
-	
-	public GapCalculator(Network net, TSGCCalculator tc) {
-		this.net = net;
-	}
-	
-	@Override
-	public void run() {
-		val = net.relativeGap(cc);
-	}
-}
-
-class AECCalculator extends Thread {
-	Double val;
-	Network net;
-	TSGCCalculator cc;
-	
-	public AECCalculator(Network net, TSGCCalculator tc) {
-		this.net = net;
-		this.cc = tc;
-	}
-	
-	@Override
-	public void run() {
-		try {
-			val = net.AEC(cc);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+		val = net.tstt();
 	}
 }

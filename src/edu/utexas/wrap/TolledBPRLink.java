@@ -15,13 +15,31 @@ public class TolledBPRLink extends TolledLink {
 		this.toll = toll;
 	}
 
+	public Boolean allowsClass(VehicleClass c) {
+		return true;
+	}
+
 	//B and power are empirical constants in the BPR function
 	public Float getBValue() {
 		return this.b;
 	}
-
+	
 	public Float getPower() {
 		return power;
+	}
+	
+	@Override
+	public Double getPrice(Float vot, VehicleClass c) {
+//		if (cachedPrice != null) return cachedPrice; // Causes a convergence failure for some reason
+
+		cachedPrice = getTravelTime() * vot + getToll(null);
+		return cachedPrice;
+		
+	}
+	
+	public Float getToll(VehicleClass c) {
+		if (!allowsClass(c)) return Float.MAX_VALUE;
+		return toll;
 	}
 	
 	/**BPR Function
@@ -35,6 +53,24 @@ public class TolledBPRLink extends TolledLink {
 		return cachedTT;
 	}
 	
+	public Double pricePrime(Float vot) {
+		return vot*tPrime() + tollPrime();
+	}
+	
+	public Double tIntegral() {
+		Float a = getPower();
+		Double b = (double) getBValue();
+		Double t = (double) freeFlowTime();
+		Double v = getFlow();
+		Float c = getCapacity();
+		
+		return t*v + t*b*(Math.pow(v,a+1))/((a+1)*(Math.pow(c, a)));
+	}
+	
+	public Double tollPrime() {
+		return 0.0;
+	}
+
 	/**Derivative of {@link getTravelTime} formula
 	 * Calculate the derivative of the BPR function with respect to the flow
 	 * @return t': the derivative of the BPR function
@@ -50,41 +86,5 @@ public class TolledBPRLink extends TolledLink {
 		Double va = Math.pow(v, a-1);
 		Double ca = Math.pow(c, -a);
 		return a*va*t*b*ca;
-	}
-	
-	public Double tIntegral() {
-		Float a = getPower();
-		Double b = (double) getBValue();
-		Double t = (double) freeFlowTime();
-		Double v = getFlow();
-		Float c = getCapacity();
-		
-		return t*v + t*b*(Math.pow(v,a+1))/((a+1)*(Math.pow(c, a)));
-	}
-	
-	public Float getToll(VehicleClass c) {
-		if (!allowsClass(c)) return Float.MAX_VALUE;
-		return toll;
-	}
-	
-	public Double tollPrime() {
-		return 0.0;
-	}
-	
-	@Override
-	public Double getPrice(Float vot, VehicleClass c) {
-//		if (cachedPrice != null) return cachedPrice; // Causes a convergence failure for some reason
-
-		cachedPrice = getTravelTime() * vot + getToll(null);
-		return cachedPrice;
-		
-	}
-	
-	public Double pricePrime(Float vot) {
-		return vot*tPrime() + tollPrime();
-	}
-
-	public Boolean allowsClass(VehicleClass c) {
-		return true;
 	}
 }

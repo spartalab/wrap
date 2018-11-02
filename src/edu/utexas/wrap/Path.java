@@ -14,27 +14,18 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	private final VehicleClass c;
 	private final Float vot;
 	
-	public Path(VehicleClass c, Float vot) {
-		this.c=c;
-		this.vot=vot;
-	}
-	
 	public Path() {
 		this.c = null;
 		this.vot = null;
 	}
-
-	public Node node(Integer index) {
-		if (index == size()) return getLast().getHead();
-		return get(index).getTail();
+	
+	public Path(VehicleClass c, Float vot) {
+		this.c=c;
+		this.vot=vot;
 	}
 
-	public Path subPath(Integer start, Integer end) {
-		Path sp = new Path(getVehicleClass(), getVOT());
-		for (Integer i = start; i < size() && i < end; i++) {
-			sp.add(get(i));
-		}
-		return sp;
+	public void append(Path spurPath) {
+		addAll(spurPath);
 	}
 
 	public boolean equals(Path other) {
@@ -43,32 +34,6 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 			if (!other.get(i).equals(get(i))) return false;
 		}
 		return true;
-	}
-
-	public List<Node> nodes() {
-		List<Node> list = new LinkedList<Node>();
-		for (Link l : this) {
-			list.add(l.getTail());
-		}
-		if (!isEmpty()) list.add(getLast().getHead());
-		return list;
-	}
-
-	public void append(Path spurPath) {
-		addAll(spurPath);
-	}
-
-	@Override
-	public Double getPrice(Float vot, VehicleClass c) {
-		Double sum = 0.0;
-		for (Link l : this) sum += l.getPrice(vot,c);
-		return sum;
-	}
-
-	public String toString() {
-		String ret = "[";
-		for (Node n : nodes()) ret += n.toString()+",";
-		return ret+"]";
 	}
 
 	public Double getLength() {
@@ -89,6 +54,13 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	}
 
 	@Override
+	public Double getPrice(Float vot, VehicleClass c) {
+		Double sum = 0.0;
+		for (Link l : this) sum += l.getPrice(vot,c);
+		return sum;
+	}
+
+	@Override
 	public VehicleClass getVehicleClass() {
 		return c;
 	}
@@ -96,6 +68,34 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	@Override
 	public Float getVOT() {
 		return vot;
+	}
+
+	public Node node(Integer index) {
+		if (index == size()) return getLast().getHead();
+		return get(index).getTail();
+	}
+
+	public List<Node> nodes() {
+		List<Node> list = new LinkedList<Node>();
+		for (Link l : this) {
+			list.add(l.getTail());
+		}
+		if (!isEmpty()) list.add(getLast().getHead());
+		return list;
+	}
+
+	public Path subPath(Integer start, Integer end) {
+		Path sp = new Path(getVehicleClass(), getVOT());
+		for (Integer i = start; i < size() && i < end; i++) {
+			sp.add(get(i));
+		}
+		return sp;
+	}
+
+	public String toString() {
+		String ret = "[";
+		for (Node n : nodes()) ret += n.toString()+",";
+		return ret+"]";
 	}
 
 }

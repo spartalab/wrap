@@ -44,7 +44,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 
 
 			AlternateSegmentPair asp = b.getShortLongASP(cur);
-			if (asp == null || asp.getMaxDelta(deltaX) <= 0) continue;
+			if (asp == null || asp.maxDelta(deltaX) <= 0) continue;
 
 
 			//Iterate through longest paths until reaching a node in shortest path
@@ -54,22 +54,22 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 
 			//calculate delta h, capping at maxDelta
 			Double denom = 0.0;
-			for (Link l : asp.getShortPath()) denom += (l.pricePrime(b.getVOT()));			
-			for (Link l : asp.getLongPath()) denom += (l.pricePrime(b.getVOT()));
+			for (Link l : asp.shortPath()) denom += (l.pricePrime(b.getVOT()));			
+			for (Link l : asp.longPath()) denom += (l.pricePrime(b.getVOT()));
 
-			Double deltaH = Math.min(asp.getMaxDelta(deltaX),
-					asp.getPriceDiff()/denom);
+			Double deltaH = Math.min(asp.maxDelta(deltaX),
+					asp.priceDiff()/denom);
 
 			
 			//add delta h to all x values in pi_L
-			for (Link l : asp.getShortPath()) {
+			for (Link l : asp.shortPath()) {
 				Double t = deltaX.getOrDefault(l, 0.0)+deltaH.doubleValue();
 
 				deltaX.put(l, t.doubleValue());
 			}
 
 			//subtract delta h from all x values in pi_U
-			for (Link l : asp.getLongPath()) {
+			for (Link l : asp.longPath()) {
 				//				b.subtractFlow(l, deltaH);
 				Double td = deltaX.getOrDefault(l, 0.0)-deltaH.doubleValue();
 				Double ld = -l.getBushFlow(b);

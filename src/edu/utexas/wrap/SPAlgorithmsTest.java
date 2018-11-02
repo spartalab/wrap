@@ -42,18 +42,6 @@ class SPAlgorithmsTest {
 			@Override
 			public Double getTravelTime() { return 17.0;}
 		};
-
-		A.addOutgoing(AB);
-		A.addOutgoing(AC);
-		B.addIncoming(AB);
-		B.addOutgoing(BC);
-		B.addOutgoing(BD);
-		C.addIncoming(AC);
-		C.addIncoming(BC);
-		C.addOutgoing(CD);
-		D.addIncoming(BD);
-		D.addIncoming(CD);
-		
 		graph.add(AB);
 		graph.add(AC);
 		graph.add(BC);

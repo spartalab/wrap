@@ -13,27 +13,23 @@ public class AlternateSegmentPair {
 		this.bush = bush;
 	}
 	
-	public Double getMaxDelta(Map<Link, Double> deltaX) {
-		return longPath.getMinFlow(bush, deltaX);
-	}
-	
-	public Node getDiverge() {
+	public Node diverge() {
 		return shortPath.node(0);
 	}
 	
-	public Node getTerminus() {
-		return shortPath.getLast().getHead();
-	}
-	
-	public Path getShortPath() {
-		return shortPath;
-	}
-	
-	public Path getLongPath() {
+	public Path longPath() {
 		return longPath;
 	}
 	
-	public Double getPriceDiff() {
+	public Double maxDelta(Map<Link, Double> deltaX) {
+		return longPath.getMinFlow(bush, deltaX);
+	}
+	
+	public Node merge() {
+		return shortPath.getLast().getHead();
+	}
+	
+	public Double priceDiff() {
 		Double longPrice = longPath.getPrice(bush.getVOT(), bush.getVehicleClass());				
 		Double shortPrice = shortPath.getPrice(bush.getVOT(), bush.getVehicleClass()); 
 		Double ulp = Math.max(Math.ulp(longPrice),Math.ulp(shortPrice));
@@ -43,5 +39,9 @@ public class AlternateSegmentPair {
 		}
 		
 		return longPrice-shortPrice;
+	}
+	
+	public Path shortPath() {
+		return shortPath;
 	}
 }

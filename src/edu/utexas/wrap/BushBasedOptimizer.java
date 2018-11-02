@@ -32,44 +32,6 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		this.innerIters = innerIters;
 	}
 	
-	public void iterate() {
-		// A single general step iteration
-		// TODO explore which bushes should be examined 
-		
-		
-		Set<Thread> pool = new HashSet<Thread>();
-		
-		for (Origin o : network.getOrigins()) {
-			for (Bush b : o.getBushes()) {
-				
-				Thread t = new Thread() {
-					public void run() {
-						// Step ii: Improve bushes in parallel
-						improveBush(b);
-					}
-				};
-				pool.add(t);
-				t.start();
-			}
-		}
-		try {
-			for (Thread t : pool) {
-				t.join();
-
-			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		for (int i = 0; i < innerIters; i++) {
-			for (Origin o : network.getOrigins()) {
-				for (Bush b : o.getBushes()) {
-					// Step i: Equilibrate bushes sequentially
-					equilibrateBush(b);
-				}
-			}
-		}
-	}
-
 	protected abstract void equilibrateBush(Bush b);
 
 	protected Boolean improveBush(Bush b) {
@@ -108,5 +70,43 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		}
 
 		return modified;
+	}
+
+	public void iterate() {
+		// A single general step iteration
+		// TODO explore which bushes should be examined 
+		
+		
+		Set<Thread> pool = new HashSet<Thread>();
+		
+		for (Origin o : network.getOrigins()) {
+			for (Bush b : o.getBushes()) {
+				
+				Thread t = new Thread() {
+					public void run() {
+						// Step ii: Improve bushes in parallel
+						improveBush(b);
+					}
+				};
+				pool.add(t);
+				t.start();
+			}
+		}
+		try {
+			for (Thread t : pool) {
+				t.join();
+
+			}
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		for (int i = 0; i < innerIters; i++) {
+			for (Origin o : network.getOrigins()) {
+				for (Bush b : o.getBushes()) {
+					// Step i: Equilibrate bushes sequentially
+					equilibrateBush(b);
+				}
+			}
+		}
 	}
 }

@@ -90,7 +90,6 @@ public class wrap{
 
 	public static void main(String[] args) {
 
-
 		Network network;
 		try {
 			NetworkFactory n = new NetworkFactory();

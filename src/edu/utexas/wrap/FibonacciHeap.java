@@ -44,47 +44,17 @@ public class FibonacciHeap<E> extends AbstractQueue<Leaf<E>>{
 
 	}
 
-	@Override
-	public boolean offer(Leaf<E> e) {
-		rootList.add(e);
-		if (min == null || e.key < min.key) min = e;
-		
-		n++;
-		return true;
-	}
-
-
-	@Override
-	public Leaf<E> peek() {
-		return min;
-	}
-
-	public void delete(E n) throws Exception {
-		Leaf<E> x = map.get(n);
-		decreaseKey(x,-Double.MAX_VALUE);
-		poll();
-	}
-
-	@Override
-	public Leaf<E> poll() {
-		Leaf<E> z = min;
+	private void cascadingCut(Leaf<E> y) {
+		Leaf<E> z = y.parent;
 		if (z != null) {
-			for (Leaf<E> x : z.child) {
-				rootList.add(x);
-				x.parent = null;
-			}
-			rootList.remove(z);
-			if (rootList.isEmpty()) {
-				min = null;
-			}
+			if (!y.mark) y.mark = true;
 			else {
-				min = rootList.get(0);
-				consolidate();
+				cut(y,z);
+				cascadingCut(z);
 			}
-			n--;
 		}
-		return z;
 	}
+
 
 	private void consolidate() {
 		HashMap<Integer, Leaf<E>> A = new HashMap<Integer, Leaf<E>>();
@@ -126,12 +96,12 @@ public class FibonacciHeap<E> extends AbstractQueue<Leaf<E>>{
 		}
 	}
 
-	private void link(Leaf<E> x, Leaf<E> y, Set<Leaf<E>> ignore) {
-		ignore.add(y);
-		x.child.add(y);
-		x.degree++;
-		y.parent = x;
-		y.mark = false;
+	private void cut(Leaf<E> x, Leaf<E> y) {
+		y.child.remove(x);
+		y.degree--;
+		rootList.add(x);
+		x.parent = null;
+		x.mark = false;
 	}
 
 	public void decreaseKey(Leaf<E> x, Double k) {
@@ -145,33 +115,47 @@ public class FibonacciHeap<E> extends AbstractQueue<Leaf<E>>{
 		if (x.key < min.key) min = x; 
 	}
 
-	private void cut(Leaf<E> x, Leaf<E> y) {
-		y.child.remove(x);
-		y.degree--;
-		rootList.add(x);
-		x.parent = null;
-		x.mark = false;
+	public void delete(E n) throws Exception {
+		Leaf<E> x = map.get(n);
+		decreaseKey(x,-Double.MAX_VALUE);
+		poll();
 	}
 
-	private void cascadingCut(Leaf<E> y) {
-		Leaf<E> z = y.parent;
-		if (z != null) {
-			if (!y.mark) y.mark = true;
-			else {
-				cut(y,z);
-				cascadingCut(z);
-			}
-		}
+	public Leaf<E> getLeaf(E head) {
+		return map.get(head);
 	}
 
-	@Override
-	public int size() {
-		return n;
-	}
-	
 	@Override
 	public boolean isEmpty() {
 		return n == 0;
+	}
+
+	@Override
+	public Iterator<Leaf<E>> iterator() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private void link(Leaf<E> x, Leaf<E> y, Set<Leaf<E>> ignore) {
+		ignore.add(y);
+		x.child.add(y);
+		x.degree++;
+		y.parent = x;
+		y.mark = false;
+	}
+
+	@Override
+	public boolean offer(Leaf<E> e) {
+		rootList.add(e);
+		if (min == null || e.key < min.key) min = e;
+		
+		n++;
+		return true;
+	}
+	
+	@Override
+	public Leaf<E> peek() {
+		return min;
 	}
 
 	//TODO: Discuss usage of this method re: duplicating leaves before release
@@ -189,15 +173,32 @@ public class FibonacciHeap<E> extends AbstractQueue<Leaf<E>>{
 //	}
 
 	@Override
-	public Iterator<Leaf<E>> iterator() {
-		// TODO Auto-generated method stub
-		return null;
+	public Leaf<E> poll() {
+		Leaf<E> z = min;
+		if (z != null) {
+			for (Leaf<E> x : z.child) {
+				rootList.add(x);
+				x.parent = null;
+			}
+			rootList.remove(z);
+			if (rootList.isEmpty()) {
+				min = null;
+			}
+			else {
+				min = rootList.get(0);
+				consolidate();
+			}
+			n--;
+		}
+		return z;
 	}
 
-	public Leaf<E> getLeaf(E head) {
-		return map.get(head);
+	@Override
+	public int size() {
+		return n;
 	}
 	
+	@Override
 	public String toString() {
 		return "Heap size="+size()+"\tmin="+min.toString();
 	}
@@ -216,6 +217,7 @@ class Leaf<E>{
 		this.key = d;
 	}
 
+	@Override
 	public String toString() {
 		return "Leaf\t"+n.toString()+"\t"+key.toString();
 	}
