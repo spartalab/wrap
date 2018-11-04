@@ -24,7 +24,7 @@ public class Origin {
 	 * then selecting the paths which lead to destinations to which
 	 * the origin has demand.
 	 */	
-	public void buildBush(Graph g, Float vot, Map<Integer, Float> destDemand, VehicleClass c) {
+	public void buildBush(Graph g, Float vot, Map<Node, Float> destDemand, VehicleClass c) {
 		bushes.add(new Bush(this, g, vot, destDemand, c));
 	}
 
@@ -69,7 +69,7 @@ public class Origin {
 		return bushes;
 	}
 	
-	Double getDemand(Integer n) {
+	Double getDemand(Node n) {
 		Double demand = 0.0;
 		for(Bush bush : this.bushes) {
 			demand += bush.getDemand(n);
@@ -89,5 +89,9 @@ public class Origin {
 	
 	public int hashCode() {
 		return self.getID();
+	}
+
+	public void deleteInitMap() {
+		initMap = null;
 	}
 }

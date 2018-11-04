@@ -90,7 +90,7 @@ public class Network {
 		for (Origin o : origins) {
 			for (Bush b : o.getBushes()) {
 				for (Node d : b.getNodes()) {
-					Double demand = o.getDemand(d.getID());
+					Double demand = o.getDemand(d);
 					if (demand > 0.0) {
 						Map<Node, Double> cache = new HashMap<Node, Double>();
 						numerator -= b.getCachedL(d, cache).doubleValue() * demand;
@@ -159,7 +159,7 @@ public class Network {
 				Map<Node, Double> cache = new HashMap<Node, Double>(graph.numNodes());
 				for (Node d : b.getNodes()) {
 					
-					Float demand = b.getDemand(d.getID());
+					Float demand = b.getDemand(d);
 					if (demand > 0.0F) try {
 						denominator += b.getCachedL(d,cache).doubleValue() * demand;
 					} catch (UnreachableException e) {

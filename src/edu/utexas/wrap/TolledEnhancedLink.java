@@ -19,15 +19,15 @@ public class TolledEnhancedLink extends TolledLink {
 		super(tail, head, capacity, length, fftime);
 		this.conicalParam = conicalParam;
 		this.VDFshift = VDFShift;
-		this.s = sParam;
-		this.u = uParam;
+		s = sParam;
+		u = uParam;
 		this.saturatedFlowRate = saturatedFlowRate;
 		this.minDelay = minDelay;
 		this.operCost = operCost;
-		this.a = CA;
-		this.b = CB;
-		this.c = CC;
-		this.d = CD;
+		a = CA;
+		b = CB;
+		c = CC;
+		d = CD;
 		this.allowedClasses = allowedClasses;
 		this.classTolls = classTolls;
 	}

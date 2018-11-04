@@ -1,15 +1,11 @@
 package edu.utexas.wrap;
 
-import java.math.MathContext;
-
 public abstract class Optimizer {
 	/**
 	 * Maximum number of decimal places past zero that 
 	 * links should care about for flow values. Default
 	 * rounding mode is RoundingMode.HALF_EVEN
 	 */
-	static Integer decimalPlaces = 16;
-	static MathContext defMC = MathContext.DECIMAL64;
 	private Integer iteration = 1;
 	protected final Integer maxIterations;
 	protected final Integer relativeGapExp;
@@ -31,7 +27,6 @@ public abstract class Optimizer {
 		this.network	= network;
 		maxIterations	= maxIters;
 		relativeGapExp	= exp;
-		decimalPlaces	= places;
 	}
 	
 	private Boolean converged() {

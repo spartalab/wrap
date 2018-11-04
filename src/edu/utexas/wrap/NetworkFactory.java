@@ -13,12 +13,12 @@ import java.util.Map;
 import java.util.Set;
 
 class BushBuilder extends Thread {
-	Map<VehicleClass, Map<Float, Map<Integer, Float>>> map;
+	Map<VehicleClass, Map<Float, Map<Node, Float>>> map;
 	Node o;
 	Graph g;
 	Origin orig;
 
-	public BushBuilder(Graph g, Node o, Map<VehicleClass, Map<Float, Map<Integer, Float>>> map) {
+	public BushBuilder(Graph g, Node o, Map<VehicleClass, Map<Float, Map<Node, Float>>> map) {
 		this.o = o;
 		this.map = map;
 		this.g = g;
@@ -31,6 +31,7 @@ class BushBuilder extends Thread {
 				orig.buildBush(g, vot, map.get(c).get(vot), c);
 			}
 		}
+		orig.deleteInitMap();
 	}
 }
 
@@ -38,9 +39,6 @@ public class NetworkFactory {
 	private Graph g;
 	private Set<Origin> origins;
 	private Integer numZones;
-
-	public NetworkFactory() {
-	}
 
 	public Network getNetwork() {
 		if (g == null)
@@ -63,11 +61,11 @@ public class NetworkFactory {
 	 * @return
 	 * @throws IOException
 	 */
-	private HashMap<Integer, Float> readDestinationDemand(BufferedReader of) throws IOException {
+	private HashMap<Node, Float> readDestinationDemand(BufferedReader of) throws IOException {
 		String[] cols;
 		Integer destID;
 		Float demand;
-		HashMap<Integer, Float> dests = new HashMap<Integer, Float>();
+		HashMap<Node, Float> dests = new HashMap<Node, Float>();
 
 		while (true) {
 			String line = of.readLine();
@@ -80,7 +78,7 @@ public class NetworkFactory {
 				destID = Integer.parseInt(cols[0].trim());
 				demand = Float.parseFloat(cols[1].trim());
 				if (demand > 0.0)
-					dests.put(destID, demand);
+					dests.put(g.getNode(destID), demand);
 			}
 		}
 		return dests;
@@ -198,14 +196,14 @@ public class NetworkFactory {
 	public void readEnhancedTrips(File odMatrix) throws FileNotFoundException, IOException {
 		Map<VehicleClass, // VehicleClass
 				Map<Float, // VOT
-						Map<Integer, // Destination
+						Map<Node, // Destination
 								Float>>> origMap = null;
 		BufferedReader matrixFile = new BufferedReader(new FileReader(odMatrix));
 		String line;
 		Integer curOrig = null;
 		origins = new HashSet<Origin>();
 		Set<BushBuilder> pool = new HashSet<BushBuilder>();
-		Map<Integer, Float> solo17 = null, solo35 = null, solo45 = null, solo90 = null,
+		Map<Node, Float> solo17 = null, solo35 = null, solo45 = null, solo90 = null,
 
 				hov17 = null, hov35 = null, hov45 = null, hov90 = null,
 
@@ -218,12 +216,12 @@ public class NetworkFactory {
 				if (curOrig != null) {
 					// build previous bushes
 
-					origMap = new HashMap<VehicleClass, Map<Float, Map<Integer, Float>>>();
+					origMap = new HashMap<VehicleClass, Map<Float, Map<Node, Float>>>();
 
-					Map<Float, Map<Integer, Float>> soMap = new HashMap<Float, Map<Integer, Float>>();
-					Map<Float, Map<Integer, Float>> hoMap = new HashMap<Float, Map<Integer, Float>>();
-					Map<Float, Map<Integer, Float>> mtMap = new HashMap<Float, Map<Integer, Float>>();
-					Map<Float, Map<Integer, Float>> htMap = new HashMap<Float, Map<Integer, Float>>();
+					Map<Float, Map<Node, Float>> soMap = new HashMap<Float, Map<Node, Float>>();
+					Map<Float, Map<Node, Float>> hoMap = new HashMap<Float, Map<Node, Float>>();
+					Map<Float, Map<Node, Float>> mtMap = new HashMap<Float, Map<Node, Float>>();
+					Map<Float, Map<Node, Float>> htMap = new HashMap<Float, Map<Node, Float>>();
 
 					soMap.put(0.17F, solo17);
 					soMap.put(0.35F, solo35);
@@ -253,7 +251,7 @@ public class NetworkFactory {
 			String[] args = line.split(",");
 
 			Integer orig = Integer.parseInt(args[0]);
-			Integer dest = Integer.parseInt(args[1]);
+			Node dest = g.getNode(Integer.parseInt(args[1]));
 
 			Float da35 = parse(args[2]);
 			Float da90 = parse(args[3]);
@@ -270,12 +268,12 @@ public class NetworkFactory {
 				// Moving on to next origin
 				if (curOrig != null) {
 					// build previous origin's bushes
-					origMap = new HashMap<VehicleClass, Map<Float, Map<Integer, Float>>>();
+					origMap = new HashMap<VehicleClass, Map<Float, Map<Node, Float>>>();
 
-					Map<Float, Map<Integer, Float>> soMap = new HashMap<Float, Map<Integer, Float>>();
-					Map<Float, Map<Integer, Float>> hoMap = new HashMap<Float, Map<Integer, Float>>();
-					Map<Float, Map<Integer, Float>> mtMap = new HashMap<Float, Map<Integer, Float>>();
-					Map<Float, Map<Integer, Float>> htMap = new HashMap<Float, Map<Integer, Float>>();
+					Map<Float, Map<Node, Float>> soMap = new HashMap<Float, Map<Node, Float>>();
+					Map<Float, Map<Node, Float>> hoMap = new HashMap<Float, Map<Node, Float>>();
+					Map<Float, Map<Node, Float>> mtMap = new HashMap<Float, Map<Node, Float>>();
+					Map<Float, Map<Node, Float>> htMap = new HashMap<Float, Map<Node, Float>>();
 
 					soMap.put(0.17F, solo17);
 					soMap.put(0.35F, solo35);
@@ -304,18 +302,18 @@ public class NetworkFactory {
 				// Reset maps
 				System.out.println("Building bushes for origin " + orig);
 				curOrig = orig;
-				solo17 = new HashMap<Integer, Float>(numZones / 2, 1.0f);
-				solo35 = new HashMap<Integer, Float>(numZones / 2, 1.0f);
-				solo45 = new HashMap<Integer, Float>(numZones / 2, 1.0f);
-				solo90 = new HashMap<Integer, Float>(numZones / 2, 1.0f);
+				solo17 = new HashMap<Node, Float>(numZones / 2, 1.0f);
+				solo35 = new HashMap<Node, Float>(numZones / 2, 1.0f);
+				solo45 = new HashMap<Node, Float>(numZones / 2, 1.0f);
+				solo90 = new HashMap<Node, Float>(numZones / 2, 1.0f);
 
-				hov17 = new HashMap<Integer, Float>(numZones / 2, 1.0f);
-				hov35 = new HashMap<Integer, Float>(numZones / 2, 1.0f);
-				hov45 = new HashMap<Integer, Float>(numZones / 2, 1.0f);
-				hov90 = new HashMap<Integer, Float>(numZones / 2, 1.0f);
+				hov17 = new HashMap<Node, Float>(numZones / 2, 1.0f);
+				hov35 = new HashMap<Node, Float>(numZones / 2, 1.0f);
+				hov45 = new HashMap<Node, Float>(numZones / 2, 1.0f);
+				hov90 = new HashMap<Node, Float>(numZones / 2, 1.0f);
 
-				medTrucks = new HashMap<Integer, Float>(numZones / 2, 1.0f);
-				hvyTrucks = new HashMap<Integer, Float>(numZones / 2, 1.0f);
+				medTrucks = new HashMap<Node, Float>(numZones / 2, 1.0f);
+				hvyTrucks = new HashMap<Node, Float>(numZones / 2, 1.0f);
 			}
 
 			if (da17 > 0.0F)
@@ -426,7 +424,7 @@ public class NetworkFactory {
 		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
 		String line;
 		Set<BushBuilder> pool = new HashSet<BushBuilder>();
-		HashMap<Integer, Float> bushDests;
+		HashMap<Node, Float> bushDests;
 		origins = new HashSet<Origin>();
 
 		do { // Move past headers in the file
@@ -442,21 +440,21 @@ public class NetworkFactory {
 			Integer origID = Integer.parseInt(line.trim().split("\\s+")[1]);
 			Node root = g.getNode(origID); // Retrieve the existing node with that ID
 
-			HashMap<Integer, Float> dests = readDestinationDemand(of);
+			HashMap<Node, Float> dests = readDestinationDemand(of);
 
 //			Origin o = new Origin(root); 	// Construct an origin to replace it
 
-			Map<Float, Map<Integer, Float>> nmap = new HashMap<Float, Map<Integer, Float>>();
+			Map<Float, Map<Node, Float>> nmap = new HashMap<Float, Map<Node, Float>>();
 			for (Float[] entry : VOTs.get(root)) {
-				bushDests = new HashMap<Integer, Float>();
-				for (Integer temp : dests.keySet()) {
+				bushDests = new HashMap<Node, Float>();
+				for (Node temp : dests.keySet()) {
 					bushDests.put(temp, entry[1] * dests.get(temp));
 				}
 				nmap.put(entry[0], bushDests);
 //				o.buildBush(g, entry[0], bushDests, null);
 			}
 
-			Map<VehicleClass, Map<Float, Map<Integer, Float>>> omap = new HashMap<VehicleClass, Map<Float, Map<Integer, Float>>>();
+			Map<VehicleClass, Map<Float, Map<Node, Float>>> omap = new HashMap<VehicleClass, Map<Float, Map<Node, Float>>>();
 			omap.put(null, nmap);
 			BushBuilder t = new BushBuilder(g, root, omap);
 			pool.add(t);

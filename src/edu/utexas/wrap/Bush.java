@@ -16,33 +16,32 @@ public class Bush extends Graph implements AssignmentContainer {
 	private final Float vot;
 	private final VehicleClass c;
 
-	private final Map<Integer, Node> nodes;
+	private final Graph wholeNet;
 
 	// Back vector maps
 	private Map<Node, Link> qShort;
 	private Map<Node, Link> qLong;
 
-	private LinkedList<Node> topoOrder;
+	private LinkedList<Node> cachedTopoOrder;
 
-	public Bush(Origin o, Graph g, Float vot, Map<Integer, Float> destDemand, VehicleClass c) {
+	public Bush(Origin o, Graph g, Float vot, Map<Node, Float> destDemand, VehicleClass c) {
 		super();
 		origin = o;
 		this.vot = vot;
 		this.c = c;
 
 		// Initialize flow and status maps
-
-		this.nodes = g.getNodeMap();
+		wholeNet = g;
 		qShort = origin.getInitMap(g);
 		addAll(qShort.values());
-		qLong = new HashMap<Node, Link>(nodes.size(), 1.0f);
+		qLong = new HashMap<Node, Link>(wholeNet.numNodes(), 1.0f);
 
 		dumpFlow(destDemand);
 	}
 
 	void activate(Link l) {
 		if (add(l))
-			topoOrder = null;
+			cachedTopoOrder = null;
 	}
 
 	public void changeFlow(Link l, Double delta) {
@@ -118,21 +117,18 @@ public class Bush extends Graph implements AssignmentContainer {
 	 * 
 	 * @param destDemand
 	 */
-	private void dumpFlow(Map<Integer, Float> destDemand) {
-		for (Integer node : nodes.keySet()) {
+	private void dumpFlow(Map<Node, Float> destDemand) {
+		for (Node node : destDemand.keySet()) {
 
 			Float x = destDemand.getOrDefault(node, 0.0F);
 			if (x <= 0.0)
 				continue;
 			Path p;
 			try {
-				p = getShortPath(nodes.get(node));
+				p = getShortPath(node);
 			} catch (UnreachableException e) {
-				// TODO Auto-generated catch block
-
 				System.err.println("No path exists from Node " + origin.getNode().getID() + " to Node " + node
 						+ ". Lost demand = " + x);
-//				destDemand.put(node, 0.0F);
 				continue;
 			}
 			for (Link l : p) {
@@ -184,7 +180,7 @@ public class Bush extends Graph implements AssignmentContainer {
 		}
 		if (!currentLinks.isEmpty())
 			throw new RuntimeException("Cyclic graph error");
-		topoOrder = to;
+		cachedTopoOrder = to;
 		return to;
 	}
 
@@ -218,8 +214,7 @@ public class Bush extends Graph implements AssignmentContainer {
 		}
 	}
 
-	public Float getDemand(Integer n) {
-		Node node = nodes.get(n);
+	public Float getDemand(Node node) {
 		Double inFlow = 0.0;
 		for (Link l : inLinks(node)) {
 			inFlow += l.getBushFlow(this);
@@ -261,7 +256,7 @@ public class Bush extends Graph implements AssignmentContainer {
 	}
 
 	public Collection<Node> getNodes() {
-		return nodes.values();
+		return wholeNet.getNodes();
 	}
 
 	public Origin getOrigin() {
@@ -323,7 +318,7 @@ public class Bush extends Graph implements AssignmentContainer {
 	 * @return a topological ordering of this bush's nodes
 	 */
 	public LinkedList<Node> getTopologicalOrder() {
-		return (topoOrder != null) ? topoOrder : generateTopoOrder();
+		return (cachedTopoOrder != null) ? cachedTopoOrder : generateTopoOrder();
 	}
 
 	public Double getU(Node n) throws UnreachableException {
@@ -371,16 +366,16 @@ public class Bush extends Graph implements AssignmentContainer {
 	 */
 	public Map<Node, Double> longTopoSearch() {
 		List<Node> to = getTopologicalOrder();
-		Map<Node, Double> cache = new HashMap<Node, Double>(nodes.size());
+		Map<Node, Double> cache = new HashMap<Node, Double>(wholeNet.numNodes());
 
-		qLong = new HashMap<Node, Link>(nodes.size(), 1.0f);
+		qLong = new HashMap<Node, Link>(wholeNet.numNodes(), 1.0f);
 		for (Node d : to) {
 			try {
 				for (Link l : outLinks(d)) {
 					longRelax(l, cache);
 				}
 			} catch (UnreachableException e) {
-				if (getDemand(d.getID()) > 0.0) {
+				if (getDemand(d) > 0.0) {
 					throw new RuntimeException();
 				}
 			}
@@ -390,7 +385,7 @@ public class Bush extends Graph implements AssignmentContainer {
 
 	private void markInactive(Link l) {
 		if (remove(l)) {
-			topoOrder = null;
+			cachedTopoOrder = null;
 		}
 	}
 
@@ -423,16 +418,16 @@ public class Bush extends Graph implements AssignmentContainer {
 	 */
 	public Map<Node, Double> shortTopoSearch() {
 		List<Node> to = getTopologicalOrder();
-		Map<Node, Double> cache = new HashMap<Node, Double>(nodes.size());
+		Map<Node, Double> cache = new HashMap<Node, Double>(wholeNet.numNodes());
 
-		qShort = new HashMap<Node, Link>(nodes.size(), 1.0f);
+		qShort = new HashMap<Node, Link>(wholeNet.numNodes(), 1.0f);
 		for (Node d : to) {
 			try {
 				for (Link l : outLinks(d)) {
 					shortRelax(l, cache);
 				}
 			} catch (UnreachableException e) {
-				if (getDemand(d.getID()) > 0.0) {
+				if (getDemand(d) > 0.0) {
 					throw new RuntimeException();
 				}
 			}

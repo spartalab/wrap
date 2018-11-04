@@ -56,7 +56,11 @@ public class Graph {
 	
 	public Set<Link> getLinks(){
 		HashSet<Link> ret = new HashSet<Link>();
-		for (Node n : outLinks.keySet()) ret.addAll(outLinks.get(n));
+		outLinks.values().stream().reduce(ret, (a,b)->{
+			a.addAll(b);
+			return a;
+		});
+//		for (Node n : outLinks.keySet()) ret.addAll(outLinks.get(n));
 		return ret;
 	}
 	
@@ -77,7 +81,6 @@ public class Graph {
 	}
 
 	public Integer numNodes() {
-		// TODO Auto-generated method stub
 		return nodeMap.size();
 	}
 	
