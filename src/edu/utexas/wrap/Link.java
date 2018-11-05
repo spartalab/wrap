@@ -31,8 +31,8 @@ public abstract class Link implements Priced {
 	protected BigDecimal cachedPrice = null;
 	private static MongoDatabase databaseCon;
 	static {
-		MongoClient server = new MongoClient ("local host", 27107);
-		MongoDatabase databaseCon = server.getDatabase(dbName);
+		MongoClient server = new MongoClient ("127.0.0.1", 27017);
+		databaseCon = server.getDatabase(dbName);
 		
 	}
 
@@ -48,7 +48,6 @@ public abstract class Link implements Priced {
 
 	private void createTable() {
         databaseCon.createCollection("t" + hashCode());
-        
 	}
 
 	private BigDecimal totalFlowFromTable() {
