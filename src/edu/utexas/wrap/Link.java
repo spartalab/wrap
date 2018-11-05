@@ -2,17 +2,16 @@ package edu.utexas.wrap;
 
 import com.mongodb.*;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
+import static com.mongodb.client.model.Filters.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.HashMap;
-import java.util.Map;
 
+import com.mongodb.client.model.UpdateOptions;
 import org.bson.Document;
-
-import java.sql.*;
-//import java.sql.DriverManager;
+import org.bson.conversions.Bson;
 /**
  * @author rahulpatel
  *
@@ -31,40 +30,6 @@ public abstract class Link implements Priced {
 	protected BigDecimal cachedTT = null;
 	protected BigDecimal cachedPrice = null;
 	private static MongoDatabase databaseCon;
-//HEY!
-//	 private final String createQuery = "CREATE TABLE t" + hashCode() + " (" +
-//			"bush_origin_id integer, " +
-//			"vot real, " +
-//			"vehicle_class text, " +
-//			"flow decimal(" + Optimizer.defMC.getPrecision() + ")," +
-//			"UNIQUE (bush_origin_id, vot, vehicle_class))";
-//	private final String sumQuery = "SELECT SUM (flow) AS totalFlow FROM t" + hashCode();
-//
-//	private final String updateQuery = "INSERT INTO t" + hashCode() + " (bush_origin_id, vot, vehicle_class, flow) " +
-//			"VALUES (" +
-//			"?,?,?,?)" +
-//			"ON CONFLICT (bush_origin_id, vot, vehicle_class)" +
-//			"DO UPDATE " +
-//			"SET flow = ? " +
-//			"WHERE " +
-//			"t" +hashCode()+".bush_origin_id = ? " +
-//			"AND t"+hashCode()+".vot = ? " +
-//			"AND t"+hashCode()+".vehicle_class = ?";
-//
-//	private final String deleteQuery = "DELETE FROM t" + hashCode() +
-//			" WHERE " +
-//			"bush_origin_id = ? " +
-//			"AND vot = ? " +
-//			"AND vehicle_class = ?";
-//
-//	private final String selectQuery = "SELECT * FROM t" + hashCode() +
-//			" WHERE " +
-//			"bush_origin_id = ? " +
-//			"AND vot = ? " +
-//			"AND vehicle_class = ?" +
-//			"LIMIT 1";
-//
-//	private final String dropQuery = "DROP TABLE t" + hashCode();
 	static {
 		MongoClient server = new MongoClient ("local host", 27107);
 		MongoDatabase databaseCon = server.getDatabase(dbName);
@@ -90,14 +55,12 @@ public abstract class Link implements Priced {
 		
 			MongoCollection<Document> collection = databaseCon.getCollection("t" + hashCode());
 			BigDecimal total = BigDecimal.ZERO;
-			MongoCursor<Document> cursor = collection.find().iterator();
-			try {
-				while (cursor.hasNext()) {
-					
-				}
+		try (MongoCursor<Document> cursor = collection.find().iterator()) {
+			while (cursor.hasNext()) {
+				Document d = cursor.next();
+				total = total.add(d.get("flow", BigDecimal.class));
 			}
-			
-		
+		}
 		return total;
 	}
 	public Float getCapacity() {
@@ -157,45 +120,33 @@ public abstract class Link implements Priced {
 			cachedFlow = null;
 		}
 		//Retrieve Bush with the specified parameters
-		PreparedStatement stm;
 		BigDecimal updateFlow = getBushFlow(bush);
-		try {
-			updateFlow = updateFlow.add(delta).setScale(Optimizer.decimalPlaces, RoundingMode.HALF_EVEN);
-			if(updateFlow.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("invalid alter request");
-			else if(updateFlow.compareTo(BigDecimal.ZERO) > 0) {
-				stm = databaseCon.prepareStatement(updateQuery);
-				stm.setInt(1, bush.getOrigin().getID());
-				stm.setFloat(2, bush.getVOT());
-                if(bush.getVehicleClass() != null)
-                    stm.setString(3, bush.getVehicleClass().name());
-                else
-                    stm.setString(3, bush.toString());				stm.setBigDecimal(4, updateFlow);
-				stm.setBigDecimal(5, updateFlow);
-				stm.setInt(6, bush.getOrigin().getID());
-				stm.setFloat(7, bush.getVOT());
-				if(bush.getVehicleClass() != null)
-				    stm.setString(8, bush.getVehicleClass().name());
-				else
-				    stm.setString(8, bush.toString());
-				stm.executeUpdate();
-				return true;
-			} else {
-
-				stm = databaseCon.prepareStatement(deleteQuery);
-				stm.setInt(1, bush.getOrigin().getID());
-				stm.setFloat(2, bush.getVOT());
-				if(bush.getVehicleClass() != null)
-				    stm.setString(3, bush.getVehicleClass().name());
-				else
-				    stm.setString(3, bush.toString());
-				stm.executeUpdate();
-				return false;
+		updateFlow = updateFlow.add(delta).setScale(Optimizer.decimalPlaces, RoundingMode.HALF_EVEN);
+		if(updateFlow.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("invalid alter request");
+		else if(updateFlow.compareTo(BigDecimal.ZERO) > 0) {
+			MongoCollection<Document> collection = databaseCon.getCollection("t" + hashCode());
+			Bson filter;
+			Bson update;
+			if(bush.getVehicleClass() != null) {
+				filter = and(eq("bush_origin_id", bush.getOrigin().getID()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.getVehicleClass().toString()));
+				update = new Document("$set", new Document().append("bush_origin_id", bush.getOrigin().getID()).append("vot_real", bush.getVOT()).append("vehicle_class", bush.getVehicleClass().toString()).append("flow", updateFlow));
+			}else {
+				filter = and(eq("bush_origin_id", bush.getOrigin().getID()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.toString()));
+				update = new Document("$set", new Document().append("bush_origin_id", bush.getOrigin().getID()).append("vot_real", bush.getVOT()).append("vehicle_class", bush.toString()).append("flow", updateFlow));
 			}
-		} catch (SQLException e) {
-			//System.out.println("alter bush flow");
-			//System.out.println("SQL Error Code: " + e.getErrorCode());
-			e.printStackTrace();
-			System.exit(1);
+
+			UpdateOptions options = new UpdateOptions().upsert(true);
+			collection.updateOne(filter, update, options);
+			return true;
+		} else {
+			MongoCollection<Document> collection = databaseCon.getCollection("t" + hashCode());
+			Bson filter;
+			if(bush.getVehicleClass() != null) {
+				filter = and(eq("bush_origin_id", bush.getOrigin().getID()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.getVehicleClass().toString()));
+			}else {
+				filter = and(eq("bush_origin_id", bush.getOrigin().getID()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.toString()));
+			}
+			collection.deleteOne(filter);
 			return false;
 		}
 		//If Bush exists, get the flow and add delta to flow
@@ -210,65 +161,42 @@ public abstract class Link implements Priced {
 //			flow.remove(bush);
 //			return false;
 //		}
-//		return true;
 	}
 
 	public BigDecimal getBushFlow(Bush bush) {
-		PreparedStatement stm;
-		try {
-			stm = databaseCon.prepareStatement(selectQuery);
-			stm.setInt(1, bush.getOrigin().getID());
-			stm.setFloat(2, bush.getVOT());
-			if(bush.getVehicleClass() != null)
-			    stm.setString(3, bush.getVehicleClass().name());
-			else
-			    stm.setString(3, bush.toString());
-			ResultSet result = stm.executeQuery();
-			if(result.next()) {
-				return result.getBigDecimal("flow");
-			}
-		} catch (Exception e) {
-			//System.out.println("getBush flow");
-			//System.out.println("SQL Error Code: " + e.getErrorCode());
-			e.printStackTrace();
-			System.exit(1);
-			return BigDecimal.ZERO;
+		BigDecimal output = BigDecimal.ZERO;
+		MongoCollection<Document> collection = databaseCon.getCollection("t" + hashCode());
+		Bson filter;
+		if(bush.getVehicleClass() != null) {
+			filter = and(eq("bush_origin_id", bush.getOrigin().getID()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.getVehicleClass().toString()));
+		}else {
+			filter = and(eq("bush_origin_id", bush.getOrigin().getID()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.toString()));
 		}
-		return BigDecimal.ZERO;
+		try (MongoCursor<Document> cursor = collection.find(filter).iterator()) {
+			if (cursor.hasNext()) {
+				Document d = cursor.next();
+				output = (d.get("flow", BigDecimal.class));
+			}
+		}
+		return output;
 	}
 
 	public Boolean hasFlow(Bush bush) {
-		PreparedStatement stm;
-		try {
-			stm = databaseCon.prepareStatement(selectQuery);
-			stm.setInt(1, bush.getOrigin().getID());
-			stm.setFloat(2, bush.getVOT());
-			if(bush.getVehicleClass() != null)
-			    stm.setString(3, bush.getVehicleClass().name());
-			else
-			    stm.setString(3, bush.toString());
-			return stm.executeQuery().next();
-		} catch (SQLException e) {
-			//System.out.println("has flow");
-			//System.out.println("SQL Error Code: " + e.getErrorCode());
-			e.printStackTrace();
-			System.exit(1);
-			return false;
+		MongoCollection<Document> collection = databaseCon.getCollection("t" + hashCode());
+		Bson filter;
+		if(bush.getVehicleClass() != null) {
+			filter = and(eq("bush_origin_id", bush.getOrigin().getID()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.getVehicleClass().toString()));
+		}else {
+			filter = and(eq("bush_origin_id", bush.getOrigin().getID()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.toString()));
 		}
-		//return flow.get(bush) != null;
+		MongoCursor<Document> cursor = collection.find(filter).iterator();
+		return cursor.hasNext();
+
 	}
 
 	public void removeTable() {
-		try{
-			Statement stm = databaseCon.createStatement();
-			stm.executeUpdate(dropQuery);
-		} catch (SQLException e) {
-			e.printStackTrace();
-			System.exit(1);
-			//System.out.println("removeTable");
-			//System.out.println("SQL Error Code: " + e.getErrorCode());
-		}
-
+		MongoCollection<Document> collection = databaseCon.getCollection("t" + hashCode());
+		collection.drop();
 	}
 	
 	public abstract Boolean allowsClass(VehicleClass c);
