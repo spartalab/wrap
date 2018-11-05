@@ -1,7 +1,7 @@
 package edu.utexas.wrap;
 
 public class CentroidConnector extends TolledLink {
-	private Float toll;
+	private float toll;
 
 	public CentroidConnector(Node tail, Node head, Float capacity, Float length, Float fftime, Float toll) {
 		super(tail, head, capacity, length, fftime);

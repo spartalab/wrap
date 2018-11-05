@@ -2,9 +2,7 @@ package edu.utexas.wrap;
 
 public class TolledBPRLink extends TolledLink {
 	
-	private final Float b;
-	private final Float power;
-	protected Float toll;
+	private final float b, power, toll;
 
 	
 	public TolledBPRLink(Node tail, Node head, Float capacity, Float length, Float fftime, Float b, Float power, Float toll) {

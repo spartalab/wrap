@@ -9,11 +9,9 @@ import java.util.Map;
  */
 public abstract class Link implements Priced {
 
-	private final Float capacity;
+	private final float capacity, length, fftime;
 	private final Node head;
 	private final Node tail;
-	private final Float length;
-	private final Float fftime;
 
 	private Map<AssignmentContainer,Double> flow;
 

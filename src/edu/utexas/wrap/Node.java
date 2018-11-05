@@ -2,8 +2,8 @@ package edu.utexas.wrap;
 
 public class Node {
 
-	private final Integer ID;
-	private final Boolean isCentroid;
+	private final int ID;
+	private final boolean isCentroid;
 	
 	public Node(Integer ID, Boolean isCentroid) {
 		this.ID = ID;
@@ -29,6 +29,6 @@ public class Node {
 
 
 	public String toString() {
-		return "Node " + this.ID.toString();
+		return "Node " + this.ID;
 	}
 }

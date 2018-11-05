@@ -7,8 +7,8 @@ import java.util.Map;
  *
  */
 public class TolledEnhancedLink extends TolledLink {
-	private final Float conicalParam, VDFshift, saturatedFlowRate, minDelay, operCost;
-	private final Float a, b, c, d, s, u;
+	private final float conicalParam, VDFshift, saturatedFlowRate, minDelay, operCost;
+	private final float a, b, c, d, s, u;
 	private final Map<VehicleClass, Boolean> allowedClasses;
 	private final Map<VehicleClass, Float> classTolls;
 
