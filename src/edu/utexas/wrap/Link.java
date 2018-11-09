@@ -12,6 +12,11 @@ import java.math.RoundingMode;
 import com.mongodb.client.model.UpdateOptions;
 import org.bson.Document;
 import org.bson.conversions.Bson;
+import org.bson.types.Decimal128;
+
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  * @author rahulpatel
  *
@@ -31,6 +36,8 @@ public abstract class Link implements Priced {
 	protected BigDecimal cachedPrice = null;
 	private static MongoDatabase databaseCon;
 	static {
+		Logger  mongoLogger = Logger.getLogger("com.mongodb");
+		mongoLogger.setLevel(Level.SEVERE);
 		MongoClient server = new MongoClient ("127.0.0.1", 27017);
 		databaseCon = server.getDatabase(dbName);
 		
@@ -57,7 +64,7 @@ public abstract class Link implements Priced {
 		try (MongoCursor<Document> cursor = collection.find().iterator()) {
 			while (cursor.hasNext()) {
 				Document d = cursor.next();
-				total = total.add(d.get("flow", BigDecimal.class));
+				total = total.add(d.get("flow", Decimal128.class).bigDecimalValue());
 			}
 		}
 		return total;
@@ -174,7 +181,7 @@ public abstract class Link implements Priced {
 		try (MongoCursor<Document> cursor = collection.find(filter).iterator()) {
 			if (cursor.hasNext()) {
 				Document d = cursor.next();
-				output = (d.get("flow", BigDecimal.class));
+				output = (d.get("flow", Decimal128.class).bigDecimalValue());
 			}
 		}
 		return output;
