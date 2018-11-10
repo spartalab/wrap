@@ -62,16 +62,11 @@ public abstract class Link implements Priced {
 	private final String dropQuery = "DROP TABLE t" + hashCode();
 	static {
 		try {
-			Class.forName("com.mysql.jdbc.Driver");
-
-			databaseCon = DriverManager.getConnection("jdbc:mysql://localhost:3306/" + dbName + "?useSSL=false", "root","rootroot");
+			databaseCon = DriverManager.getConnection("jdbc:mysql://localhost:3306/" + dbName + "?useSSL=false", "root","");
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.out.println("Could not find database/table to connect to");
 			System.exit(3);
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-			System.exit(1);
 		}
 	}
 
