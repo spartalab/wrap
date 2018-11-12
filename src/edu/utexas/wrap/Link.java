@@ -246,6 +246,7 @@ public abstract class Link implements Priced {
 				stm.close();
 				return output;
 			}
+			stm.close();
 		} catch (Exception e) {
 			//System.out.println("getBush flow");
 			//System.out.println("SQL Error Code: " + e.getErrorCode());
