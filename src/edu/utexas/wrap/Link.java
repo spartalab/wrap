@@ -89,6 +89,7 @@ public abstract class Link implements Priced {
 		try {
 		    stm = databaseCon.createStatement();
 		    stm.execute(createQuery);
+		    stm.close();
         } catch (SQLException e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -106,6 +107,7 @@ public abstract class Link implements Priced {
 			}
 			if (total == null)
 				return BigDecimal.ZERO;
+			stm.close();
 			return total;
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -191,6 +193,7 @@ public abstract class Link implements Priced {
 				else
 				    stm.setString(8, bush.toString());
 				stm.executeUpdate();
+				stm.close();
 				return true;
 			} else {
 
@@ -202,6 +205,7 @@ public abstract class Link implements Priced {
 				else
 				    stm.setString(3, bush.toString());
 				stm.executeUpdate();
+				stm.close();
 				return false;
 			}
 		} catch (SQLException e) {
@@ -238,7 +242,9 @@ public abstract class Link implements Priced {
 			    stm.setString(3, bush.toString());
 			ResultSet result = stm.executeQuery();
 			if(result.next()) {
-				return result.getBigDecimal("flow");
+				BigDecimal output = result.getBigDecimal("flow");
+				stm.close();
+				return output;
 			}
 		} catch (Exception e) {
 			//System.out.println("getBush flow");
@@ -260,7 +266,9 @@ public abstract class Link implements Priced {
 			    stm.setString(3, bush.getVehicleClass().name());
 			else
 			    stm.setString(3, bush.toString());
-			return stm.executeQuery().next();
+			boolean output =  stm.executeQuery().next();
+			stm.close();
+			return output;
 		} catch (SQLException e) {
 			//System.out.println("has flow");
 			//System.out.println("SQL Error Code: " + e.getErrorCode());
@@ -275,6 +283,7 @@ public abstract class Link implements Priced {
 		try{
 			Statement stm = databaseCon.createStatement();
 			stm.executeUpdate(dropQuery);
+			stm.close();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.exit(1);
