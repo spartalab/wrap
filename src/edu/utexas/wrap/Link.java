@@ -155,18 +155,6 @@ public abstract class Link implements Priced {
 			collection.deleteOne(filter);
 			return false;
 		}
-		//If Bush exists, get the flow and add delta to flow
-			//If new flow is < 0 throw error
-			//if new flow == 0 remove the row and return false
-			//If new flow is > 0 update the row in the table
-		//Otherwise add Bush with delta flow
-//		BigDecimal newFlow = flow.getOrDefault(bush,BigDecimal.ZERO).add(delta).setScale(Optimizer.decimalPlaces, RoundingMode.HALF_EVEN);
-//		if (newFlow.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("invalid alter request");
-//		else if (newFlow.compareTo(BigDecimal.ZERO) > 0) flow.put(bush, newFlow);
-//		else {
-//			flow.remove(bush);
-//			return false;
-//		}
 	}
 
 	public BigDecimal getBushFlow(Bush bush) {
@@ -196,7 +184,9 @@ public abstract class Link implements Priced {
 			filter = and(eq("bush_origin_id", bush.getOrigin().getID()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.toString()));
 		}
 		MongoCursor<Document> cursor = collection.find(filter).iterator();
-		return cursor.hasNext();
+		boolean output =  cursor.hasNext();
+		cursor.close();
+		return output;
 
 	}
 
