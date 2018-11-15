@@ -10,7 +10,6 @@ import static com.mongodb.client.model.Filters.*;
 import com.mongodb.client.model.UpdateOptions;
 import org.bson.Document;
 import org.bson.conversions.Bson;
-import org.bson.types.Decimal128;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -21,14 +20,16 @@ import java.util.logging.Logger;
  */
 public abstract class Link implements Priced {
 
-	private final float capacity, length, fftime;
+    private static final String dbName = "network";
+
+    private final float capacity, length, fftime;
 	private final Node head;
 	private final Node tail;
 
-	private BigDecimal cachedFlow = null;
-	protected BigDecimal cachedTT = null;
-	protected BigDecimal cachedPrice = null;
-
+	private Double cachedFlow = null;
+	protected Double cachedTT = null;
+	protected Double cachedPrice = null;
+    private static MongoDatabase databaseCon;
 	public Link(Node tail, Node head, Float capacity, Float length, Float fftime) {
 		this.tail = tail;
 		this.head = head;
@@ -37,20 +38,26 @@ public abstract class Link implements Priced {
 		this.fftime = fftime;
 		createTable();
 	}
+    static {
+        Logger  mongoLogger = Logger.getLogger("com.mongodb");
+        mongoLogger.setLevel(Level.SEVERE);
+        MongoClient server = new MongoClient ("127.0.0.1", 27017);
+        databaseCon = server.getDatabase(dbName);
 
+    }
 
 	private void createTable() {
         databaseCon.createCollection("t" + hashCode());
 	}
 
-	private BigDecimal totalFlowFromTable() {
+	private Double totalFlowFromTable() {
 
 			MongoCollection<Document> collection = databaseCon.getCollection("t" + hashCode());
 			Double total = 0.0;
 		try (MongoCursor<Document> cursor = collection.find().iterator()) {
 			while (cursor.hasNext()) {
 				Document d = cursor.next();
-				total = total += d.get("flow", Double.class);
+				total += d.getDouble("flow");
 			}
 		}
 		return total;
@@ -67,15 +74,7 @@ public abstract class Link implements Priced {
 		return head;
 	}
 
-	public Node getTail() {
-		return tail;
-	}
-
-	public Float getLength() {
-		return length;
-	}
-
-	public BigDecimal getFlow() {
+	public Double getFlow() {
 		if (cachedFlow != null) return cachedFlow;
 		Double f = totalFlowFromTable();
 		if (f < 0) throw new NegativeFlowException("Negative link flow");
@@ -87,13 +86,9 @@ public abstract class Link implements Priced {
 		return tail.toString() + "\t" + head.toString();
 	}
 
-	public abstract Double getTravelTime();
-
 	public abstract Double tPrime();
 
 	public abstract Double tIntegral();
-
-	public abstract Double getPrice(Float vot, VehicleClass c);
 
 	public abstract Double pricePrime(Float float1);
 
@@ -111,18 +106,18 @@ public abstract class Link implements Priced {
 		}
 		//Retrieve Bush with the specified parameters
 		Double updateFlow = getBushFlow(bush);
-		updateFlow = updateFlow.add(delta).setScale(Optimizer.decimalPlaces, RoundingMode.HALF_EVEN);
-		if(updateFlow.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("invalid alter request");
-		else if(updateFlow.compareTo(BigDecimal.ZERO) > 0) {
+		updateFlow += delta;
+		if(updateFlow < 0) throw new NegativeFlowException("invalid alter request");
+		else if(updateFlow > 0) {
 			MongoCollection<Document> collection = databaseCon.getCollection("t" + hashCode());
 			Bson filter;
 			Bson update;
 			if(bush.getVehicleClass() != null) {
-				filter = and(eq("bush_origin_id", bush.getOrigin().getID()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.getVehicleClass().toString()));
-				update = new Document("$set", new Document().append("bush_origin_id", bush.getOrigin().getID()).append("vot_real", bush.getVOT()).append("vehicle_class", bush.getVehicleClass().toString()).append("flow", updateFlow));
+				filter = and(eq("bush_origin_id", bush.getOrigin().hashCode()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.getVehicleClass().toString()));
+				update = new Document("$set", new Document().append("bush_origin_id", bush.getOrigin().hashCode()).append("vot_real", bush.getVOT()).append("vehicle_class", bush.getVehicleClass().toString()).append("flow", updateFlow));
 			}else {
-				filter = and(eq("bush_origin_id", bush.getOrigin().getID()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.toString()));
-				update = new Document("$set", new Document().append("bush_origin_id", bush.getOrigin().getID()).append("vot_real", bush.getVOT()).append("vehicle_class", bush.toString()).append("flow", updateFlow));
+				filter = and(eq("bush_origin_id", bush.getOrigin().hashCode()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.toString()));
+				update = new Document("$set", new Document().append("bush_origin_id", bush.getOrigin().hashCode()).append("vot_real", bush.getVOT()).append("vehicle_class", bush.toString()).append("flow", updateFlow));
 			}
 
 			UpdateOptions options = new UpdateOptions().upsert(true);
@@ -132,28 +127,28 @@ public abstract class Link implements Priced {
 			MongoCollection<Document> collection = databaseCon.getCollection("t" + hashCode());
 			Bson filter;
 			if(bush.getVehicleClass() != null) {
-				filter = and(eq("bush_origin_id", bush.getOrigin().getID()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.getVehicleClass().toString()));
+				filter = and(eq("bush_origin_id", bush.getOrigin().hashCode()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.getVehicleClass().toString()));
 			}else {
-				filter = and(eq("bush_origin_id", bush.getOrigin().getID()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.toString()));
+				filter = and(eq("bush_origin_id", bush.getOrigin().hashCode()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.toString()));
 			}
 			collection.deleteOne(filter);
 			return false;
 		}
 	}
 
-	public BigDecimal getBushFlow(Bush bush) {
-		BigDecimal output = BigDecimal.ZERO;
+	public Double getBushFlow(Bush bush) {
+		Double output = 0.0;
 		MongoCollection<Document> collection = databaseCon.getCollection("t" + hashCode());
 		Bson filter;
 		if(bush.getVehicleClass() != null) {
-			filter = and(eq("bush_origin_id", bush.getOrigin().getID()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.getVehicleClass().toString()));
+			filter = and(eq("bush_origin_id", bush.getOrigin().hashCode()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.getVehicleClass().toString()));
 		}else {
-			filter = and(eq("bush_origin_id", bush.getOrigin().getID()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.toString()));
+			filter = and(eq("bush_origin_id", bush.getOrigin().hashCode()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.toString()));
 		}
 		try (MongoCursor<Document> cursor = collection.find(filter).iterator()) {
 			if (cursor.hasNext()) {
 				Document d = cursor.next();
-				output = (d.get("flow", Decimal128.class).bigDecimalValue());
+				output = d.getDouble("flow");
 			}
 		}
 		return output;
@@ -175,9 +170,9 @@ public abstract class Link implements Priced {
 		MongoCollection<Document> collection = databaseCon.getCollection("t" + hashCode());
 		Bson filter;
 		if(bush.getVehicleClass() != null) {
-			filter = and(eq("bush_origin_id", bush.getOrigin().getID()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.getVehicleClass().toString()));
+			filter = and(eq("bush_origin_id", bush.getOrigin().hashCode()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.getVehicleClass().toString()));
 		}else {
-			filter = and(eq("bush_origin_id", bush.getOrigin().getID()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.toString()));
+			filter = and(eq("bush_origin_id", bush.getOrigin().hashCode()), eq("vot_real", bush.getVOT()), eq("vehicle_class", bush.toString()));
 		}
 		MongoCursor<Document> cursor = collection.find(filter).iterator();
 		boolean output =  cursor.hasNext();
