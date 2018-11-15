@@ -29,22 +29,39 @@ public class Graph {
 		nodeMap = g.nodeMap;
 	}
 	
-	public void addLink(Link link) {
+	public Boolean add(Link link) {
 		Node head = link.getHead();
 		Node tail = link.getTail();
 		Set<Link> headIns = inLinks.getOrDefault(head, new HashSet<Link>());
 		Set<Link> tailOuts= outLinks.getOrDefault(tail, new HashSet<Link>());
-		
-		headIns.add(link);
-		tailOuts.add(link);
-		inLinks.put(head, headIns);
-		outLinks.put(tail, tailOuts);
-		nodeMap.put(link.getHead().getID(), link.getHead());
-		nodeMap.put(link.getTail().getID(), link.getTail());
+
+		Boolean altered = headIns.add(link);
+		altered |= tailOuts.add(link);
+		if (altered) {
+			inLinks.put(head, headIns);
+			outLinks.put(tail, tailOuts);
+			nodeMap.put(link.getHead().getID(), link.getHead());
+			nodeMap.put(link.getTail().getID(), link.getTail());
+		}
+		return altered;
 	}
 	
-	public Collection<Node> getNodes(){
-		return nodeMap.values();
+	public void addAll(Collection<Link> links) {
+		for (Link l : links) add(l);
+	}
+	
+	public Boolean contains(Link l) {
+		return outLinks(l.getTail()).contains(l) || inLinks(l.getHead()).contains(l);
+	}
+	
+	public Set<Link> getLinks(){
+		HashSet<Link> ret = new HashSet<Link>();
+		outLinks.values().stream().reduce(ret, (a,b)->{
+			a.addAll(b);
+			return a;
+		});
+//		for (Node n : outLinks.keySet()) ret.addAll(outLinks.get(n));
+		return ret;
 	}
 	
 	public Node getNode(Integer id) {
@@ -55,19 +72,26 @@ public class Graph {
 		return nodeMap;
 	}
 	
-	public Set<Link> getLinks(){
-		HashSet<Link> ret = new HashSet<Link>();
-		for (Node n : outLinks.keySet()) ret.addAll(outLinks.get(n));
-		return ret;
+	public Collection<Node> getNodes(){
+		return nodeMap.values();
 	}
 
+	public Set<Link> inLinks(Node u){
+		return inLinks.getOrDefault(u, new HashSet<Link>(0));
+	}
+
+	public Integer numNodes() {
+		return nodeMap.size();
+	}
+	
 	public Set<Link> outLinks(Node u) {
-		return outLinks.getOrDefault(u, new HashSet<Link>());
+		return outLinks.getOrDefault(u, new HashSet<Link>(0));
 	}
 
-	public void remove(Link link) {
-		outLinks.get(link.getTail()).remove(link);
-		inLinks.get(link.getHead()).remove(link);
+	public Boolean remove(Link link) {
+		Boolean altered = outLinks.get(link.getTail()).remove(link);
+		altered |= inLinks.get(link.getHead()).remove(link);
+		return altered;
 	}
 
 	public void remove(Node node) {
@@ -79,11 +103,6 @@ public class Graph {
 		}
 		inLinks.remove(node);
 		outLinks.remove(node);
-	}
-
-	public Integer numNodes() {
-		// TODO Auto-generated method stub
-		return nodeMap.size();
 	}
 
 }
