@@ -285,10 +285,7 @@ public abstract class Link implements Priced {
 			stm.executeUpdate(dropQuery);
 			stm.close();
 		} catch (SQLException e) {
-			e.printStackTrace();
-			System.exit(1);
-			//System.out.println("removeTable");
-			//System.out.println("SQL Error Code: " + e.getErrorCode());
+			System.out.println("Table didn't exist");
 		}
 
 	}
