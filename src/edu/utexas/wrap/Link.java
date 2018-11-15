@@ -16,14 +16,13 @@ public abstract class Link implements Priced {
 	private static final String dbName = "network";
 
 	private final Float capacity;
+	private final float capacity, length, fftime;
 	private final Node head;
 	private final Node tail;
-	private final Float length;
-	private final Float fftime;
 
-	private BigDecimal cachedFlow = null;
-	protected BigDecimal cachedTT = null;
-	protected BigDecimal cachedPrice = null;
+	private Double cachedFlow = null;
+	protected Double cachedTT = null;
+	protected Double cachedPrice = null;
 	private static Connection databaseCon;
 
 	private static final String url = "jdbc:sqlite:network.db";
@@ -128,9 +127,6 @@ public abstract class Link implements Priced {
 		return tail;
 	}
 
-	public Float getLength() {
-		return length;
-	}
 
 	public BigDecimal getFlow() {
 		if (cachedFlow != null) return cachedFlow;
@@ -146,15 +142,16 @@ public abstract class Link implements Priced {
 		return tail.toString() + "\t" + head.toString();
 	}
 
-	public abstract BigDecimal getTravelTime();
+	public abstract Double getTravelTime();
 	
-	public abstract BigDecimal tPrime();
+	public abstract Double tPrime();
 
-	public abstract BigDecimal tIntegral();
+	public abstract Double tIntegral();
 
-	public abstract BigDecimal getPrice(Float vot, VehicleClass c);
+	public abstract Double getPrice(Float vot, VehicleClass c);
 
-	public abstract BigDecimal pricePrime(Float float1);
+	public abstract Double pricePrime(Float float1);
+	public abstract Boolean allowsClass(VehicleClass c);
 
 	/** Modifies the flow on a link which comes from a specified bush. 
 	 * <b> THIS METHOD SHOULD ONLY BE CALLED BY THE {@link edu.utexas.wrap.Bush}'s {@link edu.utexas.wrap.Bush.changeFlow} METHOD </b>
@@ -162,8 +159,8 @@ public abstract class Link implements Priced {
 	 * @param bush the origin Bush of this flow
 	 * @return whether the flow from this bush on the link is non-zero
 	 */
-	public synchronized Boolean alterBushFlow(BigDecimal delta, Bush bush) {
-		if (delta.compareTo(BigDecimal.ZERO) != 0) {
+	public synchronized Boolean alterBushFlow(Double delta, Bush bush) {
+		if (delta != 0) {
 			cachedTT = null;
 			cachedPrice = null;
 			cachedFlow = null;
@@ -255,6 +252,18 @@ public abstract class Link implements Priced {
 		return BigDecimal.ZERO;
 	}
 
+	public Float getLength() {
+		return length;
+	}
+
+	public abstract Double getPrice(Float vot, VehicleClass c);
+
+	public Node getTail() {
+		return tail;
+	}
+
+	public abstract Double getTravelTime();
+
 	public Boolean hasFlow(Bush bush) {
 		PreparedStatement stm;
 		try {
@@ -293,6 +302,14 @@ public abstract class Link implements Priced {
 		}
 
 	}
-	
-	public abstract Boolean allowsClass(VehicleClass c);
+
+	public abstract Double pricePrime(Float float1);
+
+	public abstract Double tIntegral();
+
+	public String toString() {
+		return tail.toString() + "\t" + head.toString();
+	}
+
+	public abstract Double tPrime();
 }
