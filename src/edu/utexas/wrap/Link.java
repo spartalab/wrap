@@ -6,8 +6,6 @@ import com.mongodb.client.MongoCursor;
 import com.mongodb.client.MongoDatabase;
 import static com.mongodb.client.model.Filters.*;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 
 import com.mongodb.client.model.UpdateOptions;
 import org.bson.Document;
@@ -23,25 +21,13 @@ import java.util.logging.Logger;
  */
 public abstract class Link implements Priced {
 
-	private static final String dbName = "network";
-
-	private final Float capacity;
+	private final float capacity, length, fftime;
 	private final Node head;
 	private final Node tail;
-	private final Float length;
-	private final Float fftime;
 
 	private BigDecimal cachedFlow = null;
 	protected BigDecimal cachedTT = null;
 	protected BigDecimal cachedPrice = null;
-	private static MongoDatabase databaseCon;
-	static {
-		Logger  mongoLogger = Logger.getLogger("com.mongodb");
-		mongoLogger.setLevel(Level.SEVERE);
-		MongoClient server = new MongoClient ("127.0.0.1", 27017);
-		databaseCon = server.getDatabase(dbName);
-		
-	}
 
 	public Link(Node tail, Node head, Float capacity, Float length, Float fftime) {
 		this.tail = tail;
@@ -58,13 +44,13 @@ public abstract class Link implements Priced {
 	}
 
 	private BigDecimal totalFlowFromTable() {
-		
+
 			MongoCollection<Document> collection = databaseCon.getCollection("t" + hashCode());
-			BigDecimal total = BigDecimal.ZERO;
+			Double total = 0.0;
 		try (MongoCursor<Document> cursor = collection.find().iterator()) {
 			while (cursor.hasNext()) {
 				Document d = cursor.next();
-				total = total.add(d.get("flow", Decimal128.class).bigDecimalValue());
+				total = total += d.get("flow", Double.class);
 			}
 		}
 		return total;
@@ -91,10 +77,8 @@ public abstract class Link implements Priced {
 
 	public BigDecimal getFlow() {
 		if (cachedFlow != null) return cachedFlow;
-		//BigDecimal f = BigDecimal.ZERO;
-		//for (Bush b : flow.keySet()) f = f.add(flow.get(b));
-		BigDecimal f = totalFlowFromTable();
-		if (f.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("Negative link flow");
+		Double f = totalFlowFromTable();
+		if (f < 0) throw new NegativeFlowException("Negative link flow");
 		cachedFlow = f;
 		return f;
 	}
@@ -103,15 +87,15 @@ public abstract class Link implements Priced {
 		return tail.toString() + "\t" + head.toString();
 	}
 
-	public abstract BigDecimal getTravelTime();
-	
-	public abstract BigDecimal tPrime();
+	public abstract Double getTravelTime();
 
-	public abstract BigDecimal tIntegral();
+	public abstract Double tPrime();
 
-	public abstract BigDecimal getPrice(Float vot, VehicleClass c);
+	public abstract Double tIntegral();
 
-	public abstract BigDecimal pricePrime(Float float1);
+	public abstract Double getPrice(Float vot, VehicleClass c);
+
+	public abstract Double pricePrime(Float float1);
 
 	/** Modifies the flow on a link which comes from a specified bush. 
 	 * <b> THIS METHOD SHOULD ONLY BE CALLED BY THE {@link edu.utexas.wrap.Bush}'s {@link edu.utexas.wrap.Bush.changeFlow} METHOD </b>
@@ -119,14 +103,14 @@ public abstract class Link implements Priced {
 	 * @param bush the origin Bush of this flow
 	 * @return whether the flow from this bush on the link is non-zero
 	 */
-	public synchronized Boolean alterBushFlow(BigDecimal delta, Bush bush) {
-		if (delta.compareTo(BigDecimal.ZERO) != 0) {
+	public synchronized Boolean alterBushFlow(Double delta, Bush bush) {
+		if (delta != 0) {
 			cachedTT = null;
 			cachedPrice = null;
 			cachedFlow = null;
 		}
 		//Retrieve Bush with the specified parameters
-		BigDecimal updateFlow = getBushFlow(bush);
+		Double updateFlow = getBushFlow(bush);
 		updateFlow = updateFlow.add(delta).setScale(Optimizer.decimalPlaces, RoundingMode.HALF_EVEN);
 		if(updateFlow.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("invalid alter request");
 		else if(updateFlow.compareTo(BigDecimal.ZERO) > 0) {
@@ -174,6 +158,18 @@ public abstract class Link implements Priced {
 		}
 		return output;
 	}
+
+	public Float getLength() {
+		return length;
+	}
+
+	public abstract Double getPrice(Float vot, VehicleClass c);
+
+	public Node getTail() {
+		return tail;
+	}
+
+	public abstract Double getTravelTime();
 
 	public Boolean hasFlow(Bush bush) {
 		MongoCollection<Document> collection = databaseCon.getCollection("t" + hashCode());

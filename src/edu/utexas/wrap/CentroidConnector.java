@@ -1,9 +1,7 @@
 package edu.utexas.wrap;
 
-import java.math.BigDecimal;
-
 public class CentroidConnector extends TolledLink {
-	private Float toll;
+	private float toll;
 
 	public CentroidConnector(Node tail, Node head, Float capacity, Float length, Float fftime, Float toll) {
 		super(tail, head, capacity, length, fftime);
@@ -11,33 +9,13 @@ public class CentroidConnector extends TolledLink {
 	}
 
 	@Override
-	public BigDecimal getTravelTime() {
-		return BigDecimal.valueOf(freeFlowTime());
-	}
-
-	@Override
-	public BigDecimal tPrime() {
-		return BigDecimal.ZERO;
-	}
-
-	@Override
-	public BigDecimal tIntegral() {
-		return BigDecimal.valueOf(freeFlowTime()).multiply(getFlow(), Optimizer.defMC);
-	}
-
-	@Override
-	public BigDecimal getPrice(Float vot, VehicleClass c) {
-		return BigDecimal.valueOf(vot*freeFlowTime() + toll);
-	}
-
-	@Override
-	public BigDecimal pricePrime(Float vot) {
-		return BigDecimal.ZERO;
-	}
-
-	@Override
 	public Boolean allowsClass(VehicleClass c) {
 		return true;
+	}
+
+	@Override
+	public Double getPrice(Float vot, VehicleClass c) {
+		return (double) (vot*freeFlowTime() + toll);
 	}
 
 	@Override
@@ -47,8 +25,28 @@ public class CentroidConnector extends TolledLink {
 	}
 
 	@Override
-	public BigDecimal tollPrime() {
-		return BigDecimal.ZERO;
+	public Double getTravelTime() {
+		return (double) freeFlowTime();
+	}
+
+	@Override
+	public Double pricePrime(Float vot) {
+		return 0.0;
+	}
+
+	@Override
+	public Double tIntegral() {
+		return freeFlowTime()*getFlow();
+	}
+
+	@Override
+	public Double tollPrime() {
+		return 0.0;
+	}
+
+	@Override
+	public Double tPrime() {
+		return 0.0;
 	}
 
 }
