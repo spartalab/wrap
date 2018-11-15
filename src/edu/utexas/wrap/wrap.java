@@ -145,6 +145,10 @@ public class wrap{
 		for(Link l: network.getGraph().getLinks()) {
 			l.removeTable();
 		}
+
+		for(Link l: network.getGraph().getLinks()) {
+			l.removeTable();
+		}
 	}
 }
 
