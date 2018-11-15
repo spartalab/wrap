@@ -1,7 +1,5 @@
 package edu.utexas.wrap;
 
-import java.math.BigDecimal;
-
 public abstract class TolledLink extends Link {
 	
 
@@ -11,6 +9,6 @@ public abstract class TolledLink extends Link {
 
 	public abstract Float getToll(VehicleClass c);
 	
-	public abstract BigDecimal tollPrime();
+	public abstract Double tollPrime();
 }
 

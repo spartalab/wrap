@@ -2,7 +2,6 @@ package edu.utexas.wrap;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.math.BigDecimal;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -25,41 +24,29 @@ class SPAlgorithmsTest {
 		
 		AB = new TolledBPRLink(A, B, null, null, null, null, null,null) {
 			@Override
-			public BigDecimal getTravelTime() { return new BigDecimal("15");}
+			public Double getTravelTime() { return 15.0;}
 		};
 		AC = new TolledBPRLink(A, C, null, null, null, null, null, null) {
 			@Override
-			public BigDecimal getTravelTime() { return new BigDecimal("22.0");}
+			public Double getTravelTime() { return 22.0;}
 		};
 		BC = new TolledBPRLink(B, C, null, null, null, null, null, null) {
 			@Override
-			public BigDecimal getTravelTime() { return new BigDecimal("5.0");}
+			public Double getTravelTime() { return 5.0;}
 		};
 		CD = new TolledBPRLink(C, D, null, null, null, null, null, null) {
 			@Override
-			public BigDecimal getTravelTime() { return new BigDecimal("6.0");}
+			public Double getTravelTime() { return 6.0;}
 		};
 		BD = new TolledBPRLink(B, D, null, null, null, null, null, null) {
 			@Override
-			public BigDecimal getTravelTime() { return new BigDecimal("17.0");}
+			public Double getTravelTime() { return 17.0;}
 		};
-
-		A.addOutgoing(AB);
-		A.addOutgoing(AC);
-		B.addIncoming(AB);
-		B.addOutgoing(BC);
-		B.addOutgoing(BD);
-		C.addIncoming(AC);
-		C.addIncoming(BC);
-		C.addOutgoing(CD);
-		D.addIncoming(BD);
-		D.addIncoming(CD);
-		
-		graph.addLink(AB);
-		graph.addLink(AC);
-		graph.addLink(BC);
-		graph.addLink(BD);
-		graph.addLink(CD);
+		graph.add(AB);
+		graph.add(AC);
+		graph.add(BC);
+		graph.add(BD);
+		graph.add(CD);
 		
 	}
 

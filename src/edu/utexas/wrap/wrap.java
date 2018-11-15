@@ -11,7 +11,13 @@ import java.io.PrintStream;
  * @author Adam Nodjomian
  * @author Prashanth Venkatraman
  * 
- * This project will implement Algorithm B, as presented 
+ * 
+ * This project began as part of the requirements for the 
+ * CE 392C Transportation Network Analysis course at 
+ * The University of Texas at Austin during the Fall 2017
+ * semester, with further development thereafter.
+ * 
+ * This project implements Algorithm B, as presented 
  * by Dial (2006) in order to create a solver for the
  * Traffic Assignment Problem as defined by Beckmann et 
  * al. (1956). The aim for this project is to implement a
@@ -22,11 +28,7 @@ import java.io.PrintStream;
  * good exercise in practicing proper software development
  * techniques. 
  * 
- * This project will be completed as part of the requirements
- * for the CE 392C Transportation Network Analysis course 
- * at the University of Texas at Austin during the Fall 2017
- * semester, with the potential for further development to
- * follow. 
+
  * 
  *            _______
  *          _|_______|_
@@ -88,7 +90,6 @@ public class wrap{
 
 	public static void main(String[] args) {
 
-
 		Network network;
 		try {
 			NetworkFactory n = new NetworkFactory();
@@ -116,7 +117,7 @@ public class wrap{
 				
 				System.out.println("Reading network...");
 				n.readTNTPGraph(links);
-				
+				 
 				System.out.println("Reading trips...");
 				n.readTNTPUniformVOTtrips(votFile, odMatrix);
 			}
@@ -125,7 +126,7 @@ public class wrap{
 				System.err.println("Not yet implemented");
 			}
 			network = n.getNetwork();
-
+ 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			return;

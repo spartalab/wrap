@@ -1,6 +1,5 @@
 package edu.utexas.wrap;
 
-import java.math.BigDecimal;
 import java.util.Map;
 
 public class AlternateSegmentPair {
@@ -14,31 +13,35 @@ public class AlternateSegmentPair {
 		this.bush = bush;
 	}
 	
-	public BigDecimal getMaxDelta(Map<Link, BigDecimal> deltaX) {
-		return longPath.getMinFlow(bush, deltaX);
-	}
-	
-	public Node getDiverge() {
+	public Node diverge() {
 		return shortPath.node(0);
 	}
 	
-	public Node getTerminus() {
-		return shortPath.getLast().getHead();
-	}
-	
-	public Path getShortPath() {
-		return shortPath;
-	}
-	
-	public Path getLongPath() {
+	public Path longPath() {
 		return longPath;
 	}
 	
-	public BigDecimal getPriceDiff() {
-		BigDecimal longPrice = longPath.getPrice(bush.getVOT(), bush.getVehicleClass());				
-		BigDecimal shortPrice = shortPath.getPrice(bush.getVOT(), bush.getVehicleClass()); 
-		if( longPrice.compareTo(shortPrice) < 0) throw new RuntimeException("Longest path shorter than Shortest path");
+	public Double maxDelta(Map<Link, Double> deltaX) {
+		return longPath.getMinFlow(bush, deltaX);
+	}
+	
+	public Node merge() {
+		return shortPath.getLast().getHead();
+	}
+	
+	public Double priceDiff() {
+		Double longPrice = longPath.getPrice(bush.getVOT(), bush.getVehicleClass());				
+		Double shortPrice = shortPath.getPrice(bush.getVOT(), bush.getVehicleClass()); 
+		Double ulp = Math.max(Math.ulp(longPrice),Math.ulp(shortPrice));
+		if (longPrice< shortPrice) {
+			if (longPrice-shortPrice < 2*ulp) return 0.0;
+			else throw new RuntimeException("Longest path cheaper than shortest path");
+		}
 		
-		return longPrice.subtract(shortPrice);
+		return longPrice-shortPrice;
+	}
+	
+	public Path shortPath() {
+		return shortPath;
 	}
 }

@@ -254,6 +254,18 @@ public abstract class Link implements Priced {
 		return BigDecimal.ZERO;
 	}
 
+	public Float getLength() {
+		return length;
+	}
+
+	public abstract Double getPrice(Float vot, VehicleClass c);
+
+	public Node getTail() {
+		return tail;
+	}
+
+	public abstract Double getTravelTime();
+
 	public Boolean hasFlow(Bush bush) {
 		PreparedStatement stm;
 		try {
@@ -290,6 +302,14 @@ public abstract class Link implements Priced {
 		}
 
 	}
-	
-	public abstract Boolean allowsClass(VehicleClass c);
+
+	public abstract Double pricePrime(Float float1);
+
+	public abstract Double tIntegral();
+
+	public String toString() {
+		return tail.toString() + "\t" + head.toString();
+	}
+
+	public abstract Double tPrime();
 }
