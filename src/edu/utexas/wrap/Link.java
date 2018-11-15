@@ -200,7 +200,7 @@ public abstract class Link implements Priced {
 		}
 	}
 
-	public synchronized Double getBushFlow(Bush bush) {
+	public Double getBushFlow(Bush bush) {
 		PreparedStatement stm;
 		try {
 			stm = databaseCon.prepareStatement(selectQuery);
@@ -227,7 +227,7 @@ public abstract class Link implements Priced {
 		return 0.0;
 	}
 
-	public synchronized Boolean hasFlow(Bush bush) {
+	public Boolean hasFlow(Bush bush) {
 		PreparedStatement stm;
 		try {
 			stm = databaseCon.prepareStatement(selectQuery);
