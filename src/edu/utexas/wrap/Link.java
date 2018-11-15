@@ -1,21 +1,11 @@
 package edu.utexas.wrap;
-
-import org.postgresql.core.SqlCommand;
-
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.*;
-//import java.sql.DriverManager;
-//import java.sql.SQLException;
 /**
  * @author rahulpatel
  *
  */
 public abstract class Link implements Priced {
 
-	private static final String dbName = "network";
-
-	private final Float capacity;
 	private final float capacity, length, fftime;
 	private final Node head;
 	private final Node tail;
@@ -30,7 +20,7 @@ public abstract class Link implements Priced {
 			"bush_origin_id integer, " +
 			"vot real, " +
 			"vehicle_class text, " +
-			"flow decimal(" + Optimizer.defMC.getPrecision() + ")," +
+			"flow double precision," +
 			"UNIQUE (bush_origin_id, vot, vehicle_class))";
 	private final String sumQuery = "SELECT SUM (flow) AS totalFlow FROM t" + hashCode();
 
@@ -92,24 +82,24 @@ public abstract class Link implements Priced {
         }
 	}
 
-	private BigDecimal totalFlowFromTable() {
+	private Double totalFlowFromTable() {
 		Statement stm;
 		try {
 			stm = databaseCon.createStatement();
-			BigDecimal total = null;
+			Double total = null;
 			ResultSet result = stm.executeQuery(sumQuery);
 			if(result.next()) {
-				total = result.getBigDecimal("totalFlow");
+				total = result.getDouble("totalFlow");
 			}
 			if (total == null)
-				return BigDecimal.ZERO;
+				return 0.0;
 			stm.close();
 			return total;
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		return BigDecimal.ZERO;
+		return 0.0;
 	}
 	public Float getCapacity() {
 		return capacity;
@@ -128,12 +118,12 @@ public abstract class Link implements Priced {
 	}
 
 
-	public BigDecimal getFlow() {
+	public Double getFlow() {
 		if (cachedFlow != null) return cachedFlow;
 		//BigDecimal f = BigDecimal.ZERO;
 		//for (Bush b : flow.keySet()) f = f.add(flow.get(b));
-		BigDecimal f = totalFlowFromTable();
-		if (f.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("Negative link flow");
+		Double f = totalFlowFromTable();
+		if (f < 0) throw new NegativeFlowException("Negative link flow");
 		cachedFlow = f;
 		return f;
 	}
@@ -167,20 +157,21 @@ public abstract class Link implements Priced {
 		}
 		//Retrieve Bush with the specified parameters
 		PreparedStatement stm = null;
-		BigDecimal updateFlow = getBushFlow(bush);
+		Double updateFlow = getBushFlow(bush);
 		try {
-			updateFlow = updateFlow.add(delta).setScale(Optimizer.decimalPlaces, RoundingMode.HALF_EVEN);
-			if(updateFlow.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("invalid alter request");
-			else if(updateFlow.compareTo(BigDecimal.ZERO) > 0) {
+			updateFlow += delta;
+			if(updateFlow  < 0) throw new NegativeFlowException("invalid alter request");
+			else if(updateFlow > 0) {
 				stm = databaseCon.prepareStatement(updateQuery);
-				stm.setInt(1, bush.getOrigin().getID());
+				stm.setInt(1, bush.getOrigin().hashCode());
 				stm.setFloat(2, bush.getVOT());
                 if(bush.getVehicleClass() != null)
                     stm.setString(3, bush.getVehicleClass().name());
                 else
-                    stm.setString(3, bush.toString());				stm.setBigDecimal(4, updateFlow);
-				stm.setBigDecimal(5, updateFlow);
-				stm.setInt(6, bush.getOrigin().getID());
+                    stm.setString(3, bush.toString());
+                stm.setDouble(4, updateFlow);
+				stm.setDouble(5, updateFlow);
+				stm.setInt(6, bush.getOrigin().hashCode());
 				stm.setFloat(7, bush.getVOT());
 				if(bush.getVehicleClass() != null)
 				    stm.setString(8, bush.getVehicleClass().name());
@@ -190,9 +181,8 @@ public abstract class Link implements Priced {
 				stm.close();
 				return true;
 			} else {
-
 				stm = databaseCon.prepareStatement(deleteQuery);
-				stm.setInt(1, bush.getOrigin().getID());
+				stm.setInt(1, bush.getOrigin().hashCode());
 				stm.setFloat(2, bush.getVOT());
 				if(bush.getVehicleClass() != null)
 				    stm.setString(3, bush.getVehicleClass().name());
@@ -203,33 +193,17 @@ public abstract class Link implements Priced {
 				return false;
 			}
 		} catch (SQLException e) {
-			//System.out.println("alter bush flow");
-			//System.out.println("SQL Error Code: " + e.getErrorCode());
-			//System.out.println(stm.toString());
 			e.printStackTrace();
 			System.exit(1);
 			return false;
 		}
-		//If Bush exists, get the flow and add delta to flow
-			//If new flow is < 0 throw error
-			//if new flow == 0 remove the row and return false
-			//If new flow is > 0 update the row in the table
-		//Otherwise add Bush with delta flow
-//		BigDecimal newFlow = flow.getOrDefault(bush,BigDecimal.ZERO).add(delta).setScale(Optimizer.decimalPlaces, RoundingMode.HALF_EVEN);
-//		if (newFlow.compareTo(BigDecimal.ZERO) < 0) throw new NegativeFlowException("invalid alter request");
-//		else if (newFlow.compareTo(BigDecimal.ZERO) > 0) flow.put(bush, newFlow);
-//		else {
-//			flow.remove(bush);
-//			return false;
-//		}
-//		return true;
 	}
 
-	public BigDecimal getBushFlow(Bush bush) {
+	public Double getBushFlow(Bush bush) {
 		PreparedStatement stm;
 		try {
 			stm = databaseCon.prepareStatement(selectQuery);
-			stm.setInt(1, bush.getOrigin().getID());
+			stm.setInt(1, bush.getOrigin().hashCode());
 			stm.setFloat(2, bush.getVOT());
 			if(bush.getVehicleClass() != null)
 			    stm.setString(3, bush.getVehicleClass().name());
@@ -237,7 +211,7 @@ public abstract class Link implements Priced {
 			    stm.setString(3, bush.toString());
 			ResultSet result = stm.executeQuery();
 			if(result.next()) {
-				BigDecimal output =  result.getBigDecimal("flow");
+				Double output =  result.getDouble("flow");
 				stm.close();
 				return output;
 			}
@@ -247,28 +221,20 @@ public abstract class Link implements Priced {
 			//System.out.println("SQL Error Code: " + e.getErrorCode());
 			e.printStackTrace();
 			System.exit(1);
-			return BigDecimal.ZERO;
+			return 0.0;
 		}
-		return BigDecimal.ZERO;
+		return 0.0;
 	}
 
 	public Float getLength() {
 		return length;
 	}
 
-	public abstract Double getPrice(Float vot, VehicleClass c);
-
-	public Node getTail() {
-		return tail;
-	}
-
-	public abstract Double getTravelTime();
-
 	public Boolean hasFlow(Bush bush) {
 		PreparedStatement stm;
 		try {
 			stm = databaseCon.prepareStatement(selectQuery);
-			stm.setInt(1, bush.getOrigin().getID());
+			stm.setInt(1, bush.getOrigin().hashCode());
 			stm.setFloat(2, bush.getVOT());
 			if(bush.getVehicleClass() != null)
 			    stm.setString(3, bush.getVehicleClass().name());
@@ -278,13 +244,10 @@ public abstract class Link implements Priced {
 			stm.close();
 			return output;
 		} catch (SQLException e) {
-			//System.out.println("has flow");
-			//System.out.println("SQL Error Code: " + e.getErrorCode());
 			e.printStackTrace();
 			System.exit(1);
 			return false;
 		}
-		//return flow.get(bush) != null;
 	}
 
 	public void removeTable() {
@@ -294,22 +257,9 @@ public abstract class Link implements Priced {
 			Statement stm = databaseCon.createStatement();
 			stm.executeUpdate(dropQuery);
 			stm.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-			System.exit(1);
-			//System.out.println("removeTable");
-			//System.out.println("SQL Error Code: " + e.getErrorCode());
+		} catch (SQLException ignored) {
+
 		}
 
 	}
-
-	public abstract Double pricePrime(Float float1);
-
-	public abstract Double tIntegral();
-
-	public String toString() {
-		return tail.toString() + "\t" + head.toString();
-	}
-
-	public abstract Double tPrime();
 }
