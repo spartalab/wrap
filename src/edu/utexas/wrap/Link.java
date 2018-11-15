@@ -14,11 +14,9 @@ import com.datastax.driver.core.Cluster.Builder;
 public abstract class Link implements Priced {
 	private static final String dbName = "network";
 
-	private final Float capacity;
+	private final float capacity, length, fftime;
 	private final Node head;
 	private final Node tail;
-	private final Float length;
-	private final Float fftime;
 
 	private BigDecimal cachedFlow = null;
 	protected BigDecimal cachedTT = null;
@@ -136,8 +134,8 @@ public abstract class Link implements Priced {
 	 * @param bush the origin Bush of this flow
 	 * @return whether the flow from this bush on the link is non-zero
 	 */
-	public synchronized Boolean alterBushFlow(BigDecimal delta, Bush bush) {
-		if (delta.compareTo(BigDecimal.ZERO) != 0) {
+	public synchronized Boolean alterBushFlow(Double delta, Bush bush) {
+		if (delta != 0) {
 			cachedTT = null;
 			cachedPrice = null;
 			cachedFlow = null;
