@@ -111,7 +111,7 @@ public abstract class Link implements Priced {
 			e.printStackTrace();
 			System.exit(1);
 		}
-		return 0.9;
+		return 0.0;
 	}
 	public Float getCapacity() {
 		return capacity;
