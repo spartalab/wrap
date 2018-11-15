@@ -6,3 +6,6 @@
 /nbproject/
 /.DS_Store
 *.iml
+src/.DS_Store
+src/edu/.DS_Store
+src/edu/utexas/.DS_Store
