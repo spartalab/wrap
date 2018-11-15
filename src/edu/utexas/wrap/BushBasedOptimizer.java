@@ -9,22 +9,22 @@ public abstract class BushBasedOptimizer extends Optimizer {
 
 	public BushBasedOptimizer(Network network) {
 		super(network);
-		innerIters = 10;
+		innerIters = 1;
 	}
 
 	public BushBasedOptimizer(Network network, Integer maxIters) {
 		super(network, maxIters, -6);
-		innerIters = 10;
+		innerIters = 1;
 	}
 	
 	public BushBasedOptimizer(Network network, Integer maxIters, Integer exp) {
 		super(network, maxIters, exp, 16);
-		innerIters = 10;
+		innerIters = 1;
 	}
 
 	public BushBasedOptimizer(Network network, Integer maxIters, Integer exp, Integer places) {
 		super(network,maxIters,exp,places);
-		innerIters = 10;
+		innerIters = 1;
 	}
 	
 	public BushBasedOptimizer(Network network, Integer maxIters, Integer exp, Integer places, Integer innerIters) {
