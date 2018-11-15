@@ -25,23 +25,23 @@ class SPAlgorithmsTest {
 		
 		AB = new TolledBPRLink(A, B, null, null, null, null, null,null) {
 			@Override
-			public BigDecimal getTravelTime() { return new BigDecimal("15");}
+			public Double getTravelTime() { return new Double("15");}
 		};
 		AC = new TolledBPRLink(A, C, null, null, null, null, null, null) {
 			@Override
-			public BigDecimal getTravelTime() { return new BigDecimal("22.0");}
+			public Double getTravelTime() { return new Double("22.0");}
 		};
 		BC = new TolledBPRLink(B, C, null, null, null, null, null, null) {
 			@Override
-			public BigDecimal getTravelTime() { return new BigDecimal("5.0");}
+			public Double getTravelTime() { return new Double("5.0");}
 		};
 		CD = new TolledBPRLink(C, D, null, null, null, null, null, null) {
 			@Override
-			public BigDecimal getTravelTime() { return new BigDecimal("6.0");}
+			public Double getTravelTime() { return new Double("6.0");}
 		};
 		BD = new TolledBPRLink(B, D, null, null, null, null, null, null) {
 			@Override
-			public BigDecimal getTravelTime() { return new BigDecimal("17.0");}
+			public Double getTravelTime() { return new Double("17.0");}
 		};
 		graph.add(AB);
 		graph.add(AC);

@@ -80,9 +80,6 @@ public class Graph {
 		return inLinks.getOrDefault(u, new HashSet<Link>(0));
 	}
 
-	public Integer numNodes() {
-		return nodeMap.size();
-	}
 	
 	public Set<Link> outLinks(Node u) {
 		return outLinks.getOrDefault(u, new HashSet<Link>(0));
