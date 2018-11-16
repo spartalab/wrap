@@ -146,9 +146,7 @@ public class wrap{
 			l.removeTable();
 		}
 
-		for(Link l: network.getGraph().getLinks()) {
-			l.removeTable();
-		}
+		System.exit(0);
 	}
 }
 
