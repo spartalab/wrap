@@ -48,7 +48,7 @@ public abstract class Link implements Priced {
 			"AND vehicle_class = ?" +
 			"LIMIT 1";
 
-	private final String dropQuery = "DROP TABLE t" + hashCode();
+	private final String dropQuery = "DELETE FROM t" + hashCode();
 	static {
 		try {
 			databaseCon = DriverManager.getConnection(url);
@@ -70,15 +70,14 @@ public abstract class Link implements Priced {
 	}
 
 
-	private void createTable() {
+	private synchronized void createTable() {
 		Statement stm;
 		try {
 		    stm = databaseCon.createStatement();
 		    stm.execute(createQuery);
 		    stm.close();
         } catch (SQLException e) {
-			e.printStackTrace();
-			System.exit(1);
+			removeTable();
         }
 	}
 
