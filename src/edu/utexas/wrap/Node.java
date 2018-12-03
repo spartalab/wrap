@@ -19,7 +19,7 @@ public class Node {
 	}
 
 	public int hashCode() {
-		return getID();
+		return ID;
 	}
 
 

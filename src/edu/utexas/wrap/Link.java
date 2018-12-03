@@ -1,7 +1,7 @@
 package edu.utexas.wrap;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.HashMap;
 
 /**
  * @author rahulpatel
@@ -9,7 +9,7 @@ import java.util.Map;
  */
 public abstract class Link implements Priced {
 
-	private final float capacity, length, fftime;
+	private final Float capacity, length, fftime;
 	private final Node head;
 	private final Node tail;
 
@@ -25,10 +25,10 @@ public abstract class Link implements Priced {
 		this.capacity = capacity;
 		this.length = length;
 		this.fftime = fftime;
-
-		this.flow = new HashMap<AssignmentContainer,Double>();
+		
+		flow = new HashMap<AssignmentContainer,Double>();
 	}
-
+ 
 
 	public abstract Boolean allowsClass(VehicleClass c);
 
@@ -91,8 +91,15 @@ public abstract class Link implements Priced {
 
 	public abstract Double getTravelTime();
 
+	public int hashCode() {
+		int c = 76537;	//	UT 76-5-37 TAMC |m|
+		int b = 1831;	//	Founding of Univ. of Alabama
+		int a = 2017;	//	Year of inception for this project
+		return (((head.getID()*a + tail.getID())*b + capacity.intValue())*c + fftime.intValue());
+	}
+	
 	public Boolean hasFlow(Bush bush) {
-		return flow.get(bush) != null;
+		return flow.containsKey(bush);
 	}
 
 	public abstract Double pricePrime(Float float1);

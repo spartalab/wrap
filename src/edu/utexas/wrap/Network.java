@@ -57,8 +57,6 @@ class GapCalculator extends Thread {
 
 public class Network {
 
-//	private Map<Integer, Node> nodes;
-//	protected Set<Link> links;
 	protected Set<Origin> origins;
 	protected Graph graph;
 	
@@ -83,7 +81,7 @@ public class Network {
 			cc = new TSGCCalculator(this);
 			cc.start();
 		}
-		
+
 		Double numerator = 0.0;
 		Double denominator = 0.0;
 		
@@ -209,7 +207,7 @@ public class Network {
 		
 		for (Origin o : origins) {
 			for (Bush b : o.getBushes()) {
-				for (Link l : b.getLinks()) {
+				for (Link l : b) {
 					tsgc += l.getBushFlow(b).doubleValue() * l.getPrice(b.getVOT(),b.getVehicleClass()).doubleValue();
 				}
 			}

@@ -1,10 +1,11 @@
 package edu.utexas.wrap;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 public class Origin {
 
@@ -38,7 +39,7 @@ public class Origin {
 		// eligible nodes to contain this origin only, and the 
 		// back-link mapping to be empty
 		Collection<Node> nodes = g.getNodes();
-		initMap = new HashMap<Node, Link>(nodes.size(),1.0f);
+		initMap = new Object2ObjectOpenHashMap<Node, Link>(nodes.size(),1.0f);
 		FibonacciHeap<Node> Q = new FibonacciHeap<Node>(nodes.size(),1.0f);
 		for (Node n : nodes) {
 			if (!n.equals(self)) {

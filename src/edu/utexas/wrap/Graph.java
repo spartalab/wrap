@@ -40,8 +40,8 @@ public class Graph {
 		if (altered) {
 			inLinks.put(head, headIns);
 			outLinks.put(tail, tailOuts);
-			nodeMap.put(link.getHead().getID(), link.getHead());
-			nodeMap.put(link.getTail().getID(), link.getTail());
+			nodeMap.put(link.getHead().getID(), head);
+			nodeMap.put(link.getTail().getID(), tail);
 		}
 		return altered;
 	}
@@ -66,10 +66,6 @@ public class Graph {
 	
 	public Node getNode(Integer id) {
 		return nodeMap.get(id);
-	}
-	
-	public Map<Integer, Node> getNodeMap(){
-		return nodeMap;
 	}
 	
 	public Collection<Node> getNodes(){

@@ -135,7 +135,7 @@ public class wrap{
 			return;
 		}
 		
-		System.out.println("Initializing optimizer...");
+		System.out.println("\nInitializing optimizer...");
 		Optimizer opt = new AlgorithmBOptimizer(network);
 
 		System.out.println("Starting " + opt.toString() + "...");

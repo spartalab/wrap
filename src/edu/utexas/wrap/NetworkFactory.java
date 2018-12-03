@@ -28,7 +28,8 @@ class BushBuilder extends Thread {
 		orig = new Origin(o);
 		for (VehicleClass c : map.keySet()) {
 			for (Float vot : map.get(c).keySet()) {
-				orig.buildBush(g, vot, map.get(c).get(vot), c);
+				Map<Node, Float> odm = map.get(c).get(vot);
+				if (!odm.isEmpty()) orig.buildBush(g, vot, odm, c);
 			}
 		}
 		orig.deleteInitMap();
@@ -300,7 +301,7 @@ public class NetworkFactory {
 				}
 
 				// Reset maps
-				System.out.println("Building bushes for origin " + orig);
+				System.out.print("\rBuilding bushes for origin " + orig);
 				curOrig = orig;
 				solo17 = new HashMap<Node, Float>(numZones / 2, 1.0f);
 				solo35 = new HashMap<Node, Float>(numZones / 2, 1.0f);
@@ -341,9 +342,13 @@ public class NetworkFactory {
 		}
 		matrixFile.close();
 		try {
+			int size = pool.size();
 			for (BushBuilder t : pool) {
+				System.out.print("\r                                    ");
+				System.out.print("\rFinalizing "+size+" origins         ");
 				t.join();
 				origins.add(t.orig);
+				size--;
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -439,7 +444,7 @@ public class NetworkFactory {
 
 			Integer origID = Integer.parseInt(line.trim().split("\\s+")[1]);
 			Node root = g.getNode(origID); // Retrieve the existing node with that ID
-
+			System.out.print("\rBuilding bushes for origin " + origID);
 			HashMap<Node, Float> dests = readDestinationDemand(of);
 
 //			Origin o = new Origin(root); 	// Construct an origin to replace it
@@ -464,15 +469,19 @@ public class NetworkFactory {
 
 		}
 		of.close();
-
+		System.out.print("\r                                ");
 		try {
+			int size = pool.size();
 			for (BushBuilder t : pool) {
+				System.out.print("\rFinalizing "+size+" origins     ");
 				t.join();
 				origins.add(t.orig);
+				size--;
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		System.out.print("\rInitial trips loaded            ");
 	}
 
 	public void readTNTPUniformVOTtrips(File VOTfile, File odMatrix) throws FileNotFoundException {

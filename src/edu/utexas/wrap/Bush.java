@@ -9,8 +9,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public class Bush extends Graph implements AssignmentContainer {
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
+public class Bush extends HashSet<Link> implements AssignmentContainer {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 282086135279510954L;
 	// Bush structure
 	private final Origin origin;
 	private final Float vot;
@@ -25,7 +31,7 @@ public class Bush extends Graph implements AssignmentContainer {
 	private LinkedList<Node> cachedTopoOrder;
 
 	public Bush(Origin o, Graph g, Float vot, Map<Node, Float> destDemand, VehicleClass c) {
-		super();
+		super(o.getInitMap(g).values());
 		origin = o;
 		this.vot = vot;
 		this.c = c;
@@ -33,8 +39,7 @@ public class Bush extends Graph implements AssignmentContainer {
 		// Initialize flow and status maps
 		wholeNet = g;
 		qShort = origin.getInitMap(g);
-		addAll(qShort.values());
-		qLong = new HashMap<Node, Link>(wholeNet.numNodes(), 1.0f);
+		qLong = new Object2ObjectOpenHashMap<Node, Link>(g.numNodes(), 1.0f);
 
 		dumpFlow(destDemand);
 	}
@@ -53,8 +58,8 @@ public class Bush extends Graph implements AssignmentContainer {
 
 	private Boolean deactivate(Link l) {
 		Node head = l.getHead();
-		for (Link i : inLinks(head)) {
-			if (!i.equals(l)) {
+		for (Link i : wholeNet.inLinks(head)) {
+			if (contains(i) && !i.equals(l)) {
 				markInactive(l);
 				return true;
 			}
@@ -143,7 +148,7 @@ public class Bush extends Graph implements AssignmentContainer {
 	 */
 	private LinkedList<Node> generateTopoOrder() {
 		// Start with a set of all bush edges
-		Set<Link> currentLinks = getLinks();
+		Set<Link> currentLinks = new HashSet<Link>(this);
 
 		LinkedList<Node> to = new LinkedList<Node>();
 		LinkedList<Node> S = new LinkedList<Node>();
@@ -156,7 +161,7 @@ public class Bush extends Graph implements AssignmentContainer {
 			to.add(n); // append node to L
 
 			// for each active edge out of this node
-			for (Link l : outLinks(n)) {
+			for (Link l : wholeNet.outLinks(n)) {
 				if (currentLinks.contains(l)) {
 
 					// remove the links from the set
@@ -166,7 +171,7 @@ public class Bush extends Graph implements AssignmentContainer {
 
 					// see if this node has no other incoming active links
 					boolean mHasIncoming = false;
-					for (Link e : inLinks(m)) {
+					for (Link e : wholeNet.inLinks(m)) {
 						if (currentLinks.contains(e)) {
 							mHasIncoming = true;
 							break;
@@ -180,7 +185,7 @@ public class Bush extends Graph implements AssignmentContainer {
 		}
 		if (!currentLinks.isEmpty())
 			throw new RuntimeException("Cyclic graph error");
-		cachedTopoOrder = to;
+//		cachedTopoOrder = to;
 		return to;
 	}
 
@@ -216,11 +221,11 @@ public class Bush extends Graph implements AssignmentContainer {
 
 	public Float getDemand(Node node) {
 		Double inFlow = 0.0;
-		for (Link l : inLinks(node)) {
+		for (Link l : wholeNet.inLinks(node)) {
 			inFlow += l.getBushFlow(this);
 		}
 		Double outFlow = 0.0;
-		for (Link l : outLinks(node)) {
+		for (Link l : wholeNet.outLinks(node)) {
 			outFlow += l.getBushFlow(this);
 		}
 		return (float) (inFlow - outFlow);
@@ -272,6 +277,12 @@ public class Bush extends Graph implements AssignmentContainer {
 	}
 
 	public AlternateSegmentPair getShortLongASP(Node terminus) {
+		//Iterate through longest paths until reaching a node in shortest path
+
+		//Reiterate through shortest path to build path up to divergence node
+		//The two paths constitute a Pair of Alternate Segments
+
+		
 		Link shortLink = getqShort(terminus);
 		Link longLink = getqLong(terminus);
 
@@ -285,7 +296,6 @@ public class Bush extends Graph implements AssignmentContainer {
 		try {
 			return new AlternateSegmentPair(getShortPath(terminus, diverge), getLongPath(terminus, diverge), this);
 		} catch (UnreachableException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return null;
 		}
@@ -340,7 +350,17 @@ public class Bush extends Graph implements AssignmentContainer {
 	public Float getVOT() {
 		return vot;
 	}
-
+	
+	@Override
+	public int hashCode() {
+		//origin;vot;c;
+		int a = 2017;	//	Year of inception for this project
+		int b = 76537;	//	UT 76-5-37 TAMC \m/
+		
+		return (origin.getNode().getID()*a + vot.intValue())*b + (c == null? 0 : c.hashCode());
+//		return hc;
+	}
+	
 	public boolean isInvalidConnector(Link uv) {
 		if (!(uv instanceof CentroidConnector) || uv.getTail().equals(origin.getNode())
 				|| (uv.getHead().isCentroid() && !uv.getTail().isCentroid()))
@@ -368,11 +388,11 @@ public class Bush extends Graph implements AssignmentContainer {
 		List<Node> to = getTopologicalOrder();
 		Map<Node, Double> cache = new HashMap<Node, Double>(wholeNet.numNodes());
 
-		qLong = new HashMap<Node, Link>(wholeNet.numNodes(), 1.0f);
+		qLong = new Object2ObjectOpenHashMap<Node, Link>(wholeNet.numNodes(), 1.0f);
 		for (Node d : to) {
 			try {
-				for (Link l : outLinks(d)) {
-					longRelax(l, cache);
+				for (Link l : wholeNet.outLinks(d)) {
+					if (contains(l)) longRelax(l, cache);
 				}
 			} catch (UnreachableException e) {
 				if (getDemand(d) > 0.0) {
@@ -390,7 +410,7 @@ public class Bush extends Graph implements AssignmentContainer {
 	}
 
 	void prune() {
-		for (Link l : getLinks()) {
+		for (Link l : new HashSet<Link>(this)) {
 			if (!l.hasFlow(this)) {
 				// Check to see if this link is needed for connectivity, deactivate link in bush
 				// if no flow left
@@ -420,11 +440,11 @@ public class Bush extends Graph implements AssignmentContainer {
 		List<Node> to = getTopologicalOrder();
 		Map<Node, Double> cache = new HashMap<Node, Double>(wholeNet.numNodes());
 
-		qShort = new HashMap<Node, Link>(wholeNet.numNodes(), 1.0f);
+		qShort = new Object2ObjectOpenHashMap<Node, Link>(wholeNet.numNodes(), 1.0f);
 		for (Node d : to) {
 			try {
-				for (Link l : outLinks(d)) {
-					shortRelax(l, cache);
+				for (Link l : wholeNet.outLinks(d)) {
+					if (contains(l)) shortRelax(l, cache);
 				}
 			} catch (UnreachableException e) {
 				if (getDemand(d) > 0.0) {

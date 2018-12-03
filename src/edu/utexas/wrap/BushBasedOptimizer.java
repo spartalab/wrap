@@ -40,7 +40,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		b.prune();
 
 		boolean modified = false;
-		Set<Link> usedLinks = new HashSet<Link>(b.getLinks());
+		Set<Link> usedLinks = new HashSet<Link>(b);
 		Set<Link> unusedLinks = new HashSet<Link>(network.getLinks());
 		unusedLinks.removeAll(usedLinks);
 		
@@ -81,7 +81,6 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		
 		for (Origin o : network.getOrigins()) {
 			for (Bush b : o.getBushes()) {
-				
 				Thread t = new Thread() {
 					public void run() {
 						// Step ii: Improve bushes in parallel
