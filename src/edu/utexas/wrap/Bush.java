@@ -10,6 +10,10 @@ import java.util.Map;
 import java.util.Set;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
+
+import com.carrotsearch.hppc.ObjectObjectHashMap;
+import com.carrotsearch.hppc.ObjectObjectScatterMap;
 
 public class Bush extends HashSet<Link> implements AssignmentContainer {
 
@@ -39,7 +43,7 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 		// Initialize flow and status maps
 		wholeNet = g;
 		qShort = origin.getInitMap(g);
-		qLong = new Object2ObjectOpenHashMap<Node, Link>(g.numNodes(), 1.0f);
+		qLong = new HashMap<Node, Link>(g.numNodes(), 1.0f);
 
 		dumpFlow(destDemand);
 	}

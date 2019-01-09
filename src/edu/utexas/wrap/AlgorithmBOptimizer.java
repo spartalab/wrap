@@ -5,24 +5,13 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
 
 
 public class AlgorithmBOptimizer extends BushBasedOptimizer{
 
-	public AlgorithmBOptimizer(Network network) {
-		super(network);
-	}
-
-	public AlgorithmBOptimizer(Network network, Integer maxIters) {
-		super(network, maxIters, -6);
-	}
-
-	public AlgorithmBOptimizer(Network network, Integer maxIters, Integer exp) {
-		super(network, maxIters, exp, 16);
-	}
-
-	public AlgorithmBOptimizer(Network network, Integer maxIters, Integer exp, Integer places) {
-		super(network, maxIters, exp, places);
+	public AlgorithmBOptimizer(Graph g, Set<Origin> o) {
+		super(g,o);
 	}
 
 	/** Implement the Algorithm B version of bush equilibration

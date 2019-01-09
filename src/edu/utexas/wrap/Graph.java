@@ -1,5 +1,6 @@
 package edu.utexas.wrap;
 
+import java.io.PrintStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,6 +11,7 @@ public class Graph {
 	private Map<Node, Set<Link>> outLinks;
 	private Map<Node, Set<Link>> inLinks;
 	private Map<Integer, Node> nodeMap;
+	private int numZones;
 	
 	public Graph() {
 		outLinks = new HashMap<Node, Set<Link>>();
@@ -72,6 +74,14 @@ public class Graph {
 		return nodeMap.values();
 	}
 
+	public int getNumZones() {
+		return numZones;
+	}
+
+	public void setNumZones(int numZones) {
+		this.numZones = numZones;
+	}
+
 	public Set<Link> inLinks(Node u){
 		return inLinks.getOrDefault(u, new HashSet<Link>(0));
 	}
@@ -101,4 +111,12 @@ public class Graph {
 		outLinks.remove(node);
 	}
 
+	public void printFlows(PrintStream out) {
+		out.println("\r\nTail\tHead\tflow");
+		for (Link l : getLinks()) {
+			Double sum = l.getFlow().doubleValue();
+			out.println(l+"\t"+sum);
+		}
+	}
+	
 }

@@ -1,6 +1,10 @@
 package edu.utexas.wrap;
 
 import java.util.Map;
+
+import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Reference2DoubleOpenHashMap;
+
 import java.util.HashMap;
 
 /**
@@ -26,7 +30,7 @@ public abstract class Link implements Priced {
 		this.length = length;
 		this.fftime = fftime;
 		
-		flow = new HashMap<AssignmentContainer,Double>();
+		flow = new Reference2DoubleOpenHashMap<AssignmentContainer>();
 	}
  
 

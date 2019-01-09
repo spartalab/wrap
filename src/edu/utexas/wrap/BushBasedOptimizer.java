@@ -5,32 +5,13 @@ import java.util.Map;
 import java.util.Set;
 
 public abstract class BushBasedOptimizer extends Optimizer {
-	private int innerIters;
+	private int innerIters = 10;
 
-	public BushBasedOptimizer(Network network) {
-		super(network);
-		innerIters = 10;
-	}
 
-	public BushBasedOptimizer(Network network, Integer maxIters) {
-		super(network, maxIters, -6);
-		innerIters = 10;
-	}
-	
-	public BushBasedOptimizer(Network network, Integer maxIters, Integer exp) {
-		super(network, maxIters, exp, 16);
-		innerIters = 10;
+	public BushBasedOptimizer(Graph g, Set<Origin> o) {
+		super(g,o);
 	}
 
-	public BushBasedOptimizer(Network network, Integer maxIters, Integer exp, Integer places) {
-		super(network,maxIters,exp,places);
-		innerIters = 10;
-	}
-	
-	public BushBasedOptimizer(Network network, Integer maxIters, Integer exp, Integer places, Integer innerIters) {
-		super(network,maxIters,exp,places);
-		this.innerIters = innerIters;
-	}
 	
 	protected abstract void equilibrateBush(Bush b);
 
@@ -41,7 +22,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 
 		boolean modified = false;
 		Set<Link> usedLinks = new HashSet<Link>(b);
-		Set<Link> unusedLinks = new HashSet<Link>(network.getLinks());
+		Set<Link> unusedLinks = new HashSet<Link>(graph.getLinks());
 		unusedLinks.removeAll(usedLinks);
 		
 		b.shortTopoSearch();
@@ -76,10 +57,9 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		// A single general step iteration
 		// TODO explore which bushes should be examined 
 		
-		
 		Set<Thread> pool = new HashSet<Thread>();
 		
-		for (Origin o : network.getOrigins()) {
+		for (Origin o : origins) {
 			for (Bush b : o.getBushes()) {
 				Thread t = new Thread() {
 					public void run() {
@@ -100,7 +80,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 			e.printStackTrace();
 		}
 		for (int i = 0; i < innerIters; i++) {
-			for (Origin o : network.getOrigins()) {
+			for (Origin o : origins) {
 				for (Bush b : o.getBushes()) {
 					// Step i: Equilibrate bushes sequentially
 					equilibrateBush(b);
@@ -108,4 +88,9 @@ public abstract class BushBasedOptimizer extends Optimizer {
 			}
 		}
 	}
+	
+	public void setInnerIters(int innerIters) {
+		this.innerIters = innerIters;
+	}
+
 }

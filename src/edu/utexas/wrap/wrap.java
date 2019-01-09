@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Set;
 
 /** wrap: an Algorithm B implementation
  * @author William E. Alexander
@@ -90,13 +91,13 @@ public class wrap{
 
 	public static void main(String[] args) {
 
-		Network network;
+		Graph g = null; 
+		Set<Origin> o = null;
 		try {
-			NetworkFactory n = new NetworkFactory();
 			if (args.length < 3) {
 				System.err.println("Uniform VOT usage: wrap network.tntp odMatrix.tntp votSplit.tntp");
 				System.err.println("Variable VOT usage: wrap {-v || --variable} network.tntp odMatrix.tntp");
-				System.err.println("Enahnced usage: wrap {-e || --enhanced} network.csv odMatrix.csv");
+				System.err.println("Enahnced usage: wrap {-e || --enhanced} network.csv odMatrix.csv firstThruNode");
 				System.exit(3);
 			}
 			if ((args[0].trim().equals("-e") || args[0].trim().equals("--enhanced"))) {
@@ -105,10 +106,10 @@ public class wrap{
 				Integer firstThruNode = Integer.parseInt(args[3]);
 				
 				System.out.println("Reading network...");
-				n.readEnhancedGraph(links, firstThruNode);
+				g = GraphFactory.readEnhancedGraph(links, firstThruNode);
 				
 				System.out.println("Reading trips...");				
-				n.readEnhancedTrips(odMatrix);
+				o = OriginFactory.readEnhancedTrips(odMatrix, g);
 			}
 			else if (!( args[0].trim().equals("-v") || args[0].trim().equals("--variable") )) {
 				File links 		= new File(args[0]);
@@ -116,16 +117,15 @@ public class wrap{
 				File votFile 	= new File(args[2]);
 				
 				System.out.println("Reading network...");
-				n.readTNTPGraph(links);
+				g = GraphFactory.readTNTPGraph(links);
 				 
 				System.out.println("Reading trips...");
-				n.readTNTPUniformVOTtrips(votFile, odMatrix);
+				o = OriginFactory.readTNTPUniformVOTtrips(votFile, odMatrix, g);
 			}
 			else {
 				//TODO handle variable VOT usage
 				System.err.println("Not yet implemented");
 			}
-			network = n.getNetwork();
  
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -136,14 +136,14 @@ public class wrap{
 		}
 		
 		System.out.println("\nInitializing optimizer...");
-		Optimizer opt = new AlgorithmBOptimizer(network);
+		Optimizer opt = new AlgorithmBOptimizer(g, o);
 
 		System.out.println("Starting " + opt.toString() + "...");
 		opt.optimize();
 
 		try {
 			System.setOut(new PrintStream("VOTflow.txt"));
-			if (printFlows) network.printFlows(System.out);
+			if (printFlows) g.printFlows(System.out);
 
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
