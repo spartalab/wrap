@@ -1,4 +1,4 @@
-package edu.utexas.wrap;
+package edu.utexas.wrap.assignment;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -6,6 +6,12 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+
+import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.net.Link;
+import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.util.AlternateSegmentPair;
+import edu.utexas.wrap.util.NegativeFlowException;
 
 
 public class AlgorithmBOptimizer extends BushBasedOptimizer{
@@ -60,7 +66,7 @@ public class AlgorithmBOptimizer extends BushBasedOptimizer{
 		for (Link l : asp.longPath()) {
 			//				b.subtractFlow(l, deltaH);
 			Double td = deltaX.getOrDefault(l, 0.0)-deltaH.doubleValue();
-			Double ld = -l.getBushFlow(b);
+			Double ld = -l.getFlow(b);
 			Double ud = Math.max(Math.ulp(ld),Math.ulp(td));
 
 			if (td < ld) {

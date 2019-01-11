@@ -1,4 +1,6 @@
-package edu.utexas.wrap;
+package edu.utexas.wrap.net;
+
+import edu.utexas.wrap.VehicleClass;
 
 public class TolledBPRLink extends TolledLink {
 	

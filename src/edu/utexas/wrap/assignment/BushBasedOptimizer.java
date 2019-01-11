@@ -1,8 +1,13 @@
-package edu.utexas.wrap;
+package edu.utexas.wrap.assignment;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+
+import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.net.Link;
+import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.util.UnreachableException;
 
 public abstract class BushBasedOptimizer extends Optimizer {
 	private int innerIters = 10;

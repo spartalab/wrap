@@ -1,8 +1,14 @@
-package edu.utexas.wrap;
+package edu.utexas.wrap.assignment;
 
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import edu.utexas.wrap.Priced;
+import edu.utexas.wrap.VehicleClass;
+import edu.utexas.wrap.net.Link;
+import edu.utexas.wrap.net.Node;
 
 public class Path extends LinkedList<Link> implements Priced, AssignmentContainer {
 
@@ -45,7 +51,7 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	public Double getMinFlow(Bush b, Map<Link, Double> deltaX) {
 		Double maxDelta = null;
 		for (Link l : this) {
-			Double x = l.getBushFlow(b) + deltaX.getOrDefault(l, 0.0);
+			Double x = l.getFlow(b) + deltaX.getOrDefault(l, 0.0);
 			if (maxDelta == null || x.compareTo(maxDelta) < 0) {
 				maxDelta = x;
 			}
@@ -70,6 +76,19 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 		return vot;
 	}
 
+	public Integer indexOf(Node n) {
+		int index = 0;
+		Iterator<Link> i = this.iterator();
+		Link l = null;
+		while (i.hasNext()) {
+			l = i.next();
+			if (l.getTail().equals(n)) return index;
+			index++;
+		}
+		if (l != null && l.getHead().equals(n)) return index;
+		return null;
+	}
+	
 	public Node node(Integer index) {
 		if (index == size()) return getLast().getHead();
 		return get(index).getTail();
@@ -98,4 +117,14 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 		return ret+"]";
 	}
 
+	@Override
+	public Float getDemand(Node n) {
+		Integer idx = indexOf(n);
+		Link out = this.get(idx);
+		Link in  = this.get(idx-1);
+		Double inf  = in == null? 0.0 : in.getFlow(this);
+		Double outf = out == null? 0.0 : out.getFlow(this);
+		// TODO Auto-generated method stub
+		return (float) (inf - outf);
+	}
 }

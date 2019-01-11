@@ -1,4 +1,7 @@
-package edu.utexas.wrap;
+package edu.utexas.wrap.util;
+
+import edu.utexas.wrap.assignment.Bush;
+import edu.utexas.wrap.net.Node;
 
 public class UnreachableException extends Exception {
 

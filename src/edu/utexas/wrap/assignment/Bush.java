@@ -1,4 +1,4 @@
-package edu.utexas.wrap;
+package edu.utexas.wrap.assignment;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -14,6 +14,14 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 
 import com.carrotsearch.hppc.ObjectObjectHashMap;
 import com.carrotsearch.hppc.ObjectObjectScatterMap;
+
+import edu.utexas.wrap.VehicleClass;
+import edu.utexas.wrap.net.CentroidConnector;
+import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.net.Link;
+import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.util.AlternateSegmentPair;
+import edu.utexas.wrap.util.UnreachableException;
 
 public class Bush extends HashSet<Link> implements AssignmentContainer {
 
@@ -226,13 +234,13 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 	public Float getDemand(Node node) {
 		Double inFlow = 0.0;
 		for (Link l : wholeNet.inLinks(node)) {
-			inFlow += l.getBushFlow(this);
+			inFlow += l.getFlow(this);
 		}
 		Double outFlow = 0.0;
 		for (Link l : wholeNet.outLinks(node)) {
-			outFlow += l.getBushFlow(this);
+			outFlow += l.getFlow(this);
 		}
-		return (float) (inFlow - outFlow);
+		return  (float) (inFlow - outFlow);
 	}
 
 	public Double getL(Node n) throws UnreachableException {

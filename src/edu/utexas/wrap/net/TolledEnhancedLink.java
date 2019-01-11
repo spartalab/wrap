@@ -1,6 +1,8 @@
-package edu.utexas.wrap;
+package edu.utexas.wrap.net;
 
 import java.util.Map;
+
+import edu.utexas.wrap.VehicleClass;
 
 /**
  * @author SYSTEM

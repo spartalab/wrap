@@ -1,6 +1,12 @@
-package edu.utexas.wrap;
+package edu.utexas.wrap.assignment;
 
 import java.util.Set;
+
+import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.util.calc.BeckmannCalculator;
+import edu.utexas.wrap.util.calc.GapCalculator;
+import edu.utexas.wrap.util.calc.TSGCCalculator;
+import edu.utexas.wrap.util.calc.TSTTCalculator;
 
 public abstract class Optimizer {
 	/**

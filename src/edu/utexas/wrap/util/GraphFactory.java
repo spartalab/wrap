@@ -1,4 +1,4 @@
-package edu.utexas.wrap;
+package edu.utexas.wrap.util;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -7,6 +7,14 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import edu.utexas.wrap.VehicleClass;
+import edu.utexas.wrap.net.CentroidConnector;
+import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.net.Link;
+import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TolledBPRLink;
+import edu.utexas.wrap.net.TolledEnhancedLink;
 
 public class GraphFactory {
 	public static Graph readTNTPGraph(File linkFile) throws FileNotFoundException, IOException {

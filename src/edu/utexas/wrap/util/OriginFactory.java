@@ -1,4 +1,4 @@
-package edu.utexas.wrap;
+package edu.utexas.wrap.util;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -6,11 +6,17 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import edu.utexas.wrap.DestinationMatrix;
+import edu.utexas.wrap.VehicleClass;
+import edu.utexas.wrap.assignment.BushLoader;
+import edu.utexas.wrap.assignment.Origin;
+import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.net.Node;
 
 public class OriginFactory {
 	
@@ -46,15 +52,13 @@ public class OriginFactory {
 	}
 	
 	public static Set<Origin> readEnhancedTrips(File odMatrix, Graph g) throws FileNotFoundException, IOException {
-		Map<VehicleClass, // VehicleClass
-				Map<Float, // VOT
-						Map<Node, // Destination
-								Float>>> origMap = null;
+		DestinationMatrix origMap = null;
 		BufferedReader matrixFile = new BufferedReader(new FileReader(odMatrix));
 		String line;
 		Integer curOrig = null;
-		Set<Origin> origins = new HashSet<Origin>();
-		Set<BushBuilder> pool = new HashSet<BushBuilder>();
+		BushLoader dl = new BushLoader(g);
+//		Set<Origin> origins = new HashSet<Origin>();
+//		Set<BushBuilder> pool = new HashSet<BushBuilder>();
 		Map<Node, Float> solo17 = null, solo35 = null, solo45 = null, solo90 = null,
 
 				hov17 = null, hov35 = null, hov45 = null, hov90 = null,
@@ -68,7 +72,7 @@ public class OriginFactory {
 				if (curOrig != null) {
 					// build previous bushes
 
-					origMap = new HashMap<VehicleClass, Map<Float, Map<Node, Float>>>();
+					origMap = new DestinationMatrix();
 
 					Map<Float, Map<Node, Float>> soMap = new HashMap<Float, Map<Node, Float>>();
 					Map<Float, Map<Node, Float>> hoMap = new HashMap<Float, Map<Node, Float>>();
@@ -92,10 +96,8 @@ public class OriginFactory {
 					origMap.put(VehicleClass.HIGH_OCC, hoMap);
 					origMap.put(VehicleClass.MED_TRUCK, mtMap);
 					origMap.put(VehicleClass.HVY_TRUCK, htMap);
-
-					BushBuilder t = new BushBuilder(g, g.getNode(curOrig), origMap);
-					pool.add(t);
-					t.start();
+					
+					dl.add(g.getNode(curOrig), origMap);
 
 				}
 				break;
@@ -120,7 +122,7 @@ public class OriginFactory {
 				// Moving on to next origin
 				if (curOrig != null) {
 					// build previous origin's bushes
-					origMap = new HashMap<VehicleClass, Map<Float, Map<Node, Float>>>();
+					origMap = new DestinationMatrix();
 
 					Map<Float, Map<Node, Float>> soMap = new HashMap<Float, Map<Node, Float>>();
 					Map<Float, Map<Node, Float>> hoMap = new HashMap<Float, Map<Node, Float>>();
@@ -145,9 +147,7 @@ public class OriginFactory {
 					origMap.put(VehicleClass.MED_TRUCK, mtMap);
 					origMap.put(VehicleClass.HVY_TRUCK, htMap);
 
-					BushBuilder t = new BushBuilder(g, g.getNode(curOrig), origMap);
-					pool.add(t);
-					t.start();
+					dl.add(g.getNode(curOrig), origMap);
 
 				}
 
@@ -191,20 +191,9 @@ public class OriginFactory {
 			if (hvtk > 0.0F)
 				hvyTrucks.put(dest, hvtk);
 		}
+		
 		matrixFile.close();
-		try {
-			int size = pool.size();
-			for (BushBuilder t : pool) {
-				System.out.print("\r                                    ");
-				System.out.print("\rFinalizing "+size+" origins         ");
-				t.join();
-				origins.add(t.orig);
-				size--;
-			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		return origins;
+		return dl.conclude();
 	}
 
 	/**
@@ -224,10 +213,10 @@ public class OriginFactory {
 		/////////////////////////////////////
 		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
 		String line;
-		Set<BushBuilder> pool = new HashSet<BushBuilder>();
+//		Set<BushBuilder> pool = new HashSet<BushBuilder>();
 		HashMap<Node, Float> bushDests;
-		Set<Origin> origins = new HashSet<Origin>();
-
+		BushLoader dl = new BushLoader(g);
+		
 		do { // Move past headers in the file
 			line = of.readLine();
 		} while (!line.startsWith("Origin"));
@@ -252,30 +241,17 @@ public class OriginFactory {
 				nmap.put(entry[0], bushDests);
 			}
 
-			Map<VehicleClass, Map<Float, Map<Node, Float>>> omap = new HashMap<VehicleClass, Map<Float, Map<Node, Float>>>();
+			DestinationMatrix omap = new DestinationMatrix();
 			omap.put(null, nmap);
-			BushBuilder t = new BushBuilder(g, root, omap);
-			pool.add(t);
-			t.start();
+			dl.add(root, omap);
+
 
 			line = of.readLine();
 
 		}
 		of.close();
-		System.out.print("\r                                ");
-		try {
-			int size = pool.size();
-			for (BushBuilder t : pool) {
-				System.out.print("\rFinalizing "+size+" origins     ");
-				t.join();
-				origins.add(t.orig);
-				size--;
-			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		System.out.print("\rInitial trips loaded            ");
-		return origins;
+
+		return dl.conclude();
 	}
 
 	public static Set<Origin> readTNTPUniformVOTtrips(File VOTfile, File odMatrix, Graph g) throws FileNotFoundException {

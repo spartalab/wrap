@@ -1,10 +1,15 @@
-package edu.utexas.wrap;
+package edu.utexas.wrap.util;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
+
+import edu.utexas.wrap.assignment.Path;
+import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.net.Link;
+import edu.utexas.wrap.net.Node;
 
 
 public class SPAlgorithms {
@@ -21,9 +26,9 @@ public class SPAlgorithms {
 		Q.add(origin, 0.0);
 		
 		while (!Q.isEmpty()) {
-			Leaf<Node> u = Q.poll();
+			FibonacciLeaf<Node> u = Q.poll();
 			for (Link uv : g.outLinks(u.n)) {
-				Leaf<Node> v = Q.getLeaf(uv.getHead());
+				FibonacciLeaf<Node> v = Q.getLeaf(uv.getHead());
 				Double alt = uv.getTravelTime().doubleValue() + u.key;
 				if (alt < v.key) {
 					Q.decreaseKey(v, alt);

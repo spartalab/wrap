@@ -1,4 +1,4 @@
-package edu.utexas.wrap;
+package edu.utexas.wrap.util;
 
 import java.util.AbstractQueue;
 import java.util.HashMap;
@@ -10,11 +10,11 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
 
-public class FibonacciHeap<E> extends AbstractQueue<Leaf<E>>{
+public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 	private Integer n;
-	private Leaf<E> min;
-	private List<Leaf<E>> rootList;
-	private Map<E,Leaf<E>> map;
+	private FibonacciLeaf<E> min;
+	private List<FibonacciLeaf<E>> rootList;
+	private Map<E,FibonacciLeaf<E>> map;
 	
 	public FibonacciHeap() {
 		this(16,0.75f);
@@ -27,21 +27,21 @@ public class FibonacciHeap<E> extends AbstractQueue<Leaf<E>>{
 	public FibonacciHeap(Integer size, Float loadFactor){
 		n = 0;
 		min = null;
-		rootList = new LinkedList<Leaf<E>>();
-		map = new HashMap<E,Leaf<E>>(size,loadFactor);
+		rootList = new LinkedList<FibonacciLeaf<E>>();
+		map = new HashMap<E,FibonacciLeaf<E>>(size,loadFactor);
 	}
 	
 	public boolean add(E node, Double d) {
 		if (map.containsKey(node)) throw new UnsupportedOperationException("Duplicate node in Fibonacci Heap. Keys must be unique.");
-		Leaf<E> e = new Leaf<E>(node,d);
+		FibonacciLeaf<E> e = new FibonacciLeaf<E>(node,d);
 		map.put(node, e);
 		
 		return offer(e);
 
 	}
 
-	private void cascadingCut(Leaf<E> y) {
-		Leaf<E> z = y.parent;
+	private void cascadingCut(FibonacciLeaf<E> y) {
+		FibonacciLeaf<E> z = y.parent;
 		if (z != null) {
 			if (!y.mark) y.mark = true;
 			else {
@@ -53,16 +53,16 @@ public class FibonacciHeap<E> extends AbstractQueue<Leaf<E>>{
 
 
 	private void consolidate() {
-		HashMap<Integer, Leaf<E>> A = new HashMap<Integer, Leaf<E>>();
-		Set<Leaf<E>> ignore = new HashSet<Leaf<E>>();
-		for (Leaf<E> w : rootList) {
+		HashMap<Integer, FibonacciLeaf<E>> A = new HashMap<Integer, FibonacciLeaf<E>>();
+		Set<FibonacciLeaf<E>> ignore = new HashSet<FibonacciLeaf<E>>();
+		for (FibonacciLeaf<E> w : rootList) {
 			if (ignore.contains(w)) continue;
-			Leaf<E> x = w;
+			FibonacciLeaf<E> x = w;
 			Integer d = x.degree;
 			while (A.get(d) != null) {
-				Leaf<E> y = A.get(d);
+				FibonacciLeaf<E> y = A.get(d);
 				if (x.key > y.key) {
-					Leaf<E> temp = x;
+					FibonacciLeaf<E> temp = x;
 					x = y;
 					y = temp;
 				}
@@ -72,13 +72,13 @@ public class FibonacciHeap<E> extends AbstractQueue<Leaf<E>>{
 			}
 			A.put(d, x);
 		}
-		for (Leaf<E> w : ignore) rootList.remove(w);
+		for (FibonacciLeaf<E> w : ignore) rootList.remove(w);
 		min = null;
 		for (Integer i : new PriorityQueue<Integer>(A.keySet())) {
-			Leaf<E> ai = A.get(i);
+			FibonacciLeaf<E> ai = A.get(i);
 			if (ai != null) {
 				if (min == null) {
-					rootList = new LinkedList<Leaf<E>>();
+					rootList = new LinkedList<FibonacciLeaf<E>>();
 					rootList.add(ai);
 					min = ai;
 				}
@@ -92,7 +92,7 @@ public class FibonacciHeap<E> extends AbstractQueue<Leaf<E>>{
 		}
 	}
 
-	private void cut(Leaf<E> x, Leaf<E> y) {
+	private void cut(FibonacciLeaf<E> x, FibonacciLeaf<E> y) {
 		y.child.remove(x);
 		y.degree--;
 		rootList.add(x);
@@ -100,10 +100,10 @@ public class FibonacciHeap<E> extends AbstractQueue<Leaf<E>>{
 		x.mark = false;
 	}
 
-	public void decreaseKey(Leaf<E> x, Double k) {
+	public void decreaseKey(FibonacciLeaf<E> x, Double k) {
 		if (k > x.key) return; //throw new Exception();
 		x.key = k;
-		Leaf<E> y = x.parent;
+		FibonacciLeaf<E> y = x.parent;
 		if (y != null && x.key < y.key) {
 			cut(x,y);
 			cascadingCut(y);
@@ -112,12 +112,12 @@ public class FibonacciHeap<E> extends AbstractQueue<Leaf<E>>{
 	}
 
 	public void delete(E n) throws Exception {
-		Leaf<E> x = map.remove(n);
+		FibonacciLeaf<E> x = map.remove(n);
 		decreaseKey(x,-Double.MAX_VALUE);
 		poll();
 	}
 
-	public Leaf<E> getLeaf(E head) {
+	public FibonacciLeaf<E> getLeaf(E head) {
 		return map.get(head);
 	}
 
@@ -127,12 +127,12 @@ public class FibonacciHeap<E> extends AbstractQueue<Leaf<E>>{
 	}
 
 	@Override
-	public Iterator<Leaf<E>> iterator() {
+	public Iterator<FibonacciLeaf<E>> iterator() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	private void link(Leaf<E> x, Leaf<E> y, Set<Leaf<E>> ignore) {
+	private void link(FibonacciLeaf<E> x, FibonacciLeaf<E> y, Set<FibonacciLeaf<E>> ignore) {
 		ignore.add(y);
 		x.child.add(y);
 		x.degree++;
@@ -141,7 +141,7 @@ public class FibonacciHeap<E> extends AbstractQueue<Leaf<E>>{
 	}
 
 	@Override
-	public boolean offer(Leaf<E> e) {
+	public boolean offer(FibonacciLeaf<E> e) {
 		rootList.add(e);
 		if (min == null || e.key < min.key) min = e;
 		
@@ -150,7 +150,7 @@ public class FibonacciHeap<E> extends AbstractQueue<Leaf<E>>{
 	}
 	
 	@Override
-	public Leaf<E> peek() {
+	public FibonacciLeaf<E> peek() {
 		return min;
 	}
 
@@ -169,10 +169,10 @@ public class FibonacciHeap<E> extends AbstractQueue<Leaf<E>>{
 //	}
 
 	@Override
-	public Leaf<E> poll() {
-		Leaf<E> z = min;
+	public FibonacciLeaf<E> poll() {
+		FibonacciLeaf<E> z = min;
 		if (z != null) {
-			for (Leaf<E> x : z.child) {
+			for (FibonacciLeaf<E> x : z.child) {
 				rootList.add(x);
 				x.parent = null;
 			}
@@ -198,28 +198,4 @@ public class FibonacciHeap<E> extends AbstractQueue<Leaf<E>>{
 	public String toString() {
 		return "Heap size="+size()+"\tmin="+min.toString();
 	}
-}
-
-class Leaf<E>{
-	public E n;
-	public Double key;
-	public Integer degree;
-	public Leaf<E> parent;
-	public List<Leaf<E>> child;
-	public Boolean mark;
-	
-	public Leaf(E n, Double d) {
-		this.n = n;
-		this.key = d;
-		degree = 0;
-		parent = null;
-		child = new LinkedList<Leaf<E>>();
-		mark = false;
-	}
-
-	@Override
-	public String toString() {
-		return "Leaf\t"+n.toString()+"\t"+key.toString();
-	}
-
 }

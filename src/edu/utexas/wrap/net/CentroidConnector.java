@@ -1,4 +1,6 @@
-package edu.utexas.wrap;
+package edu.utexas.wrap.net;
+
+import edu.utexas.wrap.VehicleClass;
 
 public class CentroidConnector extends TolledLink {
 	private float toll;

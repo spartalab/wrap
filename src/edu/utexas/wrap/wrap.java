@@ -6,6 +6,13 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Set;
 
+import edu.utexas.wrap.assignment.AlgorithmBOptimizer;
+import edu.utexas.wrap.assignment.Optimizer;
+import edu.utexas.wrap.assignment.Origin;
+import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.util.GraphFactory;
+import edu.utexas.wrap.util.OriginFactory;
+
 /** wrap: an Algorithm B implementation
  * @author William E. Alexander
  * @author Rahul Patel

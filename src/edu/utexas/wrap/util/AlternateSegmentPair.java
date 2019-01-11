@@ -1,6 +1,11 @@
-package edu.utexas.wrap;
+package edu.utexas.wrap.util;
 
 import java.util.Map;
+
+import edu.utexas.wrap.assignment.Bush;
+import edu.utexas.wrap.assignment.Path;
+import edu.utexas.wrap.net.Link;
+import edu.utexas.wrap.net.Node;
 
 public class AlternateSegmentPair {
 	private final Path longPath;

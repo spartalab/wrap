@@ -1,12 +1,17 @@
-package edu.utexas.wrap;
+package edu.utexas.wrap.util;
 
 import java.util.Map;
 
-class BushBuilder extends Thread {
+import edu.utexas.wrap.VehicleClass;
+import edu.utexas.wrap.assignment.Origin;
+import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.net.Node;
+
+public class BushBuilder extends Thread {
 	Map<VehicleClass, Map<Float, Map<Node, Float>>> map;
 	Node o;
 	Graph g;
-	Origin orig;
+	public Origin orig;
 
 	public BushBuilder(Graph g, Node o, Map<VehicleClass, Map<Float, Map<Node, Float>>> map) {
 		this.o = o;

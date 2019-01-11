@@ -1,4 +1,4 @@
-package edu.utexas.wrap;
+package edu.utexas.wrap.util;
 
 public class NegativeFlowException extends RuntimeException {
 

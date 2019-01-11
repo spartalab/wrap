@@ -1,7 +1,9 @@
-package edu.utexas.wrap;
+package edu.utexas.wrap.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
+
+import edu.utexas.wrap.net.Node;
 
 import java.util.HashMap;
 import java.util.Random;
@@ -27,7 +29,7 @@ class FibonacciHeapTest {
 			for (Integer i = 0; i < numCases; i++) {
 				Double key = random.nextDouble();
 				//System.out.println(key);
-				Leaf<Node> p = heap.getLeaf(map.get(i));
+				FibonacciLeaf<Node> p = heap.getLeaf(map.get(i));
 				heap.decreaseKey(p, key);
 			}
 			System.out.println("-----");
@@ -36,7 +38,7 @@ class FibonacciHeapTest {
 	}
 	
 	boolean valid(FibonacciHeap<Node> heap, Integer numCases) {
-		Leaf<Node> last = null, comp = null;
+		FibonacciLeaf<Node> last = null, comp = null;
 		Integer count = 0;
 		while (!heap.isEmpty()) {
 			if (last == null) {

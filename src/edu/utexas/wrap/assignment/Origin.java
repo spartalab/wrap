@@ -1,10 +1,16 @@
-package edu.utexas.wrap;
+package edu.utexas.wrap.assignment;
 
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import edu.utexas.wrap.VehicleClass;
+import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.net.Link;
+import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.util.FibonacciHeap;
+import edu.utexas.wrap.util.FibonacciLeaf;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 public class Origin {
@@ -49,14 +55,14 @@ public class Origin {
 		Q.add(self, 0.0);
 
 		while (!Q.isEmpty()) {
-			Leaf<Node> u = Q.poll();
+			FibonacciLeaf<Node> u = Q.poll();
 			
 			
 			for (Link uv : g.outLinks(u.n)) {
 //				if (!uv.allowsClass(c) || isInvalidConnector(uv)) continue;
 				//If this link doesn't allow this bush's class of driver on the link, don't consider it
 				
-				Leaf<Node> v = Q.getLeaf(uv.getHead());
+				FibonacciLeaf<Node> v = Q.getLeaf(uv.getHead());
 				Double alt = uv.freeFlowTime()+u.key;
 				if (alt<v.key) {
 					Q.decreaseKey(v, alt);
@@ -70,7 +76,7 @@ public class Origin {
 		return bushes;
 	}
 	
-	Double getDemand(Node n) {
+	public Double getDemand(Node n) {
 		Double demand = 0.0;
 		for(Bush bush : this.bushes) {
 			demand += bush.getDemand(n);
