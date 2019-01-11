@@ -1,6 +1,9 @@
 package edu.utexas.wrap.assignment;
 
+import java.util.Set;
+
 import edu.utexas.wrap.VehicleClass;
+import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 
 /**A label indicating an object may be associated with a link flow.
@@ -16,5 +19,7 @@ public interface AssignmentContainer {
 	public Float getVOT();
 
 	public Float getDemand(Node n);
+	
+	public Set<Link> getLinks();
 	
 }

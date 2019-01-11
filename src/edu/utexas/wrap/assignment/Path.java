@@ -1,12 +1,15 @@
 package edu.utexas.wrap.assignment;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import edu.utexas.wrap.Priced;
 import edu.utexas.wrap.VehicleClass;
+import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 
@@ -126,5 +129,10 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 		Double outf = out == null? 0.0 : out.getFlow(this);
 		// TODO Auto-generated method stub
 		return (float) (inf - outf);
+	}
+
+	@Override
+	public Set<Link> getLinks() {
+		return new HashSet<Link>(this);
 	}
 }

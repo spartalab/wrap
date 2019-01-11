@@ -1,25 +1,74 @@
-package edu.utexas.wrap.assignment;
+package edu.utexas.wrap.assignment.bush;
 
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import edu.utexas.wrap.assignment.Optimizer;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.util.UnreachableException;
+import edu.utexas.wrap.util.calc.BeckmannCalculator;
+import edu.utexas.wrap.util.calc.GapCalculator;
+import edu.utexas.wrap.util.calc.TSGCCalculator;
+import edu.utexas.wrap.util.calc.TSTTCalculator;
 
-public abstract class BushBasedOptimizer extends Optimizer {
+public abstract class BushOptimizer extends Optimizer {
 	private int innerIters = 10;
+	protected Set<BushOrigin> origins;
 
-
-	public BushBasedOptimizer(Graph g, Set<Origin> o) {
-		super(g,o);
+	public BushOptimizer(Graph g, Set<BushOrigin> o) {
+		super(g);
+		origins = o;
 	}
 
 	
 	protected abstract void equilibrateBush(Bush b);
+	
+	@Override
+	protected Boolean converged() {
+		try {
+			if (iteration > maxIterations) return true;
+			if (gc == null) {
+				gc = new GapCalculator(graph, origins, null);
+				gc.start();
+				gc.join();
+			}
+			return gc.val < Math.pow(10, relativeGapExp);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return iteration > maxIterations;
+		}
+	}
+	
+	@Override
+	protected String getStats() {
+		String out = "";
 
+		tc = new TSTTCalculator(graph);
+		bc = new BeckmannCalculator(graph);
+		cc = new TSGCCalculator(graph, origins);
+//		ac = new AECCalculator(this,cc);
+		gc = new GapCalculator(graph, origins,cc);
+
+		cc.start();tc.start();gc.start();bc.start();//ac.start();
+		try {
+			tc.join();gc.join();bc.join();cc.join();//ac.join();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+//		out += String.format("%6.10E",ac.val) + "\t";
+		out += "\t\t\t";
+		
+		out += String.format("%6.10E",tc.val) + "\t";
+		out += String.format("%6.10E",bc.val) + "\t";
+		out += String.format("%6.10E",gc.val) + "\t";
+		out += String.format("%6.10E", cc.val);
+	
+		return out;
+	}
+	
 	protected Boolean improveBush(Bush b) {
 		//TODO cleanup
 
@@ -64,7 +113,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 		
 		Set<Thread> pool = new HashSet<Thread>();
 		
-		for (Origin o : origins) {
+		for (BushOrigin o : origins) {
 			for (Bush b : o.getBushes()) {
 				Thread t = new Thread() {
 					public void run() {
@@ -85,7 +134,7 @@ public abstract class BushBasedOptimizer extends Optimizer {
 			e.printStackTrace();
 		}
 		for (int i = 0; i < innerIters; i++) {
-			for (Origin o : origins) {
+			for (BushOrigin o : origins) {
 				for (Bush b : o.getBushes()) {
 					// Step i: Equilibrate bushes sequentially
 					equilibrateBush(b);

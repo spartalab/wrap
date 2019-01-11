@@ -9,12 +9,10 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import edu.utexas.wrap.DestinationMatrix;
+import edu.utexas.wrap.NetworkLoader;
 import edu.utexas.wrap.VehicleClass;
-import edu.utexas.wrap.assignment.BushLoader;
-import edu.utexas.wrap.assignment.Origin;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
@@ -51,12 +49,11 @@ public class OriginFactory {
 		return dests;
 	}
 	
-	public static Set<Origin> readEnhancedTrips(File odMatrix, Graph g) throws FileNotFoundException, IOException {
+	public static void readEnhancedTrips(File odMatrix, Graph g, NetworkLoader dl) throws FileNotFoundException, IOException {
 		DestinationMatrix origMap = null;
 		BufferedReader matrixFile = new BufferedReader(new FileReader(odMatrix));
 		String line;
 		Integer curOrig = null;
-		BushLoader dl = new BushLoader(g);
 //		Set<Origin> origins = new HashSet<Origin>();
 //		Set<BushBuilder> pool = new HashSet<BushBuilder>();
 		Map<Node, Float> solo17 = null, solo35 = null, solo45 = null, solo90 = null,
@@ -193,7 +190,6 @@ public class OriginFactory {
 		}
 		
 		matrixFile.close();
-		return dl.conclude();
 	}
 
 	/**
@@ -206,7 +202,7 @@ public class OriginFactory {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public static Set<Origin> readTNTPOriginSpecificProportionalVOTDemand(File odMatrix, Map<Node, List<Float[]>> VOTs, Graph g)
+	public static void readTNTPOriginSpecificProportionalVOTDemand(File odMatrix, Map<Node, List<Float[]>> VOTs, Graph g, NetworkLoader dl)
 			throws FileNotFoundException, IOException {
 		/////////////////////////////////////
 		// Read OD Matrix and assign flows
@@ -215,7 +211,6 @@ public class OriginFactory {
 		String line;
 //		Set<BushBuilder> pool = new HashSet<BushBuilder>();
 		HashMap<Node, Float> bushDests;
-		BushLoader dl = new BushLoader(g);
 		
 		do { // Move past headers in the file
 			line = of.readLine();
@@ -251,17 +246,15 @@ public class OriginFactory {
 		}
 		of.close();
 
-		return dl.conclude();
 	}
 
-	public static Set<Origin> readTNTPUniformVOTtrips(File VOTfile, File odMatrix, Graph g) throws FileNotFoundException {
+	public static void readTNTPUniformVOTtrips(File VOTfile, File odMatrix, Graph g, NetworkLoader dl) throws FileNotFoundException {
 		if (g == null)
 			throw new RuntimeException("Graph must be constructed before reading OD matrix");
 		try {
-			return readTNTPOriginSpecificProportionalVOTDemand(odMatrix, readUniformVOTDistrib(VOTfile,g), g);
+			readTNTPOriginSpecificProportionalVOTDemand(odMatrix, readUniformVOTDistrib(VOTfile,g), g, dl);
 		} catch (IOException e) {
 			e.printStackTrace();
-			return null;
 		}
 	}
 

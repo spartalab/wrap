@@ -1,4 +1,4 @@
-package edu.utexas.wrap.assignment;
+package edu.utexas.wrap.assignment.bush;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -16,6 +16,8 @@ import com.carrotsearch.hppc.ObjectObjectHashMap;
 import com.carrotsearch.hppc.ObjectObjectScatterMap;
 
 import edu.utexas.wrap.VehicleClass;
+import edu.utexas.wrap.assignment.AssignmentContainer;
+import edu.utexas.wrap.assignment.Path;
 import edu.utexas.wrap.net.CentroidConnector;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
@@ -30,7 +32,7 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 	 */
 	private static final long serialVersionUID = 282086135279510954L;
 	// Bush structure
-	private final Origin origin;
+	private final BushOrigin origin;
 	private final Float vot;
 	private final VehicleClass c;
 
@@ -42,7 +44,7 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 
 	private LinkedList<Node> cachedTopoOrder;
 
-	public Bush(Origin o, Graph g, Float vot, Map<Node, Float> destDemand, VehicleClass c) {
+	public Bush(BushOrigin o, Graph g, Float vot, Map<Node, Float> destDemand, VehicleClass c) {
 		super(o.getInitMap(g).values());
 		origin = o;
 		this.vot = vot;
@@ -276,7 +278,7 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 		return wholeNet.getNodes();
 	}
 
-	public Origin getOrigin() {
+	public BushOrigin getOrigin() {
 		return origin;
 	}
 
@@ -469,5 +471,10 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 
 	public String toString() {
 		return "ORIG=" + origin.getNode().getID() + "\tVOT=" + vot + "\tCLASS=" + c;
+	}
+
+	@Override
+	public Set<Link> getLinks() {
+		return this;
 	}
 }

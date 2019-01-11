@@ -1,10 +1,11 @@
-package edu.utexas.wrap.assignment;
+package edu.utexas.wrap.assignment.bush;
 
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import edu.utexas.wrap.Origin;
 import edu.utexas.wrap.VehicleClass;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
@@ -13,15 +14,14 @@ import edu.utexas.wrap.util.FibonacciHeap;
 import edu.utexas.wrap.util.FibonacciLeaf;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
-public class Origin {
-
-	private List<Bush> bushes;
+public class BushOrigin extends Origin {
+	private List<Bush> containers;
 	private Map<Node, Link> initMap;
-	private final Node self;
+
 	
-	public Origin(Node self) {
-		this.self = self;
-		bushes = new LinkedList<Bush>();
+	public BushOrigin(Node self) {
+		super(self);
+		containers = new LinkedList<Bush>();
 	}
 
 	/** Build the origin's initial bush using Dijkstra's algorithm
@@ -32,7 +32,7 @@ public class Origin {
 	 * the origin has demand.
 	 */	
 	public void buildBush(Graph g, Float vot, Map<Node, Float> destDemand, VehicleClass c) {
-		bushes.add(new Bush(this, g, vot, destDemand, c));
+		containers.add(new Bush(this, g, vot, destDemand, c));
 	}
 
 	/**Generate an initial bush (dag) by solving Dijkstra's Shortest Paths
@@ -73,12 +73,17 @@ public class Origin {
 	}
 	
 	public List<Bush> getBushes() {
-		return bushes;
+		return containers;
+	}
+	
+	@Override
+	public List<Bush> getContainers() {
+		return containers;
 	}
 	
 	public Double getDemand(Node n) {
 		Double demand = 0.0;
-		for(Bush bush : this.bushes) {
+		for(Bush bush : this.containers) {
 			demand += bush.getDemand(n);
 		}
 		
@@ -89,10 +94,6 @@ public class Origin {
 		if (initMap == null) buildInitMap(g);
 		return initMap;
 	}
-
-	public Node getNode() {
-		return self;
-	}
 	
 	public int hashCode() {
 		return self.getID();
@@ -101,4 +102,6 @@ public class Origin {
 	public void deleteInitMap() {
 		initMap = null;
 	}
+
+
 }

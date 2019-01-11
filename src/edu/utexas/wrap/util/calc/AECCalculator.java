@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import edu.utexas.wrap.assignment.Bush;
-import edu.utexas.wrap.assignment.Origin;
+import edu.utexas.wrap.assignment.bush.Bush;
+import edu.utexas.wrap.assignment.bush.BushOrigin;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.util.UnreachableException;
@@ -13,10 +13,10 @@ import edu.utexas.wrap.util.UnreachableException;
 class AECCalculator extends Thread {
 	Double val;
 	Graph graph;
-	Set<Origin> origins;
+	Set<BushOrigin> origins;
 	TSGCCalculator cc;
 	
-	public AECCalculator(Graph g, Set<Origin> o, TSGCCalculator tc) {
+	public AECCalculator(Graph g, Set<BushOrigin> o, TSGCCalculator tc) {
 		graph = g;
 		origins = o;
 		this.cc = tc;
@@ -33,7 +33,7 @@ class AECCalculator extends Thread {
 		Double numerator = 0.0;
 		Double denominator = 0.0;
 		
-		for (Origin o : origins) {
+		for (BushOrigin o : origins) {
 			for (Bush b : o.getBushes()) {
 				for (Node d : b.getNodes()) {
 					Double demand = o.getDemand(d);

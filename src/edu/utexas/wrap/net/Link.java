@@ -5,7 +5,7 @@ import java.util.Map;
 import edu.utexas.wrap.Priced;
 import edu.utexas.wrap.VehicleClass;
 import edu.utexas.wrap.assignment.AssignmentContainer;
-import edu.utexas.wrap.assignment.Bush;
+import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.util.NegativeFlowException;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleOpenHashMap;
@@ -42,7 +42,7 @@ public abstract class Link implements Priced {
 	public abstract Boolean allowsClass(VehicleClass c);
 
 	/** Modifies the flow on a link which comes from a specified bush. 
-	 * <b> THIS METHOD SHOULD ONLY BE CALLED BY THE {@link edu.utexas.wrap.assignment.Bush}'s {@link edu.utexas.wrap.Bush.changeFlow} METHOD </b>
+	 * <b> THIS METHOD SHOULD ONLY BE CALLED BY THE {@link edu.utexas.wrap.assignment.bush.Bush}'s {@link edu.utexas.wrap.assignment.bush.Bush.changeFlow} METHOD </b>
 	 * @param delta amount by how much the flow should be altered
 	 * @param bush the origin Bush of this flow
 	 * @return whether the flow from this bush on the link is non-zero

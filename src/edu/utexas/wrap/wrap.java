@@ -6,9 +6,10 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Set;
 
-import edu.utexas.wrap.assignment.AlgorithmBOptimizer;
 import edu.utexas.wrap.assignment.Optimizer;
-import edu.utexas.wrap.assignment.Origin;
+import edu.utexas.wrap.assignment.bush.AlgorithmBOptimizer;
+import edu.utexas.wrap.assignment.bush.BushLoader;
+import edu.utexas.wrap.assignment.bush.BushOrigin;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.util.GraphFactory;
 import edu.utexas.wrap.util.OriginFactory;
@@ -97,15 +98,12 @@ public class wrap{
 	static Boolean printFlows = true;
 
 	public static void main(String[] args) {
-
 		Graph g = null; 
-		Set<Origin> o = null;
+		Set<BushOrigin> o = null;
 		try {
+			//TODO rewrite argument parsing for more flexibility
 			if (args.length < 3) {
-				System.err.println("Uniform VOT usage: wrap network.tntp odMatrix.tntp votSplit.tntp");
-				System.err.println("Variable VOT usage: wrap {-v || --variable} network.tntp odMatrix.tntp");
-				System.err.println("Enahnced usage: wrap {-e || --enhanced} network.csv odMatrix.csv firstThruNode");
-				System.exit(3);
+				printHelp();
 			}
 			if ((args[0].trim().equals("-e") || args[0].trim().equals("--enhanced"))) {
 				File links		= new File(args[1]);
@@ -115,8 +113,10 @@ public class wrap{
 				System.out.println("Reading network...");
 				g = GraphFactory.readEnhancedGraph(links, firstThruNode);
 				
+				BushLoader dl = new BushLoader(g);
 				System.out.println("Reading trips...");				
-				o = OriginFactory.readEnhancedTrips(odMatrix, g);
+				OriginFactory.readEnhancedTrips(odMatrix, g, dl);
+				o = dl.conclude();
 			}
 			else if (!( args[0].trim().equals("-v") || args[0].trim().equals("--variable") )) {
 				File links 		= new File(args[0]);
@@ -126,8 +126,11 @@ public class wrap{
 				System.out.println("Reading network...");
 				g = GraphFactory.readTNTPGraph(links);
 				 
+				
 				System.out.println("Reading trips...");
-				o = OriginFactory.readTNTPUniformVOTtrips(votFile, odMatrix, g);
+				BushLoader dl = new BushLoader(g);
+				OriginFactory.readTNTPUniformVOTtrips(votFile, odMatrix, g, dl);
+				o = dl.conclude();
 			}
 			else {
 				//TODO handle variable VOT usage
@@ -142,7 +145,6 @@ public class wrap{
 			return;
 		}
 		
-		System.out.println("\nInitializing optimizer...");
 		Optimizer opt = new AlgorithmBOptimizer(g, o);
 
 		System.out.println("Starting " + opt.toString() + "...");
@@ -156,6 +158,13 @@ public class wrap{
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	private static void printHelp() {
+		System.err.println("Uniform VOT usage: wrap network.tntp odMatrix.tntp votSplit.tntp");
+		System.err.println("Variable VOT usage: wrap {-v || --variable} network.tntp odMatrix.tntp");
+		System.err.println("Enahnced usage: wrap {-e || --enhanced} network.csv odMatrix.csv firstThruNode");
+		System.exit(3);
 	}
 }
 

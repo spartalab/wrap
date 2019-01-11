@@ -1,4 +1,4 @@
-package edu.utexas.wrap.assignment;
+package edu.utexas.wrap.assignment.bush;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,9 +14,9 @@ import edu.utexas.wrap.util.AlternateSegmentPair;
 import edu.utexas.wrap.util.NegativeFlowException;
 
 
-public class AlgorithmBOptimizer extends BushBasedOptimizer{
+public class AlgorithmBOptimizer extends BushOptimizer{
 
-	public AlgorithmBOptimizer(Graph g, Set<Origin> o) {
+	public AlgorithmBOptimizer(Graph g, Set<BushOrigin> o) {
 		super(g,o);
 	}
 

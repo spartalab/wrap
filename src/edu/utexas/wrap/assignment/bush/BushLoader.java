@@ -1,20 +1,19 @@
-package edu.utexas.wrap.assignment;
+package edu.utexas.wrap.assignment.bush;
 
 import java.util.HashSet;
 import java.util.Set;
 
 import edu.utexas.wrap.DestinationMatrix;
+import edu.utexas.wrap.NetworkLoader;
 import edu.utexas.wrap.OriginDestinationMatrix;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
-import edu.utexas.wrap.util.BushBuilder;
 
-public class BushLoader {
+public class BushLoader extends NetworkLoader {
 	Set<BushBuilder> pool;
-	Graph graph;
 	
 	public BushLoader(Graph g) {
-		graph = g;
+		super(g);
 		pool = new HashSet<BushBuilder>();
 	}
 	
@@ -30,8 +29,8 @@ public class BushLoader {
 		}
 	}
 	
-	public Set<Origin> conclude() {
-		Set<Origin> origins = new HashSet<Origin>();
+	public Set<BushOrigin> conclude() {
+		Set<BushOrigin> origins = new HashSet<BushOrigin>();
 		System.out.print("\r                                ");
 		try {
 			int size = pool.size();

@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import edu.utexas.wrap.assignment.Bush;
-import edu.utexas.wrap.assignment.Origin;
+import edu.utexas.wrap.assignment.bush.Bush;
+import edu.utexas.wrap.assignment.bush.BushOrigin;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.util.UnreachableException;
@@ -13,10 +13,10 @@ import edu.utexas.wrap.util.UnreachableException;
 public class GapCalculator extends Thread {
 	public Double val;
 	Graph graph; 
-	Set<Origin> origins;
+	Set<BushOrigin> origins;
 	TSGCCalculator cc;
 	
-	public GapCalculator(Graph g, Set<Origin> o, TSGCCalculator tc) {
+	public GapCalculator(Graph g, Set<BushOrigin> o, TSGCCalculator tc) {
 		graph = g;
 		origins = o;
 	}
@@ -32,7 +32,7 @@ public class GapCalculator extends Thread {
 		}
 
 		
-		for (Origin o : origins) {
+		for (BushOrigin o : origins) {
 			for (Bush b : o.getBushes()) {
 				b.shortTopoSearch();
 				Map<Node, Double> cache = new HashMap<Node, Double>(graph.numNodes());
