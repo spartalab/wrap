@@ -2,8 +2,8 @@ package edu.utexas.wrap.util.calc;
 
 import java.util.Set;
 
-import edu.utexas.wrap.Origin;
 import edu.utexas.wrap.assignment.AssignmentContainer;
+import edu.utexas.wrap.assignment.Origin;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 

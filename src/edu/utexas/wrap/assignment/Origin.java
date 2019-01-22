@@ -1,8 +1,7 @@
-package edu.utexas.wrap;
+package edu.utexas.wrap.assignment;
 
 import java.util.List;
 
-import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.net.Node;
 
 public abstract class Origin {

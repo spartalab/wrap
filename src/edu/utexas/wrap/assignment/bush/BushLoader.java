@@ -1,27 +1,28 @@
 package edu.utexas.wrap.assignment.bush;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
-import edu.utexas.wrap.DestinationMatrix;
-import edu.utexas.wrap.NetworkLoader;
+import edu.utexas.wrap.assignment.AssignmentLoader;
+import edu.utexas.wrap.DemandMap;
 import edu.utexas.wrap.OriginDestinationMatrix;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
-public class BushLoader extends NetworkLoader {
-	Set<BushBuilder> pool;
+public class BushLoader extends AssignmentLoader {
+	Map<Node, BushOriginBuilder> pool;
 	
 	public BushLoader(Graph g) {
 		super(g);
-		pool = new HashSet<BushBuilder>();
+		pool = new HashMap<Node, BushOriginBuilder>();
 	}
 	
-	public void add(Node o, DestinationMatrix map) {
-		BushBuilder b = new BushBuilder(graph,o,map);
-		pool.add(b);
-		b.start();
-	}
+	public void add(Node o, DemandMap map) {
+		pool.putIfAbsent(o, new BushOriginBuilder(graph,o));
+		pool.get(o).addMap(map);
+	} 
 	
 	public void addAll(OriginDestinationMatrix matrix) {
 		for (Node o : matrix.keySet()) {
@@ -29,12 +30,16 @@ public class BushLoader extends NetworkLoader {
 		}
 	}
 	
-	public Set<BushOrigin> conclude() {
+	public void load(Node o) {
+		pool.get(o).start();
+	}
+	
+	public Set<BushOrigin> finishAll() {
 		Set<BushOrigin> origins = new HashSet<BushOrigin>();
 		System.out.print("\r                                ");
 		try {
 			int size = pool.size();
-			for (BushBuilder t : pool) {
+			for (BushOriginBuilder t : pool.values()) {
 				System.out.print("\rFinalizing "+size+" origins     ");
 				t.join();
 				origins.add(t.orig);
@@ -46,4 +51,5 @@ public class BushLoader extends NetworkLoader {
 		System.out.print("\rInitial trips loaded            ");
 		return origins;
 	}
+
 }

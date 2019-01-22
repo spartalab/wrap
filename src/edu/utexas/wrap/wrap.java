@@ -116,8 +116,8 @@ public class wrap{
 				BushLoader dl = new BushLoader(g);
 				System.out.println("Reading trips...");				
 				OriginFactory.readEnhancedTrips(odMatrix, g, dl);
-				o = dl.conclude();
-			}
+				o = dl.finishAll();
+			} 
 			else if (!( args[0].trim().equals("-v") || args[0].trim().equals("--variable") )) {
 				File links 		= new File(args[0]);
 				File odMatrix	= new File(args[1]);
@@ -130,7 +130,7 @@ public class wrap{
 				System.out.println("Reading trips...");
 				BushLoader dl = new BushLoader(g);
 				OriginFactory.readTNTPUniformVOTtrips(votFile, odMatrix, g, dl);
-				o = dl.conclude();
+				o = dl.finishAll();
 			}
 			else {
 				//TODO handle variable VOT usage

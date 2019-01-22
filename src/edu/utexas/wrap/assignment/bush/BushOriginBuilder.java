@@ -1,23 +1,30 @@
 package edu.utexas.wrap.assignment.bush;
 
+import java.util.HashMap;
 import java.util.Map;
 
+import edu.utexas.wrap.DemandMap;
 import edu.utexas.wrap.VehicleClass;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
-public class BushBuilder extends Thread {
-	Map<VehicleClass, Map<Float, Map<Node, Float>>> map;
+public class BushOriginBuilder extends Thread {
+	Map<VehicleClass, Map<Float, DemandMap>> map;
 	Node o;
 	Graph g;
 	public BushOrigin orig;
 
-	public BushBuilder(Graph g, Node o, Map<VehicleClass, Map<Float, Map<Node, Float>>> map) {
+	public BushOriginBuilder(Graph g, Node o) {
 		this.o = o;
-		this.map = map;
+		this.map = new HashMap<VehicleClass, Map<Float, DemandMap>>();
 		this.g = g;
 	}
 
+	public void addMap(DemandMap m) {
+		map.putIfAbsent(m.getVehicleClass(), new HashMap<Float, DemandMap>());
+		map.get(m.getVehicleClass()).put(m.getVOT(), m);
+	}
+	
 	public void run() {
 		orig = new BushOrigin(o);
 		for (VehicleClass c : map.keySet()) {

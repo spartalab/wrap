@@ -2,6 +2,10 @@ package edu.utexas.wrap;
 
 public abstract class ModalOriginDestinationMatrix extends OriginDestinationMatrix {
 
+	public ModalOriginDestinationMatrix(Float vot, VehicleClass c) {
+		super(vot, c);
+	}
+
 	/**
 	 * 
 	 */
@@ -9,13 +13,7 @@ public abstract class ModalOriginDestinationMatrix extends OriginDestinationMatr
 	
 	private Mode mode;
 	
-	public ModalOriginDestinationMatrix(Mode mode, OriginDestinationMatrix od) {
-		super(od);
-		this.mode = mode;
-		
-	}
-	
-	public Mode getMode() {
+ 	public Mode getMode() {
 		return mode;
 	}
 

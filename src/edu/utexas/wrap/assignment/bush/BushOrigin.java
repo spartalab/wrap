@@ -5,8 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import edu.utexas.wrap.Origin;
 import edu.utexas.wrap.VehicleClass;
+import edu.utexas.wrap.assignment.Origin;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;

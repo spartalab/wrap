@@ -10,9 +10,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import edu.utexas.wrap.DestinationMatrix;
-import edu.utexas.wrap.NetworkLoader;
+import edu.utexas.wrap.DemandMap;
+import edu.utexas.wrap.OriginDestinationMatrix;
 import edu.utexas.wrap.VehicleClass;
+import edu.utexas.wrap.assignment.AssignmentLoader;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
@@ -26,11 +27,11 @@ public class OriginFactory {
 		}
 	}
 	
-	private static HashMap<Node, Float> readDestinationDemand(BufferedReader of, Graph g) throws IOException {
+	private static DemandMap readDestinationDemand(BufferedReader of, Graph g) throws IOException {
 		String[] cols;
 		Integer destID;
 		Float demand;
-		HashMap<Node, Float> dests = new HashMap<Node, Float>();
+		DemandMap dests = new DemandMap(null);
 
 		while (true) {
 			String line = of.readLine();
@@ -49,17 +50,25 @@ public class OriginFactory {
 		return dests;
 	}
 	
-	public static void readEnhancedTrips(File odMatrix, Graph g, NetworkLoader dl) throws FileNotFoundException, IOException {
-		DestinationMatrix origMap = null;
+	public static void readEnhancedTrips(File odMatrix, Graph g, AssignmentLoader dl) throws FileNotFoundException, IOException {
 		BufferedReader matrixFile = new BufferedReader(new FileReader(odMatrix));
 		String line;
 		Integer curOrig = null;
-//		Set<Origin> origins = new HashSet<Origin>();
-//		Set<BushBuilder> pool = new HashSet<BushBuilder>();
-		Map<Node, Float> solo17 = null, solo35 = null, solo45 = null, solo90 = null,
-
+		OriginDestinationMatrix odda17 = new OriginDestinationMatrix(0.17F, VehicleClass.SINGLE_OCC);
+		OriginDestinationMatrix odda35 = new OriginDestinationMatrix(0.35F, VehicleClass.SINGLE_OCC);
+		OriginDestinationMatrix odda45 = new OriginDestinationMatrix(0.45F, VehicleClass.SINGLE_OCC);
+		OriginDestinationMatrix odda90 = new OriginDestinationMatrix(0.90F, VehicleClass.SINGLE_OCC);
+		
+		OriginDestinationMatrix odsr17 = new OriginDestinationMatrix(0.17F, VehicleClass.HIGH_OCC);
+		OriginDestinationMatrix odsr35 = new OriginDestinationMatrix(0.35F, VehicleClass.HIGH_OCC);
+		OriginDestinationMatrix odsr45 = new OriginDestinationMatrix(0.45F, VehicleClass.HIGH_OCC);
+		OriginDestinationMatrix odsr90 = new OriginDestinationMatrix(0.90F, VehicleClass.HIGH_OCC);
+		
+		OriginDestinationMatrix odmt = new OriginDestinationMatrix(1.0F, VehicleClass.MED_TRUCK);
+		OriginDestinationMatrix odht = new OriginDestinationMatrix(1.0F, VehicleClass.HVY_TRUCK);
+		
+		DemandMap solo17 = null, solo35 = null, solo45 = null, solo90 = null,
 				hov17 = null, hov35 = null, hov45 = null, hov90 = null,
-
 				medTrucks = null, hvyTrucks = null;
 
 		// read each line and map to correct bush identity
@@ -68,34 +77,21 @@ public class OriginFactory {
 			if (line == null || line.trim().equals("")) {
 				if (curOrig != null) {
 					// build previous bushes
-
-					origMap = new DestinationMatrix();
-
-					Map<Float, Map<Node, Float>> soMap = new HashMap<Float, Map<Node, Float>>();
-					Map<Float, Map<Node, Float>> hoMap = new HashMap<Float, Map<Node, Float>>();
-					Map<Float, Map<Node, Float>> mtMap = new HashMap<Float, Map<Node, Float>>();
-					Map<Float, Map<Node, Float>> htMap = new HashMap<Float, Map<Node, Float>>();
-
-					soMap.put(0.17F, solo17);
-					soMap.put(0.35F, solo35);
-					soMap.put(0.45F, solo45);
-					soMap.put(0.90F, solo90);
-
-					hoMap.put(0.17F, hov17);
-					hoMap.put(0.35F, hov35);
-					hoMap.put(0.45F, hov45);
-					hoMap.put(0.90F, hov90);
-
-					mtMap.put(1.0F, medTrucks);
-					htMap.put(1.0F, hvyTrucks);
-
-					origMap.put(VehicleClass.SINGLE_OCC, soMap);
-					origMap.put(VehicleClass.HIGH_OCC, hoMap);
-					origMap.put(VehicleClass.MED_TRUCK, mtMap);
-					origMap.put(VehicleClass.HVY_TRUCK, htMap);
 					
-					dl.add(g.getNode(curOrig), origMap);
+					dl.add(g.getNode(curOrig), solo17);
+					dl.add(g.getNode(curOrig), solo35);
+					dl.add(g.getNode(curOrig), solo45);
+					dl.add(g.getNode(curOrig), solo90);
 
+					dl.add(g.getNode(curOrig), hov17);
+					dl.add(g.getNode(curOrig), hov35);
+					dl.add(g.getNode(curOrig), hov45);
+					dl.add(g.getNode(curOrig), hov90);
+					
+					dl.add(g.getNode(curOrig), medTrucks);
+					dl.add(g.getNode(curOrig), hvyTrucks);
+					
+					dl.load(g.getNode(curOrig));
 				}
 				break;
 			}
@@ -119,50 +115,38 @@ public class OriginFactory {
 				// Moving on to next origin
 				if (curOrig != null) {
 					// build previous origin's bushes
-					origMap = new DestinationMatrix();
+					dl.add(g.getNode(curOrig), solo17);
+					dl.add(g.getNode(curOrig), solo35);
+					dl.add(g.getNode(curOrig), solo45);
+					dl.add(g.getNode(curOrig), solo90);
 
-					Map<Float, Map<Node, Float>> soMap = new HashMap<Float, Map<Node, Float>>();
-					Map<Float, Map<Node, Float>> hoMap = new HashMap<Float, Map<Node, Float>>();
-					Map<Float, Map<Node, Float>> mtMap = new HashMap<Float, Map<Node, Float>>();
-					Map<Float, Map<Node, Float>> htMap = new HashMap<Float, Map<Node, Float>>();
-
-					soMap.put(0.17F, solo17);
-					soMap.put(0.35F, solo35);
-					soMap.put(0.45F, solo45);
-					soMap.put(0.90F, solo90);
-
-					hoMap.put(0.17F, hov17);
-					hoMap.put(0.35F, hov35);
-					hoMap.put(0.45F, hov45);
-					hoMap.put(0.90F, hov90);
-
-					mtMap.put(1.0F, medTrucks);
-					htMap.put(1.0F, hvyTrucks);
-
-					origMap.put(VehicleClass.SINGLE_OCC, soMap);
-					origMap.put(VehicleClass.HIGH_OCC, hoMap);
-					origMap.put(VehicleClass.MED_TRUCK, mtMap);
-					origMap.put(VehicleClass.HVY_TRUCK, htMap);
-
-					dl.add(g.getNode(curOrig), origMap);
+					dl.add(g.getNode(curOrig), hov17);
+					dl.add(g.getNode(curOrig), hov35);
+					dl.add(g.getNode(curOrig), hov45);
+					dl.add(g.getNode(curOrig), hov90);
+					
+					dl.add(g.getNode(curOrig), medTrucks);
+					dl.add(g.getNode(curOrig), hvyTrucks);
+					
+					dl.load(g.getNode(curOrig));
 
 				}
 
 				// Reset maps
 				System.out.print("\rBuilding bushes for origin " + orig);
 				curOrig = orig;
-				solo17 = new HashMap<Node, Float>(g.getNumZones() / 2, 1.0f);
-				solo35 = new HashMap<Node, Float>(g.getNumZones() / 2, 1.0f);
-				solo45 = new HashMap<Node, Float>(g.getNumZones() / 2, 1.0f);
-				solo90 = new HashMap<Node, Float>(g.getNumZones() / 2, 1.0f);
+				solo17 = new DemandMap(odda17);
+				solo35 = new DemandMap(odda35);
+				solo45 = new DemandMap(odda45);
+				solo90 = new DemandMap(odda90);
 
-				hov17 = new HashMap<Node, Float>(g.getNumZones() / 2, 1.0f);
-				hov35 = new HashMap<Node, Float>(g.getNumZones() / 2, 1.0f);
-				hov45 = new HashMap<Node, Float>(g.getNumZones() / 2, 1.0f);
-				hov90 = new HashMap<Node, Float>(g.getNumZones() / 2, 1.0f);
+				hov17 = new DemandMap(odsr17);
+				hov35 = new DemandMap(odsr35);
+				hov45 = new DemandMap(odsr45);
+				hov90 = new DemandMap(odsr90);
 
-				medTrucks = new HashMap<Node, Float>(g.getNumZones() / 2, 1.0f);
-				hvyTrucks = new HashMap<Node, Float>(g.getNumZones() / 2, 1.0f);
+				medTrucks = new DemandMap(odmt);
+				hvyTrucks = new DemandMap(odht);
 			}
 
 			if (da17 > 0.0F)
@@ -202,15 +186,16 @@ public class OriginFactory {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public static void readTNTPOriginSpecificProportionalVOTDemand(File odMatrix, Map<Node, List<Float[]>> VOTs, Graph g, NetworkLoader dl)
+	public static void readTNTPOriginSpecificProportionalVOTDemand(File odMatrix, Map<Node, List<Float[]>> VOTs, Graph g, AssignmentLoader dl)
 			throws FileNotFoundException, IOException {
 		/////////////////////////////////////
 		// Read OD Matrix and assign flows
 		/////////////////////////////////////
 		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
 		String line;
-//		Set<BushBuilder> pool = new HashSet<BushBuilder>();
-		HashMap<Node, Float> bushDests;
+		
+		Map<Float, OriginDestinationMatrix> ods = new HashMap<Float, OriginDestinationMatrix>();
+		
 		
 		do { // Move past headers in the file
 			line = of.readLine();
@@ -225,22 +210,21 @@ public class OriginFactory {
 			Integer origID = Integer.parseInt(line.trim().split("\\s+")[1]);
 			Node root = g.getNode(origID); // Retrieve the existing node with that ID
 			System.out.print("\rBuilding bushes for origin " + origID);
-			HashMap<Node, Float> dests = readDestinationDemand(of, g);
+			DemandMap unified = readDestinationDemand(of, g);
 
-			Map<Float, Map<Node, Float>> nmap = new HashMap<Float, Map<Node, Float>>();
+			
 			for (Float[] entry : VOTs.get(root)) {
-				bushDests = new HashMap<Node, Float>();
-				for (Node temp : dests.keySet()) {
-					bushDests.put(temp, entry[1] * dests.get(temp));
+				ods.putIfAbsent(entry[0], new OriginDestinationMatrix(entry[0], null)); //Ensure a parent OD matrix exists
+				DemandMap split = new DemandMap(ods.get(entry[0]));	//Attach the parent OD
+				
+				for (Node dest : unified.keySet()) { //Split each destination proportionally
+					split.put(dest, entry[1] * unified.get(dest));
 				}
-				nmap.put(entry[0], bushDests);
+				dl.add(root,split);
 			}
-
-			DestinationMatrix omap = new DestinationMatrix();
-			omap.put(null, nmap);
-			dl.add(root, omap);
-
-
+			
+			dl.load(root);
+			
 			line = of.readLine();
 
 		}
@@ -248,7 +232,7 @@ public class OriginFactory {
 
 	}
 
-	public static void readTNTPUniformVOTtrips(File VOTfile, File odMatrix, Graph g, NetworkLoader dl) throws FileNotFoundException {
+	public static void readTNTPUniformVOTtrips(File VOTfile, File odMatrix, Graph g, AssignmentLoader dl) throws FileNotFoundException {
 		if (g == null)
 			throw new RuntimeException("Graph must be constructed before reading OD matrix");
 		try {
