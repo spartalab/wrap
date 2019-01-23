@@ -3,9 +3,9 @@ package edu.utexas.wrap.distribution;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.utexas.wrap.DemandMap;
-import edu.utexas.wrap.OriginDestinationMatrix;
-import edu.utexas.wrap.ProductionAttractionMap;
+import edu.utexas.wrap.demand.AggregateOriginDestinationMatrix;
+import edu.utexas.wrap.demand.DemandMap;
+import edu.utexas.wrap.demand.ProductionAttractionMap;
 import edu.utexas.wrap.net.Node;
 
 public class GravityDistributor extends TripDistributor {
@@ -15,10 +15,10 @@ public class GravityDistributor extends TripDistributor {
 		friction = fm;
 	}
 	@Override
-	public OriginDestinationMatrix distribute(ProductionAttractionMap pa) {
+	public AggregateOriginDestinationMatrix distribute(ProductionAttractionMap pa) {
 		Map<Node, Double> a = new HashMap<Node,Double>();
 		Map<Node, Double> b = new HashMap<Node,Double>();
-		OriginDestinationMatrix od = new OriginDestinationMatrix();
+		AggregateOriginDestinationMatrix od = new AggregateOriginDestinationMatrix();
 		Boolean converged = false;
 		while (!converged) {
 			converged = true;
@@ -50,17 +50,12 @@ public class GravityDistributor extends TripDistributor {
 		}
 		
 		for (Node i : pa.getProducers()) {
-			// TODO: cleanup re VehicleClass and VOT
 			DemandMap d = new DemandMap();
-			Map<Float, Map<Node, Float>> ijv = new HashMap<Float, Map<Node, Float>>();
-			Map<Node, Float> ij = new HashMap<Node, Float>();
 			
 			for (Node j : pa.getAttractors()) {
-				ij.put(j, (float) (a.get(i)*pa.getProductions(i)*b.get(j)*pa.getAttractions(j)*friction.get(i, j)));
+				d.put(j, (float) (a.get(i)*pa.getProductions(i)*b.get(j)*pa.getAttractions(j)*friction.get(i, j)));
 			}
 			
-			ijv.put(pa.getVOT(), ij);
-			d.put(pa.getVehicleClass(), ijv);
 			od.put(i, d);
 		}
 		return od;

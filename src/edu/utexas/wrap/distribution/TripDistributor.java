@@ -1,7 +1,7 @@
 package edu.utexas.wrap.distribution;
 
-import edu.utexas.wrap.OriginDestinationMatrix;
-import edu.utexas.wrap.ProductionAttractionMap;
+import edu.utexas.wrap.demand.OriginDestinationMatrix;
+import edu.utexas.wrap.demand.ProductionAttractionMap;
 
 public abstract class TripDistributor {
 

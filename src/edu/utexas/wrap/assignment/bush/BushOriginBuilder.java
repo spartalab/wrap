@@ -3,8 +3,9 @@ package edu.utexas.wrap.assignment.bush;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.utexas.wrap.DemandMap;
 import edu.utexas.wrap.VehicleClass;
+import edu.utexas.wrap.demand.AutomotiveDemandMap;
+import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
@@ -19,8 +20,8 @@ public class BushOriginBuilder extends Thread {
 		this.map = new HashMap<VehicleClass, Map<Float, DemandMap>>();
 		this.g = g;
 	}
-
-	public void addMap(DemandMap m) {
+ 
+	public void addMap(AutomotiveDemandMap m) {
 		map.putIfAbsent(m.getVehicleClass(), new HashMap<Float, DemandMap>());
 		map.get(m.getVehicleClass()).put(m.getVOT(), m);
 	}

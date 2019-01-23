@@ -1,4 +1,4 @@
-package edu.utexas.wrap;
+package edu.utexas.wrap.demand;
 
 public class ModalProductionAttractionMap extends ProductionAttractionMap {
 

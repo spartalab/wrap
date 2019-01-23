@@ -1,7 +1,7 @@
 package edu.utexas.wrap.modechoice;
 
-import edu.utexas.wrap.ModalOriginDestinationMatrix;
-import edu.utexas.wrap.OriginDestinationMatrix;
+import edu.utexas.wrap.demand.ModalOriginDestinationMatrix;
+import edu.utexas.wrap.demand.OriginDestinationMatrix;
 
 public abstract class TripInterchangeSplitter {
 
