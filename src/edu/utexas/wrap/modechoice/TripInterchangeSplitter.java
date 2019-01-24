@@ -1,10 +1,12 @@
 package edu.utexas.wrap.modechoice;
 
+import java.util.Set;
+
+import edu.utexas.wrap.demand.AggregateOriginDestinationMatrix;
 import edu.utexas.wrap.demand.ModalOriginDestinationMatrix;
-import edu.utexas.wrap.demand.OriginDestinationMatrix;
 
 public abstract class TripInterchangeSplitter {
 
-	public abstract ModalOriginDestinationMatrix split(OriginDestinationMatrix aggregate);
+	public abstract Set<ModalOriginDestinationMatrix> split(AggregateOriginDestinationMatrix aggregate);
 	
 }
