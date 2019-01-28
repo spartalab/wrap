@@ -7,11 +7,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import edu.utexas.wrap.Priced;
 import edu.utexas.wrap.VehicleClass;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.Priced;
 
 public class Path extends LinkedList<Link> implements Priced, AssignmentContainer {
 

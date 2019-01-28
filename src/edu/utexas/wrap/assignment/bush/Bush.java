@@ -89,7 +89,6 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 		try {
 			lPath = getShortPath(l);
 		} catch (UnreachableException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return null;
 		}

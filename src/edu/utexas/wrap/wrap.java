@@ -110,8 +110,13 @@ public class wrap{
 				File odMatrix	= new File(args[2]);
 				Integer firstThruNode = Integer.parseInt(args[3]);
 				
-				System.out.println("Reading network...");
+				System.out.print("Reading network... ");
 				g = GraphFactory.readEnhancedGraph(links, firstThruNode);
+				StringBuilder sb = new StringBuilder("MD5 hash: ");
+				for (byte b : g.getMD5()) {
+					sb.append(String.format("%02X", b));
+				}
+				System.out.println(sb);
 				
 				BushLoader dl = new BushLoader(g);
 				System.out.println("Reading trips...");				
@@ -123,9 +128,13 @@ public class wrap{
 				File odMatrix	= new File(args[1]);
 				File votFile 	= new File(args[2]);
 				
-				System.out.println("Reading network...");
+				System.out.print("Reading network... ");
 				g = GraphFactory.readTNTPGraph(links);
-				 
+				StringBuilder sb = new StringBuilder("MD5 hash: ");
+				for (byte b : g.getMD5()) {
+					sb.append(String.format("%02X", b));
+				}
+				System.out.println(sb);
 				
 				System.out.println("Reading trips...");
 				BushLoader dl = new BushLoader(g);

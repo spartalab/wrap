@@ -12,6 +12,7 @@ public class Graph {
 	private Map<Node, Set<Link>> inLinks;
 	private Map<Integer, Node> nodeMap;
 	private int numZones;
+	private byte[] md5;
 	
 	public Graph() {
 		outLinks = new HashMap<Node, Set<Link>>();
@@ -117,6 +118,15 @@ public class Graph {
 			Double sum = l.getFlow().doubleValue();
 			out.println(l+"\t"+sum);
 		}
+	}
+
+	public void setMD5(byte[] md5) {
+		// TODO Auto-generated method stub
+		this.md5 = md5;
+	}
+	
+	public byte[] getMD5() {
+		return md5;
 	}
 	
 }

@@ -2,7 +2,6 @@ package edu.utexas.wrap.net;
 
 import java.util.Map;
 
-import edu.utexas.wrap.Priced;
 import edu.utexas.wrap.VehicleClass;
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.bush.Bush;

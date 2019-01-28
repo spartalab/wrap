@@ -14,6 +14,10 @@ public class AutomotiveDemandMap extends DemandMap {
 		this.parent = parent;
 	}
 
+	public AutomotiveDemandMap(DemandMap sub, AutomotiveOriginDestinationMatrix parent) {
+		super(sub);
+		this.parent = parent;
+	}
 	public VehicleClass getVehicleClass() {
 		// TODO Auto-generated method stub
 		return parent.getVehicleClass();

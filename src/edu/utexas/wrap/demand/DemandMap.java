@@ -11,4 +11,11 @@ public class DemandMap extends HashMap<Node, Float>{
 	 */
 	private static final long serialVersionUID = -8268461681839852205L;
 
+	public DemandMap() {
+		super();
+	}
+	
+	protected DemandMap(DemandMap d) {
+		super(d);
+	}
 }

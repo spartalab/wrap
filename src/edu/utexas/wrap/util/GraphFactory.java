@@ -2,9 +2,13 @@ package edu.utexas.wrap.util;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,62 +22,77 @@ import edu.utexas.wrap.net.TolledEnhancedLink;
 
 public class GraphFactory {
 	public static Graph readTNTPGraph(File linkFile) throws FileNotFoundException, IOException {
-		String line;
-		Graph g = new Graph();
-		BufferedReader lf = new BufferedReader(new FileReader(linkFile));
-		Map<Integer, Node> nodes = new HashMap<Integer, Node>();
-		Integer ftn = 1;
-		do { // Move past headers in the file
-			line = lf.readLine();
-			if (line.startsWith("<FIRST THRU NODE>")) {
-				ftn = Integer.parseInt(line.trim().split("\\s+")[3]);
-			}
-		} while (!line.startsWith("~"));
 
-		while (true) { // Iterate through each link (row)
-			line = lf.readLine();
-			if (line == null)
-				break; // End of link list reached
-			if (line.startsWith("~") || line.trim().equals(""))
-				continue;
-			line = line.trim();
-			String[] cols = line.split("\\s+");
-			Integer tail = Integer.parseInt(cols[0]);
-			Integer head = Integer.parseInt(cols[1]);
-			Float capacity = parse(cols[2]);
-			Float length = parse(cols[3]);
-			Float fftime = parse(cols[4]);
-			Float toll = parse(cols[8]);
-
-			// Create new node(s) if new, then add to map
-			if (!nodes.containsKey(tail))
-				nodes.put(tail, new Node(tail, tail < ftn? true : false));
-
-			if (!nodes.containsKey(head))
-				nodes.put(head, new Node(head, head < ftn? true: false));
+		try {
+			MessageDigest md = MessageDigest.getInstance("MD5");
 			
-			// Construct new link and add to the list
-			Link link;
-			if (tail >= ftn && head >= ftn) {
-				Float B = parse(cols[5]);
-				Float power = parse(cols[6]);
-				link = new TolledBPRLink(nodes.get(tail), nodes.get(head), capacity, length, fftime, B, power, toll);
+			DigestInputStream dis = new DigestInputStream(new FileInputStream(linkFile), md);
+
+			String line;
+			Graph g = new Graph();
+			BufferedReader lf = new BufferedReader(new InputStreamReader(dis));
+			Map<Integer, Node> nodes = new HashMap<Integer, Node>();
+			Integer ftn = 1;
+			do { // Move past headers in the file
+				line = lf.readLine();
+				if (line.startsWith("<FIRST THRU NODE>")) {
+					ftn = Integer.parseInt(line.trim().split("\\s+")[3]);
+				}
+			} while (!line.startsWith("~"));
+
+			while (true) { // Iterate through each link (row)
+				line = lf.readLine();
+				if (line == null)
+					break; // End of link list reached
+				if (line.startsWith("~") || line.trim().equals(""))
+					continue;
+				line = line.trim();
+				String[] cols = line.split("\\s+");
+				Integer tail = Integer.parseInt(cols[0]);
+				Integer head = Integer.parseInt(cols[1]);
+				Float capacity = parse(cols[2]);
+				Float length = parse(cols[3]);
+				Float fftime = parse(cols[4]);
+				Float toll = parse(cols[8]);
+
+				// Create new node(s) if new, then add to map
+				if (!nodes.containsKey(tail))
+					nodes.put(tail, new Node(tail, tail < ftn? true : false));
+
+				if (!nodes.containsKey(head))
+					nodes.put(head, new Node(head, head < ftn? true: false));
+
+				// Construct new link and add to the list
+				Link link;
+				if (tail >= ftn && head >= ftn) {
+					Float B = parse(cols[5]);
+					Float power = parse(cols[6]);
+					link = new TolledBPRLink(nodes.get(tail), nodes.get(head), capacity, length, fftime, B, power, toll);
+				}
+				else {
+					link = new CentroidConnector(nodes.get(tail), nodes.get(head), capacity, length, fftime, toll);
+				}
+				g.add(link);
 			}
-			else {
-				link = new CentroidConnector(nodes.get(tail), nodes.get(head), capacity, length, fftime, toll);
-			}
-			g.add(link);
+			lf.close();
+			g.setMD5(md.digest());
+			return g;
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			return null;
 		}
-		lf.close();
-		return g;
+
 	}
 
-	
+
 	public static Graph readEnhancedGraph(File f, Integer thruNode) throws FileNotFoundException, IOException {
+		try {
+		MessageDigest md = MessageDigest.getInstance("MD5");
 		String line;
 		Graph g = new Graph();
 		int numZones = 0;
-		BufferedReader lf = new BufferedReader(new FileReader(f));
+		DigestInputStream dis = new DigestInputStream(new FileInputStream(f), md);
+		BufferedReader lf = new BufferedReader(new InputStreamReader(dis));
 		Map<Integer, Node> nodes = new HashMap<Integer, Node>();
 		lf.readLine(); // skip header
 
@@ -177,7 +196,13 @@ public class GraphFactory {
 		}
 		lf.close();
 		g.setNumZones(numZones);
+		g.setMD5(md.digest());
 		return g;
+		
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	private static Float parse(String s) {
