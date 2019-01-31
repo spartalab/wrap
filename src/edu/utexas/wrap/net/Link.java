@@ -2,9 +2,9 @@ package edu.utexas.wrap.net;
 
 import java.util.Map;
 
-import edu.utexas.wrap.VehicleClass;
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.bush.Bush;
+import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.util.NegativeFlowException;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Reference2DoubleOpenHashMap;
@@ -38,7 +38,7 @@ public abstract class Link implements Priced {
 	}
  
 
-	public abstract Boolean allowsClass(VehicleClass c);
+	public abstract Boolean allowsClass(Mode c);
 
 	/** Modifies the flow on a link which comes from a specified bush. 
 	 * <b> THIS METHOD SHOULD ONLY BE CALLED BY THE {@link edu.utexas.wrap.assignment.bush.Bush}'s {@link edu.utexas.wrap.assignment.bush.Bush.changeFlow} METHOD </b>
@@ -91,7 +91,7 @@ public abstract class Link implements Priced {
 		return length;
 	}
 	
-	public abstract Double getPrice(Float vot, VehicleClass c);
+	public abstract Double getPrice(Float vot, Mode c);
 
 	public Node getTail() {
 		return tail;

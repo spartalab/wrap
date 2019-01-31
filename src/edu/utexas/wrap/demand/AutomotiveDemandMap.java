@@ -1,7 +1,11 @@
 package edu.utexas.wrap.demand;
 
-import edu.utexas.wrap.VehicleClass;
+import edu.utexas.wrap.modechoice.Mode;
 
+/**An extension of demand maps 
+ * @author William
+ *
+ */
 public class AutomotiveDemandMap extends DemandMap {
 
 	/**
@@ -18,9 +22,9 @@ public class AutomotiveDemandMap extends DemandMap {
 		super(sub);
 		this.parent = parent;
 	}
-	public VehicleClass getVehicleClass() {
+	public Mode getMode() {
 		// TODO Auto-generated method stub
-		return parent.getVehicleClass();
+		return parent.getMode();
 	}
 
 	public Float getVOT() {

@@ -1,6 +1,6 @@
 package edu.utexas.wrap.net;
 
-import edu.utexas.wrap.VehicleClass;
+import edu.utexas.wrap.modechoice.Mode;
 
 public class CentroidConnector extends TolledLink {
 	private float toll;
@@ -11,17 +11,17 @@ public class CentroidConnector extends TolledLink {
 	}
 
 	@Override
-	public Boolean allowsClass(VehicleClass c) {
+	public Boolean allowsClass(Mode c) {
 		return true;
 	}
 
 	@Override
-	public Double getPrice(Float vot, VehicleClass c) {
+	public Double getPrice(Float vot, Mode c) {
 		return (double) (vot*freeFlowTime() + toll);
 	}
 
 	@Override
-	public Float getToll(VehicleClass c) {
+	public Float getToll(Mode c) {
 		if (!allowsClass(c)) return Float.MAX_VALUE;
 		return toll;
 	}

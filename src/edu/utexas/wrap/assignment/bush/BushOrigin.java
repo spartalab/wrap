@@ -5,8 +5,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import edu.utexas.wrap.VehicleClass;
 import edu.utexas.wrap.assignment.Origin;
+import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
@@ -31,7 +31,7 @@ public class BushOrigin extends Origin {
 	 * then selecting the paths which lead to destinations to which
 	 * the origin has demand.
 	 */	
-	public void buildBush(Graph g, Float vot, Map<Node, Float> destDemand, VehicleClass c) {
+	public void buildBush(Graph g, Float vot, Map<Node, Float> destDemand, Mode c) {
 		containers.add(new Bush(this, g, vot, destDemand, c));
 	}
 
@@ -48,11 +48,11 @@ public class BushOrigin extends Origin {
 		initMap = new Object2ObjectOpenHashMap<Node, Link>(nodes.size(),1.0f);
 		FibonacciHeap<Node> Q = new FibonacciHeap<Node>(nodes.size(),1.0f);
 		for (Node n : nodes) {
-			if (!n.equals(self)) {
+			if (!n.equals(getNode())) {
 				Q.add(n, Double.MAX_VALUE);
 			}
 		}
-		Q.add(self, 0.0);
+		Q.add(getNode(), 0.0);
 
 		while (!Q.isEmpty()) {
 			FibonacciLeaf<Node> u = Q.poll();
@@ -96,7 +96,7 @@ public class BushOrigin extends Origin {
 	}
 	
 	public int hashCode() {
-		return self.getID();
+		return getNode().getID();
 	}
 
 	public void deleteInitMap() {

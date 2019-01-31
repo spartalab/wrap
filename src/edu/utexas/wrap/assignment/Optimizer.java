@@ -6,12 +6,16 @@ import edu.utexas.wrap.util.calc.GapCalculator;
 import edu.utexas.wrap.util.calc.TSGCCalculator;
 import edu.utexas.wrap.util.calc.TSTTCalculator;
 
+
+/** Abstract method for optimizing link flows using a general
+ * route choice algorithm. Calling the {@code optimize()} method
+ * repeatedly iterates through the route choice algorithm until
+ * the convergence criteria are met. After each iteration, the
+ * statistics of the network are output.
+ * @author William
+ *
+ */
 public abstract class Optimizer {
-	/**
-	 * Maximum number of decimal places past zero that 
-	 * links should care about for flow values. Default
-	 * rounding mode is RoundingMode.HALF_EVEN
-	 */
 	protected Integer iteration = 1;
 	protected Integer maxIterations = 1000;
 	protected Integer relativeGapExp = -6;
@@ -31,7 +35,7 @@ public abstract class Optimizer {
 		return iteration > maxIterations;
 	}
 	
-	public abstract void iterate();
+	protected abstract void iterate();
 
 	public void optimize(){
 		

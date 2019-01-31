@@ -1,9 +1,9 @@
 package edu.utexas.wrap.net;
 
-import edu.utexas.wrap.VehicleClass;
+import edu.utexas.wrap.modechoice.Mode;
 
 public interface Priced {
 
-	public Double getPrice(Float vot, VehicleClass c);
+	public Double getPrice(Float vot, Mode c);
 
 }

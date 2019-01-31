@@ -7,12 +7,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import edu.utexas.wrap.VehicleClass;
 import edu.utexas.wrap.assignment.bush.Bush;
+import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.Priced;
 
+/** A sequential list of {@link edu.utexas.wrap.net.Link} objects
+ * @author William
+ *
+ */
 public class Path extends LinkedList<Link> implements Priced, AssignmentContainer {
 
 	/**
@@ -20,7 +24,7 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	 */
 	private static final long serialVersionUID = 8522817449668927596L;
 	
-	private final VehicleClass c;
+	private final Mode c;
 	private final Float vot;
 	
 	public Path() {
@@ -28,7 +32,7 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 		this.vot = null;
 	}
 	
-	public Path(VehicleClass c, Float vot) {
+	public Path(Mode c, Float vot) {
 		this.c=c;
 		this.vot=vot;
 	}
@@ -63,14 +67,14 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	}
 
 	@Override
-	public Double getPrice(Float vot, VehicleClass c) {
+	public Double getPrice(Float vot, Mode c) {
 		Double sum = 0.0;
 		for (Link l : this) sum += l.getPrice(vot,c);
 		return sum;
 	}
 
 	@Override
-	public VehicleClass getVehicleClass() {
+	public Mode getVehicleClass() {
 		return c;
 	}
 

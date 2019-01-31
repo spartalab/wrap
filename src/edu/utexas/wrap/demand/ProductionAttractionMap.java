@@ -2,7 +2,7 @@ package edu.utexas.wrap.demand;
 
 import java.util.Collection;
 
-import edu.utexas.wrap.VehicleClass;
+import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Node;
 
 public class ProductionAttractionMap {
@@ -32,7 +32,7 @@ public class ProductionAttractionMap {
 		return null;
 	}
 
-	public VehicleClass getVehicleClass() {
+	public Mode getVehicleClass() {
 		// TODO Auto-generated method stub
 		return null;
 	}

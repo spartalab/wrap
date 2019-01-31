@@ -14,6 +14,13 @@ import edu.utexas.wrap.util.calc.GapCalculator;
 import edu.utexas.wrap.util.calc.TSGCCalculator;
 import edu.utexas.wrap.util.calc.TSTTCalculator;
 
+/**Assignment optimizer using bush techniques. Includes a
+ * method to "improve" bushes by expanding to include links that
+ * provide a shortcut and removing unneeded links. The method of
+ * equilibrating flows is left abstract.
+ * @author William
+ *
+ */
 public abstract class BushOptimizer extends Optimizer {
 	private int innerIters = 10;
 	protected Set<BushOrigin> origins;

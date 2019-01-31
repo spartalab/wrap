@@ -10,11 +10,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import edu.utexas.wrap.VehicleClass;
 import edu.utexas.wrap.assignment.AssignmentLoader;
 import edu.utexas.wrap.demand.AutomotiveDemandMap;
 import edu.utexas.wrap.demand.AutomotiveOriginDestinationMatrix;
 import edu.utexas.wrap.demand.DemandMap;
+import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
@@ -55,18 +55,18 @@ public class OriginFactory {
 		BufferedReader matrixFile = new BufferedReader(new FileReader(odMatrix));
 		String line;
 		Integer curOrig = null;
-		AutomotiveOriginDestinationMatrix odda17 = new AutomotiveOriginDestinationMatrix(0.17F, VehicleClass.SINGLE_OCC);
-		AutomotiveOriginDestinationMatrix odda35 = new AutomotiveOriginDestinationMatrix(0.35F, VehicleClass.SINGLE_OCC);
-		AutomotiveOriginDestinationMatrix odda45 = new AutomotiveOriginDestinationMatrix(0.45F, VehicleClass.SINGLE_OCC);
-		AutomotiveOriginDestinationMatrix odda90 = new AutomotiveOriginDestinationMatrix(0.90F, VehicleClass.SINGLE_OCC);
+		AutomotiveOriginDestinationMatrix odda17 = new AutomotiveOriginDestinationMatrix(0.17F, Mode.SINGLE_OCC);
+		AutomotiveOriginDestinationMatrix odda35 = new AutomotiveOriginDestinationMatrix(0.35F, Mode.SINGLE_OCC);
+		AutomotiveOriginDestinationMatrix odda45 = new AutomotiveOriginDestinationMatrix(0.45F, Mode.SINGLE_OCC);
+		AutomotiveOriginDestinationMatrix odda90 = new AutomotiveOriginDestinationMatrix(0.90F, Mode.SINGLE_OCC);
 		
-		AutomotiveOriginDestinationMatrix odsr17 = new AutomotiveOriginDestinationMatrix(0.17F, VehicleClass.HIGH_OCC);
-		AutomotiveOriginDestinationMatrix odsr35 = new AutomotiveOriginDestinationMatrix(0.35F, VehicleClass.HIGH_OCC);
-		AutomotiveOriginDestinationMatrix odsr45 = new AutomotiveOriginDestinationMatrix(0.45F, VehicleClass.HIGH_OCC);
-		AutomotiveOriginDestinationMatrix odsr90 = new AutomotiveOriginDestinationMatrix(0.90F, VehicleClass.HIGH_OCC);
+		AutomotiveOriginDestinationMatrix odsr17 = new AutomotiveOriginDestinationMatrix(0.17F, Mode.HOV_2);
+		AutomotiveOriginDestinationMatrix odsr35 = new AutomotiveOriginDestinationMatrix(0.35F, Mode.HOV_2);
+		AutomotiveOriginDestinationMatrix odsr45 = new AutomotiveOriginDestinationMatrix(0.45F, Mode.HOV_2);
+		AutomotiveOriginDestinationMatrix odsr90 = new AutomotiveOriginDestinationMatrix(0.90F, Mode.HOV_2);
 		
-		AutomotiveOriginDestinationMatrix odmt = new AutomotiveOriginDestinationMatrix(1.0F, VehicleClass.MED_TRUCK);
-		AutomotiveOriginDestinationMatrix odht = new AutomotiveOriginDestinationMatrix(1.0F, VehicleClass.HVY_TRUCK);
+		AutomotiveOriginDestinationMatrix odmt = new AutomotiveOriginDestinationMatrix(1.0F, Mode.MED_TRUCK);
+		AutomotiveOriginDestinationMatrix odht = new AutomotiveOriginDestinationMatrix(1.0F, Mode.HVY_TRUCK);
 		
 		AutomotiveDemandMap solo17 = null, solo35 = null, solo45 = null, solo90 = null,
 				hov17 = null, hov35 = null, hov45 = null, hov90 = null,

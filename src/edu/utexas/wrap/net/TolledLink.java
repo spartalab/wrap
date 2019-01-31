@@ -1,6 +1,6 @@
 package edu.utexas.wrap.net;
 
-import edu.utexas.wrap.VehicleClass;
+import edu.utexas.wrap.modechoice.Mode;
 
 public abstract class TolledLink extends Link {
 	
@@ -9,7 +9,7 @@ public abstract class TolledLink extends Link {
 		super(tail, head, capacity, length, fftime);
 	}
 
-	public abstract Float getToll(VehicleClass c);
+	public abstract Float getToll(Mode c);
 	
 	public abstract Double tollPrime();
 }

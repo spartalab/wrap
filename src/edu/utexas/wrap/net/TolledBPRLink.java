@@ -1,6 +1,6 @@
 package edu.utexas.wrap.net;
 
-import edu.utexas.wrap.VehicleClass;
+import edu.utexas.wrap.modechoice.Mode;
 
 public class TolledBPRLink extends TolledLink {
 	
@@ -15,7 +15,7 @@ public class TolledBPRLink extends TolledLink {
 		this.toll = toll;
 	}
 
-	public Boolean allowsClass(VehicleClass c) {
+	public Boolean allowsClass(Mode c) {
 		return true;
 	}
 
@@ -29,7 +29,7 @@ public class TolledBPRLink extends TolledLink {
 	}
 	
 	@Override
-	public Double getPrice(Float vot, VehicleClass c) {
+	public Double getPrice(Float vot, Mode c) {
 //		if (cachedPrice != null) return cachedPrice; // Causes a convergence failure for some reason
 
 		cachedPrice = getTravelTime() * vot + getToll(null);
@@ -37,7 +37,7 @@ public class TolledBPRLink extends TolledLink {
 		
 	}
 	
-	public Float getToll(VehicleClass c) {
+	public Float getToll(Mode c) {
 		if (!allowsClass(c)) return Float.MAX_VALUE;
 		return toll;
 	}

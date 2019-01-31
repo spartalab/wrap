@@ -11,6 +11,12 @@ import edu.utexas.wrap.demand.AutomotiveOriginDestinationMatrix;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
+/**An instance of a {@link edu.utexas.wrap.assignment.AssignmentLoader}
+ * used for loading demand into bushes for use by bush-based assignment
+ * methods.
+ * @author William
+ *
+ */
 public class BushLoader extends AssignmentLoader {
 	Map<Node, BushOriginBuilder> pool;
 	

@@ -5,10 +5,10 @@ import java.util.List;
 import edu.utexas.wrap.net.Node;
 
 public abstract class Origin {
-	protected final Node self;
-	protected List<? extends AssignmentContainer> containers;
+	private final Node self;
 	
 	public Origin(Node self) {
+		//TODO figure out Zones
 		this.self = self;
 	}
 	

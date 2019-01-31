@@ -2,7 +2,7 @@ package edu.utexas.wrap.net;
 
 import java.util.Map;
 
-import edu.utexas.wrap.VehicleClass;
+import edu.utexas.wrap.modechoice.Mode;
 
 /**
  * @author SYSTEM
@@ -11,13 +11,13 @@ import edu.utexas.wrap.VehicleClass;
 public class TolledEnhancedLink extends TolledLink {
 	private final float conicalParam, VDFshift, saturatedFlowRate, minDelay, operCost;
 	private final float a, b, c, d, s, u;
-	private final Map<VehicleClass, Boolean> allowedClasses;
-	private final Map<VehicleClass, Float> classTolls;
+	private final Map<Mode, Boolean> allowedClasses;
+	private final Map<Mode, Float> classTolls;
 
 	public TolledEnhancedLink(Node tail, Node head, Float capacity, Float length, Float fftime, Float conicalParam,
 			Float VDFShift, Float sParam, Float uParam, Float saturatedFlowRate, Float minDelay, Float operCost,
-			Float CA, Float CB, Float CC, Float CD, Map<VehicleClass, Boolean> allowedClasses,
-			Map<VehicleClass, Float> classTolls) {
+			Float CA, Float CB, Float CC, Float CD, Map<Mode, Boolean> allowedClasses,
+			Map<Mode, Float> classTolls) {
 		super(tail, head, capacity, length, fftime);
 		this.conicalParam = conicalParam;
 		this.VDFshift = VDFShift;
@@ -35,7 +35,7 @@ public class TolledEnhancedLink extends TolledLink {
 	}
 
 	@Override
-	public Boolean allowsClass(VehicleClass c) {
+	public Boolean allowsClass(Mode c) {
 		return allowedClasses.getOrDefault(c, true);
 	}
 
@@ -86,12 +86,12 @@ public class TolledEnhancedLink extends TolledLink {
 	}
 
 	@Override
-	public Double getPrice(Float vot, VehicleClass c) {
+	public Double getPrice(Float vot, Mode c) {
 		return getToll(c) + getTravelTime() * vot;
 	}
 
 	@Override
-	public Float getToll(VehicleClass c) {
+	public Float getToll(Mode c) {
 		if (!allowsClass(c))
 			return Float.MAX_VALUE;
 		return classTolls.get(c) + operCost;

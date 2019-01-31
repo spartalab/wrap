@@ -12,7 +12,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.utexas.wrap.VehicleClass;
+import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.CentroidConnector;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
@@ -152,21 +152,21 @@ public class GraphFactory {
 			Float opCostA = (parse(args[25]));
 			Float opCostB = (parse(args[26]));
 
-			Map<VehicleClass, Float> tollsA = new HashMap<VehicleClass, Float>();
-			Map<VehicleClass, Float> tollsB = new HashMap<VehicleClass, Float>();
+			Map<Mode, Float> tollsA = new HashMap<Mode, Float>();
+			Map<Mode, Float> tollsB = new HashMap<Mode, Float>();
 
-			tollsA.put(VehicleClass.SINGLE_OCC, (parse(args[27])));
-			tollsB.put(VehicleClass.SINGLE_OCC, (parse(args[28])));
-			tollsA.put(VehicleClass.HIGH_OCC, (parse(args[29])));
-			tollsB.put(VehicleClass.HIGH_OCC, (parse(args[30])));
-			tollsA.put(VehicleClass.MED_TRUCK, (parse(args[31])));
-			tollsB.put(VehicleClass.MED_TRUCK, (parse(args[32])));
-			tollsA.put(VehicleClass.HVY_TRUCK, (parse(args[33])));
-			tollsB.put(VehicleClass.HVY_TRUCK, (parse(args[34])));
+			tollsA.put(Mode.SINGLE_OCC, (parse(args[27])));
+			tollsB.put(Mode.SINGLE_OCC, (parse(args[28])));
+			tollsA.put(Mode.HOV_2, (parse(args[29])));
+			tollsB.put(Mode.HOV_2, (parse(args[30])));
+			tollsA.put(Mode.MED_TRUCK, (parse(args[31])));
+			tollsB.put(Mode.MED_TRUCK, (parse(args[32])));
+			tollsA.put(Mode.HVY_TRUCK, (parse(args[33])));
+			tollsB.put(Mode.HVY_TRUCK, (parse(args[34])));
 
-			Map<VehicleClass, Boolean> allowed = new HashMap<VehicleClass, Boolean>();
+			Map<Mode, Boolean> allowed = new HashMap<Mode, Boolean>();
 
-			allowed.put(VehicleClass.SINGLE_OCC, !Boolean.parseBoolean(args[35].trim()));
+			allowed.put(Mode.SINGLE_OCC, !Boolean.parseBoolean(args[35].trim()));
 
 			// TODO: find out which links are not symmetric
 			// TODO: figure out what I meant by ^^^ that ^^^ comment

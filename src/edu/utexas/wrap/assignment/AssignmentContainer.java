@@ -2,19 +2,20 @@ package edu.utexas.wrap.assignment;
 
 import java.util.Set;
 
-import edu.utexas.wrap.VehicleClass;
+import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 
-/**A label indicating an object may be associated with a link flow.
- * Examples include bushes and paths for bush- and path-based optimizers,
- * respectively.
+/**A label indicating an object may be associated with a link flow in route 
+ * choice. Examples include bushes and paths for bush- and path-based 
+ * optimizers, respectively.
+ * 
  * @author William
  *
  */
 public interface AssignmentContainer {
 
-	public VehicleClass getVehicleClass();
+	public Mode getVehicleClass();
 	
 	public Float getVOT();
 

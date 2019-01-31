@@ -15,9 +15,9 @@ import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
 import com.carrotsearch.hppc.ObjectObjectHashMap;
 import com.carrotsearch.hppc.ObjectObjectScatterMap;
 
-import edu.utexas.wrap.VehicleClass;
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.Path;
+import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.CentroidConnector;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
@@ -25,6 +25,11 @@ import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.util.AlternateSegmentPair;
 import edu.utexas.wrap.util.UnreachableException;
 
+/** An instance of a {@link edu.utexas.wrap.assignment.AssignmentContainer}
+ * that is used for bush-based assignment methods.
+ * @author William
+ *
+ */
 public class Bush extends HashSet<Link> implements AssignmentContainer {
 
 	/**
@@ -34,7 +39,7 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 	// Bush structure
 	private final BushOrigin origin;
 	private final Float vot;
-	private final VehicleClass c;
+	private final Mode c;
 
 	private final Graph wholeNet;
 
@@ -44,7 +49,7 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 
 	private LinkedList<Node> cachedTopoOrder;
 
-	public Bush(BushOrigin o, Graph g, Float vot, Map<Node, Float> destDemand, VehicleClass c) {
+	public Bush(BushOrigin o, Graph g, Float vot, Map<Node, Float> destDemand, Mode c) {
 		super(o.getInitMap(g).values());
 		origin = o;
 		this.vot = vot;
@@ -356,7 +361,7 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 
 	}
 
-	public VehicleClass getVehicleClass() {
+	public Mode getVehicleClass() {
 		return c;
 	}
 
