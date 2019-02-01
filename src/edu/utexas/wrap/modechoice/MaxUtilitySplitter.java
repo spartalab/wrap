@@ -6,7 +6,9 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.utexas.wrap.demand.AggregateOriginDestinationMatrix;
+import edu.utexas.wrap.demand.AggregateProductionAttractionMatrix;
 import edu.utexas.wrap.demand.ModalOriginDestinationMatrix;
+import edu.utexas.wrap.demand.ModalProductionAttractionMatrix;
 import edu.utexas.wrap.net.Node;
 
 public class MaxUtilitySplitter extends TripInterchangeSplitter {
@@ -14,12 +16,12 @@ public class MaxUtilitySplitter extends TripInterchangeSplitter {
 	
 	public MaxUtilitySplitter(UtilityModel model) {
 		utility = model;
-	}
+	} 
 	
 	@Override
-	public Map<Mode, ModalOriginDestinationMatrix> split(AggregateOriginDestinationMatrix aggregate) {
+	public Map<Mode, ModalProductionAttractionMatrix> split(AggregateProductionAttractionMatrix aggregate) {
 		// TODO Auto-generated method stub
-		Map<Mode, ModalOriginDestinationMatrix> map = new HashMap<Mode,ModalOriginDestinationMatrix>();
+		Map<Mode, ModalProductionAttractionMatrix> map = new HashMap<Mode,ModalProductionAttractionMatrix>();
 		
 		for (Node origin : aggregate.keySet()) {
 			for (Node dest : aggregate.get(origin).keySet()) {

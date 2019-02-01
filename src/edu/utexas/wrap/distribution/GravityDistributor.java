@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import edu.utexas.wrap.demand.AggregateOriginDestinationMatrix;
+import edu.utexas.wrap.demand.AggregateProductionAttractionMatrix;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ProductionAttractionMap;
 import edu.utexas.wrap.net.Node;
@@ -15,15 +16,15 @@ public class GravityDistributor extends TripDistributor {
 		friction = fm;
 	}
 	@Override
-	public AggregateOriginDestinationMatrix distribute(ProductionAttractionMap pa) {
+	public AggregateProductionAttractionMatrix distribute(ProductionAttractionMap pa) {
 		Map<Node, Double> a = new HashMap<Node,Double>();
 		Map<Node, Double> b = new HashMap<Node,Double>();
-		AggregateOriginDestinationMatrix od = new AggregateOriginDestinationMatrix();
+		AggregateProductionAttractionMatrix pam = new AggregateProductionAttractionMatrix();
 		Boolean converged = false;
 		while (!converged) {
 			converged = true;
 			
-			for (Node i : pa.getProducers()) {
+			for (Node i : pa.getProducers()) { 
 				Double denom = 0.0;
 				
 				for (Node z : pa.getAttractors()) {
@@ -56,9 +57,9 @@ public class GravityDistributor extends TripDistributor {
 				d.put(j, (float) (a.get(i)*pa.getProductions(i)*b.get(j)*pa.getAttractions(j)*friction.get(i, j)));
 			}
 			
-			od.put(i, d);
+			pam.put(i, d);
 		}
-		return od;
+		return pam;
 	}
 	
 	private Boolean converged(Double a, Double b) {
