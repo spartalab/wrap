@@ -66,7 +66,7 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 		for (Link l : asp.longPath()) {
 			//				b.subtractFlow(l, deltaH);
 			Double td = deltaX.getOrDefault(l, 0.0)-deltaH.doubleValue();
-			Double ld = -l.getFlow(b);
+			Double ld = -b.getFlow(l);
 			Double ud = Math.max(Math.ulp(ld),Math.ulp(td));
 
 			if (td < ld) {

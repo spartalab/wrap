@@ -17,6 +17,7 @@ import com.carrotsearch.hppc.ObjectObjectScatterMap;
 
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.Path;
+import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.CentroidConnector;
 import edu.utexas.wrap.net.Graph;
@@ -30,37 +31,34 @@ import edu.utexas.wrap.util.UnreachableException;
  * @author William
  *
  */
-public class Bush extends HashSet<Link> implements AssignmentContainer {
+public class Bush implements AssignmentContainer {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 282086135279510954L;
 	// Bush structure
 	private final BushOrigin origin;
 	private final Float vot;
 	private final Mode c;
 
 	private final Graph wholeNet;
+	private final DemandMap demand;
 
 	// Back vector maps
-	private Map<Node, Link> qShort;
-	private Map<Node, Link> qLong;
+	private Map<Node, Object> q;
+//	private Map<Node, Link> qShort;
+//	private Map<Node, Link> qLong;
 
 	private LinkedList<Node> cachedTopoOrder;
 
-	public Bush(BushOrigin o, Graph g, Float vot, Map<Node, Float> destDemand, Mode c) {
-		super(o.getInitMap(g).values());
+	public Bush(BushOrigin o, Graph g, Float vot, DemandMap destDemand, Mode c) {
 		origin = o;
 		this.vot = vot;
 		this.c = c;
 
 		// Initialize flow and status maps
 		wholeNet = g;
-		qShort = origin.getInitMap(g);
-		qLong = new HashMap<Node, Link>(g.numNodes(), 1.0f);
-
-		dumpFlow(destDemand);
+		q = new HashMap<Node,Object>(origin.getInitMap(g));
+//		qLong = new HashMap<Node, Link>(g.numNodes(), 1.0f);
+		demand = destDemand;
+		dumpFlow(demand);
 	}
 
 	void activate(Link l) {
@@ -68,8 +66,19 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 			cachedTopoOrder = null;
 	}
 
+	private boolean add(Link l) {
+		// TODO Auto-generated method stub
+		if (q.get(l.getHead()).equals(l)) return false;
+		else if (q.get(l.getHead()) instanceof BushMerge) {
+			return ((BushMerge) q.get(l.getHead())).add(l);
+		}
+		else {
+			
+		}
+	}
+
 	public void changeFlow(Link l, Double delta) {
-		if (l.alterBushFlow(delta, this))
+		if (l.alterBushFlow(delta))
 			activate(l);
 		else
 			deactivate(l);
@@ -84,6 +93,10 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 			}
 		}
 		return false;
+	}
+
+	private boolean contains(Link i) {
+		// TODO Auto-generated method stub
 	}
 
 	Node divergeNode(Node l, Node u) {
@@ -141,6 +154,7 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 	 * @param destDemand
 	 */
 	private void dumpFlow(Map<Node, Float> destDemand) {
+		//TODO redo this method
 		for (Node node : destDemand.keySet()) {
 
 			Float x = destDemand.getOrDefault(node, 0.0F);
@@ -166,7 +180,7 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 	 */
 	private LinkedList<Node> generateTopoOrder() {
 		// Start with a set of all bush edges
-		Set<Link> currentLinks = new HashSet<Link>(this);
+		Set<Link> currentLinks = getLinks();
 
 		LinkedList<Node> to = new LinkedList<Node>();
 		LinkedList<Node> S = new LinkedList<Node>();
@@ -177,7 +191,8 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 		while (!S.isEmpty()) {
 			n = S.pop();// remove node from S
 			to.add(n); // append node to L
-
+			
+			
 			// for each active edge out of this node
 			for (Link l : wholeNet.outLinks(n)) {
 				if (currentLinks.contains(l)) {
@@ -208,7 +223,7 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 	}
 
 	public Double getCachedL(Node n, Map<Node, Double> cache) throws UnreachableException {
-		Link back = qShort.get(n);
+		Link back = getqShort(n);
 		if (n.equals(origin.getNode()))
 			return 0.0;
 		else if (back == null)
@@ -223,7 +238,7 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 	}
 
 	public Double getCachedU(Node n, Map<Node, Double> cache) throws UnreachableException {
-		Link back = qLong.get(n);
+		Link back = getqShort(n);
 		if (n.equals(origin.getNode()))
 			return 0.0;
 		else if (back == null)
@@ -238,20 +253,12 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 	}
 
 	public Float getDemand(Node node) {
-		Double inFlow = 0.0;
-		for (Link l : wholeNet.inLinks(node)) {
-			inFlow += l.getFlow(this);
-		}
-		Double outFlow = 0.0;
-		for (Link l : wholeNet.outLinks(node)) {
-			outFlow += l.getFlow(this);
-		}
-		return  (float) (inFlow - outFlow);
+		return demand.get(node);
 	}
-
+	
 	public Double getL(Node n) throws UnreachableException {
 
-		Link back = qShort.get(n);
+		Link back = getqShort(n);
 		if (n.equals(origin.getNode()))
 			return 0.0;
 		else if (back == null)
@@ -287,11 +294,17 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 	}
 
 	public Link getqLong(Node n) {
-		return qLong.get(n);
+		Object qq = q.get(n);
+		return qq instanceof Link? (Link) qq :
+			qq instanceof BushMerge? ((BushMerge) qq).getLongLink() :
+				null;
 	}
 
 	public Link getqShort(Node n) {
-		return qShort.get(n);
+		Object qq = q.get(n);
+		return qq instanceof Link? (Link) qq :
+			qq instanceof BushMerge ? ((BushMerge) qq).getShortLink() :
+				null;
 	}
 
 	public AlternateSegmentPair getShortLongASP(Node terminus) {
@@ -351,7 +364,7 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 
 	public Double getU(Node n) throws UnreachableException {
 
-		Link back = qLong.get(n);
+		Link back = getqLong(n);
 		if (n.equals(origin.getNode()))
 			return 0.0;
 		else if (back == null)
@@ -390,7 +403,7 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 	private void longRelax(Link l, Map<Node, Double> cache) throws UnreachableException {
 		Double Uicij = l.getPrice(vot, c) + getCachedU(l.getTail(), cache);
 		Node head = l.getHead();
-		if (qLong.get(head) == null || Uicij > getCachedU(head, cache)) {
+		if (getqLong(head) == null || Uicij > getCachedU(head, cache)) {
 			qLong.put(head, l);
 			cache.put(head, Uicij);
 		}
@@ -427,9 +440,14 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 		}
 	}
 
+	private boolean remove(Link l) {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 	void prune() {
-		for (Link l : new HashSet<Link>(this)) {
-			if (!l.hasFlow(this)) {
+		for (Link l : getLinks()) {
+			if (getFlow(l) == 0.0) {
 				// Check to see if this link is needed for connectivity, deactivate link in bush
 				// if no flow left
 				deactivate(l);
@@ -438,11 +456,16 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 		}
 	}
 
+	public double getFlow(Link l) {
+		// TODO Auto-generated method stub
+
+	}
+
 	private void shortRelax(Link l, Map<Node, Double> cache) throws UnreachableException {
 		Double Licij = l.getPrice(vot, c) + getCachedL(l.getTail(), cache);
 
 		Node head = l.getHead();
-		if (qShort.get(head) == null || Licij < getCachedL(head, cache)) {
+		if (getqShort(head) == null || Licij < getCachedL(head, cache)) {
 			qShort.put(head, l);
 			cache.put(head, Licij);
 		}
@@ -479,6 +502,5 @@ public class Bush extends HashSet<Link> implements AssignmentContainer {
 
 	@Override
 	public Set<Link> getLinks() {
-		return this;
 	}
 }

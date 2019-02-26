@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.utexas.wrap.assignment.bush.Bush;
+import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
@@ -26,6 +27,7 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	
 	private final Mode c;
 	private final Float vot;
+	private DemandMap demand;
 	
 	public Path() {
 		this.c = null;
@@ -58,7 +60,7 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	public Double getMinFlow(Bush b, Map<Link, Double> deltaX) {
 		Double maxDelta = null;
 		for (Link l : this) {
-			Double x = l.getFlow(b) + deltaX.getOrDefault(l, 0.0);
+			Double x = b.getFlow(l) + deltaX.getOrDefault(l, 0.0);
 			if (maxDelta == null || x.compareTo(maxDelta) < 0) {
 				maxDelta = x;
 			}
@@ -126,17 +128,16 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 
 	@Override
 	public Float getDemand(Node n) {
-		Integer idx = indexOf(n);
-		Link out = this.get(idx);
-		Link in  = this.get(idx-1);
-		Double inf  = in == null? 0.0 : in.getFlow(this);
-		Double outf = out == null? 0.0 : out.getFlow(this);
-		// TODO Auto-generated method stub
-		return (float) (inf - outf);
+		return demand != null? demand.get(n) : null;
 	}
 
 	@Override
 	public Set<Link> getLinks() {
 		return new HashSet<Link>(this);
+	}
+
+	@Override
+	public Double getFlow(Link l) {
+		throw new RuntimeException("Not Yet Implemented");
 	}
 }

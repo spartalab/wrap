@@ -82,11 +82,10 @@ public abstract class BushOptimizer extends Optimizer {
 		b.prune();
 
 		boolean modified = false;
-		Set<Link> usedLinks = new HashSet<Link>(b);
+		Set<Link> usedLinks = b.getLinks();
 		Set<Link> unusedLinks = new HashSet<Link>(graph.getLinks());
 		unusedLinks.removeAll(usedLinks);
 		
-		b.shortTopoSearch();
 		Map<Node, Double> cache = b.longTopoSearch();
 		
 		for (Link l : unusedLinks) {

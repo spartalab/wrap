@@ -35,7 +35,7 @@ public class BushOriginBuilder extends Thread {
 		orig = new BushOrigin(o);
 		for (Mode c : map.keySet()) {
 			for (Float vot : map.get(c).keySet()) {
-				Map<Node, Float> odm = map.get(c).get(vot);
+				DemandMap odm = map.get(c).get(vot);
 				if (!odm.isEmpty()) orig.buildBush(g, vot, odm, c);
 			}
 		}

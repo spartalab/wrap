@@ -1,15 +1,8 @@
 package edu.utexas.wrap.net;
 
-import java.util.Map;
 
-import edu.utexas.wrap.assignment.AssignmentContainer;
-import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.util.NegativeFlowException;
-import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Reference2DoubleOpenHashMap;
-
-import java.util.HashMap;
 
 /**
  * @author rahulpatel
@@ -20,10 +13,12 @@ public abstract class Link implements Priced {
 	private final Float capacity, length, fftime;
 	private final Node head;
 	private final Node tail;
+	
+	private double flo;
 
-	private Map<AssignmentContainer,Double> flow;
+//	private Map<AssignmentContainer,Double> flow;
 
-	private Double cachedFlow = null;
+//	private Double cachedFlow = null;
 	protected Double cachedTT = null;
 	protected Double cachedPrice = null;
 
@@ -34,7 +29,7 @@ public abstract class Link implements Priced {
 		this.length = length;
 		this.fftime = fftime;
 		
-		flow = new Reference2DoubleOpenHashMap<AssignmentContainer>();
+//		flow = new Reference2DoubleOpenHashMap<AssignmentContainer>();
 	}
  
 
@@ -46,41 +41,40 @@ public abstract class Link implements Priced {
 	 * @param bush the origin Bush of this flow
 	 * @return whether the flow from this bush on the link is non-zero
 	 */
-	public synchronized Boolean alterBushFlow(Double delta, Bush bush) {
-		if (delta != 0) {
-			cachedTT = null;
-			cachedPrice = null;
-			cachedFlow = null;
-		}
-		Double newFlow = flow.getOrDefault(bush,0.0)+ delta.doubleValue();
-		if (newFlow < 0) throw new NegativeFlowException("invalid alter request");
-		else if (newFlow > 0) flow.put(bush, newFlow);
-		else {
-			flow.remove(bush);
-			return false;
-		}
-		return true;
-
-	}
+//	public synchronized Boolean alterBushFlow(Double delta) {
+//		if (delta != 0) {
+//			cachedTT = null;
+//			cachedPrice = null;
+////			cachedFlow = null;
+//		}
+//		Double newFlow = flo + delta.doubleValue();
+//		if (newFlow < 0) throw new NegativeFlowException("invalid alter request");
+//		else if (newFlow > 0) flo = newFlow;
+//		else {
+//			return false;
+//		}
+//		return true;
+//
+//	}
 
 	public Float freeFlowTime() {
 		return fftime;
 	}
 
-	public Double getFlow(AssignmentContainer source) {
-		return flow.getOrDefault(source, 0.0);
-	}
+//	public Double getFlow(AssignmentContainer source) {
+//		return flow.getOrDefault(source, 0.0);
+//	}
 
 	public Float getCapacity() {
 		return capacity;
 	}
 
 	public Double getFlow() {
-		if (cachedFlow != null) return cachedFlow;
-		Double f = flow.values().stream().mapToDouble(Double::doubleValue).sum();
-		if (f < 0) throw new NegativeFlowException("Negative link flow");
-		cachedFlow = f;
-		return f;
+//		if (cachedFlow != null) return cachedFlow;
+//		Double f = flow.values().stream().mapToDouble(Double::doubleValue).sum();
+		if (flo < 0) throw new NegativeFlowException("Negative flow on link "+this.toString());
+//		cachedFlow = f;
+		return flo;
 	}
 
 	public Node getHead() {
@@ -100,15 +94,15 @@ public abstract class Link implements Priced {
 	public abstract Double getTravelTime();
 
 	public int hashCode() {
-		int c = 76537;	//	UT 76-5-37 TAMC |m|
+		int c = 76537;	//	UT 76-5-37 TAMC \m/
 		int b = 1831;	//	Founding of Univ. of Alabama
 		int a = 2017;	//	Year of inception for this project
 		return (((head.getID()*a + tail.getID())*b + capacity.intValue())*c + fftime.intValue());
 	}
 	
-	public Boolean hasFlow(Bush bush) {
-		return flow.containsKey(bush);
-	}
+//	public Boolean hasFlow(Bush bush) {
+//		return flow.containsKey(bush);
+//	}
 
 	public abstract Double pricePrime(Float float1);
 

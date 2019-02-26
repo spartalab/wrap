@@ -22,5 +22,7 @@ public interface AssignmentContainer {
 	public Float getDemand(Node n);
 	
 	public Set<Link> getLinks();
+
+	public Double getFlow(Link l);
 	
 }
