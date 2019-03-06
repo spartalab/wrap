@@ -5,3 +5,4 @@
 /manifest.mf
 /nbproject/
 /.DS_Store
+/src/edu/utexas/wrap/distribution/dbConfig.properties
