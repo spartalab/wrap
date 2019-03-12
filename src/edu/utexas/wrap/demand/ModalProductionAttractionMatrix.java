@@ -1,5 +1,10 @@
 package edu.utexas.wrap.demand;
 
-public interface ModalProductionAttractionMatrix {
+import edu.utexas.wrap.modechoice.Mode;
 
+public interface ModalProductionAttractionMatrix extends ProductionAttractionMatrix {
+
+	public Mode getMode();
+	
+	
 }
