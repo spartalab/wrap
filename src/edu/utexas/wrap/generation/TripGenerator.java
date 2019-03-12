@@ -1,8 +1,8 @@
 package edu.utexas.wrap.generation;
 
-import edu.utexas.wrap.demand.ProductionAttractionMap;
+import edu.utexas.wrap.demand.PAMap;
 
 public abstract class TripGenerator {
 
-	public abstract ProductionAttractionMap generate();
+	public abstract PAMap generate();
 }

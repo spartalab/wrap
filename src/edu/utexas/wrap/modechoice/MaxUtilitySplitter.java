@@ -5,10 +5,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import edu.utexas.wrap.demand.AggregateOriginDestinationMatrix;
-import edu.utexas.wrap.demand.AggregateProductionAttractionMatrix;
-import edu.utexas.wrap.demand.ModalOriginDestinationMatrix;
-import edu.utexas.wrap.demand.ModalProductionAttractionMatrix;
+import edu.utexas.wrap.demand.AggregatePAMatrix;
+import edu.utexas.wrap.demand.ModalPAMatrix;
+import edu.utexas.wrap.demand.containers.AggregateODHashMatrix;
+import edu.utexas.wrap.demand.containers.ModalODHashMatrix;
 import edu.utexas.wrap.net.Node;
 
 public class MaxUtilitySplitter extends TripInterchangeSplitter {
@@ -19,9 +19,9 @@ public class MaxUtilitySplitter extends TripInterchangeSplitter {
 	} 
 	
 	@Override
-	public Set<ModalProductionAttractionMatrix> split(AggregateProductionAttractionMatrix aggregate) {
+	public Set<ModalPAMatrix> split(AggregatePAMatrix aggregate) {
 		// TODO Auto-generated method stub
-		Map<Mode, ModalProductionAttractionMatrix> map = new HashMap<Mode,ModalProductionAttractionMatrix>();
+		Map<Mode, ModalPAMatrix> map = new HashMap<Mode,ModalPAMatrix>();
 		
 		for (Node origin : aggregate.keySet()) {
 			for (Node dest : aggregate.get(origin).keySet()) {
@@ -35,7 +35,7 @@ public class MaxUtilitySplitter extends TripInterchangeSplitter {
 					}
 				}
 				
-				map.putIfAbsent(mode, new ModalOriginDestinationMatrix(mode));
+				map.putIfAbsent(mode, new ModalODHashMatrix(mode));
 			}
 			
 		}

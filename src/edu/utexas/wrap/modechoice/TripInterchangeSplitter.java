@@ -2,11 +2,11 @@ package edu.utexas.wrap.modechoice;
 
 import java.util.Set;
 
-import edu.utexas.wrap.demand.AggregateProductionAttractionMatrix;
-import edu.utexas.wrap.demand.ModalProductionAttractionMatrix;
+import edu.utexas.wrap.demand.AggregatePAMatrix;
+import edu.utexas.wrap.demand.ModalPAMatrix;
 
 public abstract class TripInterchangeSplitter {
 	
-	public abstract Set<ModalProductionAttractionMatrix> split(AggregateProductionAttractionMatrix aggregate);
+	public abstract Set<ModalPAMatrix> split(AggregatePAMatrix aggregate);
 	
 }

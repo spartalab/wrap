@@ -1,10 +1,10 @@
 package edu.utexas.wrap.distribution;
 
-import edu.utexas.wrap.demand.AggregateProductionAttractionMatrix;
-import edu.utexas.wrap.demand.ProductionAttractionMap;
+import edu.utexas.wrap.demand.AggregatePAMatrix;
+import edu.utexas.wrap.demand.PAMap;
 
 public abstract class TripDistributor {
 
-	public abstract AggregateProductionAttractionMatrix distribute(ProductionAttractionMap pa);
+	public abstract AggregatePAMatrix distribute(PAMap pa);
 	
 }

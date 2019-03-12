@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.Map;
 
 import edu.utexas.wrap.assignment.AssignmentLoader;
-import edu.utexas.wrap.demand.AutomotiveDemandMap;
-import edu.utexas.wrap.demand.AutomotiveOriginDestinationMatrix;
-import edu.utexas.wrap.demand.DemandMap;
+import edu.utexas.wrap.demand.containers.AutoODHashMatrix;
+import edu.utexas.wrap.demand.containers.AutoDemandHashMap;
+import edu.utexas.wrap.demand.containers.DemandHashMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
@@ -28,11 +28,11 @@ public class OriginFactory {
 		}
 	}
 	
-	private static DemandMap readDestinationDemand(BufferedReader of, Graph g) throws IOException {
+	private static DemandHashMap readDestinationDemand(BufferedReader of, Graph g) throws IOException {
 		String[] cols;
 		Integer destID;
 		Float demand;
-		AutomotiveDemandMap dests = new AutomotiveDemandMap(null);
+		AutoDemandHashMap dests = new AutoDemandHashMap(null);
 
 		while (true) {
 			String line = of.readLine();
@@ -55,20 +55,20 @@ public class OriginFactory {
 		BufferedReader matrixFile = new BufferedReader(new FileReader(odMatrix));
 		String line;
 		Integer curOrig = null;
-		AutomotiveOriginDestinationMatrix odda17 = new AutomotiveOriginDestinationMatrix(0.17F, Mode.SINGLE_OCC);
-		AutomotiveOriginDestinationMatrix odda35 = new AutomotiveOriginDestinationMatrix(0.35F, Mode.SINGLE_OCC);
-		AutomotiveOriginDestinationMatrix odda45 = new AutomotiveOriginDestinationMatrix(0.45F, Mode.SINGLE_OCC);
-		AutomotiveOriginDestinationMatrix odda90 = new AutomotiveOriginDestinationMatrix(0.90F, Mode.SINGLE_OCC);
+		AutoODHashMatrix odda17 = new AutoODHashMatrix(0.17F, Mode.SINGLE_OCC);
+		AutoODHashMatrix odda35 = new AutoODHashMatrix(0.35F, Mode.SINGLE_OCC);
+		AutoODHashMatrix odda45 = new AutoODHashMatrix(0.45F, Mode.SINGLE_OCC);
+		AutoODHashMatrix odda90 = new AutoODHashMatrix(0.90F, Mode.SINGLE_OCC);
 		
-		AutomotiveOriginDestinationMatrix odsr17 = new AutomotiveOriginDestinationMatrix(0.17F, Mode.HOV_2);
-		AutomotiveOriginDestinationMatrix odsr35 = new AutomotiveOriginDestinationMatrix(0.35F, Mode.HOV_2);
-		AutomotiveOriginDestinationMatrix odsr45 = new AutomotiveOriginDestinationMatrix(0.45F, Mode.HOV_2);
-		AutomotiveOriginDestinationMatrix odsr90 = new AutomotiveOriginDestinationMatrix(0.90F, Mode.HOV_2);
+		AutoODHashMatrix odsr17 = new AutoODHashMatrix(0.17F, Mode.HOV_2);
+		AutoODHashMatrix odsr35 = new AutoODHashMatrix(0.35F, Mode.HOV_2);
+		AutoODHashMatrix odsr45 = new AutoODHashMatrix(0.45F, Mode.HOV_2);
+		AutoODHashMatrix odsr90 = new AutoODHashMatrix(0.90F, Mode.HOV_2);
 		
-		AutomotiveOriginDestinationMatrix odmt = new AutomotiveOriginDestinationMatrix(1.0F, Mode.MED_TRUCK);
-		AutomotiveOriginDestinationMatrix odht = new AutomotiveOriginDestinationMatrix(1.0F, Mode.HVY_TRUCK);
+		AutoODHashMatrix odmt = new AutoODHashMatrix(1.0F, Mode.MED_TRUCK);
+		AutoODHashMatrix odht = new AutoODHashMatrix(1.0F, Mode.HVY_TRUCK);
 		
-		AutomotiveDemandMap solo17 = null, solo35 = null, solo45 = null, solo90 = null,
+		AutoDemandHashMap solo17 = null, solo35 = null, solo45 = null, solo90 = null,
 				hov17 = null, hov35 = null, hov45 = null, hov90 = null,
 				medTrucks = null, hvyTrucks = null;
 
@@ -136,18 +136,18 @@ public class OriginFactory {
 				// Reset maps
 				System.out.print("\rBuilding bushes for origin " + orig);
 				curOrig = orig;
-				solo17 = new AutomotiveDemandMap(odda17);
-				solo35 = new AutomotiveDemandMap(odda35);
-				solo45 = new AutomotiveDemandMap(odda45);
-				solo90 = new AutomotiveDemandMap(odda90);
+				solo17 = new AutoDemandHashMap(odda17);
+				solo35 = new AutoDemandHashMap(odda35);
+				solo45 = new AutoDemandHashMap(odda45);
+				solo90 = new AutoDemandHashMap(odda90);
 
-				hov17 = new AutomotiveDemandMap(odsr17);
-				hov35 = new AutomotiveDemandMap(odsr35);
-				hov45 = new AutomotiveDemandMap(odsr45);
-				hov90 = new AutomotiveDemandMap(odsr90);
+				hov17 = new AutoDemandHashMap(odsr17);
+				hov35 = new AutoDemandHashMap(odsr35);
+				hov45 = new AutoDemandHashMap(odsr45);
+				hov90 = new AutoDemandHashMap(odsr90);
 
-				medTrucks = new AutomotiveDemandMap(odmt);
-				hvyTrucks = new AutomotiveDemandMap(odht);
+				medTrucks = new AutoDemandHashMap(odmt);
+				hvyTrucks = new AutoDemandHashMap(odht);
 			}
 
 			if (da17 > 0.0F)
@@ -195,7 +195,7 @@ public class OriginFactory {
 		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
 		String line;
 		
-		Map<Float, AutomotiveOriginDestinationMatrix> ods = new HashMap<Float, AutomotiveOriginDestinationMatrix>();
+		Map<Float, AutoODHashMatrix> ods = new HashMap<Float, AutoODHashMatrix>();
 		
 		
 		do { // Move past headers in the file
@@ -211,12 +211,12 @@ public class OriginFactory {
 			Integer origID = Integer.parseInt(line.trim().split("\\s+")[1]);
 			Node root = g.getNode(origID); // Retrieve the existing node with that ID
 			System.out.print("\rBuilding bushes for origin " + origID);
-			DemandMap unified = readDestinationDemand(of, g);
+			DemandHashMap unified = readDestinationDemand(of, g);
 
 			
 			for (Float[] entry : VOTs.get(root)) {
-				ods.putIfAbsent(entry[0], new AutomotiveOriginDestinationMatrix(entry[0], null)); //Ensure a parent OD matrix exists
-				AutomotiveDemandMap split = new AutomotiveDemandMap(ods.get(entry[0]));	//Attach the parent OD
+				ods.putIfAbsent(entry[0], new AutoODHashMatrix(entry[0], null)); //Ensure a parent OD matrix exists
+				AutoDemandHashMap split = new AutoDemandHashMap(ods.get(entry[0]));	//Attach the parent OD
 				
 				for (Node dest : unified.keySet()) { //Split each destination proportionally
 					split.put(dest, entry[1] * unified.get(dest));

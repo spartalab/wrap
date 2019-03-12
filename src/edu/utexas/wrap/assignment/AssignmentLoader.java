@@ -1,7 +1,7 @@
 package edu.utexas.wrap.assignment;
  
-import edu.utexas.wrap.demand.AutomotiveDemandMap;
-import edu.utexas.wrap.demand.AutomotiveOriginDestinationMatrix;
+import edu.utexas.wrap.demand.containers.AutoODHashMatrix;
+import edu.utexas.wrap.demand.containers.AutoDemandHashMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
@@ -20,9 +20,9 @@ public abstract class AssignmentLoader {
 		this.graph = g;
 	}
 	
-	protected abstract void addAll(AutomotiveOriginDestinationMatrix od);
+	protected abstract void addAll(AutoODHashMatrix od);
 
-	public abstract void add(Node root, AutomotiveDemandMap split);
+	public abstract void add(Node root, AutoDemandHashMap split);
 	
 	public abstract void load(Node root);
 	

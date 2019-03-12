@@ -1,4 +1,4 @@
-package edu.utexas.wrap.demand;
+package edu.utexas.wrap.demand.containers;
 
 import edu.utexas.wrap.modechoice.Mode;
 
@@ -6,19 +6,19 @@ import edu.utexas.wrap.modechoice.Mode;
  * @author William
  *
  */
-public class AutomotiveDemandMap extends DemandMap {
+public class AutoDemandHashMap extends DemandHashMap {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 2176027918628424731L;
-	private final AutomotiveOriginDestinationMatrix parent;
+	private final AutoODHashMatrix parent;
 	
-	public AutomotiveDemandMap(AutomotiveOriginDestinationMatrix parent) {
+	public AutoDemandHashMap(AutoODHashMatrix parent) {
 		this.parent = parent;
 	}
 
-	public AutomotiveDemandMap(DemandMap sub, AutomotiveOriginDestinationMatrix parent) {
+	public AutoDemandHashMap(DemandHashMap sub, AutoODHashMatrix parent) {
 		super(sub);
 		this.parent = parent;
 	}

@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import edu.utexas.wrap.assignment.Origin;
-import edu.utexas.wrap.demand.DemandMap;
+import edu.utexas.wrap.demand.containers.DemandHashMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
@@ -32,7 +32,7 @@ public class BushOrigin extends Origin {
 	 * then selecting the paths which lead to destinations to which
 	 * the origin has demand.
 	 */	
-	public void buildBush(Graph g, Float vot, DemandMap destDemand, Mode c) {
+	public void buildBush(Graph g, Float vot, DemandHashMap destDemand, Mode c) {
 		containers.add(new Bush(this, g, vot, destDemand, c));
 	}
 

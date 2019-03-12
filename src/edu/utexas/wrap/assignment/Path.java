@@ -8,7 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.utexas.wrap.assignment.bush.Bush;
-import edu.utexas.wrap.demand.DemandMap;
+import edu.utexas.wrap.demand.containers.DemandHashMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
@@ -27,7 +27,7 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	
 	private final Mode c;
 	private final Float vot;
-	private DemandMap demand;
+	private DemandHashMap demand;
 	
 	public Path() {
 		this.c = null;

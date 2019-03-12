@@ -3,10 +3,11 @@ package edu.utexas.wrap.distribution;
 import java.util.HashMap;
 import java.util.Map;
 
-import edu.utexas.wrap.demand.AggregateOriginDestinationMatrix;
-import edu.utexas.wrap.demand.AggregateProductionAttractionMatrix;
-import edu.utexas.wrap.demand.DemandMap;
-import edu.utexas.wrap.demand.ProductionAttractionMap;
+import edu.utexas.wrap.demand.AggregatePAMatrix;
+import edu.utexas.wrap.demand.PAMap;
+import edu.utexas.wrap.demand.containers.AggregateODHashMatrix;
+import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
+import edu.utexas.wrap.demand.containers.DemandHashMap;
 import edu.utexas.wrap.net.Node;
 
 public class GravityDistributor extends TripDistributor {
@@ -16,10 +17,10 @@ public class GravityDistributor extends TripDistributor {
 		friction = fm;
 	}
 	@Override
-	public AggregateProductionAttractionMatrix distribute(ProductionAttractionMap pa) {
+	public AggregatePAMatrix distribute(PAMap pa) {
 		Map<Node, Double> a = new HashMap<Node,Double>();
 		Map<Node, Double> b = new HashMap<Node,Double>();
-		AggregateProductionAttractionMatrix pam = new AggregateProductionAttractionMatrix();
+		AggregatePAMatrix pam = new AggregatePAHashMatrix();
 		Boolean converged = false;
 		while (!converged) {
 			converged = true;
@@ -51,7 +52,7 @@ public class GravityDistributor extends TripDistributor {
 		}
 		
 		for (Node i : pa.getProducers()) {
-			DemandMap d = new DemandMap();
+			DemandHashMap d = new DemandHashMap();
 			
 			for (Node j : pa.getAttractors()) {
 				d.put(j, (float) (a.get(i)*pa.getProductions(i)*b.get(j)*pa.getAttractions(j)*friction.get(i, j)));

@@ -1,4 +1,4 @@
-package edu.utexas.wrap.demand;
+package edu.utexas.wrap.demand.containers;
 
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Node;
@@ -7,10 +7,10 @@ import edu.utexas.wrap.net.Node;
  * @author William
  *
  */
-public class AutomotiveOriginDestinationMatrix extends ModalOriginDestinationMatrix {
+public class AutoODHashMatrix extends ModalODHashMatrix {
 	private final Float vot;
 	
-	public AutomotiveOriginDestinationMatrix(Float vot, Mode c) {
+	public AutoODHashMatrix(Float vot, Mode c) {
 		super(c);
 		this.vot = vot;
 	}
@@ -24,14 +24,14 @@ public class AutomotiveOriginDestinationMatrix extends ModalOriginDestinationMat
 		return vot;
 	}
 
-	public AutomotiveDemandMap get(Node origin) {
+	public AutoDemandHashMap get(Node origin) {
 		//TODO: WTF is this, William?
-		return new AutomotiveDemandMap(super.get(origin), this);
+		return new AutoDemandHashMap(super.get(origin), this);
 	}
 	
 	@Override
 	public void put(Node origin, Node destination, Float demand) {
-		putIfAbsent(origin, new AutomotiveDemandMap(this));
+		putIfAbsent(origin, new AutoDemandHashMap(this));
 		get(origin).put(destination, demand);
 	}
 

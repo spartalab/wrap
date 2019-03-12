@@ -17,7 +17,7 @@ import com.carrotsearch.hppc.ObjectObjectScatterMap;
 
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.Path;
-import edu.utexas.wrap.demand.DemandMap;
+import edu.utexas.wrap.demand.containers.DemandHashMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.CentroidConnector;
 import edu.utexas.wrap.net.Graph;
@@ -39,7 +39,7 @@ public class Bush implements AssignmentContainer {
 	private final Mode c;
 
 	private final Graph wholeNet;
-	private final DemandMap demand;
+	private final DemandHashMap demand;
 
 	// Back vector maps
 	private Map<Node, Object> q;
@@ -48,7 +48,7 @@ public class Bush implements AssignmentContainer {
 
 	private LinkedList<Node> cachedTopoOrder;
 
-	public Bush(BushOrigin o, Graph g, Float vot, DemandMap destDemand, Mode c) {
+	public Bush(BushOrigin o, Graph g, Float vot, DemandHashMap destDemand, Mode c) {
 		origin = o;
 		this.vot = vot;
 		this.c = c;

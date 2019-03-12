@@ -1,7 +1,8 @@
-package edu.utexas.wrap.demand;
+package edu.utexas.wrap.demand.containers;
 
 import java.util.HashMap;
 
+import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.net.Node;
 
 /**Generic origin-destination matrix which does not specify the mode
@@ -10,7 +11,7 @@ import edu.utexas.wrap.net.Node;
  * @author William
  *
  */
-public class AggregateOriginDestinationMatrix extends HashMap<Node, DemandMap> implements OriginDestinationMatrix {
+public class AggregateODHashMatrix extends HashMap<Node, DemandHashMap> implements ODMatrix {
 
 	/**
 	 * 

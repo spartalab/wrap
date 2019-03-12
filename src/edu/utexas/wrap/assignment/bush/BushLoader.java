@@ -6,8 +6,8 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.utexas.wrap.assignment.AssignmentLoader;
-import edu.utexas.wrap.demand.AutomotiveDemandMap;
-import edu.utexas.wrap.demand.AutomotiveOriginDestinationMatrix;
+import edu.utexas.wrap.demand.containers.AutoODHashMatrix;
+import edu.utexas.wrap.demand.containers.AutoDemandHashMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
@@ -25,12 +25,12 @@ public class BushLoader extends AssignmentLoader {
 		pool = new HashMap<Node, BushOriginBuilder>();
 	}
 	
-	public void add(Node o, AutomotiveDemandMap map) {
+	public void add(Node o, AutoDemandHashMap map) {
 		pool.putIfAbsent(o, new BushOriginBuilder(graph,o));
 		pool.get(o).addMap(map);
 	} 
 	
-	public void addAll(AutomotiveOriginDestinationMatrix matrix) {
+	public void addAll(AutoODHashMatrix matrix) {
 		for (Node o : matrix.keySet()) {
 			add(o, matrix.get(o));
 		}
