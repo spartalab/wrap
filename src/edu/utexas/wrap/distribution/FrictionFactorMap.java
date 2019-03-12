@@ -16,7 +16,7 @@ public class FrictionFactorMap {
 	private static Properties p;
 	private Connection databaseCon;
 	private String tableName;
-	private HashMap<Integer, HashMap<Integer, Double>> ffmap;
+	private Map<Integer, Map<Integer, Double>> ffmap;
 	private double aConst, bConst, cConst;
 
 	private void loadDatabase() {
@@ -46,12 +46,12 @@ public class FrictionFactorMap {
 				int dest = rs.getInt("Destination");
 				double time = rs.getDouble("pktime");
 				double ff = aConst * Math.pow(time, bConst)* Math.exp(-1 * cConst * time);
-				HashMap<Integer,Double> ffDest;
+				Map<Integer,Double> ffDest;
 				if(ffmap.containsKey(or)) {
 					ffDest = ffmap.get(or);
 					ffDest.put(dest, ff);
 				} else {
-					ffDest = new HashMap<>();
+					ffDest = new HashMap<Integer, Double>();
 					ffDest.put(dest, ff);
 
 					ffmap.put(or, ffDest);
@@ -80,7 +80,7 @@ public class FrictionFactorMap {
 		this.aConst = a;
 		this.bConst = b;
 		this.cConst = c;
-		ffmap = new HashMap<>();
+		ffmap = new HashMap<Integer, Map<Integer, Double>>();
 		developFFMap();
 
 	}

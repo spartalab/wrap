@@ -19,7 +19,7 @@ public class MaxUtilitySplitter extends TripInterchangeSplitter {
 	} 
 	
 	@Override
-	public Map<Mode, ModalProductionAttractionMatrix> split(AggregateProductionAttractionMatrix aggregate) {
+	public Set<ModalProductionAttractionMatrix> split(AggregateProductionAttractionMatrix aggregate) {
 		// TODO Auto-generated method stub
 		Map<Mode, ModalProductionAttractionMatrix> map = new HashMap<Mode,ModalProductionAttractionMatrix>();
 		

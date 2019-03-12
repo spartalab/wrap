@@ -1,5 +1,5 @@
 package edu.utexas.wrap.demand;
 
-public class ModalProductionAttractionMatrix {
+public interface ModalProductionAttractionMatrix {
 
 }
