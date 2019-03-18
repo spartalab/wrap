@@ -41,7 +41,7 @@ public abstract class Link implements Priced {
 	 * @param bush the origin Bush of this flow
 	 * @return whether the flow from this bush on the link is non-zero
 	 */
-//	public synchronized Boolean alterBushFlow(Double delta) {
+	public synchronized Boolean alterBushFlow(Double delta) {
 //		if (delta != 0) {
 //			cachedTT = null;
 //			cachedPrice = null;
@@ -53,9 +53,9 @@ public abstract class Link implements Priced {
 //		else {
 //			return false;
 //		}
-//		return true;
+		return true;
 //
-//	}
+	}
 
 	public Float freeFlowTime() {
 		return fftime;

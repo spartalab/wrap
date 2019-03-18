@@ -2,6 +2,8 @@ package edu.utexas.wrap.demand;
 
 import edu.utexas.wrap.net.Node;
 
+import java.util.HashMap;
+
 /**A map from an origin and destination zone to the
  * number of trips between them.
  * 
@@ -13,8 +15,8 @@ import edu.utexas.wrap.net.Node;
  *
  */
 public interface PAMatrix {
-	
-	public void put(Node i, DemandMap d) ;
+
+	public void putDemand(Integer i, DemandMap d) ;
 
 	public Object getAttribute(String type);
 	

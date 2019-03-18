@@ -18,17 +18,17 @@ public class GravityDistributor extends TripDistributor {
 	}
 	@Override
 	public AggregatePAMatrix distribute(PAMap pa) {
-		Map<Node, Double> a = new HashMap<Node,Double>();
-		Map<Node, Double> b = new HashMap<Node,Double>();
+		Map<Integer, Double> a = new HashMap<Integer,Double>();
+		Map<Integer, Double> b = new HashMap<Integer, Double>();
 		AggregatePAMatrix pam = new AggregatePAHashMatrix();
 		Boolean converged = false;
 		while (!converged) {
 			converged = true;
 			
-			for (Node i : pa.getProducers()) { 
+			for (Integer i : pa.getProducers()) {
 				Double denom = 0.0;
 				
-				for (Node z : pa.getAttractors()) {
+				for (Integer z : pa.getAttractors()) {
 					denom += b.getOrDefault(z, 1.0) * pa.getAttractions(z) * friction.get(i,z);
 				}
 				
@@ -38,9 +38,9 @@ public class GravityDistributor extends TripDistributor {
 				}
 			}
 		
-			for (Node j : pa.getAttractors()) {
+			for (Integer j : pa.getAttractors()) {
 				Double denom = 0.0;
-				for (Node z : pa.getProducers()) {
+				for (Integer z : pa.getProducers()) {
 					denom += a.get(z) * pa.getProductions(z) * friction.get(j, z);
 				}
 				
@@ -51,14 +51,14 @@ public class GravityDistributor extends TripDistributor {
 			}
 		}
 		
-		for (Node i : pa.getProducers()) {
+		for (Integer i : pa.getProducers()) {
 			DemandHashMap d = new DemandHashMap();
 			
-			for (Node j : pa.getAttractors()) {
+			for (Integer j : pa.getAttractors()) {
 				d.put(j, (float) (a.get(i)*pa.getProductions(i)*b.get(j)*pa.getAttractions(j)*friction.get(i, j)));
 			}
 			
-			pam.put(i, d);
+			pam.putDemand(i, d);
 		}
 		return pam;
 	}
