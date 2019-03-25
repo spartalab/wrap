@@ -2,24 +2,35 @@ package edu.utexas.wrap.demand.containers;
 
 import edu.utexas.wrap.demand.ModalPAMap;
 import edu.utexas.wrap.modechoice.Mode;
+import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
+import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
-public class SingleModalPAMap implements ModalPAMap {
+public class DBModalPAMap implements ModalPAMap {
 
     private final static String dbName = "sta";
     private static Properties p;
     private Connection databaseCon;
     private String tableName;
-    private Map<Integer, Float> attractors;
-    private Map<Integer, Float> producers;
+    private Map<Node, Float> attractors;
+    private Map<Node, Float> producers;
     private int origin;
     private Mode mode;
     private float vot;
+    private Graph g;
 
-    public SingleModalPAMap(Node n, String table, Mode m) {
+    public DBModalPAMap(Graph g, Node n, String table, Mode m) {
+        p = new Properties();
+        try {
+            p.load(DBModalPAMap.class.getResourceAsStream("dbConfig.properties"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        loadDatabase();
+        this.g = g;
         tableName = table;
         origin = n.getID();
         mode = m;
@@ -70,9 +81,9 @@ public class SingleModalPAMap implements ModalPAMap {
                         break;
                 }
                 if(attrVal != 0)
-                    attractors.put(dest, attrVal);
+                    attractors.put(getGraph().getNode(dest), attrVal);
                 if(prodVal != 0)
-                    producers.put(dest, attrVal);
+                    producers.put(getGraph().getNode(dest), attrVal);
 
             }
             databaseCon.setAutoCommit(true);
@@ -83,22 +94,22 @@ public class SingleModalPAMap implements ModalPAMap {
     }
 
     @Override
-    public Set<Integer> getProducers () {
+    public Set<Node> getProducers () {
         return producers.keySet();
     }
 
     @Override
-    public Set<Integer> getAttractors () {
+    public Set<Node> getAttractors () {
         return attractors.keySet();
     }
 
     @Override
-    public Float getAttractions (Integer z){
+    public Float getAttractions (Node z){
         return attractors.getOrDefault(z, 0f);
     }
 
     @Override
-    public Float getProductions (Integer z){ return producers.getOrDefault(z, 0f); }
+    public Float getProductions (Node z){ return producers.getOrDefault(z, 0f); }
 
     @Override
     public Float getVOT () { return vot; }
@@ -106,6 +117,11 @@ public class SingleModalPAMap implements ModalPAMap {
     @Override
     public Mode getVehicleClass () {
         return mode;
+    }
+
+    @Override
+    public Graph getGraph() {
+        return g;
     }
 
     @Override
