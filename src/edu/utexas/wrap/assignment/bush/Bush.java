@@ -42,7 +42,7 @@ public class Bush implements AssignmentContainer {
 	private final DemandHashMap demand;
 
 	// Back vector maps
-	private Map<Node, Object> q;
+	private Map<Node, BackVector> q;
 //	private Map<Node, Link> qShort;
 //	private Map<Node, Link> qLong;
 
@@ -55,7 +55,7 @@ public class Bush implements AssignmentContainer {
 
 		// Initialize flow and status maps
 		wholeNet = g;
-		q = new HashMap<Node,Object>(origin.getInitMap(g));
+		q = new HashMap<Node,BackVector>(origin.getInitMap(g));
 //		qLong = new HashMap<Node, Link>(g.numNodes(), 1.0f);
 		demand = destDemand;
 		dumpFlow(demand);
@@ -66,15 +66,33 @@ public class Bush implements AssignmentContainer {
 			cachedTopoOrder = null;
 	}
 
+	/** Add a link to the bush
+	 * @param l the link to be added
+	 * @return whether the link was successfully added to the bush
+	 */
 	private boolean add(Link l) {
-		// TODO Auto-generated method stub
-		if (q.get(l.getHead()).equals(l)) return false;
-		else if (q.get(l.getHead()) instanceof BushMerge) {
-			return ((BushMerge) q.get(l.getHead())).add(l);
+		Node head = l.getHead();
+		BackVector prior = q.get(head);
+		// If there was no backvector (should only happen during bush initialization), add link
+		if (prior == null) {
+			q.put(head, l);
+			return true;
 		}
-		else {
-			
+		// If the link is already the sole backvector, do nothing
+		else if (prior.equals(l)) return false;
+		// If the head node already has a merge backvector, delegate 
+		else if (prior instanceof BushMerge) {
+			return ((BushMerge) prior).add(l);
 		}
+		// Else, we need to create a new merge backvector to replace the current back link
+		else if (prior instanceof Link) { // If we're here, the back link needs to be replaced by a merge
+			BushMerge nuevo = new BushMerge();
+			nuevo.add((Link) prior);
+			nuevo.add(l);
+			q.put(head, nuevo);
+			return true;
+		}
+		return false;
 	}
 
 	public void changeFlow(Link l, Double delta) {
@@ -96,7 +114,8 @@ public class Bush implements AssignmentContainer {
 	}
 
 	private boolean contains(Link i) {
-		// TODO Auto-generated method stub
+		BackVector back = q.get(i.getHead());
+		return back instanceof BushMerge? ((BushMerge) back).contains(i) : back.equals(i);
 	}
 
 	Node divergeNode(Node l, Node u) {
@@ -441,11 +460,19 @@ public class Bush implements AssignmentContainer {
 	}
 
 	private boolean remove(Link l) {
-		// TODO Auto-generated method stub
-		return false;
+		BackVector b = q.get(l.getHead());
+		// If the link can't be removed due to connectivity, return false
+		if (b instanceof Link && ((Link) b).equals(l)) return false;
+		// If there was a merge present at the head node, attempt to remove the link from it
+		else if (b instanceof BushMerge) {
+			return ((BushMerge) b).remove(l);
+		}
+		// If something unusual happened, throw a Runtime exception
+		else throw new RuntimeException("A link was removed that wasn't in the bush");
 	}
 
 	void prune() {
+		// TODO optimize for new bush structure
 		for (Link l : getLinks()) {
 			if (getFlow(l) == 0.0) {
 				// Check to see if this link is needed for connectivity, deactivate link in bush
@@ -502,5 +529,11 @@ public class Bush implements AssignmentContainer {
 
 	@Override
 	public Set<Link> getLinks() {
+		Set<Link> ret = new HashSet<Link>();
+		for (BackVector b : q.values()) {
+			if (b instanceof Link) ret.add((Link) b);
+			else if (b instanceof BushMerge) ret.addAll((BushMerge) b);
+		}
+		return ret;
 	}
 }

@@ -5,7 +5,7 @@ import java.util.HashSet;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 
-public class BushMerge extends HashSet<Link> {
+public class BushMerge extends HashSet<Link> implements BackVector{
 	private Link shortLink;
 	private Link longLink;
 	private Node diverge;
@@ -37,4 +37,6 @@ public class BushMerge extends HashSet<Link> {
 	public String toString() {
 		return "Merge from diverge "+diverge.toString();
 	}
+	
+	//TODO handle adding links
 }

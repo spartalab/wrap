@@ -1,6 +1,7 @@
 package edu.utexas.wrap.net;
 
 
+import edu.utexas.wrap.assignment.bush.BackVector;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.util.NegativeFlowException;
 
@@ -8,7 +9,7 @@ import edu.utexas.wrap.util.NegativeFlowException;
  * @author rahulpatel
  *
  */
-public abstract class Link implements Priced {
+public abstract class Link implements Priced, BackVector {
 
 	private final Float capacity, length, fftime;
 	private final Node head;
