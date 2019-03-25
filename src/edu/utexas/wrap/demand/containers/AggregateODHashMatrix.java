@@ -3,6 +3,7 @@ package edu.utexas.wrap.demand.containers;
 import java.util.HashMap;
 
 import edu.utexas.wrap.demand.ODMatrix;
+import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
 /**Generic origin-destination matrix which does not specify the mode
@@ -17,6 +18,11 @@ public class AggregateODHashMatrix extends HashMap<Node, DemandHashMap> implemen
 	 * 
 	 */
 	private static final long serialVersionUID = 4760691392227828734L;
+	private Graph g;
+
+	AggregateODHashMatrix(Graph g) {
+		this.g = g;
+	}
 
 	@Override
 	public Float getDemand(Node origin, Node destination) {
@@ -28,6 +34,11 @@ public class AggregateODHashMatrix extends HashMap<Node, DemandHashMap> implemen
 	public void put(Node origin, Node destination, Float demand) {
 		// TODO Auto-generated method stub
 
+	}
+
+	@Override
+	public Graph getGraph() {
+		return g;
 	}
 
 }

@@ -1,5 +1,6 @@
 package edu.utexas.wrap.demand;
 
+import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
 import java.util.HashMap;
@@ -21,4 +22,6 @@ public interface PAMatrix {
 	public Object getAttribute(String type);
 	
 	public float getVOT();
+
+	public Graph getGraph();
 }

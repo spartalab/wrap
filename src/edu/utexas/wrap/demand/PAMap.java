@@ -3,6 +3,7 @@ package edu.utexas.wrap.demand;
 import java.util.Set;
 
 import edu.utexas.wrap.modechoice.Mode;
+import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
 /**A mapping from a zone to the number of productions
@@ -18,16 +19,18 @@ import edu.utexas.wrap.net.Node;
  */
 public interface  PAMap {
 
-	public Set<Integer> getProducers();
+	public Set<Node> getProducers();
 
-	public Set<Integer> getAttractors();
+	public Set<Node> getAttractors();
 
-	public Float getAttractions(Integer z);
+	public Float getAttractions(Node z);
 
-	public Float getProductions(Integer z);
+	public Float getProductions(Node z);
 
 	public Float getVOT() ;
 
 	public Mode getVehicleClass() ;
+
+	public Graph getGraph();
 	
 }

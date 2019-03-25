@@ -4,6 +4,7 @@ import java.util.HashMap;
 
 import edu.utexas.wrap.demand.ModalODMatrix;
 import edu.utexas.wrap.modechoice.Mode;
+import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
 public class ModalODHashMatrix extends HashMap<Node, DemandHashMap> implements ModalODMatrix {
@@ -14,8 +15,10 @@ public class ModalODHashMatrix extends HashMap<Node, DemandHashMap> implements M
 	 */
 	private static final long serialVersionUID = 6104047201084019367L;
 	private final Mode m;
-	
-	public ModalODHashMatrix(Mode mode) {
+	private Graph g;
+
+	public ModalODHashMatrix(Graph g, Mode mode) {
+		this.g = g;
 		this.m = mode;
 	}
 	
@@ -28,9 +31,15 @@ public class ModalODHashMatrix extends HashMap<Node, DemandHashMap> implements M
 	}
 
 	public void put(Node origin, Node destination, Float demand) {
-		putIfAbsent(origin, new DemandHashMap());
+		putIfAbsent(origin, new DemandHashMap(getGraph()));
 		get(origin).put(destination, demand);
 		
 	}
+
+	@Override
+	public Graph getGraph() {
+		return g;
+	}
+
 
 }

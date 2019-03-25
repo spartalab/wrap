@@ -1,6 +1,7 @@
 package edu.utexas.wrap.demand;
 
 import edu.utexas.wrap.modechoice.Mode;
+import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
 /**A map from an origin-destination pair to the number
@@ -17,5 +18,7 @@ public interface ODMatrix {
 	public Float getDemand(Node origin, Node destination);
 	
 	public void put(Node origin, Node destination, Float demand);
+
+	public Graph getGraph();
 	
 }
