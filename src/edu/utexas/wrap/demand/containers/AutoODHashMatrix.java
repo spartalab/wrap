@@ -8,7 +8,7 @@ import edu.utexas.wrap.net.Node;
  * @author William
  *
  */
-public class AutoODHashMatrix extends ModalODHashMatrix {
+public class AutoODHashMatrix extends ModalHashMatrix {
 	private final Float vot;
 	
 	public AutoODHashMatrix(Graph g, Float vot, Mode c) {
@@ -21,7 +21,7 @@ public class AutoODHashMatrix extends ModalODHashMatrix {
 	 */
 	private static final long serialVersionUID = -5344167950596246262L;
 
-	public Float getVOT() {
+	public float getVOT() {
 		return vot;
 	}
 

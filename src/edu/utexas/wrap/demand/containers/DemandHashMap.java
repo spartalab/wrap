@@ -20,8 +20,8 @@ public class DemandHashMap extends HashMap<Node, Float> implements DemandMap {
 		this.g = g;
 	}
 	
-	protected DemandHashMap(Graph g, DemandHashMap d) {
-		super(d);
+	protected DemandHashMap(Graph g, DemandMap d) {
+		super((DemandHashMap) d);
 		this.g = g;
 	}
 

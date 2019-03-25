@@ -1,5 +1,6 @@
 package edu.utexas.wrap.distribution;
 
+import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
 import java.io.IOException;
@@ -14,8 +15,9 @@ public class FrictionFactorMap {
 	private static Properties p;
 	private Connection databaseCon;
 	private String tableName;
-	private Map<Integer, Map<Integer, Double>> ffmap;
+	private Map<Node, Map<Node, Double>> ffmap;
 	private double aConst, bConst, cConst;
+	private Graph g;
 
 	private void loadDatabase() {
 		try {
@@ -44,15 +46,15 @@ public class FrictionFactorMap {
 				int dest = rs.getInt("Destination");
 				double time = rs.getDouble("pktime");
 				double ff = aConst * Math.pow(time, bConst)* Math.exp(-1 * cConst * time);
-				Map<Integer,Double> ffDest;
-				if(ffmap.containsKey(or)) {
-					ffDest = ffmap.get(or);
-					ffDest.put(dest, ff);
+				Map<Node,Double> ffDest;
+				if(ffmap.containsKey(g.getNode(or))) {
+					ffDest = ffmap.get(g.getNode(or));
+					ffDest.put(g.getNode(dest), ff);
 				} else {
-					ffDest = new HashMap<Integer, Double>();
-					ffDest.put(dest, ff);
+					ffDest = new HashMap<Node, Double>();
+					ffDest.put(g.getNode(dest), ff);
 
-					ffmap.put(or, ffDest);
+					ffmap.put(g.getNode(or), ffDest);
 				}
 			}
 			databaseCon.setAutoCommit(true);
@@ -62,11 +64,11 @@ public class FrictionFactorMap {
 		}
 	}
 
-	public FrictionFactorMap(String table) {
-		this(table, 1, 1, 1);
+	public FrictionFactorMap(Graph g, String table) {
+		this(g, table, 1, 1, 1);
 
 	}
-	public FrictionFactorMap(String table, double a, double b, double c) {
+	public FrictionFactorMap(Graph g, String table, double a, double b, double c) {
 		tableName = table;
 		p = new Properties();
 		try {
@@ -78,12 +80,13 @@ public class FrictionFactorMap {
 		this.aConst = a;
 		this.bConst = b;
 		this.cConst = c;
-		ffmap = new HashMap<Integer, Map<Integer, Double>>();
+		this.g = g;
+		ffmap = new HashMap<Node, Map<Node, Double>>();
 		developFFMap();
 
 	}
 
-	public Double get(Integer i, Integer z) {
+	public Double get(Node i, Node z) {
 		// TODO Auto-generated method stub
 		return ffmap.get(i).get(z);
 	}

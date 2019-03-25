@@ -8,27 +8,30 @@ import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.containers.AggregateODHashMatrix;
 import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
 import edu.utexas.wrap.demand.containers.DemandHashMap;
+import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
 public class GravityDistributor extends TripDistributor {
 	private FrictionFactorMap friction;
-	
-	public GravityDistributor(FrictionFactorMap fm) {
+	private Graph g;
+
+	public GravityDistributor(Graph g, FrictionFactorMap fm) {
+		this.g = g;
 		friction = fm;
 	}
 	@Override
 	public AggregatePAMatrix distribute(PAMap pa) {
-		Map<Integer, Double> a = new HashMap<Integer,Double>();
-		Map<Integer, Double> b = new HashMap<Integer, Double>();
-		AggregatePAMatrix pam = new AggregatePAHashMatrix();
+		Map<Node, Double> a = new HashMap<Node,Double>();
+		Map<Node, Double> b = new HashMap<Node, Double>();
+		AggregatePAMatrix pam = new AggregatePAHashMatrix(g);
 		Boolean converged = false;
 		while (!converged) {
 			converged = true;
 			
-			for (Integer i : pa.getProducers()) {
+			for (Node i : pa.getProducers()) {
 				Double denom = 0.0;
 				
-				for (Integer z : pa.getAttractors()) {
+				for (Node z : pa.getAttractors()) {
 					denom += b.getOrDefault(z, 1.0) * pa.getAttractions(z) * friction.get(i,z);
 				}
 				
@@ -38,9 +41,9 @@ public class GravityDistributor extends TripDistributor {
 				}
 			}
 		
-			for (Integer j : pa.getAttractors()) {
+			for (Node j : pa.getAttractors()) {
 				Double denom = 0.0;
-				for (Integer z : pa.getProducers()) {
+				for (Node z : pa.getProducers()) {
 					denom += a.get(z) * pa.getProductions(z) * friction.get(j, z);
 				}
 				
@@ -51,10 +54,10 @@ public class GravityDistributor extends TripDistributor {
 			}
 		}
 		
-		for (Integer i : pa.getProducers()) {
-			DemandHashMap d = new DemandHashMap();
+		for (Node i : pa.getProducers()) {
+			DemandHashMap d = new DemandHashMap(g);
 			
-			for (Integer j : pa.getAttractors()) {
+			for (Node j : pa.getAttractors()) {
 				d.put(j, (float) (a.get(i)*pa.getProductions(i)*b.get(j)*pa.getAttractions(j)*friction.get(i, j)));
 			}
 			

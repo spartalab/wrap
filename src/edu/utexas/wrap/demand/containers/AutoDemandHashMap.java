@@ -1,5 +1,6 @@
 package edu.utexas.wrap.demand.containers;
 
+import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 
@@ -20,7 +21,7 @@ public class AutoDemandHashMap extends DemandHashMap {
 		this.parent = parent;
 	}
 
-	public AutoDemandHashMap(Graph g, DemandHashMap sub, AutoODHashMatrix parent) {
+	public AutoDemandHashMap(Graph g, DemandMap sub, AutoODHashMatrix parent) {
 		super(g, sub);
 		this.parent = parent;
 	}

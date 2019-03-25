@@ -6,7 +6,6 @@ import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 
 public class FixedProportionSplitter extends TripInterchangeSplitter {
-
 	
 	
 	@Override
