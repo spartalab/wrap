@@ -10,10 +10,6 @@ import java.util.Map;
 import java.util.Set;
 
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Reference2ReferenceOpenHashMap;
-
-import com.carrotsearch.hppc.ObjectObjectHashMap;
-import com.carrotsearch.hppc.ObjectObjectScatterMap;
 
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.Path;
@@ -45,6 +41,7 @@ public class Bush implements AssignmentContainer {
 	private Map<Node, BackVector> q;
 //	private Map<Node, Link> qShort;
 //	private Map<Node, Link> qLong;
+
 
 	private LinkedList<Node> cachedTopoOrder;
 
@@ -92,6 +89,7 @@ public class Bush implements AssignmentContainer {
 			q.put(head, nuevo);
 			return true;
 		}
+
 		return false;
 	}
 
@@ -116,6 +114,7 @@ public class Bush implements AssignmentContainer {
 	private boolean contains(Link i) {
 		BackVector back = q.get(i.getHead());
 		return back instanceof BushMerge? ((BushMerge) back).contains(i) : back.equals(i);
+
 	}
 
 	Node divergeNode(Node l, Node u) {
@@ -483,9 +482,9 @@ public class Bush implements AssignmentContainer {
 		}
 	}
 
-	public double getFlow(Link l) {
+	public Double getFlow(Link l) {
 		// TODO Auto-generated method stub
-
+		return 0.0;
 	}
 
 	private void shortRelax(Link l, Map<Node, Double> cache) throws UnreachableException {
@@ -535,5 +534,6 @@ public class Bush implements AssignmentContainer {
 			else if (b instanceof BushMerge) ret.addAll((BushMerge) b);
 		}
 		return ret;
+
 	}
 }

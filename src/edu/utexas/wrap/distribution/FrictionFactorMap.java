@@ -10,8 +10,6 @@ import java.util.Properties;
 
 public class FrictionFactorMap {
 
-	//TODO Implement connection to Postgres
-
 	private final static String dbName = "sta";
 	private static Properties p;
 	private Connection databaseCon;
@@ -85,9 +83,9 @@ public class FrictionFactorMap {
 
 	}
 
-	public Double get(Node i, Node z) {
+	public Double get(Integer i, Integer z) {
 		// TODO Auto-generated method stub
-		return ffmap.get(i.getID()).get(z.getID());
+		return ffmap.get(i).get(z);
 	}
 
 }

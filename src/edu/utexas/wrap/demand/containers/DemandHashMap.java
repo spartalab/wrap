@@ -5,7 +5,7 @@ import java.util.HashMap;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Node;
 
-public class DemandHashMap extends HashMap<Node, Float> implements DemandMap {
+public class DemandHashMap extends HashMap<Integer, Float> implements DemandMap {
 
 	/**
 	 * 
