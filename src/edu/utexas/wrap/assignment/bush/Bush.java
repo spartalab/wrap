@@ -93,6 +93,7 @@ public class Bush implements AssignmentContainer {
 	}
 
 	public void changeFlow(Link l, Double delta) {
+		//TODO check to make sure we don't remove more flow than the bush uses
 		if (l.changeFlow(delta))
 			activate(l);
 		else
@@ -100,12 +101,10 @@ public class Bush implements AssignmentContainer {
 	}
 
 	private Boolean deactivate(Link l) {
-		Node head = l.getHead();
-		for (Link i : wholeNet.inLinks(head)) {
-			if (contains(i) && !i.equals(l)) {
-				markInactive(l);
-				return true;
-			}
+		BackVector b = q.get(l.getHead());
+		if (b instanceof BushMerge) {
+			markInactive(l);
+			return true;
 		}
 		return false;
 	}
@@ -116,6 +115,11 @@ public class Bush implements AssignmentContainer {
 
 	}
 
+	/** Calculates the divergence between the shortest and longest paths from two nodes
+	 * @param l the node from which the shortest path should trace back
+	 * @param u the node from which the longest path should trace back
+	 * @return the diverge node
+	 */
 	protected Node divergeNode(Node l, Node u) {
 		if (l.equals(origin.getNode()) || u.equals(origin.getNode()))
 			return origin.getNode();
@@ -467,8 +471,8 @@ public class Bush implements AssignmentContainer {
 		if (b instanceof Link && ((Link) b).equals(l)) return false;
 		// If there was a merge present at the head node, attempt to remove the link from it
 		else if (b instanceof BushMerge) {
-			if (((BushMerge) b).remove(l)){
-				
+			if (((BushMerge) b).remove(l)){ //If there is only one link left, replace BushMerge with Link
+				q.put(l.getHead(),((BushMerge) b).iterator().next());
 			} 
 		}
 		// If something unusual happened, throw a Runtime exception
