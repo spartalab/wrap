@@ -7,7 +7,6 @@ import java.util.Properties;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
 public class AggregatePAHashMatrix extends HashMap<Integer, DemandMap> implements AggregatePAMatrix {
@@ -16,11 +15,6 @@ public class AggregatePAHashMatrix extends HashMap<Integer, DemandMap> implement
 	 * 
 	 */
 	private static final long serialVersionUID = -4656252954122078293L;
-	private Graph g;
-
-	AggregatePAHashMatrix(Graph g) {
-		this.g = g;
-	}
 
 	public void putDemand(Integer i, DemandMap d) {
 		put(i,d);
@@ -36,11 +30,6 @@ public class AggregatePAHashMatrix extends HashMap<Integer, DemandMap> implement
 	public float getVOT() {
 		// TODO Auto-generated method stub
 		return 0;
-	}
-
-	@Override
-	public Graph getGraph() {
-		return g;
 	}
 
 }
