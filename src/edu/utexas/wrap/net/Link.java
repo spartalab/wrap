@@ -42,19 +42,10 @@ public abstract class Link implements Priced, BackVector {
 	 * @param bush the origin Bush of this flow
 	 * @return whether the flow from this bush on the link is non-zero
 	 */
-	public synchronized Boolean alterBushFlow(Double delta) {
-//		if (delta != 0) {
-//			cachedTT = null;
-//			cachedPrice = null;
-////			cachedFlow = null;
-//		}
-//		Double newFlow = flo + delta.doubleValue();
-//		if (newFlow < 0) throw new NegativeFlowException("invalid alter request");
-//		else if (newFlow > 0) flo = newFlow;
-//		else {
-//			return false;
-//		}
-		return true;
+	public synchronized Boolean changeFlow(Double delta) {
+		if (delta < 0.0 && -delta > flo) throw new RuntimeException("Too much flow removed");
+		else flo += delta;
+		return flo > 0.0;
 //
 	}
 
@@ -62,9 +53,6 @@ public abstract class Link implements Priced, BackVector {
 		return fftime;
 	}
 
-//	public Double getFlow(AssignmentContainer source) {
-//		return flow.getOrDefault(source, 0.0);
-//	}
 
 	public Float getCapacity() {
 		return capacity;
@@ -101,10 +89,6 @@ public abstract class Link implements Priced, BackVector {
 		return (((head.getID()*a + tail.getID())*b + capacity.intValue())*c + fftime.intValue());
 	}
 	
-//	public Boolean hasFlow(Bush bush) {
-//		return flow.containsKey(bush);
-//	}
-
 	public abstract Double pricePrime(Float float1);
 
 	public abstract Double tIntegral();

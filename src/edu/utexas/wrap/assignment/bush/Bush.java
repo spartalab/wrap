@@ -84,9 +84,7 @@ public class Bush implements AssignmentContainer {
 		}
 		// Else, we need to create a new merge backvector to replace the current back link
 		else if (prior instanceof Link) { // If we're here, the back link needs to be replaced by a merge
-			BushMerge nuevo = new BushMerge(this);
-			nuevo.add((Link) prior);
-			nuevo.add(l);
+			BushMerge nuevo = new BushMerge(this, (Link) prior, l);
 			q.put(head, nuevo);
 			return true;
 		}
@@ -95,7 +93,7 @@ public class Bush implements AssignmentContainer {
 	}
 
 	public void changeFlow(Link l, Double delta) {
-		if (l.alterBushFlow(delta))
+		if (l.changeFlow(delta))
 			activate(l);
 		else
 			deactivate(l);
@@ -118,7 +116,7 @@ public class Bush implements AssignmentContainer {
 
 	}
 
-	Node divergeNode(Node l, Node u) {
+	protected Node divergeNode(Node l, Node u) {
 		if (l.equals(origin.getNode()) || u.equals(origin.getNode()))
 			return origin.getNode();
 

@@ -11,7 +11,7 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 	private Node diverge;
 	private final Bush bush;
 	
-	public BushMerge(Bush b) {
+	public BushMerge(Bush b, Link prior, Link l) {
 		bush = b;
 	}
 	
