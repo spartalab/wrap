@@ -83,7 +83,7 @@ public class Bush implements AssignmentContainer {
 		}
 		// Else, we need to create a new merge backvector to replace the current back link
 		else if (prior instanceof Link) { // If we're here, the back link needs to be replaced by a merge
-			BushMerge nuevo = new BushMerge();
+			BushMerge nuevo = new BushMerge(this);
 			nuevo.add((Link) prior);
 			nuevo.add(l);
 			q.put(head, nuevo);
@@ -458,16 +458,22 @@ public class Bush implements AssignmentContainer {
 		}
 	}
 
+	/**
+	 * @param l link to be removed
+	 * @return whether the link was removed successfully
+	 */
 	private boolean remove(Link l) {
 		BackVector b = q.get(l.getHead());
 		// If the link can't be removed due to connectivity, return false
 		if (b instanceof Link && ((Link) b).equals(l)) return false;
 		// If there was a merge present at the head node, attempt to remove the link from it
 		else if (b instanceof BushMerge) {
-			return ((BushMerge) b).remove(l);
+			if (((BushMerge) b).remove(l)){
+				
+			} 
 		}
 		// If something unusual happened, throw a Runtime exception
-		else throw new RuntimeException("A link was removed that wasn't in the bush");
+		throw new RuntimeException("A link was removed that wasn't in the bush");
 	}
 
 	void prune() {

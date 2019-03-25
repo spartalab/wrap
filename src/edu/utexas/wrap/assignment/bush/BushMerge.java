@@ -9,6 +9,11 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 	private Link shortLink;
 	private Link longLink;
 	private Node diverge;
+	private final Bush bush;
+	
+	public BushMerge(Bush b) {
+		bush = b;
+	}
 	
 	public Link getShortLink() {
 		return shortLink;
