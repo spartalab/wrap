@@ -1,5 +1,6 @@
 package edu.utexas.wrap.demand.containers;
 
+import java.util.Collection;
 import java.util.HashMap;
 
 import edu.utexas.wrap.demand.DemandMap;
@@ -32,5 +33,17 @@ public class DemandHashMap extends HashMap<Node, Float> implements DemandMap {
 	@Override
 	public Graph getGraph() {
 		return g;
+	}
+
+	@Override
+	public Collection<Node> getNodes() {
+		// TODO Auto-generated method stub
+		return keySet();
+	}
+
+	@Override
+	public Float getOrDefault(Node node, float f) {
+		// TODO Auto-generated method stub
+		return super.getOrDefault(node, f);
 	}
 }

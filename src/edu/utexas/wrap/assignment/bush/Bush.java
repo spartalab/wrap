@@ -13,6 +13,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.Path;
+import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.containers.DemandHashMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.CentroidConnector;
@@ -35,7 +36,7 @@ public class Bush implements AssignmentContainer {
 	private final Mode c;
 
 	private final Graph wholeNet;
-	private final DemandHashMap demand;
+	private final DemandMap demand;
 
 	// Back vector maps
 	private Map<Node, BackVector> q;
@@ -45,7 +46,7 @@ public class Bush implements AssignmentContainer {
 
 	private LinkedList<Node> cachedTopoOrder;
 
-	public Bush(BushOrigin o, Graph g, Float vot, DemandHashMap destDemand, Mode c) {
+	public Bush(BushOrigin o, Graph g, Float vot, DemandMap destDemand, Mode c) {
 		origin = o;
 		this.vot = vot;
 		this.c = c;
@@ -171,9 +172,9 @@ public class Bush implements AssignmentContainer {
 	 * 
 	 * @param destDemand
 	 */
-	private void dumpFlow(Map<Node, Float> destDemand) {
+	private void dumpFlow(DemandMap destDemand) {
 		//TODO redo this method
-		for (Node node : destDemand.keySet()) {
+		for (Node node : destDemand.getNodes()) {
 
 			Float x = destDemand.getOrDefault(node, 0.0F);
 			if (x <= 0.0)
