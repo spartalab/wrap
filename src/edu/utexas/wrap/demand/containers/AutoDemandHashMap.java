@@ -25,11 +25,18 @@ public class AutoDemandHashMap extends DemandHashMap {
 		super(g, sub);
 		this.parent = parent;
 	}
+
+	/**
+	 * Returns the mode
+	 */
 	public Mode getMode() {
 		// TODO Auto-generated method stub
 		return parent.getMode();
 	}
 
+	/**
+	 * Returns the value of time
+	 */
 	public Float getVOT() {
 		// TODO Auto-generated method stub
 		return parent.getVOT();

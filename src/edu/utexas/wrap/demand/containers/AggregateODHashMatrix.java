@@ -24,18 +24,27 @@ public class AggregateODHashMatrix extends HashMap<Node, DemandHashMap> implemen
 		this.g = g;
 	}
 
+	/**
+	 * Returns the demand given an origin and destination pair
+	 */
 	@Override
 	public Float getDemand(Node origin, Node destination) {
 		// TODO Auto-generated method stub
 		return get(origin) == null ? null : get(origin).getOrDefault(destination, 0.0F);
 	}
 
+	/**
+	 * Insert the demand for an origin/destination pair. Will replace existing value
+	 */
 	@Override
 	public void put(Node origin, Node destination, Float demand) {
 		// TODO Auto-generated method stub
 
 	}
 
+	/**
+	 * Return the graph associated with the aggregate OD matrix
+	 */
 	@Override
 	public Graph getGraph() {
 		return g;

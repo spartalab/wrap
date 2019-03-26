@@ -9,6 +9,14 @@ import java.io.IOException;
 import java.sql.*;
 import java.util.*;
 
+/**This is used to build the PA map by reading
+ * database information.
+ *
+ * NOTE: Rishabh finish the documentation for this
+ *
+ * @author Rishabh
+ *
+ */
 public class DBModalPAMap implements ModalPAMap {
 
     private final static String dbName = "sta";
