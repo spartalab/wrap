@@ -14,6 +14,8 @@ import edu.utexas.wrap.net.Node;
  *
  */
 public interface ODMatrix {
+	
+	public Mode getMode();
 
 	public Float getDemand(Node origin, Node destination);
 	

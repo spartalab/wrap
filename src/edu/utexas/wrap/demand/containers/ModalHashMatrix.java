@@ -3,13 +3,13 @@ package edu.utexas.wrap.demand.containers;
 import java.util.HashMap;
 
 import edu.utexas.wrap.demand.DemandMap;
-import edu.utexas.wrap.demand.ModalODMatrix;
 import edu.utexas.wrap.demand.ModalPAMatrix;
+import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
-public class ModalHashMatrix extends HashMap<Node, DemandMap> implements ModalODMatrix, ModalPAMatrix {
+public class ModalHashMatrix extends HashMap<Node, DemandMap> implements ODMatrix, ModalPAMatrix {
 	
 	
 	/**

@@ -1,5 +1,5 @@
 package edu.utexas.wrap.demand;
-import edu.utexas.wrap.modechoice.Mode;
+
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
@@ -11,7 +11,6 @@ import edu.utexas.wrap.net.Node;
  *
  */
 public interface AggregatePAMatrix extends PAMatrix {
-    public Mode getMode();
 
     public Graph getGraph();
 

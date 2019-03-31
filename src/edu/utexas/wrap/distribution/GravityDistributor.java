@@ -5,7 +5,6 @@ import java.util.Map;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.PAMap;
-import edu.utexas.wrap.demand.containers.AggregateODHashMatrix;
 import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
 import edu.utexas.wrap.demand.containers.DemandHashMap;
 import edu.utexas.wrap.net.Graph;

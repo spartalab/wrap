@@ -27,6 +27,12 @@ public class AutoODHashMatrix extends ModalHashMatrix {
 
 	public AutoDemandHashMap get(Node origin) {
 		//TODO: WTF is this, William?
+		/* So for every origin, there's an associated DemandMap object,
+		 * essentially mapping each destination to the ammount of demand
+		 * from the origin to the destination using this (Auto) mode,
+		 * so this method creates a duplicate DemandMap linked to this
+		 * graph (maintains the VOT and graph)
+		 * */
 		return new AutoDemandHashMap(getGraph(), super.get(origin), this);
 	}
 	

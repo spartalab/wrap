@@ -9,7 +9,6 @@ import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
-import edu.utexas.wrap.modechoice.Mode;
 
 public class AggregatePAHashMatrix extends HashMap<Node, DemandMap> implements AggregatePAMatrix {
 
@@ -18,11 +17,9 @@ public class AggregatePAHashMatrix extends HashMap<Node, DemandMap> implements A
 	 */
 	private static final long serialVersionUID = -4656252954122078293L;
 	private Graph g;
-	private Mode m;
 
-	public AggregatePAHashMatrix(Graph g, Mode m) {
+	public AggregatePAHashMatrix(Graph g) {
 		this.g = g;
-		this.m = m;
 	}
 
 	/**
@@ -66,14 +63,6 @@ public class AggregatePAHashMatrix extends HashMap<Node, DemandMap> implements A
 	@Override
 	public Graph getGraph() {
 		return g;
-	}
-
-	/**
-	 * Returns the mode associated with the matrix
-	 */
-	@Override
-	public Mode getMode() {
-		return m;
 	}
 
 }

@@ -32,7 +32,7 @@ public class OriginFactory {
 		String[] cols;
 		Integer destID;
 		Float demand;
-		AutoDemandHashMap dests = new AutoDemandHashMap(null);
+		AutoDemandHashMap dests = new AutoDemandHashMap(g,null);
 
 		while (true) {
 			String line = of.readLine();
@@ -55,18 +55,18 @@ public class OriginFactory {
 		BufferedReader matrixFile = new BufferedReader(new FileReader(odMatrix));
 		String line;
 		Integer curOrig = null;
-		AutoODHashMatrix odda17 = new AutoODHashMatrix(0.17F, Mode.SINGLE_OCC);
-		AutoODHashMatrix odda35 = new AutoODHashMatrix(0.35F, Mode.SINGLE_OCC);
-		AutoODHashMatrix odda45 = new AutoODHashMatrix(0.45F, Mode.SINGLE_OCC);
-		AutoODHashMatrix odda90 = new AutoODHashMatrix(0.90F, Mode.SINGLE_OCC);
+		AutoODHashMatrix odda17 = new AutoODHashMatrix(g, 0.17F, Mode.SINGLE_OCC);
+		AutoODHashMatrix odda35 = new AutoODHashMatrix(g, 0.35F, Mode.SINGLE_OCC);
+		AutoODHashMatrix odda45 = new AutoODHashMatrix(g, 0.45F, Mode.SINGLE_OCC);
+		AutoODHashMatrix odda90 = new AutoODHashMatrix(g, 0.90F, Mode.SINGLE_OCC);
 		
-		AutoODHashMatrix odsr17 = new AutoODHashMatrix(0.17F, Mode.HOV_2);
-		AutoODHashMatrix odsr35 = new AutoODHashMatrix(0.35F, Mode.HOV_2);
-		AutoODHashMatrix odsr45 = new AutoODHashMatrix(0.45F, Mode.HOV_2);
-		AutoODHashMatrix odsr90 = new AutoODHashMatrix(0.90F, Mode.HOV_2);
+		AutoODHashMatrix odsr17 = new AutoODHashMatrix(g, 0.17F, Mode.HOV_2);
+		AutoODHashMatrix odsr35 = new AutoODHashMatrix(g, 0.35F, Mode.HOV_2);
+		AutoODHashMatrix odsr45 = new AutoODHashMatrix(g, 0.45F, Mode.HOV_2);
+		AutoODHashMatrix odsr90 = new AutoODHashMatrix(g, 0.90F, Mode.HOV_2);
 		
-		AutoODHashMatrix odmt = new AutoODHashMatrix(1.0F, Mode.MED_TRUCK);
-		AutoODHashMatrix odht = new AutoODHashMatrix(1.0F, Mode.HVY_TRUCK);
+		AutoODHashMatrix odmt = new AutoODHashMatrix(g, 1.0F, Mode.MED_TRUCK);
+		AutoODHashMatrix odht = new AutoODHashMatrix(g, 1.0F, Mode.HVY_TRUCK);
 		
 		AutoDemandHashMap solo17 = null, solo35 = null, solo45 = null, solo90 = null,
 				hov17 = null, hov35 = null, hov45 = null, hov90 = null,
@@ -136,18 +136,18 @@ public class OriginFactory {
 				// Reset maps
 				System.out.print("\rBuilding bushes for origin " + orig);
 				curOrig = orig;
-				solo17 = new AutoDemandHashMap(odda17);
-				solo35 = new AutoDemandHashMap(odda35);
-				solo45 = new AutoDemandHashMap(odda45);
-				solo90 = new AutoDemandHashMap(odda90);
+				solo17 = new AutoDemandHashMap(g,odda17);
+				solo35 = new AutoDemandHashMap(g,odda35);
+				solo45 = new AutoDemandHashMap(g,odda45);
+				solo90 = new AutoDemandHashMap(g,odda90);
 
-				hov17 = new AutoDemandHashMap(odsr17);
-				hov35 = new AutoDemandHashMap(odsr35);
-				hov45 = new AutoDemandHashMap(odsr45);
-				hov90 = new AutoDemandHashMap(odsr90);
+				hov17 = new AutoDemandHashMap(g,odsr17);
+				hov35 = new AutoDemandHashMap(g,odsr35);
+				hov45 = new AutoDemandHashMap(g,odsr45);
+				hov90 = new AutoDemandHashMap(g,odsr90);
 
-				medTrucks = new AutoDemandHashMap(odmt);
-				hvyTrucks = new AutoDemandHashMap(odht);
+				medTrucks = new AutoDemandHashMap(g,odmt);
+				hvyTrucks = new AutoDemandHashMap(g,odht);
 			}
 
 			if (da17 > 0.0F)
@@ -215,8 +215,8 @@ public class OriginFactory {
 
 			
 			for (Float[] entry : VOTs.get(root)) {
-				ods.putIfAbsent(entry[0], new AutoODHashMatrix(entry[0], null)); //Ensure a parent OD matrix exists
-				AutoDemandHashMap split = new AutoDemandHashMap(ods.get(entry[0]));	//Attach the parent OD
+				ods.putIfAbsent(entry[0], new AutoODHashMatrix(g, entry[0], null)); //Ensure a parent OD matrix exists
+				AutoDemandHashMap split = new AutoDemandHashMap(g, ods.get(entry[0]));	//Attach the parent OD
 				
 				for (Node dest : unified.keySet()) { //Split each destination proportionally
 					split.put(dest, entry[1] * unified.get(dest));
