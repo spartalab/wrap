@@ -2,6 +2,7 @@ package edu.utexas.wrap.modechoice;
 
 import java.util.Set;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.HashMap;
 import edu.utexas.wrap.net.Node;
 
@@ -21,9 +22,9 @@ import edu.utexas.wrap.demand.ModalPAMatrix;
  */
 public class FixedProportionSplitter extends TripInterchangeSplitter {
 
-	private HashMap<Mode, HashMap<Pair<Node, Node>, Float>> map;
+	private Map<Mode, Map<Pair<Node, Node>, Float>> map;
 
-	public FixedProportionSplitter(HashMap<Mode, HashMap<Pair<Node, Node>, Float>> map) {
+	public FixedProportionSplitter(Map<Mode, Map<Pair<Node, Node>, Float>> map) {
 		this.map = map;
 	}
 
@@ -37,17 +38,23 @@ public class FixedProportionSplitter extends TripInterchangeSplitter {
 	 */
 	@Override
 	public Set<ModalPAMatrix> split(AggregatePAMatrix aggregate) {
-		// TODO Auto-generated method stub
-		Set<ModalPAMatrix> fixedProp = new HashSet<>();
+		Set<ModalPAMatrix> fixedProp = new HashSet<ModalPAMatrix>();
 		for (Mode m : map.keySet()) {
-			ModalPAMatrix pa = new ModalHashMatrix(aggregate.getGraph(), aggregate.getMode());
-			for (Pair p : map.get(m).keySet()) {
-				if (map.get(m).get(p) != 0.0) {
-					float proportion = map.get(m).get(p);
-					float demand = aggregate.getDemand(((Node)p.getKey()), ((Node)p.getValue()));
-					pa.put(((Node)p.getKey()), ((Node)p.getValue()), demand*proportion);
+			Map<Pair<Node,Node>,Float> pctMap = map.get(m);
+
+			// Everything between here and the line marked !!!!! can (and should) be parallelized, I think. -Wm
+			ModalPAMatrix pa = new ModalHashMatrix(aggregate.getGraph(), m);
+			
+			// TODO Consider replacing with Strassen's algorithm
+			for (Pair<Node,Node> p : pctMap.keySet()) {
+				float proportion = pctMap.get(p);
+				if (pctMap.get(p) != 0.0) {
+					float demand = aggregate.getDemand(p.getKey(), p.getValue());
+					pa.put(p.getKey(), p.getValue(), demand*proportion);
 				}
 			}
+			// !!!!!
+			
 			fixedProp.add(pa);
 		}
 		return fixedProp;
