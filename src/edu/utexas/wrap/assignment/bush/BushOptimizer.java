@@ -77,7 +77,7 @@ public abstract class BushOptimizer extends Optimizer {
 	}
 	
 	protected Boolean improveBush(Bush b) {
-		//TODO cleanup
+		//TODO cleanup, move to Bush
 
 		b.prune();
 

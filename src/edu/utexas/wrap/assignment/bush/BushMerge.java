@@ -28,10 +28,12 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 	}
 	
 	public Link getShortLink() {
+		if (shortLink == null) throw new RuntimeException("Shortest path search wasn't run yet!");
 		return shortLink;
 	}
 	
 	public Link getLongLink() {
+		if (longLink == null) throw new RuntimeException("Longest path search wasn't run yet!");
 		return longLink;
 	}
 	
@@ -54,26 +56,20 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 	public String toString() {
 		return "Merge from diverge "+diverge.toString();
 	}
-	
-	//TODO handle adding links
-	@Override
-	public boolean add(Link l) {
 		
-	}
-	
 	/** Remove a link from the merge
 	 * @param l the link to be removed
 	 * @return whether there is one link remaining
 	 */
-	@Override
 	public boolean remove(Link l) {
 		if (shortLink.equals(l)) {
-			//TODO
+			shortLink = null;
 		}
 		else if (longLink.equals(l)) {
-			//TODO
+			longLink = null;
 		}
 		if (!super.remove(l)) throw new RuntimeException("A Link was removed that wasn't in the BushMerge");
 		if (size() < 2) return true;
+		return false;
 	}
 }
