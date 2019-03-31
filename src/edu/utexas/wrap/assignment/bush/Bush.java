@@ -14,7 +14,6 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.Path;
 import edu.utexas.wrap.demand.DemandMap;
-import edu.utexas.wrap.demand.containers.DemandHashMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.CentroidConnector;
 import edu.utexas.wrap.net.Graph;
@@ -40,9 +39,6 @@ public class Bush implements AssignmentContainer {
 
 	// Back vector maps
 	private Map<Node, BackVector> q;
-//	private Map<Node, Link> qShort;
-//	private Map<Node, Link> qLong;
-
 
 	private LinkedList<Node> cachedTopoOrder;
 
@@ -54,9 +50,8 @@ public class Bush implements AssignmentContainer {
 		// Initialize flow and status maps
 		wholeNet = g;
 		q = new HashMap<Node,BackVector>(origin.getInitMap(g));
-//		qLong = new HashMap<Node, Link>(g.numNodes(), 1.0f);
 		demand = destDemand;
-		dumpFlow(demand);
+		dumpFlow();
 	}
 
 	void activate(Link l) {
@@ -94,16 +89,15 @@ public class Bush implements AssignmentContainer {
 
 	public void changeFlow(Link l, Double delta) {
 		//TODO check to make sure we don't remove more flow than the bush uses
-		if (l.changeFlow(delta))
-			activate(l);
-		else
-			deactivate(l);
+		l.changeFlow(delta);
+		if (getFlow(l) <= 0.0) deactivate(l);
+		else activate(l);
 	}
 
 	private Boolean deactivate(Link l) {
 		BackVector b = q.get(l.getHead());
-		if (b instanceof BushMerge) {
-			markInactive(l);
+		if (b instanceof BushMerge && remove(l)) {
+			cachedTopoOrder = null;
 			return true;
 		}
 		return false;
@@ -174,11 +168,11 @@ public class Bush implements AssignmentContainer {
 	 * 
 	 * @param destDemand
 	 */
-	private void dumpFlow(DemandMap destDemand) {
+	private void dumpFlow() {
 		//TODO redo this method
-		for (Node node : destDemand.getNodes()) {
+		for (Node node : demand.getNodes()) {
 
-			Float x = destDemand.getOrDefault(node, 0.0F);
+			Float x = demand.getOrDefault(node, 0.0F);
 			if (x <= 0.0)
 				continue;
 			Path p;
@@ -259,7 +253,7 @@ public class Bush implements AssignmentContainer {
 	}
 
 	public Double getCachedU(Node n, Map<Node, Double> cache) throws UnreachableException {
-		Link back = getqShort(n);
+		Link back = getqLong(n);
 		if (n.equals(origin.getNode()))
 			return 0.0;
 		else if (back == null)
@@ -315,14 +309,14 @@ public class Bush implements AssignmentContainer {
 	}
 
 	public Link getqLong(Node n) {
-		Object qq = q.get(n);
+		BackVector qq = q.get(n);
 		return qq instanceof Link? (Link) qq :
 			qq instanceof BushMerge? ((BushMerge) qq).getLongLink() :
 				null;
 	}
 
 	public Link getqShort(Node n) {
-		Object qq = q.get(n);
+		BackVector qq = q.get(n);
 		return qq instanceof Link? (Link) qq :
 			qq instanceof BushMerge ? ((BushMerge) qq).getShortLink() :
 				null;
@@ -425,7 +419,8 @@ public class Bush implements AssignmentContainer {
 		Double Uicij = l.getPrice(vot, c) + getCachedU(l.getTail(), cache);
 		Node head = l.getHead();
 		if (getqLong(head) == null || Uicij > getCachedU(head, cache)) {
-			qLong.put(head, l);
+			BackVector back = q.get(head);
+			if (back instanceof BushMerge) ((BushMerge) back).setLongLink(l);
 			cache.put(head, Uicij);
 		}
 	}
@@ -440,7 +435,6 @@ public class Bush implements AssignmentContainer {
 		List<Node> to = getTopologicalOrder();
 		Map<Node, Double> cache = new HashMap<Node, Double>(wholeNet.numNodes());
 
-		qLong = new Object2ObjectOpenHashMap<Node, Link>(wholeNet.numNodes(), 1.0f);
 		for (Node d : to) {
 			try {
 				for (Link l : wholeNet.outLinks(d)) {
@@ -455,22 +449,14 @@ public class Bush implements AssignmentContainer {
 		return cache;
 	}
 
-	private void markInactive(Link l) {
-		if (remove(l)) {
-			cachedTopoOrder = null;
-		}
-	}
-
 	/**
 	 * @param l link to be removed
 	 * @return whether the link was removed successfully
 	 */
 	private boolean remove(Link l) {
 		BackVector b = q.get(l.getHead());
-		// If the link can't be removed due to connectivity, return false
-		if (b instanceof Link && ((Link) b).equals(l)) return false;
 		// If there was a merge present at the head node, attempt to remove the link from it
-		else if (b instanceof BushMerge) {
+		if (b instanceof BushMerge) {
 			if (((BushMerge) b).remove(l)){ //If there is only one link left, replace BushMerge with Link
 				q.put(l.getHead(),((BushMerge) b).iterator().next());
 			} 
@@ -493,7 +479,6 @@ public class Bush implements AssignmentContainer {
 
 	public Double getFlow(Link l) {
 		// TODO Auto-generated method stub
-		return 0.0;
 	}
 
 	private void shortRelax(Link l, Map<Node, Double> cache) throws UnreachableException {
@@ -501,7 +486,8 @@ public class Bush implements AssignmentContainer {
 
 		Node head = l.getHead();
 		if (getqShort(head) == null || Licij < getCachedL(head, cache)) {
-			qShort.put(head, l);
+			BackVector back = q.get(head);
+			if (back instanceof BushMerge) ((BushMerge) back).setShortLink(l);
 			cache.put(head, Licij);
 		}
 	}
@@ -516,7 +502,6 @@ public class Bush implements AssignmentContainer {
 		List<Node> to = getTopologicalOrder();
 		Map<Node, Double> cache = new HashMap<Node, Double>(wholeNet.numNodes());
 
-		qShort = new Object2ObjectOpenHashMap<Node, Link>(wholeNet.numNodes(), 1.0f);
 		for (Node d : to) {
 			try {
 				for (Link l : wholeNet.outLinks(d)) {
