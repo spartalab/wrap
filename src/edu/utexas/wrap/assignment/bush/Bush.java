@@ -208,8 +208,6 @@ public class Bush implements AssignmentContainer {
 	/**
 	 * Initialize demand flow on shortest paths Add each destination's demand to the
 	 * shortest path to that destination
-	 * 
-	 * @param destDemand
 	 */
 	private void dumpFlow() {
 		//TODO redo this method
@@ -597,16 +595,15 @@ public class Bush implements AssignmentContainer {
 	 * Remove unused links that aren't needed for connectivity
 	 */
 	void prune() {
-		Map<Link,Double> flows = getFlows();
-		// TODO optimize for new bush structure
-		//For each link in the bush
-		for (Link l : getLinks()) {
-			//Determine if there is less flow than the machine epsilon
-			if (flows.get(l) < Math.ulp(flows.get(l))*2) {
-				// Check to see if this link is needed for connectivity, deactivate link in bush
-				deactivate(l);
+		for (BackVector v : q.values()) {
+			if (v instanceof BushMerge) {
+				BushMerge bm = (BushMerge) v;
+				for (Link l : bm) {
+					if (bm.getSplit(l) <= Math.ulp(bm.getSplit(l))*2) {
+						if (remove(l)) cachedTopoOrder = null;
+					}
+				}
 			}
-
 		}
 	}
 
