@@ -17,8 +17,6 @@ import java.util.HashMap;
  */
 public interface PAMatrix {
 
-	public void putDemand(Node i, DemandMap d) ;
-
 	public Object getAttribute(String type);
 	
 	public float getVOT();

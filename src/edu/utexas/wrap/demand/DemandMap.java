@@ -18,4 +18,8 @@ public interface DemandMap {
 	public Collection<Node> getNodes();
 
 	public Float getOrDefault(Node node, float f);
+	
+	public DemandMap clone();
+	
+	public Float put(Node dest, Float demand);
 }

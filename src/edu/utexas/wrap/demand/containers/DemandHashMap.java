@@ -20,9 +20,13 @@ public class DemandHashMap extends HashMap<Node, Float> implements DemandMap {
 		this.g = g;
 	}
 	
-	protected DemandHashMap(Graph g, DemandMap d) {
-		super((DemandHashMap) d);
-		this.g = g;
+	protected DemandHashMap(DemandHashMap d) {
+		super(d);
+		this.g = d.getGraph();
+	}
+	
+	public DemandHashMap clone() {
+		return new DemandHashMap(this);
 	}
 
 	@Override
@@ -46,4 +50,6 @@ public class DemandHashMap extends HashMap<Node, Float> implements DemandMap {
 		// TODO Auto-generated method stub
 		return super.getOrDefault(node, f);
 	}
+
+	
 }

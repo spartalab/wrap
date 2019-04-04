@@ -33,7 +33,7 @@ public class AutoODHashMatrix extends ModalHashMatrix {
 		 * so this method creates a duplicate DemandMap linked to this
 		 * graph (maintains the VOT and graph)
 		 * */
-		return new AutoDemandHashMap(getGraph(), super.get(origin), this);
+		return new AutoDemandHashMap(super.get(origin), this);
 	}
 	
 	@Override

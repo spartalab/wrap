@@ -9,7 +9,7 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
-public class ModalHashMatrix extends HashMap<Node, DemandMap> implements ODMatrix, ModalPAMatrix {
+public class ModalHashMatrix extends HashMap<Node, DemandHashMap> implements ODMatrix, ModalPAMatrix {
 	
 	
 	/**
@@ -51,8 +51,7 @@ public class ModalHashMatrix extends HashMap<Node, DemandMap> implements ODMatri
 	/**
 	 * Insert the demand for a node
 	 */
-	@Override
-	public void putDemand(Node i, DemandMap d) {
+	public void putDemand(Node i, DemandHashMap d) {
 		put(i, d);
 	}
 

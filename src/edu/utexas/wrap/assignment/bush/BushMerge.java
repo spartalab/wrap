@@ -1,6 +1,8 @@
 package edu.utexas.wrap.assignment.bush;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
@@ -13,6 +15,7 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 	private Link shortLink;
 	private Link longLink;
 	private Node diverge;
+	private final Map<Link, Double> split;
 	private final Bush bush;
 	
 	/** Create a BushMerge by adding a shortcut link to a node
@@ -24,7 +27,9 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 		bush = b;
 		longLink = u;
 		shortLink = l;
-		diverge = b.divergeNode(l.getTail(), u.getTail());
+		diverge = b.divergeNode(l.getHead());
+		split = new HashMap<Link, Double>();
+		split.put(l, 1.0);
 	}
 	
 	public Link getShortLink() {
@@ -43,10 +48,12 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 	
 	protected void setShortLink(Link l) {
 		shortLink = l;
+		diverge = bush.divergeNode(longLink.getHead());
 	}
 	
 	protected void setLongLink(Link l) {
 		longLink = l;
+		diverge = bush.divergeNode(shortLink.getHead());
 	}
 	
 	protected void setDiverge(Node n) {
@@ -71,5 +78,9 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 		if (!super.remove(l)) throw new RuntimeException("A Link was removed that wasn't in the BushMerge");
 		if (size() < 2) return true;
 		return false;
+	}
+	
+	public double getSplit(Link l) {
+		return split.getOrDefault(l, 0.0);
 	}
 }

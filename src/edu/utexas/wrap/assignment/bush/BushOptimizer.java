@@ -91,7 +91,7 @@ public abstract class BushOptimizer extends Optimizer {
 		for (Link l : unusedLinks) {
 			// If link is active, do nothing (removing flow should mark as inactive)
 			//Could potentially delete both incoming links to a node
-			if (!l.allowsClass(b.getVehicleClass()) || b.isInvalidConnector(l)) continue;
+			if (!l.allowsClass(b.getVehicleClass()) || !b.isValidLink(l)) continue;
 			try {
 				// Else if Ui + tij < Uj
 				

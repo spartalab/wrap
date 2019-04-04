@@ -22,7 +22,7 @@ public class GravityDistributor extends TripDistributor {
 	public AggregatePAMatrix distribute(PAMap pa) {
 		Map<Node, Double> a = new HashMap<Node,Double>();
 		Map<Node, Double> b = new HashMap<Node, Double>();
-		AggregatePAMatrix pam = new AggregatePAHashMatrix(g);
+		AggregatePAHashMatrix pam = new AggregatePAHashMatrix(g);
 		Boolean converged = false;
 		while (!converged) {
 			converged = true;

@@ -10,7 +10,7 @@ import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
-public class AggregatePAHashMatrix extends HashMap<Node, DemandMap> implements AggregatePAMatrix {
+public class AggregatePAHashMatrix extends HashMap<Node, DemandHashMap> implements AggregatePAMatrix {
 
 	/**
 	 * 
@@ -25,8 +25,7 @@ public class AggregatePAHashMatrix extends HashMap<Node, DemandMap> implements A
 	/**
 	 * Insert the demand map for a given node
 	 */
-	@Override
-	public void putDemand(Node i, DemandMap d) {
+	public void putDemand(Node i, DemandHashMap d) {
 		put(i, d);
 	}
 
