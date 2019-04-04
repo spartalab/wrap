@@ -93,12 +93,13 @@ public class Bush implements AssignmentContainer {
 	/**Modify the flow on a link from this bush
 	 * @param l the link whose flow will be modified
 	 * @param delta the amount by which to modify
+	 * @param flows a cache of current bush flows
 	 */
-	public void changeFlow(Link l, Double delta) {
+	public void changeFlow(Link l, Double delta, Map<Link,Double> flows) {
 		//TODO check to make sure we don't remove more flow than the bush uses
 		//Modify the flow on the link
 		l.changeFlow(delta);
-		Double flow = getFlow(l);
+		Double flow = flows.get(l);
 		//If there is very close to zero flow
 		if (flow <= Math.ulp(flow)*2) {
 			//Try to deactivate it. If successful, remove microscopic flow from link
@@ -226,7 +227,7 @@ public class Bush implements AssignmentContainer {
 				continue;
 			}
 			for (Link l : p) {
-				changeFlow(l, (double) x);
+				l.changeFlow((double)x);
 			}
 		}
 
@@ -596,11 +597,12 @@ public class Bush implements AssignmentContainer {
 	 * Remove unused links that aren't needed for connectivity
 	 */
 	void prune() {
+		Map<Link,Double> flows = getFlows();
 		// TODO optimize for new bush structure
 		//For each link in the bush
 		for (Link l : getLinks()) {
 			//Determine if there is less flow than the machine epsilon
-			if (getFlow(l) < Math.ulp(getFlow(l))*2) {
+			if (flows.get(l) < Math.ulp(flows.get(l))*2) {
 				// Check to see if this link is needed for connectivity, deactivate link in bush
 				deactivate(l);
 			}
@@ -660,6 +662,48 @@ public class Bush implements AssignmentContainer {
 		//If we've examined the whole bush and didn't find the link or its head node, return 0.0;
 		return 0.0;
 	}
+	
+	public Map<Link, Double> getFlows(){
+		//Get the reverse topological ordering and a place to store node flows
+		DemandMap flow = demand.clone();
+		Iterator<Node> iter = getTopologicalOrder().descendingIterator();
+		Map<Link,Double> ret = new HashMap<Link,Double>();
+
+		//For each node in reverse topological order
+		for (Node n = iter.next(); iter.hasNext(); n = iter.next()) {
+			//Get the node flow and the backvector that feeds it into the node
+			BackVector back = q.get(n);
+			Float downstream = flow.get(n);
+
+			//If there is only one backvector,all node flow must pass through it
+			if (back instanceof Link) {						
+				//Add the node flow onto the upstream node flow
+				Node tail = ((Link) back).getTail();
+				flow.put(tail, flow.get(tail) + downstream);
+				ret.put(((Link) back), (double) downstream);
+			}
+
+			//If there is more than one link flowing into the node
+			else if (back instanceof BushMerge) {
+				for (Link bv : (BushMerge) back) {
+					//Calculate the share of the node flow that uses each link
+					Double share = ((BushMerge) back).getSplit(bv)*downstream;
+
+					//Add the node flow onto the upstream node flow
+					Node tail = bv.getTail();
+					flow.put(tail, flow.get(tail) + share.floatValue());
+					ret.put(bv, share);
+				}
+			}
+
+			//If we've reached a dead end in the topological ordering, throw an exception
+			else if (back == null && !n.equals(origin.getNode())) {
+				throw new RuntimeException("Missing backvector for "+n.toString());
+			}
+			
+		}
+		return ret;
+	}
 
 	/** Relax the shortest path while doing topological shortest path search
 	 * @param l the link to examine as  a candidate for shortest path
@@ -708,6 +752,44 @@ public class Bush implements AssignmentContainer {
 		return "ORIG=" + origin.getNode().getID() + "\tVOT=" + vot + "\tCLASS=" + c;
 	}
 
+	/**Improve the bush by removing unused links and adding shortcut links
+	 * @return whether the bush structure was modified
+	 */
+	public boolean improve() {
+		prune();
+
+		boolean modified = false;
+		Set<Link> usedLinks = getLinks();
+		Set<Link> unusedLinks = new HashSet<Link>(wholeNet.getLinks());
+		unusedLinks.removeAll(usedLinks);
+		
+		Map<Node, Double> cache = longTopoSearch();
+		
+		for (Link l : unusedLinks) {
+			// If link is active, do nothing (removing flow should mark as inactive)
+			//Could potentially delete both incoming links to a node
+			if (!l.allowsClass(getVehicleClass()) || !isValidLink(l)) continue;
+			try {
+				// Else if Ui + tij < Uj
+				
+				Double tailU = getCachedU(l.getTail(), cache);
+				Double headU = getCachedU(l.getHead(), cache);
+			
+				
+				if (tailU + (l.getPrice(getVOT(), getVehicleClass())) < headU) {
+					activate(l);
+					modified = true;
+				}
+			} catch (UnreachableException e) {
+				if (e.demand > 0) e.printStackTrace();
+				continue;
+			}
+
+		}
+
+		return modified;
+	}
+	
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getLinks()
 	 */

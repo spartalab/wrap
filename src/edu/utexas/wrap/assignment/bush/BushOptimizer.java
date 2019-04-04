@@ -1,14 +1,10 @@
 package edu.utexas.wrap.assignment.bush;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 import edu.utexas.wrap.assignment.Optimizer;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.Link;
-import edu.utexas.wrap.net.Node;
-import edu.utexas.wrap.util.UnreachableException;
 import edu.utexas.wrap.util.calc.BeckmannCalculator;
 import edu.utexas.wrap.util.calc.GapCalculator;
 import edu.utexas.wrap.util.calc.TSGCCalculator;
@@ -76,43 +72,6 @@ public abstract class BushOptimizer extends Optimizer {
 		return out;
 	}
 	
-	protected Boolean improveBush(Bush b) {
-		//TODO cleanup, move to Bush
-
-		b.prune();
-
-		boolean modified = false;
-		Set<Link> usedLinks = b.getLinks();
-		Set<Link> unusedLinks = new HashSet<Link>(graph.getLinks());
-		unusedLinks.removeAll(usedLinks);
-		
-		Map<Node, Double> cache = b.longTopoSearch();
-		
-		for (Link l : unusedLinks) {
-			// If link is active, do nothing (removing flow should mark as inactive)
-			//Could potentially delete both incoming links to a node
-			if (!l.allowsClass(b.getVehicleClass()) || !b.isValidLink(l)) continue;
-			try {
-				// Else if Ui + tij < Uj
-				
-				Double tailU = b.getCachedU(l.getTail(), cache);
-				Double headU = b.getCachedU(l.getHead(), cache);
-			
-				
-				if (tailU + (l.getPrice(b.getVOT(),b.getVehicleClass())) < headU) {
-					b.activate(l);
-					modified = true;
-				}
-			} catch (UnreachableException e) {
-				if (e.demand > 0) e.printStackTrace();
-				continue;
-			}
-
-		}
-
-		return modified;
-	}
-
 	public void iterate() {
 		// A single general step iteration
 		// TODO explore which bushes should be examined 
@@ -124,7 +83,7 @@ public abstract class BushOptimizer extends Optimizer {
 				Thread t = new Thread() {
 					public void run() {
 						// Step ii: Improve bushes in parallel
-						improveBush(b);
+						b.improve();
 					}
 				};
 				pool.add(t);
