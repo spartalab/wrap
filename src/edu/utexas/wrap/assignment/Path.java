@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.demand.containers.DemandHashMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Link;
@@ -57,7 +56,7 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 		return sum;
 	}
 
-	public Double getMinFlow(Bush b, Map<Link, Double> deltaX, Map<Link,Double> flows) {
+	public Double getMinFlow(Map<Link,Double> flows, Map<Link, Double> deltaX) {
 		Double maxDelta = null;
 		for (Link l : this) {
 			Double x = flows.get(l) + deltaX.getOrDefault(l, 0.0);

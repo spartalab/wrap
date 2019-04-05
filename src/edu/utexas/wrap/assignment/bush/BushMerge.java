@@ -6,6 +6,7 @@ import java.util.Map;
 
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.util.AlternateSegmentPair;
 
 public class BushMerge extends HashSet<Link> implements BackVector{
 	/**
@@ -14,7 +15,7 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 	private static final long serialVersionUID = 1L;
 	private Link shortLink;
 	private Link longLink;
-	private Node diverge;
+	private AlternateSegmentPair asp;
 	private final Map<Link, Double> split;
 	private final Bush bush;
 	
@@ -27,9 +28,20 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 		bush = b;
 		longLink = u;
 		shortLink = l;
-		diverge = b.divergeNode(l.getHead());
+		add(l);
+		add(u);
+		asp = b.getShortLongASP(l.getHead());
 		split = new HashMap<Link, Double>();
 		split.put(l, 1.0);
+	}
+	
+	public BushMerge(BushMerge bm) {
+		super(bm);
+		bush = bm.bush;
+		longLink = bm.longLink;
+		shortLink = bm.shortLink;
+		asp = bm.asp;
+		split = new HashMap<Link,Double>(bm.split);
 	}
 	
 	public Link getShortLink() {
@@ -42,26 +54,25 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 		return longLink;
 	}
 	
-	public Node getDiverge() {
-		return diverge;
+	public AlternateSegmentPair getShortLongASP() {
+		if (asp == null) asp = bush.getShortLongASP(shortLink.getHead());
+		return asp;
 	}
 	
 	protected void setShortLink(Link l) {
 		shortLink = l;
-		diverge = bush.divergeNode(longLink.getHead());
+		asp = bush.getShortLongASP(longLink.getHead());
 	}
 	
 	protected void setLongLink(Link l) {
 		longLink = l;
-		diverge = bush.divergeNode(shortLink.getHead());
+		asp = bush.getShortLongASP(shortLink.getHead());
 	}
 	
-	protected void setDiverge(Node n) {
-		diverge = n;
-	}
+
 	
 	public String toString() {
-		return "Merge from diverge "+diverge.toString();
+		return "Merge at "+longLink.getHead().toString();
 	}
 		
 	/** Remove a link from the merge
@@ -69,13 +80,14 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 	 * @return whether there is one link remaining
 	 */
 	public boolean remove(Link l) {
-		if (shortLink.equals(l)) {
+		if (shortLink != null && shortLink.equals(l)) {
 			shortLink = null;
 		}
-		else if (longLink.equals(l)) {
+		else if (longLink != null && longLink.equals(l)) {
 			longLink = null;
 		}
-		if (!super.remove(l)) throw new RuntimeException("A Link was removed that wasn't in the BushMerge");
+		if (!super.remove(l)) 
+			throw new RuntimeException("A Link was removed that wasn't in the BushMerge");
 		if (size() < 2) return true;
 		return false;
 	}

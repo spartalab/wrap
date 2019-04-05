@@ -107,7 +107,7 @@ public class Bush implements AssignmentContainer {
 		}
 		//Otherwise ensure the link is active in the bush
 		else activate(l);
-		return 7;//Leaving this in here until all flow changes are complete
+		//return 7;//Leaving this in here until all flow changes are complete
 	}
 
 	/**Attempt to remove the bush from the link
@@ -136,7 +136,7 @@ public class Bush implements AssignmentContainer {
 				//If it's a merge, determine if the merge contains the link
 				((BushMerge) back).contains(i) : 
 					//Otherwise, determine if the back vector is the same link
-					back.equals(i);
+					back != null && back.equals(i);
 	}
 
 	/** Calculates the divergence between the shortest and longest paths from two nodes
@@ -585,7 +585,9 @@ public class Bush implements AssignmentContainer {
 		if (b instanceof BushMerge) {
 			if (((BushMerge) b).remove(l)){ //If there is only one link left, replace BushMerge with Link
 				q.put(l.getHead(),((BushMerge) b).iterator().next());
+				return true;
 			} 
+			return false;
 		}
 		// If something unusual happened, throw a Runtime exception
 		throw new RuntimeException("A link was removed that wasn't in the bush");
@@ -597,7 +599,7 @@ public class Bush implements AssignmentContainer {
 	void prune() {
 		for (BackVector v : q.values()) {
 			if (v instanceof BushMerge) {
-				BushMerge bm = (BushMerge) v;
+				BushMerge bm = new BushMerge((BushMerge) v);
 				for (Link l : bm) {
 					if (bm.getSplit(l) <= Math.ulp(bm.getSplit(l))*2) {
 						if (remove(l)) cachedTopoOrder = null;
@@ -795,7 +797,8 @@ public class Bush implements AssignmentContainer {
 		Set<Link> ret = new HashSet<Link>();
 		for (BackVector b : q.values()) {
 			if (b instanceof Link) ret.add((Link) b);
-			else if (b instanceof BushMerge) ret.addAll((BushMerge) b);
+			else if (b instanceof BushMerge) 
+				ret.addAll((BushMerge) b);
 		}
 		return ret;
 

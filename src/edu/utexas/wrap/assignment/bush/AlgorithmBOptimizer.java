@@ -37,11 +37,12 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 		Iterator<Node> it = to.descendingIterator();
 		while (it.hasNext()) {
 			cur = it.next();
-			if (cur.equals(b.getOrigin().getNode())) continue;
+			
+			if (cur.equals(b.getOrigin().getNode())) continue; //break?
 
 
 			AlternateSegmentPair asp = b.getShortLongASP(cur);
-			if (asp == null || asp.maxDelta(deltaX,flows) <= 0) continue;
+			if (asp == null || asp.maxDelta(flows,deltaX) <= 0) continue;
 
 			//calculate delta h, capping at maxDelta
 			Double deltaH = getDeltaH(asp, b, flows, deltaX);
@@ -88,7 +89,7 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 		for (Link l : asp.shortPath()) denom += (l.pricePrime(b.getVOT()));			
 		for (Link l : asp.longPath()) denom += (l.pricePrime(b.getVOT()));
 
-		return Math.min(asp.maxDelta(deltaX,flows), asp.priceDiff()/denom);
+		return Math.min(asp.maxDelta(flows,deltaX), asp.priceDiff()/denom);
 	}
 
 	@Override

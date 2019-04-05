@@ -26,8 +26,8 @@ public class AlternateSegmentPair {
 		return longPath;
 	}
 	
-	public Double maxDelta(Map<Link, Double> deltaX, Map<Link,Double> flows) {
-		return longPath.getMinFlow(bush, deltaX, flows);
+	public Double maxDelta(Map<Link,Double> flows, Map<Link, Double> deltaX) {
+		return longPath.getMinFlow(flows, deltaX);
 	}
 	
 	public Node merge() {
