@@ -21,7 +21,6 @@ public abstract class Link implements Priced, BackVector {
 
 //	private Double cachedFlow = null;
 	protected Double cachedTT = null;
-	protected Double cachedPrice = null;
 
 	public Link(Node tail, Node head, Float capacity, Float length, Float fftime) {
 		this.tail = tail;
@@ -37,13 +36,13 @@ public abstract class Link implements Priced, BackVector {
 	public abstract Boolean allowsClass(Mode c);
 
 	/** Modifies the flow on a link which comes from a specified bush. 
-	 * <b> THIS METHOD SHOULD ONLY BE CALLED BY THE {@link edu.utexas.wrap.assignment.bush.Bush}'s {@link edu.utexas.wrap.assignment.bush.Bush.changeFlow} METHOD </b>
 	 * @param delta amount by how much the flow should be altered
-	 * @param bush the origin Bush of this flow
 	 * @return whether the flow from this bush on the link is non-zero
 	 */
 	public synchronized Boolean changeFlow(Double delta) {
-		if (delta < 0.0 && -delta > flo) throw new RuntimeException("Too much flow removed");
+		if (delta < 0.0 && flo+delta < 0.0 - Math.max(Math.ulp(flo), Math.ulp(delta)))
+			throw new RuntimeException("Too much flow removed");
+		else if (delta < 0.0 && flo + delta <0.0) flo = 0.0;
 		else flo += delta;
 		return flo > 0.0;
 //

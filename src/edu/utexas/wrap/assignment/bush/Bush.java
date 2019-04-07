@@ -556,15 +556,21 @@ public class Bush implements AssignmentContainer {
 	 * 
 	 * Leverage the presence of a topological order to decrease search time for
 	 * longest paths calculation
+	 * @param longestUsed whether to relax only links that are in use
 	 */
-	public Map<Node, Double> longTopoSearch() {
+	public Map<Node, Double> longTopoSearch(boolean longestUsed) {
 		List<Node> to = getTopologicalOrder();
 		Map<Node, Double> cache = new HashMap<Node, Double>(wholeNet.numNodes());
 
 		for (Node d : to) {
 			try {
-				for (Link l : wholeNet.outLinks(d)) {
-					if (contains(l)) longRelax(l, cache);
+				BackVector bv = q.get(d);
+				if (bv instanceof Link) longRelax((Link) bv, cache);
+				else if (bv instanceof BushMerge) {
+					BushMerge bm = (BushMerge) bv;
+					for (Link l : bm) {
+						if (!longestUsed || bm.getSplit(l) > 0.0) longRelax(l,cache);
+					}
 				}
 			} catch (UnreachableException e) {
 				if (getDemand(d) > 0.0) {
@@ -762,7 +768,7 @@ public class Bush implements AssignmentContainer {
 		Set<Link> unusedLinks = new HashSet<Link>(wholeNet.getLinks());
 		unusedLinks.removeAll(usedLinks);
 		
-		Map<Node, Double> cache = longTopoSearch();
+		Map<Node, Double> cache = longTopoSearch(true);
 		
 		for (Link l : unusedLinks) {
 			// If link is active, do nothing (removing flow should mark as inactive)
@@ -802,5 +808,33 @@ public class Bush implements AssignmentContainer {
 		}
 		return ret;
 
+	}
+
+	/**Calculate the most flow that can be shifted at this node
+	 * @param cur the node where flow should be balanced
+	 * @param bushFlows the current flows on the bush
+	 * @return the maximum flow that can be shifted from the longest to the shortest path
+	 */
+	public Double getMaxDelta(Node cur, Map<Link, Double> bushFlows) {
+		// TODO Auto-generated method stub
+		BackVector bv = q.get(cur);
+		return bv instanceof BushMerge ? 
+				((BushMerge) bv).getMaxDelta(bushFlows) 
+				: 0.0;
+	}
+
+	public void updateSplits(Map<Link, Double> flows) {
+		for (BackVector bv : q.values()) {
+			if (bv instanceof BushMerge) {
+				BushMerge bm = (BushMerge) bv;
+				double total = 0.0F;
+				for (Link l : bm) {
+					total += flows.get(l);
+				}
+				for (Link l : bm) {
+					bm.setSplit(l, flows.get(l)/total);
+				}
+			}
+		}
 	}
 }

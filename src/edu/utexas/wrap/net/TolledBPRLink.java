@@ -32,8 +32,7 @@ public class TolledBPRLink extends TolledLink {
 	public Double getPrice(Float vot, Mode c) {
 //		if (cachedPrice != null) return cachedPrice; // Causes a convergence failure for some reason
 
-		cachedPrice = getTravelTime() * vot + getToll(null);
-		return cachedPrice;
+		return getTravelTime() * vot + getToll(null);
 		
 	}
 	

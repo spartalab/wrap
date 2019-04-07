@@ -95,4 +95,23 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 	public double getSplit(Link l) {
 		return split.getOrDefault(l, 0.0);
 	}
+
+	public double getMaxDelta(Map<Link, Double> bushFlows) {
+		// TODO Auto-generated method stub
+		Node cur = longLink.getHead();
+		Node stop = bush.divergeNode(cur);
+		Double max = null;
+		while (cur != stop) {
+			Link ll = bush.getqLong(cur);
+			if (max == null) max = bushFlows.get(ll);
+			else max = Math.min(max,bushFlows.get(ll));
+			cur = ll.getTail();
+		}
+		return max;
+	}
+
+	public double setSplit(Link l, double d) {
+		// TODO Auto-generated method stub
+		return split.put(l, d);
+	}
 }

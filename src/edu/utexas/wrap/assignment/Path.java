@@ -56,10 +56,10 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 		return sum;
 	}
 
-	public Double getMinFlow(Map<Link,Double> flows, Map<Link, Double> deltaX) {
+	public Double getMinFlow(Map<Link,Double> flows) {
 		Double maxDelta = null;
 		for (Link l : this) {
-			Double x = flows.get(l) + deltaX.getOrDefault(l, 0.0);
+			Double x = flows.getOrDefault(l, 0.0);
 			if (maxDelta == null || x.compareTo(maxDelta) < 0) {
 				maxDelta = x;
 			}

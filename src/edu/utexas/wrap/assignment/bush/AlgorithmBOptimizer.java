@@ -1,7 +1,5 @@
 package edu.utexas.wrap.assignment.bush;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
@@ -28,47 +26,44 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 	protected synchronized void equilibrateBush(Bush b) {
 		LinkedList<Node> to = b.getTopologicalOrder();
 		Node cur;
-		HashMap<Link, Double> deltaX = new HashMap<Link, Double>();
 		
 		b.shortTopoSearch();
-		b.longTopoSearch();
-		Map<Link,Double> flows = b.getFlows();
+		b.longTopoSearch(true);
+		Map<Link,Double> bushFlows = b.getFlows();
 		
 		Iterator<Node> it = to.descendingIterator();
 		while (it.hasNext()) {
 			cur = it.next();
 			
 			if (cur.equals(b.getOrigin().getNode())) continue; //break?
-
-
+			
+			Double md = b.getMaxDelta(cur, bushFlows);
+			//TODO: streamline this inside bush structure
 			AlternateSegmentPair asp = b.getShortLongASP(cur);
-			if (asp == null || asp.maxDelta(flows,deltaX) <= 0) continue;
+			if (asp == null || 
+					md <= 0) 
+				continue;
 
 			//calculate delta h, capping at maxDelta
-			Double deltaH = getDeltaH(asp, b, flows, deltaX);
+			Double deltaH = getDeltaH(asp, bushFlows);
 
 			//Modify link flows
-			updateDeltaX(asp, b, flows, deltaX, deltaH);
+			updateDeltaX(asp, bushFlows, deltaH);
 		}
 
-		for (Link z : new HashSet<Link>(deltaX.keySet())) {
-			b.changeFlow(z, deltaX.get(z), flows);
-		}
 		
 	}
 
-	private void updateDeltaX(AlternateSegmentPair asp, Bush b, Map<Link,Double> flows, HashMap<Link, Double> deltaX, Double deltaH) {
+	private void updateDeltaX(AlternateSegmentPair asp, Map<Link,Double> flows, Double deltaH) {
 		//add delta h to all x values in pi_L
 		for (Link l : asp.shortPath()) {
-			Double t = deltaX.getOrDefault(l, 0.0)+deltaH.doubleValue();
-
-			deltaX.put(l, t.doubleValue());
+			flows.put(l, flows.getOrDefault(l, 0.0)+deltaH);
+			l.changeFlow(deltaH);
 		}
 
 		//subtract delta h from all x values in pi_U
 		for (Link l : asp.longPath()) {
-			//				b.subtractFlow(l, deltaH);
-			Double td = deltaX.getOrDefault(l, 0.0)-deltaH.doubleValue();
+			Double td = -deltaH.doubleValue();
 			Double ld = -flows.get(l);
 			Double ud = Math.max(Math.ulp(ld),Math.ulp(td));
 
@@ -80,16 +75,20 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 			}
 			if (td < -l.getFlow().doubleValue()) throw new NegativeFlowException("too much link flow removed");
 
-			deltaX.put(l,td);
+			flows.put(l,  flows.getOrDefault(l, 0.0)+td);
+			l.changeFlow(td);
 		}
+		//TODO backtrack through bush and update splits
+		asp.getBush().updateSplits(flows);
 	}
 
-	private Double getDeltaH(AlternateSegmentPair asp, Bush b, Map<Link,Double> flows, Map<Link, Double> deltaX ) {
+	private Double getDeltaH(AlternateSegmentPair asp, Map<Link,Double> flows) {
 		Double denom = 0.0;
-		for (Link l : asp.shortPath()) denom += (l.pricePrime(b.getVOT()));			
-		for (Link l : asp.longPath()) denom += (l.pricePrime(b.getVOT()));
+		Float vot = asp.getBush().getVOT();
+		for (Link l : asp.shortPath()) denom += (l.pricePrime(vot));			
+		for (Link l : asp.longPath()) denom += (l.pricePrime(vot));
 
-		return Math.min(asp.maxDelta(flows,deltaX), asp.priceDiff()/denom);
+		return Math.min(asp.maxDelta(flows), asp.priceDiff()/denom);
 	}
 
 	@Override
