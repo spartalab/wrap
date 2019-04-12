@@ -20,6 +20,8 @@ import edu.utexas.wrap.util.calc.TSTTCalculator;
 public abstract class BushOptimizer extends Optimizer {
 	private int innerIters = 10;
 	protected Set<BushOrigin> origins;
+	protected Integer relativeGapExp = -6;
+
 
 	public BushOptimizer(Graph g, Set<BushOrigin> o) {
 		super(g);
@@ -46,7 +48,7 @@ public abstract class BushOptimizer extends Optimizer {
 	}
 	
 	@Override
-	protected String getStats() {
+	protected String getStatLine() {
 		String out = "";
 
 		tc = new TSTTCalculator(graph);
@@ -111,5 +113,11 @@ public abstract class BushOptimizer extends Optimizer {
 	public void setInnerIters(int innerIters) {
 		this.innerIters = innerIters;
 	}
-
+	
+	/**
+	 * @param relativeGapExp the relative gap exponent that should signal convergence
+	 */
+	public void setRelativeGapExp(Integer relativeGapExp) {
+		this.relativeGapExp = relativeGapExp;
+	}
 }

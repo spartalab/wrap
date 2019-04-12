@@ -15,14 +15,31 @@ import edu.utexas.wrap.net.Node;
  */
 public interface AssignmentContainer {
 
+	/**
+	 * @return the Mode used for this assignment
+	 */
 	public Mode getVehicleClass();
 	
+	/**
+	 * @return the value of time for this container
+	 */
 	public Float getVOT();
 
+	/**
+	 * @param n the Node whose demand should be returned
+	 * @return the demand level at that node
+	 */
 	public Float getDemand(Node n);
 	
+	/**
+	 * @return the set of used links in the container
+	 */
 	public Set<Link> getLinks();
 
+	/**
+	 * @param l the link whose flow should be measured
+	 * @return the flow on a given link from this container
+	 */
 	public Double getFlow(Link l);
 	
 }

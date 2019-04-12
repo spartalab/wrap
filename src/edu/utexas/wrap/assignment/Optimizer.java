@@ -7,7 +7,7 @@ import edu.utexas.wrap.util.calc.TSGCCalculator;
 import edu.utexas.wrap.util.calc.TSTTCalculator;
 
 
-/** Abstract method for optimizing link flows using a general
+/** Abstract method for optimizing link flows using an iterative
  * route choice algorithm. Calling the {@code optimize()} method
  * repeatedly iterates through the route choice algorithm until
  * the convergence criteria are met. After each iteration, the
@@ -18,7 +18,6 @@ import edu.utexas.wrap.util.calc.TSTTCalculator;
 public abstract class Optimizer {
 	protected Integer iteration = 1;
 	protected Integer maxIterations = 1000;
-	protected Integer relativeGapExp = -6;
 
 	protected final Graph graph;
 	protected TSTTCalculator tc;
@@ -31,20 +30,38 @@ public abstract class Optimizer {
 		graph = g;
 	}
 	
+	/** Stopping criterion - default is maximum number of iterations
+	 * @return whether the optimizer has converged
+	 */
 	protected Boolean converged() {
 		return iteration > maxIterations;
 	}
 	
+	/**
+	 * Perform a single optimization iteration
+	 */
 	protected abstract void iterate();
 
+	/**
+	 * Perform the iterative optimization algorithm, displaying
+	 * network statistics after each iteration, until the
+	 */
 	public void optimize(){
 		
-		System.out.println("\r\nIter. #\tAEC\t\t\tTSTT\t\t\tBeckmann\t\tRelative Gap\t\tTSGC\t\t\tRuntime");
-		System.out.println("----------------------"+
-				"---------------------------------"+
-				"---------------------------------"+
-				"---------------------------------"+
-				"--------------");
+		System.out.println("\r\n"
+				+ "Iter. #\t"
+				+ "AEC\t\t\t"
+				+ "TSTT\t\t\t"
+				+ "Beckmann\t\t"
+				+ "Relative Gap\t\t"
+				+ "TSGC\t\t\t"
+				+ "Runtime");
+		System.out.println(
+				"----------------------------------"+
+				"----------------------------------"+
+				"----------------------------------"+
+				"----------------------------------"
+				);
 		
 		Long start = System.currentTimeMillis();
 		Long end; Double runtime;
@@ -52,17 +69,12 @@ public abstract class Optimizer {
 		do {
 			System.out.print(iteration);
 			iterate();
-			System.out.print("\t"+getStats());
+			System.out.print("\t"+getStatLine());
 			
 			end = System.currentTimeMillis();
 			runtime = (end - start)/1000.0;
 			System.out.println("\t"+String.format("%4.3f", runtime)+" s");
 			
-//			if (wrap.printFlows) try {
-//				network.printFlows(new PrintStream("flows-iter-"+iteration+".txt"));
-//			} catch (FileNotFoundException e) {
-//				e.printStackTrace();
-//			}
 			iteration++;
 			start = System.currentTimeMillis();
 
@@ -70,7 +82,12 @@ public abstract class Optimizer {
 		
 	}
 		
-	protected String getStats() {
+	/** Build a set of statistics about the network and combine them as a string
+	 * TODO clean this shit up, future William! Love, present William, who is
+	 * currently very saddened by past William's actions
+	 * @return a string consisting of statistics about the current Graph
+	 */
+	protected String getStatLine() {
 		String out = "";
 
 		tc = new TSTTCalculator(graph);
@@ -96,13 +113,15 @@ public abstract class Optimizer {
 		return out;
 	}
 
+	/**
+	 * @param maxIterations the maximum number of iterations to be performed
+	 */
 	public void setMaxIterations(Integer maxIterations) {
 		this.maxIterations = maxIterations;
 	}
 	
-	public void setRelativeGapExp(Integer relativeGapExp) {
-		this.relativeGapExp = relativeGapExp;
-	}
-	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	public abstract String toString();
 }

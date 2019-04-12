@@ -22,8 +22,16 @@ public abstract class AssignmentLoader {
 	
 	protected abstract void addAll(AutoODHashMatrix od);
 
+	/** add a given node's DemandHashMap to the pool of demand to be loaded onto the network 
+	 * TODO: figure out AutoDemand vs general Demand and generalizing to any Map
+	 * @param root the Node from which the demand should emanate
+	 * @param split the demand from the given node to any other Node in the network
+	 */
 	public abstract void add(Node root, AutoDemandHashMap split);
 	
+	/**
+	 * @param root begin the process of loading this Node's demand onto the network 
+	 */
 	public abstract void load(Node root);
 	
 }
