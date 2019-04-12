@@ -20,6 +20,7 @@ public class AggregatePAMap implements PAMap {
     private Graph g;
     private Map<Node, Float> attractors;
     private Map<Node, Float> producers;
+    private float vot;
 
     public AggregatePAMap(Graph graph) {
         this.g = graph;
@@ -60,4 +61,8 @@ public class AggregatePAMap implements PAMap {
     public void putProductions(Node z, Float amt) {
         producers.put(z, amt);
     }
+	@Override
+	public Float getVOT() {
+		return vot;
+	}
 }

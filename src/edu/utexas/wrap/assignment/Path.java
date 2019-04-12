@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import edu.utexas.wrap.demand.containers.DemandHashMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;

@@ -1,12 +1,8 @@
 package edu.utexas.wrap.demand.containers;
 
-import java.sql.*;
 import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
-import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
@@ -35,16 +31,7 @@ public class AggregatePAHashMatrix extends HashMap<Node, DemandHashMap> implemen
 	@Override
 	public Float getDemand(Node origin, Node destination) {
 		// TODO Auto-generated method stub
-		return get(origin) == null ? null : get(origin).getOrDefault(destination, 0.0F);
-	}
-
-	/**
-	 * Takes the name of the attribute and returns a value
-	 */
-	@Override
-	public Object getAttribute(String type) {
-		// TODO Auto-generated method stub
-		return null;
+		return get(origin) == null ? 0.0F : get(origin).getOrDefault(destination, 0.0F);
 	}
 
 	/**
@@ -62,6 +49,16 @@ public class AggregatePAHashMatrix extends HashMap<Node, DemandHashMap> implemen
 	@Override
 	public Graph getGraph() {
 		return g;
+	}
+
+	/* (non-Javadoc)
+	 * @see edu.utexas.wrap.demand.PAMatrix#put(edu.utexas.wrap.net.Node, edu.utexas.wrap.net.Node, java.lang.Float)
+	 */
+	@Override
+	public void put(Node origin, Node destination, Float demand) {
+		putIfAbsent(origin,new DemandHashMap(g));
+		get(origin).put(destination,demand);
+		
 	}
 
 }

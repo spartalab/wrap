@@ -12,8 +12,9 @@ import edu.utexas.wrap.modechoice.Mode;
  */
 public interface ModalPAMap extends PAMap {
 
+	/**
+	 * @return the Mode of transportation associated with this map
+	 */
 	public Mode getMode();
-
-	public Float getVOT() ;
 
 }

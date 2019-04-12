@@ -56,12 +56,6 @@ public class ModalHashMatrix extends HashMap<Node, DemandHashMap> implements ODM
 	}
 
 	/**
-	 * Returns the attribute specified
-	 */
-	@Override
-	public Object getAttribute(String type) { return null; }
-
-	/**
 	 * Returns the value of time
 	 */
 	@Override
