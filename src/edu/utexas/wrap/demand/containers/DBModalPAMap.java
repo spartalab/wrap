@@ -13,7 +13,11 @@ import java.util.*;
  * database information.
  *
  * This is an implementation of a production/attraction map split up by mode
- * This is likely an incorrect implementation since we are not doing mode choice at the Trip Generation stage
+ * This is likely an incorrect implementation since we are not doing mode choice 
+ * at the Trip Generation stage
+ * 
+ * Meh, it could be useful later. -Wm
+ * 
  * @author Rishabh
  *
  */
@@ -109,42 +113,69 @@ public class DBModalPAMap implements ModalPAMap {
         }
     }
 
+    /* (non-Javadoc)
+     * @see edu.utexas.wrap.demand.PAMap#getProducers()
+     */
     @Override
     public Set<Node> getProducers () {
         return producers.keySet();
     }
 
+    /* (non-Javadoc)
+     * @see edu.utexas.wrap.demand.PAMap#getAttractors()
+     */
     @Override
     public Set<Node> getAttractors () {
         return attractors.keySet();
     }
 
+    /* (non-Javadoc)
+     * @see edu.utexas.wrap.demand.PAMap#getAttractions(edu.utexas.wrap.net.Node)
+     */
     @Override
     public Float getAttractions (Node z){
         return attractors.getOrDefault(z, 0f);
     }
 
+    /* (non-Javadoc)
+     * @see edu.utexas.wrap.demand.PAMap#getProductions(edu.utexas.wrap.net.Node)
+     */
     @Override
     public Float getProductions (Node z){ return producers.getOrDefault(z, 0f); }
 
+    /* (non-Javadoc)
+     * @see edu.utexas.wrap.demand.PAMap#getVOT()
+     */
     @Override
     public Float getVOT () { return vot; }
 
+    /* (non-Javadoc)
+     * @see edu.utexas.wrap.demand.PAMap#getGraph()
+     */
     @Override
     public Graph getGraph() {
         return g;
     }
 
+    /* (non-Javadoc)
+     * @see edu.utexas.wrap.demand.PAMap#putAttractions(edu.utexas.wrap.net.Node, java.lang.Float)
+     */
     @Override
     public void putAttractions(Node z, Float amt) {
         attractors.put(z, amt);
     }
 
+    /* (non-Javadoc)
+     * @see edu.utexas.wrap.demand.PAMap#putProductions(edu.utexas.wrap.net.Node, java.lang.Float)
+     */
     @Override
     public void putProductions(Node z, Float amt) {
         producers.put(z, amt);
     }
 
+    /* (non-Javadoc)
+     * @see edu.utexas.wrap.demand.ModalPAMap#getMode()
+     */
     @Override
     public Mode getMode() {
         return mode;

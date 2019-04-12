@@ -26,18 +26,16 @@ public class AutoDemandHashMap extends DemandHashMap {
 	}
 
 	/**
-	 * Returns the mode
+	 * @return the Mode associated with the DemandMap
 	 */
 	public Mode getMode() {
-		// TODO Auto-generated method stub
 		return parent.getMode();
 	}
 
 	/**
-	 * Returns the value of time
-	 */
+	 * @return the value of time of trips stored in the Map
+	 */ 
 	public Float getVOT() {
-		// TODO Auto-generated method stub
 		return parent.getVOT();
 	}
 

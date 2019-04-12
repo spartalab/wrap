@@ -60,7 +60,7 @@ public class GravityDistributor extends TripDistributor {
 				d.put(j, (float) (a.get(i)*pa.getProductions(i)*b.get(j)*pa.getAttractions(j)*friction.get(i, j)));
 			}
 			
-			pam.putDemand(i, d);
+			pam.putDemandMap(i, d);
 		}
 		return pam;
 	}

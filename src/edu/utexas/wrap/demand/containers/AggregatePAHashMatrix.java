@@ -20,13 +20,15 @@ public class AggregatePAHashMatrix extends HashMap<Node, DemandHashMap> implemen
 
 	/**
 	 * Insert the demand map for a given node
+	 * @param i the Node from which there is demand
+	 * @param d the map of demand from the given Node to other Nodes
 	 */
-	public void putDemand(Node i, DemandHashMap d) {
+	public void putDemandMap(Node i, DemandHashMap d) {
 		put(i, d);
 	}
 
-	/**
-	 * Returns the demand given an origin and destination pair
+	/* (non-Javadoc)
+	 * @see edu.utexas.wrap.demand.PAMatrix#getDemand(edu.utexas.wrap.net.Node, edu.utexas.wrap.net.Node)
 	 */
 	@Override
 	public Float getDemand(Node origin, Node destination) {
@@ -34,8 +36,8 @@ public class AggregatePAHashMatrix extends HashMap<Node, DemandHashMap> implemen
 		return get(origin) == null ? 0.0F : get(origin).getOrDefault(destination, 0.0F);
 	}
 
-	/**
-	 * Returns the value of time
+	/* (non-Javadoc)
+	 * @see edu.utexas.wrap.demand.PAMatrix#getVOT()
 	 */
 	@Override
 	public float getVOT() {
@@ -43,8 +45,8 @@ public class AggregatePAHashMatrix extends HashMap<Node, DemandHashMap> implemen
 		return 0;
 	}
 
-	/**
-	 * Returns the graph associated with the hash matrix
+	/* (non-Javadoc)
+	 * @see edu.utexas.wrap.demand.PAMatrix#getGraph()
 	 */
 	@Override
 	public Graph getGraph() {

@@ -2,7 +2,6 @@ package edu.utexas.wrap.demand.containers;
 
 import java.util.HashMap;
 
-import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.modechoice.Mode;
@@ -24,22 +23,22 @@ public class ModalHashMatrix extends HashMap<Node, DemandHashMap> implements ODM
 		this.m = mode;
 	}
 
-	/**
-	 * Returns the mode of the matrix
-	 */
+ 	/* (non-Javadoc)
+ 	 * @see edu.utexas.wrap.demand.ODMatrix#getMode()
+ 	 */
  	public Mode getMode() {
  		return m;
  	}
 
-	/**
-	 * Returns the demand given an origin and destination pair
+	/* (non-Javadoc)
+	 * @see edu.utexas.wrap.demand.ODMatrix#getDemand(edu.utexas.wrap.net.Node, edu.utexas.wrap.net.Node)
 	 */
 	public Float getDemand(Node origin, Node destination) {
 		return get(origin) == null? 0.0F : get(origin).getOrDefault(destination,0.0F);
 	}
 
-	/**
-	 * Insert the demand for an origin/desination pair. Will replace existing value
+	/* (non-Javadoc)
+	 * @see edu.utexas.wrap.demand.ODMatrix#put(edu.utexas.wrap.net.Node, edu.utexas.wrap.net.Node, java.lang.Float)
 	 */
 	@Override
 	public void put(Node origin, Node destination, Float demand) {
@@ -49,22 +48,23 @@ public class ModalHashMatrix extends HashMap<Node, DemandHashMap> implements ODM
 	}
 
 	/**
-	 * Insert the demand for a node
+	 * @param i the Node from which trips originate
+	 * @param d the map of demand from the given Node to other Nodes
 	 */
 	public void putDemand(Node i, DemandHashMap d) {
 		put(i, d);
 	}
 
-	/**
-	 * Returns the value of time
+	/* (non-Javadoc)
+	 * @see edu.utexas.wrap.demand.PAMatrix#getVOT()
 	 */
 	@Override
 	public float getVOT() {
 		return 0;
 	}
 
-	/**
-	 * Returns the graph associated with the hash matrix
+	/* (non-Javadoc)
+	 * @see edu.utexas.wrap.demand.ODMatrix#getGraph()
 	 */
 	@Override
 	public Graph getGraph() {

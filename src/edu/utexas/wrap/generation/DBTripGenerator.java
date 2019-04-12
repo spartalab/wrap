@@ -1,7 +1,7 @@
 package edu.utexas.wrap.generation;
 
 import edu.utexas.wrap.demand.PAMap;
-import edu.utexas.wrap.demand.containers.AggregatePAMap;
+import edu.utexas.wrap.demand.containers.AggregatePAHashMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
@@ -175,7 +175,7 @@ public class DBTripGenerator extends TripGenerator {
         loadDatabase();
         developProductionWeights();
         developAttractionWeights();
-        paMap = new AggregatePAMap(g);
+        paMap = new AggregatePAHashMap(g);
     }
 
     @Override
