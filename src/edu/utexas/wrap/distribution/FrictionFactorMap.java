@@ -9,20 +9,34 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 
+/**
+ *
+ * Implementation of the Friction Factor Map to store friction factors between each Origin and Destination
+ *
+ * @author Rishabh
+ */
 public class FrictionFactorMap {
 
-	private final static String dbName = "sta";
-	private static Properties p;
 	private Connection databaseCon;
 	private String tableName;
 	private Map<Node, Map<Node, Double>> ffmap;
 	private double aConst, bConst, cConst;
 	private Graph g;
 
+	/**
+	 * Function to load the database by reading the database properties file
+	 */
 	private void loadDatabase() {
+		Properties p = new Properties();
+		try {
+			p.load(FrictionFactorMap.class.getResourceAsStream("dbConfig.properties"));
+		} catch (IOException e) {
+			System.out.println("Couldn't open properties file");
+			e.printStackTrace();
+		}
 		try {
 			Class.forName("org.postgresql.Driver");
-			databaseCon = DriverManager.getConnection("jdbc:postgresql://db1.wrangler.tacc.utexas.edu/" + dbName, p.getProperty("user"), p.getProperty("pass"));
+			databaseCon = DriverManager.getConnection(p.getProperty("databaseLink") + p.getProperty("databaseName"), p.getProperty("user"), p.getProperty("pass"));
 		} catch (SQLException e) {
 			e.printStackTrace();
 			System.out.println("Could not find database/table to connect to");
@@ -34,6 +48,11 @@ public class FrictionFactorMap {
 	}
 
 
+	/**
+	 * Function that develops a friction factor map using the specified friction factor table
+	 * It reads each Origin-Destination pair and uses the pktime roadway skims
+	 * in computing the friction factor.
+	 */
 	private void developFFMap() {
 		//TODO Implement producing a Map from the data using JDBC
 		String query = "SELECT * FROM " + tableName;
@@ -64,28 +83,41 @@ public class FrictionFactorMap {
 		}
 	}
 
+	/**
+	 * Default constructor for Friction Factor map where constants a, b, and c are set to 1
+	 * @param g Graph that the factors are based on
+	 * @param table table where roadway skims are stored
+	 */
 	public FrictionFactorMap(Graph g, String table) {
 		this(g, table, 1, 1, 1);
 
 	}
+
+	/**
+	 * Refer to NCTCOG model for definition of the constants
+	 * @param g Graph that the factors are based on
+	 * @param table table where roadway skims are stored
+	 * @param a ffConst A
+	 * @param b ffConst B
+	 * @param c ff Const C
+	 */
 	public FrictionFactorMap(Graph g, String table, double a, double b, double c) {
-		tableName = table;
-		p = new Properties();
-		try {
-			p.load(FrictionFactorMap.class.getResourceAsStream("dbConfig.properties"));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 		loadDatabase();
+		tableName = table;
 		this.aConst = a;
 		this.bConst = b;
 		this.cConst = c;
 		this.g = g;
 		ffmap = new HashMap<Node, Map<Node, Double>>();
 		developFFMap();
-
 	}
 
+	/**
+	 * Return the friction factor for provided OD
+	 * @param i Origin Node
+	 * @param z Destination Node
+	 * @return computed friction factor
+	 */
 	public Double get(Node i, Node z) {
 		// TODO Auto-generated method stub
 		return ffmap.get(i).get(z);

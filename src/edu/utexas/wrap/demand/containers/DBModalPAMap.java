@@ -12,15 +12,13 @@ import java.util.*;
 /**This is used to build the PA map by reading
  * database information.
  *
- * NOTE: Rishabh finish the documentation for this
- *
+ * This is an implementation of a production/attraction map split up by mode
+ * This is likely an incorrect implementation since we are not doing mode choice at the Trip Generation stage
  * @author Rishabh
  *
  */
 public class DBModalPAMap implements ModalPAMap {
 
-    private final static String dbName = "sta";
-    private static Properties p;
     private Connection databaseCon;
     private String tableName;
     private Map<Node, Float> attractors;
@@ -30,13 +28,7 @@ public class DBModalPAMap implements ModalPAMap {
     private float vot;
     private Graph g;
 
-    public DBModalPAMap(Graph g, Node n, String table, Mode m) {
-        p = new Properties();
-        try {
-            p.load(DBModalPAMap.class.getResourceAsStream("dbConfig.properties"));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+    public DBModalPAMap(Graph g, Node n, String table, Mode m, Float vot) {
         loadDatabase();
         this.g = g;
         tableName = table;
@@ -44,12 +36,23 @@ public class DBModalPAMap implements ModalPAMap {
         mode = m;
         producers = new HashMap<>();
         attractors = new HashMap<>();
+        this.vot = vot;
     }
 
+    /**
+     * Load the database connection from properties file
+     */
     private void loadDatabase() {
+        Properties p = new Properties();
+        try {
+            p.load(DBModalPAMap.class.getResourceAsStream("dbConfig.properties"));
+        } catch (IOException e) {
+            System.out.println("Couldn't open properties file");
+            e.printStackTrace();
+        }
         try {
             Class.forName("org.postgresql.Driver");
-            databaseCon = DriverManager.getConnection("jdbc:postgresql://db1.wrangler.tacc.utexas.edu/" + dbName, p.getProperty("user"), p.getProperty("pass"));
+            databaseCon = DriverManager.getConnection(p.getProperty("databaseLink") + p.getProperty("databaseName"), p.getProperty("user"), p.getProperty("pass"));
         } catch (SQLException e) {
             e.printStackTrace();
             System.out.println("Could not find database/table to connect to");
@@ -61,7 +64,12 @@ public class DBModalPAMap implements ModalPAMap {
     }
 
 
-    private void developFFMap() {
+    /**
+     * Create a modal PA map based on the specified mode and the function based on values in the table
+     * It goes through all of the origins and gets the destination and computes the production and attraction
+     * value for the specified mode of this object.
+     */
+    private void developModalPAMap() {
         String query = "SELECT * FROM " + tableName + " WHERE Origin = " + origin;
         try (PreparedStatement ps = databaseCon.prepareStatement(query, ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY)) {
             databaseCon.setAutoCommit(false);
@@ -123,13 +131,18 @@ public class DBModalPAMap implements ModalPAMap {
     public Float getVOT () { return vot; }
 
     @Override
-    public Mode getVehicleClass () {
-        return mode;
+    public Graph getGraph() {
+        return g;
     }
 
     @Override
-    public Graph getGraph() {
-        return g;
+    public void putAttractions(Node z, Float amt) {
+        attractors.put(z, amt);
+    }
+
+    @Override
+    public void putProductions(Node z, Float amt) {
+        producers.put(z, amt);
     }
 
     @Override

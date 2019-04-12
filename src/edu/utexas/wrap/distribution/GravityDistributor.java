@@ -69,7 +69,7 @@ public class GravityDistributor extends TripDistributor {
 		Double margin = 2*Math.max(Math.ulp(a), Math.ulp(b));
 		return  ((a < b && b-a < margin) || a-b < margin); 
 	}
-	//TODO Use JDBC to write out the PA Map into the actual database
+	//TODO Use JDBC to write out the PA Matrix into the actual database
 
 
 }
