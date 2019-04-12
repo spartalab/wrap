@@ -13,5 +13,7 @@ import edu.utexas.wrap.modechoice.Mode;
 public interface ModalPAMap extends PAMap {
 
 	public Mode getMode();
-	
+
+	public Float getVOT() ;
+
 }

@@ -27,10 +27,9 @@ public interface  PAMap {
 
 	public Float getProductions(Node z);
 
-	public Float getVOT() ;
-
-	public Mode getVehicleClass() ;
-
 	public Graph getGraph();
-	
+
+	public void putAttractions(Node z, Float amt);
+
+	public void putProductions(Node z, Float amt);
 }
