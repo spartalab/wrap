@@ -39,8 +39,7 @@ public class AggregatePAHashMatrix extends HashMap<Node, DemandHashMap> implemen
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.demand.PAMatrix#getVOT()
 	 */
-	@Override
-	public float getVOT() {
+ 	public float getVOT() {
 		// TODO Auto-generated method stub
 		return 0;
 	}

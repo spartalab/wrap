@@ -56,9 +56,4 @@ public interface  PAMap {
 	 * @param amt the amount of trips produced at the Node
 	 */
 	public void putProductions(Node z, Float amt);
-	
-	/**
-	 * @return the VOT associated with trips stored in the Map
-	 */
-	public Float getVOT();
 }

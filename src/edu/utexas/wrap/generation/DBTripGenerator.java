@@ -175,7 +175,6 @@ public class DBTripGenerator extends TripGenerator {
         loadDatabase();
         developProductionWeights();
         developAttractionWeights();
-        paMap = new AggregatePAHashMap(g);
     }
 
     @Override

@@ -17,4 +17,8 @@ public interface ModalPAMap extends PAMap {
 	 */
 	public Mode getMode();
 
+	/**
+	 * @return the VOT associated with trips stored in the Map
+	 */
+	public Float getVOT();
 }
