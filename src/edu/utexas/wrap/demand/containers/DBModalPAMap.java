@@ -22,17 +22,10 @@ import java.sql.*;
 public class DBModalPAMap extends DBPAMap implements ModalPAMap {
 
     private Mode mode;
-    private float vot;
 
     public DBModalPAMap(Graph g, String table,  Connection db, Mode m, Float vot) {
-        super(g, table, db);
+        super(g, table, db, vot);
         mode = m;
-        this.vot = vot;
-    }
-
-    @Override
-    public Float getVOT () {
-        return vot;
     }
 
     /* (non-Javadoc)

@@ -19,9 +19,4 @@ public interface ModalPAMatrix extends PAMatrix {
 	 * @return the Mode associated with this matrix
 	 */
 	public Mode getMode();
-
-	/**
-	 * @return the value of time of trips associated with this matrix
-	 */
-	public float getVOT();
 }

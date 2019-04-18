@@ -38,5 +38,9 @@ public interface PAMatrix {
      */
     public Float getDemand(Node producer, Node attractor);
 
+	/**
+	 * @return the value of time of trips associated with this matrix
+	 */
+	public float getVOT();
 
 }

@@ -16,11 +16,13 @@ public class DBPAMap implements PAMap {
     private Connection databaseCon;
     private String tableName;
     private Graph g;
+    private float vot;
 
-    public DBPAMap(Graph g, String table, Connection db) {
+    public DBPAMap(Graph g, String table, Connection db, float vot) {
         databaseCon = db;
         this.g = g;
         tableName = table;
+        this.vot = vot;
     }
 
     @Override
@@ -119,5 +121,12 @@ public class DBPAMap implements PAMap {
 
     public String getTableName() {
         return tableName;
+    }
+
+    /**
+     * @return the value of time of trips associated with this matrix
+     */
+    public Float getVOT() {
+        return vot;
     }
 }

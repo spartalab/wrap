@@ -56,4 +56,9 @@ public interface  PAMap {
 	 * @param amt the amount of trips produced at the Node
 	 */
 	public void putProductions(Node z, Float amt);
+
+	/**
+	 * @return the value of time of trips associated with this matrix
+	 */
+	public Float getVOT();
 }
