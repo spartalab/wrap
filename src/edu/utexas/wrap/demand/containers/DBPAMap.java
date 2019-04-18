@@ -18,6 +18,9 @@ public class DBPAMap implements PAMap {
     private Graph g;
     private float vot;
 
+    /**
+     * See PA Map
+     */
     public DBPAMap(Graph g, String table, Connection db, float vot) {
         databaseCon = db;
         this.g = g;
@@ -27,9 +30,10 @@ public class DBPAMap implements PAMap {
 
     @Override
     public Set<Node> getProducers () {
-        Set<Node> output = new HashSet<>();
-        String weightsQuery = "SELECT productions FROM " + tableName + " WHERE productions > 0";
+        Set<Node> output = new HashSet<Node>();
+        String weightsQuery = "SELECT productions FROM ? WHERE productions > 0";
         try(PreparedStatement ps = databaseCon.prepareStatement(weightsQuery)) {
+            ps.setString(1, tableName);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 output.add(g.getNode(rs.getInt("origin")));
@@ -43,9 +47,10 @@ public class DBPAMap implements PAMap {
 
     @Override
     public Set<Node> getAttractors () {
-        Set<Node> output = new HashSet<>();
-        String weightsQuery = "SELECT attractions FROM " + tableName + " WHERE attractions > 0";
+        Set<Node> output = new HashSet<Node>();
+        String weightsQuery = "SELECT attractions FROM ? WHERE attractions > 0";
         try(PreparedStatement ps = databaseCon.prepareStatement(weightsQuery)) {
+            ps.setString(1, tableName);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 output.add(g.getNode(rs.getInt("origin")));
@@ -59,9 +64,10 @@ public class DBPAMap implements PAMap {
 
     @Override
     public Float getAttractions (Node z){
-        String weightsQuery = "SELECT attractions FROM " + tableName + " WHERE origin=?" + " AND attractions > 0";
+        String weightsQuery = "SELECT attractions FROM ? WHERE origin=? AND attractions > 0";
         try(PreparedStatement ps = databaseCon.prepareStatement(weightsQuery)) {
-            ps.setInt(1, z.getID());
+            ps.setString(1, tableName);
+            ps.setInt(2, z.getID());
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return rs.getFloat("attractions");
@@ -75,9 +81,10 @@ public class DBPAMap implements PAMap {
 
     @Override
     public Float getProductions (Node z){
-        String weightsQuery = "SELECT productions FROM " + tableName + " WHERE origin=?" + " AND productions > 0";
+        String weightsQuery = "SELECT productions FROM ? WHERE origin=? AND productions > 0";
         try(PreparedStatement ps = databaseCon.prepareStatement(weightsQuery)) {
-            ps.setInt(1, z.getID());
+            ps.setString(1, tableName);
+            ps.setInt(2, z.getID());
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return rs.getFloat("productions");
@@ -95,10 +102,11 @@ public class DBPAMap implements PAMap {
 
     @Override
     public void putAttractions(Node z, Float amt) {
-        String weightsQuery = "UPDATE " + tableName + " SET attractions=?"  + " WHERE origin=?";
+        String weightsQuery = "UPDATE ? SET attractions=? WHERE origin=?";
         try(PreparedStatement ps = databaseCon.prepareStatement(weightsQuery)) {
-            ps.setFloat(1, amt);
-            ps.setInt(2, z.getID());
+            ps.setString(1, tableName);
+            ps.setFloat(2, amt);
+            ps.setInt(3, z.getID());
             ResultSet rs = ps.executeQuery();
         } catch (SQLException s) {
             s.printStackTrace();
@@ -108,10 +116,11 @@ public class DBPAMap implements PAMap {
 
     @Override
     public void putProductions(Node z, Float amt) {
-        String weightsQuery = "UPDATE " + tableName + " SET productions=?"  + " WHERE origin=?";
+        String weightsQuery = "UPDATE ? SET productions=? WHERE origin=?";
         try(PreparedStatement ps = databaseCon.prepareStatement(weightsQuery)) {
-            ps.setFloat(1, amt);
-            ps.setInt(2, z.getID());
+            ps.setString(1, tableName);
+            ps.setFloat(2, amt);
+            ps.setInt(3, z.getID());
             ResultSet rs = ps.executeQuery();
         } catch (SQLException s) {
             s.printStackTrace();
