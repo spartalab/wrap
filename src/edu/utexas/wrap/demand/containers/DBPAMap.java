@@ -107,7 +107,7 @@ public class DBPAMap implements PAMap {
             ps.setString(1, tableName);
             ps.setFloat(2, amt);
             ps.setInt(3, z.getID());
-            ResultSet rs = ps.executeQuery();
+            ps.executeUpdate();
         } catch (SQLException s) {
             s.printStackTrace();
             System.exit(1);
@@ -121,7 +121,7 @@ public class DBPAMap implements PAMap {
             ps.setString(1, tableName);
             ps.setFloat(2, amt);
             ps.setInt(3, z.getID());
-            ResultSet rs = ps.executeQuery();
+            ps.executeUpdate();
         } catch (SQLException s) {
             s.printStackTrace();
             System.exit(1);
