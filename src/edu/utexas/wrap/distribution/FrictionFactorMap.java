@@ -24,31 +24,6 @@ public class FrictionFactorMap {
 	private Graph g;
 
 	/**
-	 * Function to load the database by reading the database properties file
-	 */
-	private void loadDatabase() {
-		Properties p = new Properties();
-		try {
-			p.load(FrictionFactorMap.class.getResourceAsStream("dbConfig.properties"));
-		} catch (IOException e) {
-			System.out.println("Couldn't open properties file");
-			e.printStackTrace();
-		}
-		try {
-			Class.forName("org.postgresql.Driver");
-			databaseCon = DriverManager.getConnection(p.getProperty("databaseLink") + p.getProperty("databaseName"), p.getProperty("user"), p.getProperty("pass"));
-		} catch (SQLException e) {
-			e.printStackTrace();
-			System.out.println("Could not find database/table to connect to");
-			System.exit(1);
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-			System.exit(1);
-		}
-	}
-
-
-	/**
 	 * Function that develops a friction factor map using the specified friction factor table
 	 * It reads each Origin-Destination pair and uses the pktime roadway skims
 	 * in computing the friction factor.
@@ -88,8 +63,8 @@ public class FrictionFactorMap {
 	 * @param g Graph that the factors are based on
 	 * @param table table where roadway skims are stored
 	 */
-	public FrictionFactorMap(Graph g, String table) {
-		this(g, table, 1, 1, 1);
+	public FrictionFactorMap(Graph g, Connection db ,String table) {
+		this(g, db ,table, 1, 1, 1);
 
 	}
 
@@ -101,9 +76,9 @@ public class FrictionFactorMap {
 	 * @param b ffConst B
 	 * @param c ff Const C
 	 */
-	public FrictionFactorMap(Graph g, String table, double a, double b, double c) {
-		loadDatabase();
+	public FrictionFactorMap(Graph g, Connection db ,String table, double a, double b, double c) {
 		tableName = table;
+		databaseCon = db;
 		this.aConst = a;
 		this.bConst = b;
 		this.cConst = c;
