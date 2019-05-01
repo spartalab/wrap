@@ -6,6 +6,6 @@ public class frictionRun {
 
     public static void main(String[] args) {
 
-        FrictionFactorMap fMap = new FrictionFactorMap("pkhov");
+//        FrictionFactorMap fMap = new FrictionFactorMap("pkhov");
     }
 }
