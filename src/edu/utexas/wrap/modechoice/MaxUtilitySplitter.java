@@ -22,8 +22,8 @@ public class MaxUtilitySplitter extends TripInterchangeSplitter {
 	public Set<ModalPAMatrix> split(AggregatePAMatrix aggregate) {
 		// TODO Auto-generated method stub
 		Map<Mode, ModalPAMatrix> map = new HashMap<Mode,ModalPAMatrix>();
-		for (Node origin : (aggregate.keySet())) {
-			for (Node dest : (aggregate.get(origin).keySet())) {
+		for (Node origin : (aggregate.getGraph().getNodes())) {
+			for (Node dest : (aggregate.getGraph().getNodes())) {
 				Double util = null;
 				Mode mode = null;
 				
@@ -39,7 +39,7 @@ public class MaxUtilitySplitter extends TripInterchangeSplitter {
 			
 		}
 		
-		return map;
+		return new HashSet<>(map.values());
 	}
 
 }

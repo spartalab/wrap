@@ -138,7 +138,7 @@ public class DBTripGenerator extends TripGenerator {
             ResultSetMetaData md = rs.getMetaData();
             while(rs.next()) {
                 Map<String, Float> values = new HashMap<>();
-                Node or = g.getNode(rs.getInt("Origin"));
+                Node or = g.getNode(rs.getInt("node"));
                 for (int i = 1; i <= md.getColumnCount(); i++) {
                     String attribute = md.getColumnName(i);
                     values.put(attribute, rs.getFloat(attribute));

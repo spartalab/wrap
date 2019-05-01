@@ -29,13 +29,25 @@ public class DBPAMatrix implements AggregatePAMatrix {
     }
 
     @Override
-    public void put(Node producer, Node attractor, Float demand) {
-        String weightsQuery = "UPDATE ? SET demand=? WHERE producer=? AND attractor=?";
+    public void put(Node origin, Node destination, Float demand) {
+        String weightsQuery = "INSERT INTO ? (origin, destination, demand) " +
+                "VALUES (?,?,?) " +
+                "ON CONFLICT (origin, destination) " +
+                "DO UPDATE " +
+                "SET demand = ? " +
+                "WHERE " +
+                "?.producer = ? " +
+                "AND ?.attractor = ?";
         try(PreparedStatement ps = dbConnection.prepareStatement(weightsQuery)) {
             ps.setString(1, tableName);
-            ps.setFloat(2, demand);
-            ps.setInt(3, producer.getID());
-            ps.setInt(4, attractor.getID());
+            ps.setInt(2, origin.getID());
+            ps.setInt(3, destination.getID());
+            ps.setFloat(4, demand);
+            ps.setFloat(5,demand);
+            ps.setString(6, tableName);
+            ps.setInt(7, origin.getID());
+            ps.setString(8, tableName);
+            ps.setInt(9, destination.getID());
             ps.executeUpdate();
         } catch (SQLException s) {
             s.printStackTrace();
@@ -44,13 +56,13 @@ public class DBPAMatrix implements AggregatePAMatrix {
     }
 
     @Override
-    public Float getDemand(Node producer, Node attractor) {
+    public Float getDemand(Node origin, Node destination) {
         Float output = 0.0f;
-        String weightsQuery = "SELECT demand FROM ? WHERE producer=? AND attractor=?";
+        String weightsQuery = "SELECT demand FROM ? WHERE origin=? AND destination=?";
         try(PreparedStatement ps = dbConnection.prepareStatement(weightsQuery)) {
             ps.setString(1, tableName);
-            ps.setInt(2, producer.getID());
-            ps.setInt(3, attractor.getID());
+            ps.setInt(2, origin.getID());
+            ps.setInt(3, destination.getID());
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 output = rs.getFloat("demand");

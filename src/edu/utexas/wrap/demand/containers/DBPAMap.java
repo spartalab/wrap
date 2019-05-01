@@ -36,7 +36,7 @@ public class DBPAMap implements PAMap {
             ps.setString(1, tableName);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                output.add(g.getNode(rs.getInt("origin")));
+                output.add(g.getNode(rs.getInt("node")));
             }
         } catch (SQLException s) {
             s.printStackTrace();
@@ -53,7 +53,7 @@ public class DBPAMap implements PAMap {
             ps.setString(1, tableName);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                output.add(g.getNode(rs.getInt("origin")));
+                output.add(g.getNode(rs.getInt("node")));
             }
         } catch (SQLException s) {
             s.printStackTrace();
@@ -64,7 +64,7 @@ public class DBPAMap implements PAMap {
 
     @Override
     public Float getAttractions (Node z){
-        String weightsQuery = "SELECT attractions FROM ? WHERE origin=? AND attractions > 0";
+        String weightsQuery = "SELECT attractions FROM ? WHERE node=? AND attractions > 0";
         try(PreparedStatement ps = databaseCon.prepareStatement(weightsQuery)) {
             ps.setString(1, tableName);
             ps.setInt(2, z.getID());
@@ -81,7 +81,7 @@ public class DBPAMap implements PAMap {
 
     @Override
     public Float getProductions (Node z){
-        String weightsQuery = "SELECT productions FROM ? WHERE origin=? AND productions > 0";
+        String weightsQuery = "SELECT productions FROM ? WHERE node=? AND productions > 0";
         try(PreparedStatement ps = databaseCon.prepareStatement(weightsQuery)) {
             ps.setString(1, tableName);
             ps.setInt(2, z.getID());
@@ -102,7 +102,7 @@ public class DBPAMap implements PAMap {
 
     @Override
     public void putAttractions(Node z, Float amt) {
-        String weightsQuery = "UPDATE ? SET attractions=? WHERE origin=?";
+        String weightsQuery = "UPDATE ? SET attractions=? WHERE node=?";
         try(PreparedStatement ps = databaseCon.prepareStatement(weightsQuery)) {
             ps.setString(1, tableName);
             ps.setFloat(2, amt);
@@ -116,7 +116,7 @@ public class DBPAMap implements PAMap {
 
     @Override
     public void putProductions(Node z, Float amt) {
-        String weightsQuery = "UPDATE ? SET productions=? WHERE origin=?";
+        String weightsQuery = "UPDATE ? SET productions=? WHERE node=?";
         try(PreparedStatement ps = databaseCon.prepareStatement(weightsQuery)) {
             ps.setString(1, tableName);
             ps.setFloat(2, amt);
