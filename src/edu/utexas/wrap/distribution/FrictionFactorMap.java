@@ -36,8 +36,8 @@ public class FrictionFactorMap {
 			ps.setFetchSize(100);
 			ResultSet rs = ps.executeQuery();
 			while(rs.next()) {
-				int or = rs.getInt("Origin");
-				int dest = rs.getInt("Destination");
+				int or = rs.getInt("origin");
+				int dest = rs.getInt("destination");
 				double time = rs.getDouble("pktime");
 				double ff = aConst * Math.pow(time, bConst)* Math.exp(-1 * cConst * time);
 				Map<Node,Double> ffDest;
