@@ -21,8 +21,8 @@ public class MarketSegment implements Runnable{
     private boolean hasVeh;
     private boolean asManyVehAsWork;
 
-    private static final String paMapPrefix = "PAMap_";
-    private static final String paMtxPrefix = "PAMtx_";
+    public static final String paMapPrefix = "PAMap_";
+    public static final String paMtxPrefix = "PAMtx_";
     private String table_suffix;
 
     /**
@@ -62,7 +62,7 @@ public class MarketSegment implements Runnable{
     }
 
     public PAMap tripGeneration() {
-        return tg.generate();
+        return tg.generate(this);
     }
 
     /**
@@ -142,5 +142,9 @@ public class MarketSegment implements Runnable{
                 incomeQ +
                 (hasVeh ? 1 : 0) +
                 (asManyVehAsWork ? 1 : 0);
+    }
+
+    public float getVOT() {
+        return vot;
     }
 }

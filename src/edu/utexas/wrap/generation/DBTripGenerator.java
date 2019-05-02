@@ -1,5 +1,6 @@
 package edu.utexas.wrap.generation;
 
+import edu.utexas.wrap.demand.MarketSegment;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.containers.DBPAMap;
 import edu.utexas.wrap.net.Graph;
@@ -9,7 +10,7 @@ import java.sql.*;
  *
  * This is a trip generation implementation based on reading attribute weights and their values associated to each
  * zone/node. This model loads a map of weights from an attributes table and loads the respective values of each node
- * and generates an AggregatePAMap object.
+ * and generates an DBPAMap object.
  *
  * @author Rishabh
  */
@@ -21,31 +22,22 @@ public class DBTripGenerator extends TripGenerator {
     private String attractionWeightsTable;
     private PAMap paMap;
     private Graph g;
-    private String tableName;
-    private String marketSegment;
-    private float vot;
 
 
     /**
      * A Trip Generator which uses the database to perform trip generation
      * @param g Graph associated with object
      * @param db Database Connection
-     * @param paTable Name of the output table for PA
      * @param attributesTable Name of the table where the demographic attributes are stored (node, dem, value)
      * @param prodTable table with the production rates associated with the market segment: (seg, dem, rate)
      * @param attrTable table with the attraction rates associated with the market segment: (seg, dem, rate)
-     * @param marketSegment specified market segment string to search in the table
-     * @param vot vot of specified market segment
      */
-    public DBTripGenerator(Graph g, Connection db, String paTable, String attributesTable, String prodTable, String attrTable, String marketSegment, float vot) {
+    public DBTripGenerator(Graph g, Connection db, String attributesTable, String prodTable, String attrTable) {
         this.g  = g;
         this.attributesTable = attributesTable;
         this.productionWeightsTable = prodTable;
         this.attractionWeightsTable = attrTable;
         this.db = db;
-        this.marketSegment = marketSegment;
-        this.vot = vot;
-        this.tableName = paTable;
     }
 
     /**
@@ -59,20 +51,20 @@ public class DBTripGenerator extends TripGenerator {
      *  attractions values that are inserted along with the the node ID into the paMap table.
      */
     @Override
-    public PAMap generate() {
+    public PAMap generate(MarketSegment marketSegment) {
         if(paMap == null) {
-            paMap = new DBPAMap(g, db, tableName, vot);
+            paMap = new DBPAMap(g, db, marketSegment.getPAMapTable(), marketSegment.getVOT());
             String generatePA = "INSERT INTO ? (node, productions, attractions)\n" +
                     "SELECT node, sum(p.rate * dp.value), sum(a.rate * dp.value)\n" +
                     "  FROM ((SELECT * from ?) as dp INNER JOIN (SELECT * FROM ? WHERE seg=?) as p ON\n" +
                     "  dp.dem = p.dem INNER JOIN (SELECT * FROM ? WHERE seg=?) as a ON dp.dem=a.dem) group by node;\n";
             try (PreparedStatement ps = db.prepareStatement(generatePA)) {
-                ps.setString(1, tableName);
+                ps.setString(1, marketSegment.getPAMapTable());
                 ps.setString(2, attributesTable);
                 ps.setString(3, productionWeightsTable);
-                ps.setString(4, marketSegment);
+                ps.setString(4, marketSegment.toString());
                 ps.setString(5, attractionWeightsTable);
-                ps.setString(6, marketSegment);
+                ps.setString(6, marketSegment.toString());
                 ps.executeUpdate();
             } catch (SQLException s) {
                 s.printStackTrace();
