@@ -27,11 +27,15 @@ public class DBTripGenerator extends TripGenerator {
 
 
     /**
-     * Constructor for Trip Generation object based on the database
-     * @param g Graph that the trip generation is based on
-     * @param attributesTable Name of table where each node's attribute values are stored
-     * @param prodTable Name of table where the production attribute weights are stored
-     * @param attrTable Name of table where the attraction attribute weights are stored
+     * A Trip Generator which uses the database to perform trip generation
+     * @param g Graph associated with object
+     * @param db Database Connection
+     * @param paTable Name of the output table for PA
+     * @param attributesTable Name of the table where the demographic attributes are stored (node, dem, value)
+     * @param prodTable table with the production rates associated with the market segment: (seg, dem, rate)
+     * @param attrTable table with the attraction rates associated with the market segment: (seg, dem, rate)
+     * @param marketSegment specified market segment string to search in the table
+     * @param vot vot of specified market segment
      */
     public DBTripGenerator(Graph g, Connection db, String paTable, String attributesTable, String prodTable, String attrTable, String marketSegment, float vot) {
         this.g  = g;
@@ -53,9 +57,6 @@ public class DBTripGenerator extends TripGenerator {
      *  rates table, and the demographic data table on the demographics of the model. It then multiplies the rates to the
      *  respective values in the demographic data table and sums them for each node. This produces the productions and
      *  attractions values that are inserted along with the the node ID into the paMap table.
-     * attributesTable: table with the demographics values: (node, dem, value)
-     * productionWeightsTable: table with the production rates associated with the market segment: (seg, dem, rate)
-     * attractionWeightsTable: table with the attraction rates associated with the market segment: (seg, dem, rate)
      */
     @Override
     public PAMap generate() {

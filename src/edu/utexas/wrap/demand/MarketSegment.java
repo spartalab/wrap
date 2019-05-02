@@ -2,22 +2,11 @@ package edu.utexas.wrap.demand;
 
 import edu.utexas.wrap.assignment.AssignmentLoader;
 import edu.utexas.wrap.balancing.TripBalancer;
-import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
-import edu.utexas.wrap.demand.containers.DBPAMap;
-import edu.utexas.wrap.demand.containers.DBPAMatrix;
-import edu.utexas.wrap.demand.containers.DemandHashMap;
-import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.distribution.TripDistributor;
 import edu.utexas.wrap.generation.TripGenerator;
 import edu.utexas.wrap.modechoice.TripInterchangeSplitter;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.Node;
 
-import java.lang.reflect.InvocationTargetException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -144,5 +133,14 @@ public class MarketSegment implements Runnable{
 
     public String getPAMtxTable() {
         return paMtxPrefix + table_suffix;
+    }
+
+    public static String getMarketString(boolean homeBased, boolean workTrip, char peakTrip, char incomeQ, boolean hasVeh, boolean asManyVehAsWork) {
+        return String.valueOf(homeBased ? 1 : 0) +
+                (workTrip ? 1 : 0) +
+                peakTrip +
+                incomeQ +
+                (hasVeh ? 1 : 0) +
+                (asManyVehAsWork ? 1 : 0);
     }
 }
