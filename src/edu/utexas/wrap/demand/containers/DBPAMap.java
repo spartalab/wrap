@@ -13,7 +13,7 @@ import java.util.Set;
 
 public class DBPAMap implements PAMap {
 
-    private Connection databaseCon;
+    private Connection db;
     private String tableName;
     private Graph g;
     private float vot;
@@ -21,18 +21,30 @@ public class DBPAMap implements PAMap {
     /**
      * See PA Map
      */
-    public DBPAMap(Graph g, String table, Connection db, float vot) {
-        databaseCon = db;
+    public DBPAMap(Graph g,Connection db, String table,  float vot) {
+        this.db = db;
         this.g = g;
         tableName = table;
         this.vot = vot;
+        String createQuery = "CREATE TABLE IF NOT EXISTS  ?" +
+                " (node integer, " +
+                "productions real, " +
+                "attractions real," +
+                " UNIQUE (node) )";
+        try(PreparedStatement ps = db.prepareStatement(createQuery)) {
+            ps.setString(1, tableName);
+            ps.executeUpdate();
+        } catch (SQLException s) {
+            s.printStackTrace();
+            System.exit(1);
+        }
     }
 
     @Override
     public Set<Node> getProducers () {
         Set<Node> output = new HashSet<Node>();
         String weightsQuery = "SELECT productions FROM ? WHERE productions > 0";
-        try(PreparedStatement ps = databaseCon.prepareStatement(weightsQuery)) {
+        try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
             ps.setString(1, tableName);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -49,7 +61,7 @@ public class DBPAMap implements PAMap {
     public Set<Node> getAttractors () {
         Set<Node> output = new HashSet<Node>();
         String weightsQuery = "SELECT attractions FROM ? WHERE attractions > 0";
-        try(PreparedStatement ps = databaseCon.prepareStatement(weightsQuery)) {
+        try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
             ps.setString(1, tableName);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -65,7 +77,7 @@ public class DBPAMap implements PAMap {
     @Override
     public Float getAttractions (Node z){
         String weightsQuery = "SELECT attractions FROM ? WHERE node=? AND attractions > 0";
-        try(PreparedStatement ps = databaseCon.prepareStatement(weightsQuery)) {
+        try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
             ps.setString(1, tableName);
             ps.setInt(2, z.getID());
             ResultSet rs = ps.executeQuery();
@@ -82,7 +94,7 @@ public class DBPAMap implements PAMap {
     @Override
     public Float getProductions (Node z){
         String weightsQuery = "SELECT productions FROM ? WHERE node=? AND productions > 0";
-        try(PreparedStatement ps = databaseCon.prepareStatement(weightsQuery)) {
+        try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
             ps.setString(1, tableName);
             ps.setInt(2, z.getID());
             ResultSet rs = ps.executeQuery();
@@ -103,7 +115,7 @@ public class DBPAMap implements PAMap {
     @Override
     public void putAttractions(Node z, Float amt) {
         String weightsQuery = "UPDATE ? SET attractions=? WHERE node=?";
-        try(PreparedStatement ps = databaseCon.prepareStatement(weightsQuery)) {
+        try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
             ps.setString(1, tableName);
             ps.setFloat(2, amt);
             ps.setInt(3, z.getID());
@@ -117,7 +129,7 @@ public class DBPAMap implements PAMap {
     @Override
     public void putProductions(Node z, Float amt) {
         String weightsQuery = "UPDATE ? SET productions=? WHERE node=?";
-        try(PreparedStatement ps = databaseCon.prepareStatement(weightsQuery)) {
+        try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
             ps.setString(1, tableName);
             ps.setFloat(2, amt);
             ps.setInt(3, z.getID());
@@ -138,4 +150,6 @@ public class DBPAMap implements PAMap {
     public Float getVOT() {
         return vot;
     }
+
+    public Connection getDB() {return db; }
 }

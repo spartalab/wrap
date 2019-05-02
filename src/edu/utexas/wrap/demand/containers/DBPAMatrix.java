@@ -1,6 +1,7 @@
 package edu.utexas.wrap.demand.containers;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
+import edu.utexas.wrap.demand.PAMatrix;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
@@ -12,15 +13,26 @@ import java.sql.SQLException;
 public class DBPAMatrix implements AggregatePAMatrix {
 
     private Graph g;
-    private Connection dbConnection;
+    private Connection db;
     private float vot;
     private String tableName;
 
-    public DBPAMatrix(Graph g, String table, Connection db, float vot) {
+    public DBPAMatrix(Graph g, Connection db, String table, float vot) {
         this.g = g;
         tableName = table;
-        dbConnection = db;
+        this.db = db;
         this.vot = vot;
+        String createQuery = "CREATE TABLE IF NOT EXISTS  ?" +
+                " (origin integer, " +
+                "destination integer, " +
+                "demand real)";
+        try(PreparedStatement ps = db.prepareStatement(createQuery)) {
+            ps.setString(1, tableName);
+            ps.executeUpdate();
+        } catch (SQLException s) {
+            s.printStackTrace();
+            System.exit(1);
+        }
     }
 
     @Override
@@ -38,7 +50,7 @@ public class DBPAMatrix implements AggregatePAMatrix {
                 "WHERE " +
                 "?.producer = ? " +
                 "AND ?.attractor = ?";
-        try(PreparedStatement ps = dbConnection.prepareStatement(weightsQuery)) {
+        try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
             ps.setString(1, tableName);
             ps.setInt(2, origin.getID());
             ps.setInt(3, destination.getID());
@@ -59,7 +71,7 @@ public class DBPAMatrix implements AggregatePAMatrix {
     public Float getDemand(Node origin, Node destination) {
         Float output = 0.0f;
         String weightsQuery = "SELECT demand FROM ? WHERE origin=? AND destination=?";
-        try(PreparedStatement ps = dbConnection.prepareStatement(weightsQuery)) {
+        try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
             ps.setString(1, tableName);
             ps.setInt(2, origin.getID());
             ps.setInt(3, destination.getID());
@@ -77,5 +89,14 @@ public class DBPAMatrix implements AggregatePAMatrix {
     @Override
     public float getVOT() {
         return vot;
+    }
+
+    public void writeToDB(AggregatePAHashMatrix aggPAMtx) {
+        for(Node p:aggPAMtx.keySet()) {
+            DemandHashMap dem = aggPAMtx.get(p);
+            for(Node a: dem.getNodes()) {
+                this.put(p, a, dem.get(p));
+            }
+        }
     }
 }
