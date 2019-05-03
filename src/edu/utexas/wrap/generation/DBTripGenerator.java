@@ -20,7 +20,6 @@ public class DBTripGenerator extends TripGenerator {
     private String attributesTable;
     private String productionWeightsTable;
     private String attractionWeightsTable;
-    private PAMap paMap;
     private Graph g;
 
 
@@ -52,21 +51,18 @@ public class DBTripGenerator extends TripGenerator {
      */
     @Override
     public PAMap generate(MarketSegment marketSegment) {
-        if(paMap == null) {
-            paMap = new DBPAMap(g, db, marketSegment.getPAMapTable(), marketSegment.getVOT());
-            String generatePA = "INSERT INTO "+marketSegment.getPAMapTable()+" (node, productions, attractions)\n" +
-                    "SELECT node, sum(p.rate * dp.value), sum(a.rate * dp.value)\n" +
-                    "  FROM ((SELECT * from "+attributesTable+") as dp INNER JOIN (SELECT * FROM "+productionWeightsTable+" WHERE seg=?) as p ON\n" +
-                    "  dp.dem = p.dem INNER JOIN (SELECT * FROM "+attractionWeightsTable+" WHERE seg=?) as a ON dp.dem=a.dem) group by node;\n";
-            try (PreparedStatement ps = db.prepareStatement(generatePA)) {
-                ps.setString(1, marketSegment.toString());
-                ps.setString(2, marketSegment.toString());
-                ps.executeUpdate();
-            } catch (SQLException s) {
-                s.printStackTrace();
-                System.exit(1);
-            }
-            return paMap;
+        PAMap paMap = new DBPAMap(g, db, marketSegment.getPAMapTable(), marketSegment.getVOT());
+        String generatePA = "INSERT INTO "+marketSegment.getPAMapTable()+" (node, productions, attractions)\n" +
+                "SELECT node, sum(p.rate * dp.value), sum(a.rate * dp.value)\n" +
+                "  FROM ((SELECT * from "+attributesTable+") as dp INNER JOIN (SELECT * FROM "+productionWeightsTable+" WHERE seg=?) as p ON\n" +
+                "  dp.dem = p.dem INNER JOIN (SELECT * FROM "+attractionWeightsTable+" WHERE seg=?) as a ON dp.dem=a.dem) group by node;\n";
+        try (PreparedStatement ps = db.prepareStatement(generatePA)) {
+            ps.setString(1, marketSegment.toString());
+            ps.setString(2, marketSegment.toString());
+            ps.executeUpdate();
+        } catch (SQLException s) {
+            s.printStackTrace();
+            System.exit(1);
         }
         return paMap;
     }
