@@ -9,13 +9,12 @@ import edu.utexas.wrap.generation.DBTripGenerator;
 import edu.utexas.wrap.generation.TripGenerator;
 import edu.utexas.wrap.net.*;
 import org.junit.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.runners.MethodSorters;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class DBMarketSegmentTests {
 
@@ -57,6 +56,12 @@ public class DBMarketSegmentTests {
             e.printStackTrace();
             System.exit(1);
         }
+        tearDownDB();
+    }
+
+    @BeforeEach
+    private static void removeTables() {
+        deleteAllTables();
     }
 
     private static void createGraph() {
@@ -209,7 +214,7 @@ public class DBMarketSegmentTests {
             attrValsExp[p.getID()] = hbwPAExp.getAttractions(p);
         }
         Assert.assertArrayEquals(prodValsExp, prodVals, 0.01f);
-        Assert.assertArrayEquals(attrValsExp,attrVals, 0.01f);
+        Assert.assertArrayEquals(attrValsExp, attrVals, 0.01f);
     }
 
     @Test
@@ -344,23 +349,26 @@ public class DBMarketSegmentTests {
     }
 
     public static void tearDownDB() {
+        deleteAllTables();
+    }
+
+    @AfterEach
+    public static void deleteAllTables() {
         //Delete tables from db
         //Delete all new tables created during testing
-        String delete = "DROP TABLE IF EXISTS ? ";
-        try(PreparedStatement ps = db.prepareStatement(delete)) {
-            ps.setString(1,"pamap_11p111");
-            ps.executeUpdate();
-            ps.setString(1,"pamap_10p111");
-            ps.executeUpdate();
-            ps.setString(1,"pamap_00p111");
-            ps.executeUpdate();
-            ps.setString(1,"tpamap_11p111");
-            ps.executeUpdate();
-            ps.setString(1,"tpamap_10p111");
-            ps.executeUpdate();
-            ps.setString(1,"tpamap_00p111");
-            ps.executeUpdate();
-        }catch (SQLException ignored){}
+        ArrayList<String> tables = new ArrayList<String>();
+        tables.add("pamap_11p111");
+        tables.add("pamap_10p111");
+        tables.add("pamap_00p111");
+        tables.add("tpamap_11p111");
+        tables.add("tpamap_10p111");
+        tables.add("tpamap_00p111");
+        for(String s: tables) {
+            String delete = "DROP TABLE IF EXISTS " + s;
+            try (PreparedStatement ps = db.prepareStatement(delete)) {
+                ps.executeUpdate();
+            } catch (SQLException ignored) { }
+        }
     }
 
 }
