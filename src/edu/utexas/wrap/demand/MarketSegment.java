@@ -21,8 +21,8 @@ public class MarketSegment implements Runnable{
     private boolean hasVeh;
     private boolean asManyVehAsWork;
 
-    public static final String paMapPrefix = "PAMap_";
-    public static final String paMtxPrefix = "PAMtx_";
+    public static final String paMapPrefix = "pamap_";
+    public static final String paMtxPrefix = "pamtx_";
     private String table_suffix;
 
     /**

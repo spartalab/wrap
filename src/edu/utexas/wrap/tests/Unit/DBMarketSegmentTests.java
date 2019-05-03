@@ -14,25 +14,23 @@ import edu.utexas.wrap.net.TolledBPRLink;
 import org.junit.*;
 import org.junit.runners.MethodSorters;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class DBMarketSegmentTests {
 
     private Connection db;
     private Graph g;
     private MarketSegment hbw;
-
     private MarketSegment hbnw;
-
-
     private MarketSegment nhbnw;
 
     @BeforeClass
     public void init() {
+        //Connect to DB
+        setupDB();
+
         //Create Graph
+        createGraph();
 
 
         //Create 3 market Segment objects
@@ -40,12 +38,12 @@ public class DBMarketSegmentTests {
         TripBalancer tb = new DBTripBalancer(db);
 
         hbw = new MarketSegment(g,tg,tb,null,null,null,true,true,'p','1',true,true,0.0f);
-        hbnw = new MarketSegment(g,tg,tb,null,null,null,true,true,'p','1',true,true,0.0f);
-        nhbnw = new MarketSegment(g,tg,tb,null,null,null,true,true,'p','1',true,true,0.0f);
+        hbnw = new MarketSegment(g,tg,tb,null,null,null,true,false,'p','1',true,true,0.0f);
+        nhbnw = new MarketSegment(g,tg,tb,null,null,null,false,false,'p','1',true,true,0.0f);
 
     }
 
-    public void setupDB() {
+    private void setupDB() {
         //Connect to DB
         try {
             Class.forName("org.postgresql.Driver");
@@ -60,6 +58,54 @@ public class DBMarketSegmentTests {
         }
     }
 
+    private void createGraph() {
+
+    }
+
+    @Test
+    public void toStringhbwTest(){
+        Assert.assertEquals("11p111", hbw.toString());
+    }
+
+    @Test
+    public void toStringhbnwTest(){
+        Assert.assertEquals("10p111", hbnw.toString());
+    }
+
+    @Test
+    public void toStringnhbnwTest(){
+        Assert.assertEquals("00p111", nhbnw.toString());
+    }
+
+    @Test
+    public void getPAMapTablehbwTest(){
+        Assert.assertEquals("pamap_11p111", hbw.getPAMapTable());
+    }
+
+    @Test
+    public void getPAMapTablehbnwTest(){
+        Assert.assertEquals("pamap_10p111", hbnw.getPAMapTable());
+    }
+
+    @Test
+    public void getPAMapTablenhbnwTest(){
+        Assert.assertEquals("pamap_00p111", nhbnw.getPAMapTable());
+    }
+
+    @Test
+    public void getPAMtxTablehbwTest(){
+        Assert.assertEquals("pamtx_11p111", hbw.getPAMtxTable());
+    }
+
+    @Test
+    public void getPAMtxTablehbnwTest(){
+        Assert.assertEquals("pamtx_10p111", hbnw.getPAMtxTable());
+    }
+
+    @Test
+    public void getPAMtxTablenhbnwTest(){
+        Assert.assertEquals("pamtx_00p111", nhbnw.getPAMtxTable());
+    }
 
     @Test
     public void tripGenerationhbwTest() {
@@ -144,14 +190,6 @@ public class DBMarketSegmentTests {
         }
         Assert.assertArrayEquals(prodValsExp, prodVals, 0.0001f);
         Assert.assertArrayEquals(attrValsExp,attrVals, 0.0001f);
-        String delete = "DROP TABLE tpamap_11p111";
-        try (Statement st = db.createStatement()) {
-            st.execute(delete);
-        }catch (SQLException e){
-            e.printStackTrace();
-            System.exit(1);
-        }
-
     }
 
     @Test
@@ -180,14 +218,6 @@ public class DBMarketSegmentTests {
         }
         Assert.assertArrayEquals(prodValsExp, prodVals, 0.0001f);
         Assert.assertArrayEquals(attrValsExp,attrVals, 0.0001f);
-        String delete = "DROP TABLE tpamap_10p111";
-        try (Statement st = db.createStatement()) {
-            st.execute(delete);
-        }catch (SQLException e){
-            e.printStackTrace();
-            System.exit(1);
-        }
-
     }
 
     @Test
@@ -216,28 +246,35 @@ public class DBMarketSegmentTests {
         }
         Assert.assertArrayEquals(prodValsExp, prodVals, 0.0001f);
         Assert.assertArrayEquals(attrValsExp,attrVals, 0.0001f);
-        String delete = "DROP TABLE tpamap_00p111";
-        try (Statement st = db.createStatement()) {
-            st.execute(delete);
-        }catch (SQLException e){
-            e.printStackTrace();
-            System.exit(1);
-        }
 
     }
-    @Test
-    public void tripDistributionTest() {}
+//    @Test
+//    public void tripDistributionTest() {}
 
     @AfterClass
     public void finish() {
         //Reset testDB
         tearDownDB();
-        //Delete files created during tests
     }
 
     public void tearDownDB() {
         //Delete tables from db
         //Delete all new tables created during testing
+        String delete = "DROP TABLE IF EXISTS ? ";
+        try(PreparedStatement ps = db.prepareStatement(delete)) {
+            ps.setString(1,"pamap_11p111");
+            ps.executeUpdate();
+            ps.setString(1,"pamap_10p111");
+            ps.executeUpdate();
+            ps.setString(1,"pamap_00p111");
+            ps.executeUpdate();
+            ps.setString(1,"tpamap_11p111");
+            ps.executeUpdate();
+            ps.setString(1,"tpamap_10p111");
+            ps.executeUpdate();
+            ps.setString(1,"tpamap_00p111");
+            ps.executeUpdate();
+        }catch (SQLException ignored){}
     }
 
 }

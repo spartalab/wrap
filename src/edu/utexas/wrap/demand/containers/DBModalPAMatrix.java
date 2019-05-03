@@ -10,7 +10,7 @@ public class DBModalPAMatrix extends DBPAMatrix implements ModalPAMatrix {
 
     Mode m;
     public DBModalPAMatrix(Graph g, String table, Connection db, float vot, Mode m) {
-        super(g, table, db, vot);
+        super(g, db, table, vot);
         this.m  = m;
     }
 

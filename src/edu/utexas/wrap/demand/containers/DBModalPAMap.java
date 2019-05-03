@@ -24,7 +24,7 @@ public class DBModalPAMap extends DBPAMap implements ModalPAMap {
     private Mode mode;
 
     public DBModalPAMap(Graph g, String table,  Connection db, Mode m, Float vot) {
-        super(g, table, db, vot);
+        super(g, db, table, vot);
         mode = m;
     }
 
