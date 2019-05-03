@@ -43,7 +43,7 @@ public class DBPAMap implements PAMap {
     @Override
     public Set<Node> getProducers () {
         Set<Node> output = new HashSet<Node>();
-        String weightsQuery = "SELECT productions FROM "+tableName+" WHERE productions > 0";
+        String weightsQuery = "SELECT node FROM "+tableName+" WHERE productions > 0";
         try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
@@ -59,7 +59,7 @@ public class DBPAMap implements PAMap {
     @Override
     public Set<Node> getAttractors () {
         Set<Node> output = new HashSet<Node>();
-        String weightsQuery = "SELECT attractions FROM "+tableName+" WHERE attractions > 0";
+        String weightsQuery = "SELECT node FROM "+tableName+" WHERE attractions > 0";
         try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
