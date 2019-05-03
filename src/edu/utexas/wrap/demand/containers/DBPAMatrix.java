@@ -1,7 +1,6 @@
 package edu.utexas.wrap.demand.containers;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
-import edu.utexas.wrap.demand.PAMatrix;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
@@ -22,12 +21,11 @@ public class DBPAMatrix implements AggregatePAMatrix {
         tableName = table;
         this.db = db;
         this.vot = vot;
-        String createQuery = "CREATE TABLE IF NOT EXISTS  ?" +
+        String createQuery = "CREATE TABLE IF NOT EXISTS  " + tableName +
                 " (origin integer, " +
                 "destination integer, " +
                 "demand real)";
         try(PreparedStatement ps = db.prepareStatement(createQuery)) {
-            ps.setString(1, tableName);
             ps.executeUpdate();
         } catch (SQLException s) {
             s.printStackTrace();
@@ -42,24 +40,21 @@ public class DBPAMatrix implements AggregatePAMatrix {
 
     @Override
     public void put(Node origin, Node destination, Float demand) {
-        String weightsQuery = "INSERT INTO ? (origin, destination, demand) " +
+        String weightsQuery = "INSERT INTO "+tableName+" (origin, destination, demand) " +
                 "VALUES (?,?,?) " +
                 "ON CONFLICT (origin, destination) " +
                 "DO UPDATE " +
                 "SET demand = ? " +
                 "WHERE " +
-                "?.producer = ? " +
-                "AND ?.attractor = ?";
+                tableName+".producer = ? " +
+                "AND "+tableName+".attractor = ?";
         try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
-            ps.setString(1, tableName);
-            ps.setInt(2, origin.getID());
-            ps.setInt(3, destination.getID());
-            ps.setFloat(4, demand);
-            ps.setFloat(5,demand);
-            ps.setString(6, tableName);
-            ps.setInt(7, origin.getID());
-            ps.setString(8, tableName);
-            ps.setInt(9, destination.getID());
+            ps.setInt(1, origin.getID());
+            ps.setInt(2, destination.getID());
+            ps.setFloat(3, demand);
+            ps.setFloat(4,demand);
+            ps.setInt(5, origin.getID());
+            ps.setInt(6, destination.getID());
             ps.executeUpdate();
         } catch (SQLException s) {
             s.printStackTrace();
@@ -70,11 +65,10 @@ public class DBPAMatrix implements AggregatePAMatrix {
     @Override
     public Float getDemand(Node origin, Node destination) {
         Float output = 0.0f;
-        String weightsQuery = "SELECT demand FROM ? WHERE origin=? AND destination=?";
+        String weightsQuery = "SELECT demand FROM "+tableName+" WHERE origin=? AND destination=?";
         try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
-            ps.setString(1, tableName);
-            ps.setInt(2, origin.getID());
-            ps.setInt(3, destination.getID());
+            ps.setInt(1, origin.getID());
+            ps.setInt(2, destination.getID());
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 output = rs.getFloat("demand");

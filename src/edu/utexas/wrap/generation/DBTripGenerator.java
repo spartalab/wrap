@@ -54,17 +54,13 @@ public class DBTripGenerator extends TripGenerator {
     public PAMap generate(MarketSegment marketSegment) {
         if(paMap == null) {
             paMap = new DBPAMap(g, db, marketSegment.getPAMapTable(), marketSegment.getVOT());
-            String generatePA = "INSERT INTO ? (node, productions, attractions)\n" +
+            String generatePA = "INSERT INTO "+marketSegment.getPAMapTable()+" (node, productions, attractions)\n" +
                     "SELECT node, sum(p.rate * dp.value), sum(a.rate * dp.value)\n" +
-                    "  FROM ((SELECT * from ?) as dp INNER JOIN (SELECT * FROM ? WHERE seg=?) as p ON\n" +
-                    "  dp.dem = p.dem INNER JOIN (SELECT * FROM ? WHERE seg=?) as a ON dp.dem=a.dem) group by node;\n";
+                    "  FROM ((SELECT * from "+attributesTable+") as dp INNER JOIN (SELECT * FROM "+productionWeightsTable+" WHERE seg=?) as p ON\n" +
+                    "  dp.dem = p.dem INNER JOIN (SELECT * FROM "+attractionWeightsTable+" WHERE seg=?) as a ON dp.dem=a.dem) group by node;\n";
             try (PreparedStatement ps = db.prepareStatement(generatePA)) {
-                ps.setString(1, marketSegment.getPAMapTable());
-                ps.setString(2, attributesTable);
-                ps.setString(3, productionWeightsTable);
-                ps.setString(4, marketSegment.toString());
-                ps.setString(5, attractionWeightsTable);
-                ps.setString(6, marketSegment.toString());
+                ps.setString(1, marketSegment.toString());
+                ps.setString(2, marketSegment.toString());
                 ps.executeUpdate();
             } catch (SQLException s) {
                 s.printStackTrace();

@@ -7,25 +7,26 @@ import edu.utexas.wrap.demand.containers.DBPAMap;
 import edu.utexas.wrap.distribution.TripDistributor;
 import edu.utexas.wrap.generation.DBTripGenerator;
 import edu.utexas.wrap.generation.TripGenerator;
-import edu.utexas.wrap.net.CentroidConnector;
-import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.Node;
-import edu.utexas.wrap.net.TolledBPRLink;
+import edu.utexas.wrap.net.*;
 import org.junit.*;
 import org.junit.runners.MethodSorters;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class DBMarketSegmentTests {
 
-    private Connection db;
-    private Graph g;
-    private MarketSegment hbw;
-    private MarketSegment hbnw;
-    private MarketSegment nhbnw;
+    private static Connection db;
+    private static Graph g;
+    private static MarketSegment hbw;
+    private static MarketSegment hbnw;
+    private static MarketSegment nhbnw;
 
     @BeforeClass
-    public void init() {
+    public static void init() {
         //Connect to DB
         setupDB();
 
@@ -43,7 +44,7 @@ public class DBMarketSegmentTests {
 
     }
 
-    private void setupDB() {
+    private static void setupDB() {
         //Connect to DB
         try {
             Class.forName("org.postgresql.Driver");
@@ -58,7 +59,92 @@ public class DBMarketSegmentTests {
         }
     }
 
-    private void createGraph() {
+    private static void createGraph() {
+        g = new Graph();
+
+        Node a = new Node(1,false);
+        Node b = new Node(2,false);
+        Node c = new Node(3,false);
+        Node d = new Node(4,false);
+        Node e = new Node(5,false);
+        Node f = new Node(6,false);
+        Node gl = new Node(7,false);
+        Node h = new Node(8,false);
+        Node i = new Node(9,false);
+        Node j = new Node(10,false);
+        Node k = new Node(11,false);
+        Node l = new Node(12,false);
+        Node m = new Node(13,false);
+        Node n = new Node(14,false);
+        Node o = new Node(15,false);
+        Node p = new Node(16,false);
+
+        List<Link> allLinks = new ArrayList<>();
+        allLinks.add(new TolledBPRLink(a,i, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
+            @Override
+            public Double getTravelTime() { return 15.0;}
+        });
+        allLinks.add(new TolledBPRLink(i,a, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
+            @Override
+            public Double getTravelTime() { return 18.0;}
+        });
+        allLinks.add(new TolledBPRLink(b,j, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
+            @Override
+            public Double getTravelTime() { return 22.0;}
+        });
+        allLinks.add(new TolledBPRLink(j,b, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
+            @Override
+            public Double getTravelTime() { return 10.0;}
+        });
+        allLinks.add(new TolledBPRLink(c,k, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
+            @Override
+            public Double getTravelTime() { return 11.0;}
+        });
+        allLinks.add(new TolledBPRLink(k,c, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
+            @Override
+            public Double getTravelTime() { return 19.0;}
+        });
+        allLinks.add(new TolledBPRLink(d,l, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
+            @Override
+            public Double getTravelTime() { return 21.0;}
+        });
+        allLinks.add(new TolledBPRLink(l,d, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
+            @Override
+            public Double getTravelTime() { return 21.0;}
+        });
+        allLinks.add(new TolledBPRLink(e,m, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
+            @Override
+            public Double getTravelTime() { return 19.0;}
+        });
+        allLinks.add(new TolledBPRLink(m,e, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
+            @Override
+            public Double getTravelTime() { return 7.0;}
+        });
+        allLinks.add(new TolledBPRLink(f,n, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
+            @Override
+            public Double getTravelTime() { return 29.0;}
+        });
+        allLinks.add(new TolledBPRLink(n,f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
+            @Override
+            public Double getTravelTime() { return 15.0;}
+        });
+        allLinks.add(new TolledBPRLink(o,gl, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
+            @Override
+            public Double getTravelTime() { return 18.0;}
+        });
+        allLinks.add(new TolledBPRLink(gl,o, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
+            @Override
+            public Double getTravelTime() { return 5.0;}
+        });
+        allLinks.add(new TolledBPRLink(h,p, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
+            @Override
+            public Double getTravelTime() { return 6.0;}
+        });
+        allLinks.add(new TolledBPRLink(p,h, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
+            @Override
+            public Double getTravelTime() { return 9.0;}
+        });
+        g.addAll(allLinks);
 
     }
 
@@ -166,7 +252,7 @@ public class DBMarketSegmentTests {
 
     @Test
     public void tripBalancehbwTest() {
-        String createDup = "CREATE TABLE tpamap_11p111 AS SELECT * FROM upamap_11p111";
+        String createDup = "CREATE TABLE IF NOT EXISTS tpamap_11p111 AS SELECT * FROM upamap_11p111";
         try (Statement st = db.createStatement()) {
             st.execute(createDup);
         }catch (SQLException e){
@@ -194,7 +280,7 @@ public class DBMarketSegmentTests {
 
     @Test
     public void tripBalancehbnwTest() {
-        String createDup = "CREATE TABLE tpamap_10p111 AS SELECT * FROM upamap_10p111";
+        String createDup = "CREATE TABLE IF NOT EXISTS tpamap_10p111 AS SELECT * FROM upamap_10p111";
         try (Statement st = db.createStatement()) {
             st.execute(createDup);
         }catch (SQLException e){
@@ -222,7 +308,7 @@ public class DBMarketSegmentTests {
 
     @Test
     public void tripBalancenhbnwTest() {
-        String createDup = "CREATE TABLE tpamap_00p111 AS SELECT * FROM upamap_00p111";
+        String createDup = "CREATE TABLE IF NOT EXISTS tpamap_00p111 AS SELECT * FROM upamap_00p111";
         try (Statement st = db.createStatement()) {
             st.execute(createDup);
         }catch (SQLException e){
@@ -252,12 +338,12 @@ public class DBMarketSegmentTests {
 //    public void tripDistributionTest() {}
 
     @AfterClass
-    public void finish() {
+    public static void finish() {
         //Reset testDB
         tearDownDB();
     }
 
-    public void tearDownDB() {
+    public static void tearDownDB() {
         //Delete tables from db
         //Delete all new tables created during testing
         String delete = "DROP TABLE IF EXISTS ? ";

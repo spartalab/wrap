@@ -26,15 +26,15 @@ public class DBPAMap implements PAMap {
         this.g = g;
         tableName = table;
         this.vot = vot;
-        String createQuery = "CREATE TABLE IF NOT EXISTS  ?" +
+        String createQuery = "CREATE TABLE IF NOT EXISTS " + tableName +
                 " (node integer, " +
                 "productions real, " +
                 "attractions real," +
                 " UNIQUE (node) )";
         try(PreparedStatement ps = db.prepareStatement(createQuery)) {
-            ps.setString(1, tableName);
-            ps.executeUpdate();
+            ps.execute();
         } catch (SQLException s) {
+            System.out.println(tableName);
             s.printStackTrace();
             System.exit(1);
         }
@@ -43,9 +43,8 @@ public class DBPAMap implements PAMap {
     @Override
     public Set<Node> getProducers () {
         Set<Node> output = new HashSet<Node>();
-        String weightsQuery = "SELECT productions FROM ? WHERE productions > 0";
+        String weightsQuery = "SELECT productions FROM "+tableName+" WHERE productions > 0";
         try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
-            ps.setString(1, tableName);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 output.add(g.getNode(rs.getInt("node")));
@@ -60,9 +59,8 @@ public class DBPAMap implements PAMap {
     @Override
     public Set<Node> getAttractors () {
         Set<Node> output = new HashSet<Node>();
-        String weightsQuery = "SELECT attractions FROM ? WHERE attractions > 0";
+        String weightsQuery = "SELECT attractions FROM "+tableName+" WHERE attractions > 0";
         try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
-            ps.setString(1, tableName);
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 output.add(g.getNode(rs.getInt("node")));
@@ -76,10 +74,9 @@ public class DBPAMap implements PAMap {
 
     @Override
     public Float getAttractions (Node z){
-        String weightsQuery = "SELECT attractions FROM ? WHERE node=? AND attractions > 0";
+        String weightsQuery = "SELECT attractions FROM "+tableName+" WHERE node=? AND attractions > 0";
         try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
-            ps.setString(1, tableName);
-            ps.setInt(2, z.getID());
+            ps.setInt(1, z.getID());
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return rs.getFloat("attractions");
@@ -93,10 +90,9 @@ public class DBPAMap implements PAMap {
 
     @Override
     public Float getProductions (Node z){
-        String weightsQuery = "SELECT productions FROM ? WHERE node=? AND productions > 0";
+        String weightsQuery = "SELECT productions FROM "+tableName+" WHERE node=? AND productions > 0";
         try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
-            ps.setString(1, tableName);
-            ps.setInt(2, z.getID());
+            ps.setInt(1, z.getID());
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return rs.getFloat("productions");
@@ -114,11 +110,10 @@ public class DBPAMap implements PAMap {
 
     @Override
     public void putAttractions(Node z, Float amt) {
-        String weightsQuery = "UPDATE ? SET attractions=? WHERE node=?";
+        String weightsQuery = "UPDATE "+tableName+" SET attractions=? WHERE node=?";
         try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
-            ps.setString(1, tableName);
-            ps.setFloat(2, amt);
-            ps.setInt(3, z.getID());
+            ps.setFloat(1, amt);
+            ps.setInt(2, z.getID());
             ps.executeUpdate();
         } catch (SQLException s) {
             s.printStackTrace();
@@ -128,11 +123,10 @@ public class DBPAMap implements PAMap {
 
     @Override
     public void putProductions(Node z, Float amt) {
-        String weightsQuery = "UPDATE ? SET productions=? WHERE node=?";
+        String weightsQuery = "UPDATE "+tableName+" SET productions=? WHERE node=?";
         try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
-            ps.setString(1, tableName);
-            ps.setFloat(2, amt);
-            ps.setInt(3, z.getID());
+            ps.setFloat(1, amt);
+            ps.setInt(2, z.getID());
             ps.executeUpdate();
         } catch (SQLException s) {
             s.printStackTrace();
