@@ -38,7 +38,7 @@ public class GapCalculator extends Thread {
 				Map<Node, Double> cache = new HashMap<Node, Double>(graph.numNodes());
 				for (Node d : b.getNodes()) {
 					
-					Float demand = b.getDemand(d);
+					Float demand = b.getDemand(d).floatValue();
 					if (demand > 0.0F) try {
 						denominator += b.getCachedL(d,cache).doubleValue() * demand;
 					} catch (UnreachableException e) {

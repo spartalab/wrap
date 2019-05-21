@@ -16,7 +16,7 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 	private Link shortLink;
 	private Link longLink;
 	private AlternateSegmentPair asp;
-	private final Map<Link, Double> split;
+	private Map<Link, Double> split;
 	private final Bush bush;
 	
 	/** Create a BushMerge by adding a shortcut link to a node
@@ -26,13 +26,13 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 	 */
 	public BushMerge(Bush b, Link u, Link l) {
 		bush = b;
-		longLink = u;
-		shortLink = l;
+//		longLink = u;
+//		shortLink = l;
 		add(l);
 		add(u);
-		asp = b.getShortLongASP(l.getHead());
+//		asp = b.getShortLongASP(l.getHead());
 		split = new HashMap<Link, Double>();
-		split.put(l, 1.0);
+		split.put(u, 1.0);
 	}
 	
 	public BushMerge(BushMerge bm) {
@@ -45,12 +45,12 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 	}
 	
 	public Link getShortLink() {
-		if (shortLink == null) throw new RuntimeException("Shortest path search wasn't run yet!");
+//		if (shortLink == null) throw new RuntimeException("Shortest path search wasn't run yet!");
 		return shortLink;
 	}
 	
 	public Link getLongLink() {
-		if (longLink == null) throw new RuntimeException("Longest path search wasn't run yet!");
+//		if (longLink == null) throw new RuntimeException("Longest path search wasn't run yet!");
 		return longLink;
 	}
 	
@@ -61,12 +61,12 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 	
 	protected void setShortLink(Link l) {
 		shortLink = l;
-		asp = bush.getShortLongASP(longLink.getHead());
+//		asp = bush.getShortLongASP(shortLink.getHead());
 	}
 	
 	protected void setLongLink(Link l) {
 		longLink = l;
-		asp = bush.getShortLongASP(shortLink.getHead());
+//		asp = bush.getShortLongASP(longLink.getHead());
 	}
 	
 
@@ -93,7 +93,11 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 	}
 	
 	public double getSplit(Link l) {
-		return split.getOrDefault(l, 0.0);
+		Double r = split.getOrDefault(l, 0.0);
+		if (r.isNaN()) {
+			throw new RuntimeException("BushMerge split is NaN");
+		}
+		return r;
 	}
 
 	public double getMaxDelta(Map<Link, Double> bushFlows) {
@@ -111,7 +115,10 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 	}
 
 	public double setSplit(Link l, double d) {
-		// TODO Auto-generated method stub
-		return split.put(l, d);
+		if (((Double) d).isNaN()) {
+			throw new RuntimeException("BushMerge split set to NaN");
+		}
+		Double val = split.put(l, d);
+		return val == null? 0.0 : val;
 	}
 }

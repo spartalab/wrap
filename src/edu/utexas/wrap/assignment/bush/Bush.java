@@ -274,7 +274,7 @@ public class Bush implements AssignmentContainer {
 		}
 		if (!currentLinks.isEmpty())
 			throw new RuntimeException("Cyclic graph error");
-//		cachedTopoOrder = to;
+		cachedTopoOrder = to;
 		return to;
 	}
 
@@ -422,7 +422,7 @@ public class Bush implements AssignmentContainer {
 		Link longLink = getqLong(terminus);
 
 		// If there is no divergence node, move on to the next topological node
-		if (!(q.get(terminus) instanceof BushMerge) || longLink.equals(shortLink))
+		if (!(q.get(terminus) instanceof BushMerge) || longLink == null || longLink.equals(shortLink))
 			return null;
 
 		// Else calculate divergence node
@@ -544,7 +544,7 @@ public class Bush implements AssignmentContainer {
 	private void longRelax(Link l, Map<Node, Double> cache) throws UnreachableException {
 		Double Uicij = l.getPrice(vot, c) + getCachedU(l.getTail(), cache);
 		Node head = l.getHead();
-		if (getqLong(head) == null || Uicij > getCachedU(head, cache)) {
+		if (getqLong(head) == null || getqLong(head).equals(l) || Uicij > getCachedU(head, cache)) {
 			BackVector back = q.get(head);
 			if (back instanceof BushMerge) ((BushMerge) back).setLongLink(l);
 			cache.put(head, Uicij);
@@ -638,7 +638,11 @@ public class Bush implements AssignmentContainer {
 				
 				//Otherwise, add the node flow onto the upstream node flow
 				Node tail = ((Link) back).getTail();
-				flow.put(tail, flow.get(tail) + downstream);
+				Float newf = flow.get(tail)+downstream;
+				if (newf.isNaN()) {
+					throw new RuntimeException();
+				}
+				flow.put(tail, newf);
 			}
 			
 			//If there is more than one link flowing into the node
@@ -652,6 +656,10 @@ public class Bush implements AssignmentContainer {
 					
 					//Otherwise, add the node flow onto the upstream node flow
 					Node tail = bv.getTail();
+					Float newf = flow.get(tail)+share.floatValue();
+					if (newf.isNaN()) {
+						throw new RuntimeException();
+					}
 					flow.put(tail, flow.get(tail) + share.floatValue());
 				}
 				//If the link flows into this node but isn't in the bush, return 0
@@ -719,7 +727,7 @@ public class Bush implements AssignmentContainer {
 		Double Licij = l.getPrice(vot, c) + getCachedL(l.getTail(), cache);
 
 		Node head = l.getHead();
-		if (getqShort(head) == null || Licij < getCachedL(head, cache)) {
+		if (getqShort(head) == null || getqShort(head).equals(l) || Licij < getCachedL(head, cache)) {
 			BackVector back = q.get(head);
 			if (back instanceof BushMerge) ((BushMerge) back).setShortLink(l);
 			cache.put(head, Licij);
@@ -738,7 +746,7 @@ public class Bush implements AssignmentContainer {
 
 		for (Node d : to) {
 			try {
-				for (Link l : wholeNet.outLinks(d)) {
+				for (Link l : wholeNet.inLinks(d)) {
 					if (contains(l)) shortRelax(l, cache);
 				}
 			} catch (UnreachableException e) {
@@ -769,7 +777,7 @@ public class Bush implements AssignmentContainer {
 		unusedLinks.removeAll(usedLinks);
 		
 		Map<Node, Double> cache = longTopoSearch(true);
-		
+		Set<Link> tba = new HashSet<Link>();
 		for (Link l : unusedLinks) {
 			// If link is active, do nothing (removing flow should mark as inactive)
 			//Could potentially delete both incoming links to a node
@@ -779,10 +787,11 @@ public class Bush implements AssignmentContainer {
 				
 				Double tailU = getCachedU(l.getTail(), cache);
 				Double headU = getCachedU(l.getHead(), cache);
-			
+				Double linkVal = l.getPrice(getVOT(), getVehicleClass());
 				
-				if (tailU + (l.getPrice(getVOT(), getVehicleClass())) < headU) {
-					activate(l);
+				if (tailU + linkVal < headU) {
+//					activate(l);
+					tba.add(l);
 					modified = true;
 				}
 			} catch (UnreachableException e) {
@@ -791,7 +800,8 @@ public class Bush implements AssignmentContainer {
 			}
 
 		}
-
+//		System.out.println("Links added: "+tba.size());
+		for (Link l : tba) activate(l);
 		return modified;
 	}
 	
@@ -831,10 +841,12 @@ public class Bush implements AssignmentContainer {
 				for (Link l : bm) {
 					total += flows.get(l);
 				}
-				for (Link l : bm) {
+				if (total > 0) for (Link l : bm) {
 					bm.setSplit(l, flows.get(l)/total);
 				}
 			}
 		}
 	}
+	
+	
 }

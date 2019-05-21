@@ -28,7 +28,7 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 		Node cur;
 		
 		b.shortTopoSearch();
-		b.longTopoSearch(true);
+		b.longTopoSearch(false);
 		Map<Link,Double> bushFlows = b.getFlows();
 		
 		Iterator<Node> it = to.descendingIterator();
@@ -45,7 +45,7 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 				continue;
 
 			//calculate delta h, capping at maxDelta
-			Double deltaH = getDeltaH(asp, bushFlows);
+			Double deltaH = getDeltaH(asp, md);
 
 			//Modify link flows
 			updateDeltaX(asp, bushFlows, deltaH);
@@ -59,6 +59,9 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 		for (Link l : asp.shortPath()) {
 			flows.put(l, flows.getOrDefault(l, 0.0)+deltaH);
 			l.changeFlow(deltaH);
+			if (deltaH > l.getFlow()) {
+				throw new RuntimeException();
+			}
 		}
 
 		//subtract delta h from all x values in pi_U
@@ -73,22 +76,35 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 				}
 				else throw new NegativeFlowException("too much bush flow removed: "+(ld-td)+"\tEps: "+ud);
 			}
-			if (td < -l.getFlow().doubleValue()) throw new NegativeFlowException("too much link flow removed");
-
-			flows.put(l,  flows.getOrDefault(l, 0.0)+td);
+			
+			ld = -l.getFlow();
+			ud = Math.max(Math.ulp(ld), Math.ulp(td));
+			if (td < ld) {
+				if (ld-td <= 2*ud) {
+					td = ld;
+				}
+				else throw new NegativeFlowException("too much link flow removed");
+			}
+			
+			Double newBushFlow = Math.min(flows.getOrDefault(l, 0.0)+td,l.getFlow()+td);
+			flows.put(l, newBushFlow);
+			if (flows.get(l) > l.getFlow()+td) {
+				throw new RuntimeException();
+			}
 			l.changeFlow(td);
+
 		}
 		//TODO backtrack through bush and update splits
 		asp.getBush().updateSplits(flows);
 	}
 
-	private Double getDeltaH(AlternateSegmentPair asp, Map<Link,Double> flows) {
+	private Double getDeltaH(AlternateSegmentPair asp, Double md) {
 		Double denom = 0.0;
 		Float vot = asp.getBush().getVOT();
 		for (Link l : asp.shortPath()) denom += (l.pricePrime(vot));			
 		for (Link l : asp.longPath()) denom += (l.pricePrime(vot));
 
-		return Math.min(asp.maxDelta(flows), asp.priceDiff()/denom);
+		return Math.min(md, asp.priceDiff()/denom);
 	}
 
 	@Override
