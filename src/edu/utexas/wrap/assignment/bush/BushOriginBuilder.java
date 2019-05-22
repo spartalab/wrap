@@ -3,6 +3,8 @@ package edu.utexas.wrap.assignment.bush;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.utexas.wrap.demand.AutoDemandMap;
+import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.containers.AutoDemandHashMap;
 import edu.utexas.wrap.demand.containers.DemandHashMap;
 import edu.utexas.wrap.modechoice.Mode;
@@ -15,7 +17,7 @@ import edu.utexas.wrap.net.Node;
  *
  */
 public class BushOriginBuilder extends Thread {
-	Map<Mode, Map<Float, DemandHashMap>> map;
+	Map<Mode, Map<Float, AutoDemandMap>> map;
 	Node o;
 	Graph g;
 	public BushOrigin orig;
@@ -26,15 +28,15 @@ public class BushOriginBuilder extends Thread {
 	 */
 	public BushOriginBuilder(Graph g, Node o) {
 		this.o = o;
-		this.map = new HashMap<Mode, Map<Float, DemandHashMap>>();
+		this.map = new HashMap<Mode, Map<Float, AutoDemandMap>>();
 		this.g = g;
 	}
  
 	/**Add a full DemandMap to the set of bushes to be built
 	 * @param m
 	 */
-	public void addMap(AutoDemandHashMap m) {
-		map.putIfAbsent(m.getMode(), new HashMap<Float, DemandHashMap>());
+	public void addMap(AutoDemandMap m) {
+		map.putIfAbsent(m.getMode(), new HashMap<Float, AutoDemandMap>());
 		map.get(m.getMode()).put(m.getVOT(), m);
 	}
 	
@@ -45,7 +47,7 @@ public class BushOriginBuilder extends Thread {
 		orig = new BushOrigin(o);
 		for (Mode c : map.keySet()) {
 			for (Float vot : map.get(c).keySet()) {
-				DemandHashMap odm = map.get(c).get(vot);
+				DemandMap odm = map.get(c).get(vot);
 				if (!odm.isEmpty()) orig.buildBush(g, vot, odm, c);
 			}
 		}

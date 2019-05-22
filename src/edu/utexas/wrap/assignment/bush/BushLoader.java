@@ -7,6 +7,7 @@ import java.util.Set;
 
 import edu.utexas.wrap.assignment.AssignmentLoader;
 import edu.utexas.wrap.demand.containers.AutoODHashMatrix;
+import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.demand.containers.AutoDemandHashMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
@@ -31,7 +32,7 @@ public class BushLoader extends AssignmentLoader {
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.assignment.AssignmentLoader#add(edu.utexas.wrap.net.Node, edu.utexas.wrap.demand.containers.AutoDemandHashMap)
 	 */
-	public void add(Node o, AutoDemandHashMap map) {
+	public void add(Node o, AutoDemandMap map) {
 		pool.putIfAbsent(o, new BushOriginBuilder(graph,o));
 		pool.get(o).addMap(map);
 	} 

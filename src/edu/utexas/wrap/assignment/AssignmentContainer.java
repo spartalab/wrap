@@ -1,5 +1,6 @@
 package edu.utexas.wrap.assignment;
 
+import java.util.Map;
 import java.util.Set;
 
 import edu.utexas.wrap.modechoice.Mode;
@@ -41,5 +42,10 @@ public interface AssignmentContainer {
 	 * @return the flow on a given link from this container
 	 */
 	public Double getFlow(Link l);
+
+	/**
+	 * @return the set of link flows from this container
+	 */
+	public Map<Link, Double> getFlows();
 	
 }

@@ -1,6 +1,7 @@
 package edu.utexas.wrap.demand;
 
 import java.util.Collection;
+import java.util.Map;
 
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
@@ -37,14 +38,19 @@ public interface DemandMap {
 	public Float getOrDefault(Node node, float f);
 	
 	/**
-	 * @return a copy of the DemandMap
-	 */
-	public DemandMap clone();
-	
-	/**
 	 * @param dest the Node to whence there is demand
 	 * @param demand the amound of demand present at the Node
 	 * @return the previous mapping, if there was one present
 	 */
 	public Float put(Node dest, Float demand);
+
+	/**
+	 * @return whether this Map has entries
+	 */
+	public boolean isEmpty();
+
+	/**
+	 * @return a copy of the DemandMap with all values as doubles
+	 */
+	public Map<Node, Double> doubleClone();
 }

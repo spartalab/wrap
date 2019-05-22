@@ -1,5 +1,6 @@
 package edu.utexas.wrap.util.calc;
 
+import java.util.Map;
 import java.util.Set;
 
 import edu.utexas.wrap.assignment.AssignmentContainer;
@@ -23,8 +24,9 @@ public class TSGCCalculator extends Thread {
 		
 		for (Origin o : origins) {
 			for (AssignmentContainer b : o.getContainers()) {
+				Map<Link,Double> flows = b.getFlows();
 				for (Link l : b.getLinks()) {
-					tsgc += b.getFlow(l).doubleValue() * l.getPrice(b.getVOT(),b.getVehicleClass()).doubleValue();
+					tsgc += flows.getOrDefault(l, 0.0).doubleValue() * l.getPrice(b.getVOT(),b.getVehicleClass()).doubleValue();
 				}
 			}
 		}

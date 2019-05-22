@@ -668,10 +668,13 @@ public class Bush implements AssignmentContainer {
 	/** Get all Bush flows
 	 * @return a Map from a Link to the amount of flow from this Bush on the Link
 	 */
+	@Override
 	public Map<Link, Double> getFlows(){
 		//Get the reverse topological ordering and a place to store node flows
-		Map<Node,Double> nodeFlow = new HashMap<Node,Double>();
-		for (Node d : demand.getNodes()) nodeFlow.put(d, demand.get(d).doubleValue());
+//		Map<Node,Double> nodeFlow = new HashMap<Node,Double>();
+//		for (Node d : demand.getNodes()) nodeFlow.put(d, demand.get(d).doubleValue());
+		
+		Map<Node,Double> nodeFlow = demand.doubleClone();
 		Iterator<Node> iter = getTopologicalOrder().descendingIterator();
 		Map<Link,Double> ret = new HashMap<Link,Double>();
 

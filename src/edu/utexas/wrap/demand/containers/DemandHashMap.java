@@ -2,6 +2,7 @@ package edu.utexas.wrap.demand.containers;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Map;
 
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
@@ -63,6 +64,13 @@ public class DemandHashMap extends HashMap<Node, Float> implements DemandMap {
 	@Override
 	public Float getOrDefault(Node node, float f) {
 		return super.getOrDefault(node, f);
+	}
+
+	@Override
+	public Map<Node, Double> doubleClone() {
+		Map<Node,Double> ret = new HashMap<Node,Double>(size());
+		for (Node key : keySet()) ret.put(key, get(key).doubleValue());
+		return ret;
 	}
 
 	

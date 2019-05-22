@@ -21,6 +21,7 @@ public abstract class Link implements Priced, BackVector {
 
 //	private Double cachedFlow = null;
 	protected Double cachedTT = null;
+	private final int hc;
 
 	public Link(Node tail, Node head, Float capacity, Float length, Float fftime) {
 		this.tail = tail;
@@ -29,6 +30,11 @@ public abstract class Link implements Priced, BackVector {
 		this.length = length;
 		this.fftime = fftime;
 		this.flo = 0.0;
+		
+		int c = 76537;	//	UT 76-5-37 TAMC \m/
+		int b = 1831;	//	Founding of Univ. of Alabama
+		int a = 2017;	//	Year of inception for this project
+		hc = (((head.getID()*a + tail.getID())*b + capacity.intValue())*c + fftime.intValue());
 	}
  
 
@@ -85,10 +91,7 @@ public abstract class Link implements Priced, BackVector {
 	public abstract Double getTravelTime();
 
 	public int hashCode() {
-		int c = 76537;	//	UT 76-5-37 TAMC \m/
-		int b = 1831;	//	Founding of Univ. of Alabama
-		int a = 2017;	//	Year of inception for this project
-		return (((head.getID()*a + tail.getID())*b + capacity.intValue())*c + fftime.intValue());
+		return hc;
 	}
 	
 	public abstract Double pricePrime(Float float1);

@@ -1,5 +1,6 @@
 package edu.utexas.wrap.demand.containers;
 
+import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 
@@ -7,7 +8,7 @@ import edu.utexas.wrap.net.Graph;
  * @author William
  *
  */
-public class AutoDemandHashMap extends DemandHashMap {
+public class AutoDemandHashMap extends DemandHashMap implements AutoDemandMap {
 
 	/**
 	 * 

@@ -1,6 +1,7 @@
 package edu.utexas.wrap.assignment;
  
 import edu.utexas.wrap.demand.containers.AutoODHashMatrix;
+import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.demand.containers.AutoDemandHashMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
@@ -27,7 +28,7 @@ public abstract class AssignmentLoader {
 	 * @param root the Node from which the demand should emanate
 	 * @param split the demand from the given node to any other Node in the network
 	 */
-	public abstract void add(Node root, AutoDemandHashMap split);
+	public abstract void add(Node root, AutoDemandMap split);
 	
 	/**
 	 * @param root begin the process of loading this Node's demand onto the network 
