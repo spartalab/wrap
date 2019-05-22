@@ -13,6 +13,7 @@ import edu.utexas.wrap.util.NegativeFlowException;
 
 
 public class AlgorithmBOptimizer extends BushOptimizer{
+	Integer numThreshold = 100;
 
 	public AlgorithmBOptimizer(Graph g, Set<BushOrigin> o) {
 		super(g,o);
@@ -28,7 +29,7 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 		Node cur;
 		
 		b.shortTopoSearch();
-		b.longTopoSearch(false);
+		b.longTopoSearch(true);
 		Map<Link,Double> bushFlows = b.getFlows();
 		
 		Iterator<Node> it = to.descendingIterator();
@@ -71,19 +72,19 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 			Double ud = Math.max(Math.ulp(ld),Math.ulp(td));
 
 			if (td < ld) {
-				if (ld-td <= 2*ud) {
+				if (ld-td <= numThreshold*ud) {
 					td = ld;
 				}
-				else throw new NegativeFlowException("too much bush flow removed: "+(ld-td)+"\tEps: "+ud);
+				else throw new NegativeFlowException("Too much bush flow removed. Required threshold: "+(ld-td)/ud);
 			}
 			
 			ld = -l.getFlow();
 			ud = Math.max(Math.ulp(ld), Math.ulp(td));
 			if (td < ld) {
-				if (ld-td <= 2*ud) {
+				if (ld-td <= numThreshold*ud) {
 					td = ld;
 				}
-				else throw new NegativeFlowException("too much link flow removed");
+				else throw new NegativeFlowException("Too much link flow removed. Required threshold: "+(ld-td)/ud);
 			}
 			
 			Double newBushFlow = Math.min(flows.getOrDefault(l, 0.0)+td,l.getFlow()+td);

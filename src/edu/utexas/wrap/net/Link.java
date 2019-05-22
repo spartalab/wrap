@@ -15,7 +15,7 @@ public abstract class Link implements Priced, BackVector {
 	private final Node head;
 	private final Node tail;
 	
-	private double flo;
+	private Double flo;
 
 //	private Map<AssignmentContainer,Double> flow;
 
@@ -28,8 +28,7 @@ public abstract class Link implements Priced, BackVector {
 		this.capacity = capacity;
 		this.length = length;
 		this.fftime = fftime;
-		
-//		flow = new Reference2DoubleOpenHashMap<AssignmentContainer>();
+		this.flo = 0.0;
 	}
  
 
@@ -44,6 +43,10 @@ public abstract class Link implements Priced, BackVector {
 			throw new RuntimeException("Too much flow removed");
 		else if (delta < 0.0 && flo + delta <0.0) flo = 0.0;
 		else flo += delta;
+		if (flo.isNaN()) {
+			throw new RuntimeException();
+		}
+		if (delta != 0.0) cachedTT = null;
 		return flo > 0.0;
 //
 	}

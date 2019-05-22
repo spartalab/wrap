@@ -620,13 +620,14 @@ public class Bush implements AssignmentContainer {
 	 */
 	public Double getFlow(Link l) {
 		//Get the reverse topological ordering and a place to store node flows
-		DemandMap flow = demand.clone();
+		Map<Node,Double> flow = new HashMap<Node,Double>();
+		for (Node d : demand.getNodes()) flow.put(d, demand.get(d).doubleValue());
 		Iterator<Node> iter = getTopologicalOrder().descendingIterator();
 		
 		//For each node in reverse topological order
 		for (Node n = iter.next(); iter.hasNext(); n = iter.next()) {
 			BackVector back = q.get(n);
-			Float downstream = flow.get(n);
+			Double downstream = flow.getOrDefault(n,0.0);
 			//Get the node flow and the backvector that feeds it into the node
 			
 			//If there is only one backvector,all node flow must pass through it
@@ -638,13 +639,13 @@ public class Bush implements AssignmentContainer {
 				
 				//Otherwise, add the node flow onto the upstream node flow
 				Node tail = ((Link) back).getTail();
-				Float newf = flow.get(tail)+downstream;
+				Double newf = flow.getOrDefault(tail,0.0)+downstream;
 				if (newf.isNaN()) {
 					throw new RuntimeException();
 				}
 				flow.put(tail, newf);
 			}
-			
+			 
 			//If there is more than one link flowing into the node
 			else if (back instanceof BushMerge) {
 				for (Link bv : (BushMerge) back) {
@@ -656,11 +657,11 @@ public class Bush implements AssignmentContainer {
 					
 					//Otherwise, add the node flow onto the upstream node flow
 					Node tail = bv.getTail();
-					Float newf = flow.get(tail)+share.floatValue();
+					Double newf = flow.getOrDefault(tail,0.0)+share.doubleValue();
 					if (newf.isNaN()) {
 						throw new RuntimeException();
 					}
-					flow.put(tail, flow.get(tail) + share.floatValue());
+					flow.put(tail, flow.getOrDefault(tail,0.0) + share.doubleValue());
 				}
 				//If the link flows into this node but isn't in the bush, return 0
 				if (l.getHead().equals(n)) return 0.0;
@@ -678,7 +679,8 @@ public class Bush implements AssignmentContainer {
 	
 	public Map<Link, Double> getFlows(){
 		//Get the reverse topological ordering and a place to store node flows
-		DemandMap flow = demand.clone();
+		Map<Node,Double> nodeFlow = new HashMap<Node,Double>();
+		for (Node d : demand.getNodes()) nodeFlow.put(d, demand.get(d).doubleValue());
 		Iterator<Node> iter = getTopologicalOrder().descendingIterator();
 		Map<Link,Double> ret = new HashMap<Link,Double>();
 
@@ -686,14 +688,18 @@ public class Bush implements AssignmentContainer {
 		for (Node n = iter.next(); iter.hasNext(); n = iter.next()) {
 			//Get the node flow and the backvector that feeds it into the node
 			BackVector back = q.get(n);
-			Float downstream = flow.get(n);
+			Double downstream = nodeFlow.getOrDefault(n,0.0);
 
 			//If there is only one backvector,all node flow must pass through it
 			if (back instanceof Link) {						
 				//Add the node flow onto the upstream node flow
-				Node tail = ((Link) back).getTail();
-				flow.put(tail, flow.get(tail) + downstream);
-				ret.put(((Link) back), (double) downstream);
+				Link b = (Link) back;
+				Node tail = b.getTail();
+				nodeFlow.put(tail, nodeFlow.getOrDefault(tail,0.0) + downstream);
+//				if (downstream > b.getFlow()) {
+//					throw new RuntimeException();
+//				}
+				ret.put(b, (double) downstream);
 			}
 
 			//If there is more than one link flowing into the node
@@ -704,8 +710,11 @@ public class Bush implements AssignmentContainer {
 
 					//Add the node flow onto the upstream node flow
 					Node tail = bv.getTail();
-					flow.put(tail, flow.get(tail) + share.floatValue());
+					nodeFlow.put(tail, nodeFlow.getOrDefault(tail,0.0) + share.doubleValue());
 					ret.put(bv, share);
+//					if (share > bv.getFlow()) {
+//						throw new RuntimeException();
+//					}
 				}
 			}
 

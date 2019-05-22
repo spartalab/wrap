@@ -109,6 +109,9 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 			Link ll = bush.getqLong(cur);
 			if (max == null) max = bushFlows.get(ll);
 			else max = Math.min(max,bushFlows.get(ll));
+//			if (max > ll.getFlow()) {
+//				throw new RuntimeException();
+//			}
 			cur = ll.getTail();
 		}
 		return max;

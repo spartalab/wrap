@@ -53,7 +53,11 @@ public class TolledBPRLink extends TolledLink {
 	}
 	
 	public Double pricePrime(Float vot) {
-		return vot*tPrime() + tollPrime();
+		Double r = vot*tPrime() + tollPrime();
+		if (r.isNaN()) {
+			throw new RuntimeException();
+		}
+		return r;
 	}
 	
 	public Double tIntegral() {
@@ -84,6 +88,10 @@ public class TolledBPRLink extends TolledLink {
 		Float c = getCapacity();
 		Double va = Math.pow(v, a-1);
 		Double ca = Math.pow(c, -a);
-		return a*va*t*b*ca;
+		Double r = a*va*t*b*ca;
+		if (r.isNaN()) {
+			throw new RuntimeException();
+		}
+		return r;
 	}
 }
