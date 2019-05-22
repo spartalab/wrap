@@ -19,7 +19,9 @@ public class BushOrigin extends Origin {
 	private List<Bush> containers;
 	private Map<Node, Link> initMap;
 
-	
+	/**Default constructor
+	 * @param self the Node from which the Bushes will emanate
+	 */
 	public BushOrigin(Node self) {
 		super(self);
 		containers = new LinkedList<Bush>();
@@ -73,15 +75,18 @@ public class BushOrigin extends Origin {
 		}
 	}
 	
-	public List<Bush> getBushes() {
-		return containers;
-	}
-	
+	/* (non-Javadoc)
+	 * @see edu.utexas.wrap.assignment.Origin#getContainers()
+	 */
 	@Override
 	public List<Bush> getContainers() {
 		return containers;
 	}
 	
+	/** Get the total demand from the origin to the given Node 
+	 * @param n the Node to whence demand should be calculated
+	 * @return the total demand from all Bushes to the given Node
+	 */
 	public Double getDemand(Node n) {
 		Double demand = 0.0;
 		for(Bush bush : this.containers) {
@@ -91,15 +96,25 @@ public class BushOrigin extends Origin {
 		return demand;
 	}
 	
+	/**Return the initial shortest path map
+	 * @param g the graph to search for shortest paths
+	 * @return the back-vector mapping of the shortest path tree
+	 */
 	public Map<Node, Link> getInitMap(Graph g) {
-		if (initMap == null) buildInitMap(g);
+		if (initMap == null) buildInitMap(g);	//caching speeds this up
 		return initMap;
 	}
 	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
 	public int hashCode() {
 		return getNode().getID();
 	}
 
+	/**
+	 * delete the cached shortest path tree once all Bushes are built
+	 */
 	public void deleteInitMap() {
 		initMap = null;
 	}

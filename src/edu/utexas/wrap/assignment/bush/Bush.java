@@ -29,28 +29,37 @@ import edu.utexas.wrap.util.UnreachableException;
  */
 public class Bush implements AssignmentContainer {
 
-	// Bush structure
+	// Bush attributes
 	private final BushOrigin origin;
 	private final Float vot;
 	private final Mode c;
 
+	//Underlying problem characteristics
 	private final Graph wholeNet;
 	private final DemandMap demand;
 
-	// Back vector maps
+	// Back vector map (i.e. the bush structure)
 	private Map<Node, BackVector> q;
 
+	//Topological order can be cached for expediency
 	private LinkedList<Node> cachedTopoOrder;
 
+	/** Default constructor
+	 * @param o the root of the bush
+	 * @param g the graph underlying the bush
+	 * @param vot the value of time
+	 * @param destDemand the demand to be carried on the bush
+	 * @param c the mode of travel for the bush
+	 */
 	public Bush(BushOrigin o, Graph g, Float vot, DemandMap destDemand, Mode c) {
 		origin = o;
 		this.vot = vot;
 		this.c = c;
-
-		// Initialize flow and status maps
 		wholeNet = g;
 		q = new HashMap<Node,BackVector>(origin.getInitMap(g));
 		demand = destDemand;
+		
+		//Load all demand onto the shortest paths
 		dumpFlow();
 	}
 
@@ -58,6 +67,7 @@ public class Bush implements AssignmentContainer {
 	 * @param l the link to be added
 	 */
 	void activate(Link l) {
+		//TODO remove this method
 		if (add(l)) // If the bush structure changed, reset the topological order
 			cachedTopoOrder = null;
 	}
@@ -88,41 +98,6 @@ public class Bush implements AssignmentContainer {
 		}
 		//Something went wrong - there was no backvector
 		throw new RuntimeException("No backvector found");
-	}
-
-	/**Modify the flow on a link from this bush
-	 * @param l the link whose flow will be modified
-	 * @param delta the amount by which to modify
-	 * @param flows a cache of current bush flows
-	 */
-	public void changeFlow(Link l, Double delta, Map<Link,Double> flows) {
-		//TODO check to make sure we don't remove more flow than the bush uses
-		//Modify the flow on the link
-		l.changeFlow(delta);
-		Double flow = flows.get(l);
-		//If there is very close to zero flow
-		if (flow <= Math.ulp(flow)*2) {
-			//Try to deactivate it. If successful, remove microscopic flow from link
-			if (deactivate(l)) l.changeFlow(-flow);			
-		}
-		//Otherwise ensure the link is active in the bush
-		else activate(l);
-		//return 7;//Leaving this in here until all flow changes are complete
-	}
-
-	/**Attempt to remove the bush from the link
-	 * @param l the link to be removed
-	 * @return whether the link was successfully removed from the bush
-	 */
-	private Boolean deactivate(Link l) {
-		BackVector b = q.get(l.getHead());
-		//If there is only one link as the backvector, it can't be removed
-		if (b instanceof BushMerge && remove(l)) {
-			//But if it can successfully be removed from the BushMerge, reset the topological ordering
-			cachedTopoOrder = null;
-			return true;
-		}
-		return false;
 	}
 
 	/**Determine whether a link is active in the bush
@@ -285,16 +260,16 @@ public class Bush implements AssignmentContainer {
 	 * @throws UnreachableException if a node can't be reached
 	 */
 	public Double getCachedL(Node n, Map<Node, Double> cache) throws UnreachableException {
-		Link back = getqShort(n);
-		if (n.equals(origin.getNode()))
+		Link back = getqShort(n); //Next link on the shortest path
+		if (n.equals(origin.getNode())) //Return 0 at the origin
 			return 0.0;
-		else if (back == null)
+		else if (back == null)	//Something went wrong - can't find a backvector
 			throw new UnreachableException(n, this);
-		else if (cache.containsKey(n))
-			return cache.get(n);
-		else {
+		else if (cache.containsKey(n))	//If the value's been calculated before,
+			return cache.get(n);	//return the cached value
+		else {	//Calculate the value recursively, adding to the prior value
 			Double newL = getCachedL(back.getTail(), cache) + back.getPrice(vot, c);
-			cache.put(n, newL);
+			cache.put(n, newL);	//Store this value in the cache
 			return newL;
 		}
 	}
@@ -306,16 +281,16 @@ public class Bush implements AssignmentContainer {
 	 * @throws UnreachableException if a node can't be reached
 	 */
 	public Double getCachedU(Node n, Map<Node, Double> cache) throws UnreachableException {
-		Link back = getqLong(n);
-		if (n.equals(origin.getNode()))
+		Link back = getqLong(n);	//The next link in the longest path
+		if (n.equals(origin.getNode()))	//Return 0 at the origin
 			return 0.0;
-		else if (back == null)
+		else if (back == null)	//Something went wrong - can't find the longest path
 			throw new UnreachableException(n, this);
-		else if (cache.containsKey(n))
-			return cache.get(n);
-		else {
+		else if (cache.containsKey(n))	//If this value was already calculated,
+			return cache.get(n);	//return the cached value
+		else {	//calculate from scratch, adding to the prior link's value
 			Double newU = getCachedU(back.getTail(), cache) + back.getPrice(vot, c);
-			cache.put(n, newU);
+			cache.put(n, newU);	//store this value in the cache
 			return newU;
 		}
 	}
@@ -332,6 +307,7 @@ public class Bush implements AssignmentContainer {
 	 * @return the cost of the shortest path to the given node
 	 * @throws UnreachableException if a node can't be reached
 	 */
+	@Deprecated
 	public Double getL(Node n) throws UnreachableException {
 
 		Link back = getqShort(n);
@@ -359,13 +335,16 @@ public class Bush implements AssignmentContainer {
 	public Path getLongPath(Node end, Node start) {
 
 		Path p = new Path();
-		if (end.equals(start))
+		if (end.equals(start))	//The path from a node to itself is empty
 			return p;
-		Link curLink = getqLong(end);
+		Link curLink = getqLong(end);	//Start from the prior link on the longest path
+		//Until you run out of road,
 		while (curLink != null && !curLink.getHead().equals(start)) {
+			//Keep adding to the path the prior longest cost path link
 			p.addFirst(curLink);
 			curLink = getqLong(curLink.getTail());
 		}
+		//Check to ensure we made it to the correct node
 		if (curLink == null && !start.equals(origin.getNode())) 
 			throw new RuntimeException("No longest path could be found from "+start.toString()+" to "+end.toString());
 		return p;
@@ -379,7 +358,7 @@ public class Bush implements AssignmentContainer {
 		return wholeNet.getNodes();
 	}
 
-	/**Get the bush´s origin
+	/**Get the bush's origin
 	 * @return the origin of the bush
 	 */
 	public BushOrigin getOrigin() {
@@ -392,9 +371,9 @@ public class Bush implements AssignmentContainer {
 	 */
 	public Link getqLong(Node n) {
 		BackVector qq = q.get(n);
-		return qq instanceof Link? (Link) qq :
-			qq instanceof BushMerge? ((BushMerge) qq).getLongLink() :
-				null;
+		return qq instanceof Link? (Link) qq :	//If the BackVector is a Link, it's the only candidate
+			qq instanceof BushMerge? ((BushMerge) qq).getLongLink() :	//Else delegate to the BushMerge
+				null;	//This shouldn't happen
 	}
 
 	/**Get the shortest path backvector from a given node
@@ -403,9 +382,9 @@ public class Bush implements AssignmentContainer {
 	 */
 	public Link getqShort(Node n) {
 		BackVector qq = q.get(n);
-		return qq instanceof Link? (Link) qq :
-			qq instanceof BushMerge ? ((BushMerge) qq).getShortLink() :
-				null;
+		return qq instanceof Link? (Link) qq :	//If the BackVector is a Link, it's the only candidate
+			qq instanceof BushMerge ? ((BushMerge) qq).getShortLink() :	//Otherwise, delegate to the BushMerge
+				null;	//This shouldn't happen
 	}
 
 	/**Assemble the alternate segment pair of longest and shortest paths emanating from the terminus
@@ -417,7 +396,6 @@ public class Bush implements AssignmentContainer {
 
 		//Reiterate through shortest path to build path up to divergence node
 		//The two paths constitute a Pair of Alternate Segments
-		
 		Link shortLink = getqShort(terminus);
 		Link longLink = getqLong(terminus);
 
@@ -452,13 +430,15 @@ public class Bush implements AssignmentContainer {
 	 */
 	public Path getShortPath(Node end, Node start) throws UnreachableException {
 		Path p = new Path();
-		if (end.equals(start))
+		if (end.equals(start))	//The path from a node to itself is empty
 			return p;
-		Link curLink = getqShort(end);
+		Link curLink = getqShort(end);	//Start with the previous shortest cost path link
 		while (curLink != null && !curLink.getHead().equals(start)) {
+			//Keep adding the next shortest cost path link until you run out of road
 			p.addFirst(curLink);
 			curLink = getqShort(curLink.getTail());
 		}
+		//Check to ensure we made it to the start node
 		if (p.isEmpty() || !p.getFirst().getTail().equals(start))
 			throw new UnreachableException();
 		return p;
@@ -481,6 +461,7 @@ public class Bush implements AssignmentContainer {
 	 * @return the cost of the longest path to the node
 	 * @throws UnreachableException if a node can't be reached
 	 */
+	@Deprecated
 	public Double getU(Node n) throws UnreachableException {
 
 		Link back = getqLong(n);
@@ -542,11 +523,15 @@ public class Bush implements AssignmentContainer {
 	 * @throws UnreachableException if a node can´t be reached
 	 */
 	private void longRelax(Link l, Map<Node, Double> cache) throws UnreachableException {
+		//Calculate the cost of adding the link to the longest path
 		Double Uicij = l.getPrice(vot, c) + getCachedU(l.getTail(), cache);
 		Node head = l.getHead();
+		//If the longest path doesn't exist, is already through the proposed link, or the cost is longer,
 		if (getqLong(head) == null || getqLong(head).equals(l) || Uicij > getCachedU(head, cache)) {
+			//Update the BushMerge if need be
 			BackVector back = q.get(head);
 			if (back instanceof BushMerge) ((BushMerge) back).setLongLink(l);
+			//Store the cost in the cache
 			cache.put(head, Uicij);
 		}
 	}
@@ -562,8 +547,10 @@ public class Bush implements AssignmentContainer {
 		List<Node> to = getTopologicalOrder();
 		Map<Node, Double> cache = new HashMap<Node, Double>(wholeNet.numNodes());
 
+		//In topological order,
 		for (Node d : to) {
 			try {
+				//Try to relax the backvector (all links in the BushMerge, if applicable)
 				BackVector bv = q.get(d);
 				if (bv instanceof Link) longRelax((Link) bv, cache);
 				else if (bv instanceof BushMerge) {
@@ -604,10 +591,11 @@ public class Bush implements AssignmentContainer {
 	 */
 	void prune() {
 		for (BackVector v : q.values()) {
-			if (v instanceof BushMerge) {
+			if (v instanceof BushMerge) {	//For every BushMerge in the bush
 				BushMerge bm = new BushMerge((BushMerge) v);
-				for (Link l : bm) {
+				for (Link l : bm) {	//See if the split is approximately 0
 					if (bm.getSplit(l) <= Math.ulp(bm.getSplit(l))*2) {
+						//If so, try to remove the Link
 						if (remove(l)) cachedTopoOrder = null;
 					}
 				}
@@ -640,7 +628,7 @@ public class Bush implements AssignmentContainer {
 				//Otherwise, add the node flow onto the upstream node flow
 				Node tail = ((Link) back).getTail();
 				Double newf = flow.getOrDefault(tail,0.0)+downstream;
-				if (newf.isNaN()) {
+				if (newf.isNaN()) {	//NaN check
 					throw new RuntimeException();
 				}
 				flow.put(tail, newf);
@@ -658,7 +646,7 @@ public class Bush implements AssignmentContainer {
 					//Otherwise, add the node flow onto the upstream node flow
 					Node tail = bv.getTail();
 					Double newf = flow.getOrDefault(tail,0.0)+share.doubleValue();
-					if (newf.isNaN()) {
+					if (newf.isNaN()) {	//NaN check
 						throw new RuntimeException();
 					}
 					flow.put(tail, flow.getOrDefault(tail,0.0) + share.doubleValue());
@@ -677,6 +665,9 @@ public class Bush implements AssignmentContainer {
 		return 0.0;
 	}
 	
+	/** Get all Bush flows
+	 * @return a Map from a Link to the amount of flow from this Bush on the Link
+	 */
 	public Map<Link, Double> getFlows(){
 		//Get the reverse topological ordering and a place to store node flows
 		Map<Node,Double> nodeFlow = new HashMap<Node,Double>();
@@ -696,9 +687,6 @@ public class Bush implements AssignmentContainer {
 				Link b = (Link) back;
 				Node tail = b.getTail();
 				nodeFlow.put(tail, nodeFlow.getOrDefault(tail,0.0) + downstream);
-//				if (downstream > b.getFlow()) {
-//					throw new RuntimeException();
-//				}
 				ret.put(b, (double) downstream);
 			}
 
@@ -712,9 +700,6 @@ public class Bush implements AssignmentContainer {
 					Node tail = bv.getTail();
 					nodeFlow.put(tail, nodeFlow.getOrDefault(tail,0.0) + share.doubleValue());
 					ret.put(bv, share);
-//					if (share > bv.getFlow()) {
-//						throw new RuntimeException();
-//					}
 				}
 			}
 
@@ -733,12 +718,16 @@ public class Bush implements AssignmentContainer {
 	 * @throws UnreachableException if a node can't be reached
 	 */
 	private void shortRelax(Link l, Map<Node, Double> cache) throws UnreachableException {
+		//Calculate the cost of adding this link to the shortest path
 		Double Licij = l.getPrice(vot, c) + getCachedL(l.getTail(), cache);
-
 		Node head = l.getHead();
+		
+		//If the shortest path doesn't exist, already flows through the link, or this has a lower cost,
 		if (getqShort(head) == null || getqShort(head).equals(l) || Licij < getCachedL(head, cache)) {
+			//Update the BushMerge, if applicable
 			BackVector back = q.get(head);
 			if (back instanceof BushMerge) ((BushMerge) back).setShortLink(l);
+			//Store this cost in the cache
 			cache.put(head, Licij);
 		}
 	}
@@ -753,9 +742,11 @@ public class Bush implements AssignmentContainer {
 		List<Node> to = getTopologicalOrder();
 		Map<Node, Double> cache = new HashMap<Node, Double>(wholeNet.numNodes());
 
+		//In topological order,
 		for (Node d : to) {
 			try {
 				for (Link l : wholeNet.inLinks(d)) {
+					//Try to relax all incoming links
 					if (contains(l)) shortRelax(l, cache);
 				}
 			} catch (UnreachableException e) {
@@ -778,29 +769,28 @@ public class Bush implements AssignmentContainer {
 	 * @return whether the bush structure was modified
 	 */
 	public boolean improve() {
-		prune();
+		prune();	//Remove unused links
 
 		boolean modified = false;
 		Set<Link> usedLinks = getLinks();
 		Set<Link> unusedLinks = new HashSet<Link>(wholeNet.getLinks());
 		unusedLinks.removeAll(usedLinks);
 		
+		//Calculate the longest path costs
 		Map<Node, Double> cache = longTopoSearch(true);
-		Set<Link> tba = new HashSet<Link>();
+		Set<Link> tba = new HashSet<Link>();	//Set of links to be added
 		for (Link l : unusedLinks) {
 			// If link is active, do nothing (removing flow should mark as inactive)
 			//Could potentially delete both incoming links to a node
 			if (!l.allowsClass(getVehicleClass()) || !isValidLink(l)) continue;
 			try {
 				// Else if Ui + tij < Uj
-				
 				Double tailU = getCachedU(l.getTail(), cache);
 				Double headU = getCachedU(l.getHead(), cache);
 				Double linkVal = l.getPrice(getVOT(), getVehicleClass());
 				
 				if (tailU + linkVal < headU) {
-//					activate(l);
-					tba.add(l);
+					tba.add(l);	//Mark the link as one which should be added
 					modified = true;
 				}
 			} catch (UnreachableException e) {
@@ -809,7 +799,7 @@ public class Bush implements AssignmentContainer {
 			}
 
 		}
-//		System.out.println("Links added: "+tba.size());
+		//Add all marked links to the Bush
 		for (Link l : tba) activate(l);
 		return modified;
 	}
@@ -821,6 +811,7 @@ public class Bush implements AssignmentContainer {
 	public Set<Link> getLinks() {
 		Set<Link> ret = new HashSet<Link>();
 		for (BackVector b : q.values()) {
+			//For every backvector, add its link(s) to the return set
 			if (b instanceof Link) ret.add((Link) b);
 			else if (b instanceof BushMerge) 
 				ret.addAll((BushMerge) b);
@@ -835,22 +826,26 @@ public class Bush implements AssignmentContainer {
 	 * @return the maximum flow that can be shifted from the longest to the shortest path
 	 */
 	public Double getMaxDelta(Node cur, Map<Link, Double> bushFlows) {
-		// TODO Auto-generated method stub
 		BackVector bv = q.get(cur);
-		return bv instanceof BushMerge ? 
-				((BushMerge) bv).getMaxDelta(bushFlows) 
-				: 0.0;
+		return bv instanceof BushMerge ? //If the backvector is a BushMerge,
+				((BushMerge) bv).getMaxDelta(bushFlows) //Delegate finding the maximum delta
+				: 0.0; //Otherwise the maximum delta is zero since there's only one path here
 	}
 
+	/**Update the BushMerges' splits based on current Bush flows
+	 * @param flows the current Bush flows on all Links
+	 */
 	public void updateSplits(Map<Link, Double> flows) {
 		for (BackVector bv : q.values()) {
-			if (bv instanceof BushMerge) {
+			if (bv instanceof BushMerge) {	//For each BushMerge in the Bush
 				BushMerge bm = (BushMerge) bv;
-				double total = 0.0F;
+				double total = 0.0;	//Calculate the total demand through this node
 				for (Link l : bm) {
 					total += flows.get(l);
 				}
+				//If there is no total, leave the splits alone
 				if (total > 0) for (Link l : bm) {
+					//Otherwise, set them proportional to total demand share
 					bm.setSplit(l, flows.get(l)/total);
 				}
 			}

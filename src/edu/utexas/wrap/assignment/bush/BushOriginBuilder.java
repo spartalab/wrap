@@ -20,17 +20,27 @@ public class BushOriginBuilder extends Thread {
 	Graph g;
 	public BushOrigin orig;
 
+	/**Default constructor
+	 * @param g the graph on which the origin should build its bushes
+	 * @param o the origin node
+	 */
 	public BushOriginBuilder(Graph g, Node o) {
 		this.o = o;
 		this.map = new HashMap<Mode, Map<Float, DemandHashMap>>();
 		this.g = g;
 	}
  
+	/**Add a full DemandMap to the set of bushes to be built
+	 * @param m
+	 */
 	public void addMap(AutoDemandHashMap m) {
 		map.putIfAbsent(m.getMode(), new HashMap<Float, DemandHashMap>());
 		map.get(m.getMode()).put(m.getVOT(), m);
 	}
 	
+	/* (non-Javadoc)
+	 * @see java.lang.Thread#run()
+	 */
 	public void run() {
 		orig = new BushOrigin(o);
 		for (Mode c : map.keySet()) {

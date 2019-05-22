@@ -34,7 +34,7 @@ class AECCalculator extends Thread {
 		Double denominator = 0.0;
 		
 		for (BushOrigin o : origins) {
-			for (Bush b : o.getBushes()) {
+			for (Bush b : o.getContainers()) {
 				for (Node d : b.getNodes()) {
 					Double demand = o.getDemand(d);
 					if (demand > 0.0) {

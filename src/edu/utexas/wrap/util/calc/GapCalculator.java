@@ -33,7 +33,7 @@ public class GapCalculator extends Thread {
 
 		
 		for (BushOrigin o : origins) {
-			for (Bush b : o.getBushes()) {
+			for (Bush b : o.getContainers()) {
 				b.shortTopoSearch();
 				Map<Node, Double> cache = new HashMap<Node, Double>(graph.numNodes());
 				for (Node d : b.getNodes()) {

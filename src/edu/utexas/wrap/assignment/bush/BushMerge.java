@@ -8,6 +8,12 @@ import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.util.AlternateSegmentPair;
 
+/**A way to represent the Links which merge at a given Node in a Bush,
+ * namely, a set of Links with a longest and shortest path named and a
+ * Map of each link's share of the total load
+ * @author William
+ *
+ */
 public class BushMerge extends HashSet<Link> implements BackVector{
 	/**
 	 * 
@@ -26,15 +32,17 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 	 */
 	public BushMerge(Bush b, Link u, Link l) {
 		bush = b;
-//		longLink = u;
-//		shortLink = l;
+
 		add(l);
 		add(u);
-//		asp = b.getShortLongASP(l.getHead());
+
 		split = new HashMap<Link, Double>();
 		split.put(u, 1.0);
 	}
 	
+	/**Duplication constructor
+	 * @param bm	the BushMerge to be copied
+	 */
 	public BushMerge(BushMerge bm) {
 		super(bm);
 		bush = bm.bush;
@@ -44,33 +52,45 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 		split = new HashMap<Link,Double>(bm.split);
 	}
 	
+	/**
+	 * @return the shortest cost path Link
+	 */
 	public Link getShortLink() {
-//		if (shortLink == null) throw new RuntimeException("Shortest path search wasn't run yet!");
 		return shortLink;
 	}
 	
+	/**
+	 * @return the longest cost path Link
+	 */
 	public Link getLongLink() {
-//		if (longLink == null) throw new RuntimeException("Longest path search wasn't run yet!");
 		return longLink;
 	}
 	
+	/**
+	 * @return the shortest and longest path AlternateSegmentPair merging here
+	 */
 	public AlternateSegmentPair getShortLongASP() {
 		if (asp == null) asp = bush.getShortLongASP(shortLink.getHead());
 		return asp;
 	}
 	
+	/**Set the shortest path cost link
+	 * @param l	the new shortest path Link to here
+	 */
 	protected void setShortLink(Link l) {
 		shortLink = l;
-//		asp = bush.getShortLongASP(shortLink.getHead());
 	}
 	
+	/**Set the longest path cost link
+	 * @param l the new longest path Link to here
+	 */
 	protected void setLongLink(Link l) {
 		longLink = l;
-//		asp = bush.getShortLongASP(longLink.getHead());
 	}
 	
-
-	
+	/* (non-Javadoc)
+	 * @see java.util.AbstractCollection#toString()
+	 */
 	public String toString() {
 		return "Merge at "+longLink.getHead().toString();
 	}
@@ -92,31 +112,42 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 		return false;
 	}
 	
+	/** get a Link´s share of the merge demand
+	 * @param l the link whose split should be returned
+	 * @return the share of the demand through this node carried by the Link
+	 */
 	public double getSplit(Link l) {
 		Double r = split.getOrDefault(l, 0.0);
-		if (r.isNaN()) {
+		if (r.isNaN()) {	//NaN check
 			throw new RuntimeException("BushMerge split is NaN");
 		}
 		return r;
 	}
 
+	/**Get the maximum flow that can be shifted from the longest to shortest cost path
+	 * @param bushFlows	the current flows on the Bush
+	 * @return the nmax flow that can be shifted away from the longest path
+	 */
 	public double getMaxDelta(Map<Link, Double> bushFlows) {
-		// TODO Auto-generated method stub
+		//Find the start and end of the ASP
 		Node cur = longLink.getHead();
 		Node stop = bush.divergeNode(cur);
+		//Check all links in the longest path, taking the smallest Bush flow
 		Double max = null;
 		while (cur != stop) {
 			Link ll = bush.getqLong(cur);
 			if (max == null) max = bushFlows.get(ll);
 			else max = Math.min(max,bushFlows.get(ll));
-//			if (max > ll.getFlow()) {
-//				throw new RuntimeException();
-//			}
 			cur = ll.getTail();
 		}
 		return max;
 	}
 
+	/**Set the split for a given link
+	 * @param l	the link whose split should be set
+	 * @param d	the split value
+	 * @return	the previous value, or 0.0 if the link wasn't in the Merge before
+	 */
 	public double setSplit(Link l, double d) {
 		if (((Double) d).isNaN()) {
 			throw new RuntimeException("BushMerge split set to NaN");

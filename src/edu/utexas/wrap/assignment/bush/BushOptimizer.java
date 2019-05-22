@@ -22,19 +22,28 @@ public abstract class BushOptimizer extends Optimizer {
 	protected Set<BushOrigin> origins;
 	protected Integer relativeGapExp = -6;
 
-
+	/**Default constructor
+	 * @param g	the graph on which the optimizer should operate
+	 * @param o	the set of BushOrigins to equilibrate
+	 */
 	public BushOptimizer(Graph g, Set<BushOrigin> o) {
 		super(g);
 		origins = o;
 	}
 
-	
+	/**the method of equilibration
+	 * @param b the Bush to be brought closer to equilibrium
+	 */
 	protected abstract void equilibrateBush(Bush b);
 	
+	/* (non-Javadoc)
+	 * @see edu.utexas.wrap.assignment.Optimizer#converged()
+	 */
 	@Override
 	protected Boolean converged() {
 		try {
 			if (iteration > maxIterations) return true;
+			//Check the relative gap against a given value
 			if (gc == null) {
 				gc = new GapCalculator(graph, origins, null);
 				gc.start();
@@ -47,6 +56,9 @@ public abstract class BushOptimizer extends Optimizer {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see edu.utexas.wrap.assignment.Optimizer#getStatLine()
+	 */
 	@Override
 	protected String getStatLine() {
 		String out = "";
@@ -74,6 +86,9 @@ public abstract class BushOptimizer extends Optimizer {
 		return out;
 	}
 	
+	/* (non-Javadoc)
+	 * @see edu.utexas.wrap.assignment.Optimizer#iterate()
+	 */
 	public void iterate() {
 		// A single general step iteration
 		// TODO explore which bushes should be examined 
@@ -81,7 +96,7 @@ public abstract class BushOptimizer extends Optimizer {
 		Set<Thread> pool = new HashSet<Thread>();
 		
 		for (BushOrigin o : origins) {
-			for (Bush b : o.getBushes()) {
+			for (Bush b : o.getContainers()) {
 				Thread t = new Thread() {
 					public void run() {
 						// Step ii: Improve bushes in parallel
@@ -92,6 +107,7 @@ public abstract class BushOptimizer extends Optimizer {
 				t.start();
 			}
 		}
+		//Wait until all bushes have finished improving
 		try {
 			for (Thread t : pool) {
 				t.join();
@@ -100,16 +116,20 @@ public abstract class BushOptimizer extends Optimizer {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		
+		// Step i: Equilibrate bushes sequentially
 		for (int i = 0; i < innerIters; i++) {
 			for (BushOrigin o : origins) {
-				for (Bush b : o.getBushes()) {
-					// Step i: Equilibrate bushes sequentially
+				for (Bush b : o.getContainers()) {
 					equilibrateBush(b);
 				}
 			}
 		}
 	}
 	
+	/**Set how many inner equilibrations should be performed
+	 * @param innerIters the number of times the bushes should be equilibrated before improving
+	 */
 	public void setInnerIters(int innerIters) {
 		this.innerIters = innerIters;
 	}
