@@ -4,6 +4,9 @@ import edu.utexas.wrap.balancing.TripBalancer;
 import edu.utexas.wrap.demand.MarketSegment;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.containers.DBPAMap;
+import edu.utexas.wrap.distribution.DBGravityDistributor;
+import edu.utexas.wrap.distribution.FrictionFactorMap;
+import edu.utexas.wrap.distribution.GravityDistributor;
 import edu.utexas.wrap.distribution.TripDistributor;
 import edu.utexas.wrap.generation.DBTripGenerator;
 import edu.utexas.wrap.generation.TripGenerator;
@@ -36,10 +39,11 @@ public class DBMarketSegmentTests {
         //Create 3 market Segment objects
         TripGenerator tg = new DBTripGenerator(g, db, "demdata", "prodrates", "attrrates");
         TripBalancer tb = new DBTripBalancer(db);
+        TripDistributor td = new DBGravityDistributor(g, db);
 
-        hbw = new MarketSegment(g,tg,tb,null,null,null,true,true,'p','1',true,true,0.0f);
-        hbnw = new MarketSegment(g,tg,tb,null,null,null,true,false,'p','1',true,true,0.0f);
-        nhbnw = new MarketSegment(g,tg,tb,null,null,null,false,false,'p','1',true,true,0.0f);
+        hbw = new MarketSegment(g,tg,tb,td,null,null,true,true,'p','1',true,true,0.0f);
+        hbnw = new MarketSegment(g,tg,tb,td,null,null,true,false,'p','1',true,true,0.0f);
+        nhbnw = new MarketSegment(g,tg,tb,td,null,null,false,false,'p','1',true,true,0.0f);
 
     }
 
@@ -201,7 +205,7 @@ public class DBMarketSegmentTests {
     @Test
     public void tripGenerationhbwTest() {
         PAMap hbwPA = hbw.tripGeneration();
-        PAMap hbwPAExp = new DBPAMap(g, db, "upamap_11p111",0.0f);
+        PAMap hbwPAExp = new DBPAMap(g, db, "11p111","upamap_11p111",0.0f);
         float[] prodVals = new float[9];
         float[] prodValsExp = new float[9];
         float[] attrVals = new float[9];
@@ -220,7 +224,7 @@ public class DBMarketSegmentTests {
     @Test
     public void tripGenerationhbnwTest() {
         PAMap hbnwPA = hbnw.tripGeneration();
-        PAMap hbnwPAExp = new DBPAMap(g, db, "upamap_10p111",0.0f);
+        PAMap hbnwPAExp = new DBPAMap(g, db,"10p111" ,"upamap_10p111",0.0f);
         float[] prodVals = new float[9];
         float[] prodValsExp = new float[9];
         float[] attrVals = new float[9];
@@ -239,7 +243,7 @@ public class DBMarketSegmentTests {
     @Test
     public void tripGenerationnhbnwTest() {
         PAMap nhbnwPA = nhbnw.tripGeneration();
-        PAMap nhbnwPAExp = new DBPAMap(g, db, "upamap_00p111",0.0f);
+        PAMap nhbnwPAExp = new DBPAMap(g, db, "00p111","upamap_00p111",0.0f);
         float[] prodVals = new float[9];
         float[] prodValsExp = new float[9];
         float[] attrVals = new float[9];
@@ -264,10 +268,10 @@ public class DBMarketSegmentTests {
             e.printStackTrace();
             System.exit(1);
         }
-        PAMap balancedHBWPA = new DBPAMap(g, db, "tpamap_11p111", 0.0f);
+        PAMap balancedHBWPA = new DBPAMap(g, db,"11p111", "tpamap_11p111", 0.0f);
 
         hbw.tripBalance(balancedHBWPA);
-        PAMap hbwPAExp = new DBPAMap(g, db, "bpamap_11p111",0.0f);
+        PAMap hbwPAExp = new DBPAMap(g, db, "11p111","bpamap_11p111",0.0f);
         float[] prodVals = new float[9];
         float[] prodValsExp = new float[9];
         float[] attrVals = new float[9];
@@ -292,10 +296,10 @@ public class DBMarketSegmentTests {
             e.printStackTrace();
             System.exit(1);
         }
-        PAMap balancedHBNWPA = new DBPAMap(g, db, "tpamap_10p111", 0.0f);
+        PAMap balancedHBNWPA = new DBPAMap(g, db,"10p111" ,"tpamap_10p111", 0.0f);
 
         hbnw.tripBalance(balancedHBNWPA);
-        PAMap hbnwPAExp = new DBPAMap(g, db, "bpamap_10p111",0.0f);
+        PAMap hbnwPAExp = new DBPAMap(g, db,"10p111" ,"bpamap_10p111",0.0f);
         float[] prodVals = new float[9];
         float[] prodValsExp = new float[9];
         float[] attrVals = new float[9];
@@ -320,10 +324,10 @@ public class DBMarketSegmentTests {
             e.printStackTrace();
             System.exit(1);
         }
-        PAMap balancedNHBNWPA = new DBPAMap(g, db, "tpamap_00p111", 0.0f);
+        PAMap balancedNHBNWPA = new DBPAMap(g, db,"00p111" ,"tpamap_00p111", 0.0f);
 
         hbw.tripBalance(balancedNHBNWPA);
-        PAMap nhbnwPAExp = new DBPAMap(g, db, "bpamap_00p111",0.0f);
+        PAMap nhbnwPAExp = new DBPAMap(g, db, "00p111","bpamap_00p111",0.0f);
         float[] prodVals = new float[9];
         float[] prodValsExp = new float[9];
         float[] attrVals = new float[9];
@@ -339,9 +343,28 @@ public class DBMarketSegmentTests {
         Assert.assertArrayEquals(attrValsExp,attrVals, 0.01f);
 
     }
-//    @Test
-//    public void tripDistributionTest() {}
+    @Test
+    public void tripDistributionnhbnwTest() {
+        PAMap nhbnwPAExp = new DBPAMap(g, db, "00p111","bpamap_00p111",0.0f);
+//        GravityDistributor gd = new GravityDistributor(g, new FrictionFactorMap(g, db, ))
+        nhbnw.tripDistribution(nhbnwPAExp);
 
+    }
+
+    @Test
+    public void tripDistributionhbnwTest() {
+        PAMap hbnwPAExp = new DBPAMap(g, db, "10p111","bpamap_10p111",0.0f);
+//        GravityDistributor gd = new GravityDistributor(g, new FrictionFactorMap(g, db, ))
+        hbnw.tripDistribution(hbnwPAExp);
+
+    }
+    @Test
+    public void tripDistributionhbwTest() {
+        PAMap hbwPAExp = new DBPAMap(g, db, "11p111","bpamap_11p111",0.0f);
+//        GravityDistributor gd = new GravityDistributor(g, new FrictionFactorMap(g, db, ))
+        hbw.tripDistribution(hbwPAExp);
+
+    }
     @AfterClass
     public static void finish() {
         //Reset testDB

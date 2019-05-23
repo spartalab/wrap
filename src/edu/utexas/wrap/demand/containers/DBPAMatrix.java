@@ -80,6 +80,8 @@ public class DBPAMatrix implements AggregatePAMatrix {
         return output;
     }
 
+    public String getTableName(){return tableName;}
+
     @Override
     public float getVOT() {
         return vot;
