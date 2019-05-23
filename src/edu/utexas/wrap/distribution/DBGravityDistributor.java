@@ -138,7 +138,8 @@ public class DBGravityDistributor extends TripDistributor {
                 "  FROM "+pamapTable+" p\n" +
                 "  WHERE  p.productions > 0\n" +
                 " LOOP\n" +
-                "  INSERT INTO "+pamtxTable+" (origin, destination, demand) VALUES (producer, attractor, (SELECT val from "+aTable+" where node=producer) * (SELECT val from "+bTable+" where node=attractor) * productions * attractions * (SELECT getFF"+segment+"(producer, attractor)));\n" +
+                "  INSERT INTO "+pamtxTable+" (origin, destination, demand) VALUES (producer, attractor, (SELECT val from "+aTable+" where node=producer) * (SELECT val from "+bTable+" where node=attractor) * productions * attractions * (SELECT getFF"+segment+"(producer, attractor))) " +
+                "ON CONFLICT(origin, destination) DO UPDATE SET demand=(SELECT val from "+aTable+" where node=producer) * (SELECT val from "+bTable+" where node=attractor) * productions * attractions * (SELECT getFF"+segment+"(producer, attractor));\n" +
                 " END LOOP;\n" +
                 "END LOOP;\n" +
                 "DROP TABLE IF EXISTS "+aTable+";\n" +
