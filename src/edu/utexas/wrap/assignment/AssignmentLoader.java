@@ -2,7 +2,6 @@ package edu.utexas.wrap.assignment;
  
 import edu.utexas.wrap.demand.containers.AutoODHashMatrix;
 import edu.utexas.wrap.demand.AutoDemandMap;
-import edu.utexas.wrap.demand.containers.AutoDemandHashMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 

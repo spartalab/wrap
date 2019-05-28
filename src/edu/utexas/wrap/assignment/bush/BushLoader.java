@@ -4,11 +4,13 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 
 import edu.utexas.wrap.assignment.AssignmentLoader;
 import edu.utexas.wrap.demand.containers.AutoODHashMatrix;
 import edu.utexas.wrap.demand.AutoDemandMap;
-import edu.utexas.wrap.demand.containers.AutoDemandHashMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
@@ -20,6 +22,8 @@ import edu.utexas.wrap.net.Node;
  */
 public class BushLoader extends AssignmentLoader {
 	Map<Node, BushOriginBuilder> pool;
+	ExecutorService p;
+	Set<BushOrigin> origins;
 	
 	/**Default constructor
 	 * @param g the graph onto which Origins should be built
@@ -27,13 +31,15 @@ public class BushLoader extends AssignmentLoader {
 	public BushLoader(Graph g) {
 		super(g);
 		pool = new HashMap<Node, BushOriginBuilder>();
+		p = Executors.newWorkStealingPool();
+		origins = new HashSet<BushOrigin>();
 	}
 	
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.assignment.AssignmentLoader#add(edu.utexas.wrap.net.Node, edu.utexas.wrap.demand.containers.AutoDemandHashMap)
 	 */
 	public void add(Node o, AutoDemandMap map) {
-		pool.putIfAbsent(o, new BushOriginBuilder(graph,o));
+		pool.putIfAbsent(o, new BushOriginBuilder(graph,o,origins));
 		pool.get(o).addMap(map);
 	} 
 	
@@ -50,25 +56,25 @@ public class BushLoader extends AssignmentLoader {
 	 * @see edu.utexas.wrap.assignment.AssignmentLoader#load(edu.utexas.wrap.net.Node)
 	 */
 	public void load(Node o) {
-		pool.get(o).start();
+		p.execute(pool.get(o));
 	}
 	
 	/**Wait until all worker threads have finished. Print updates
 	 * @return the set of completely loaded BushOrigins
 	 */
 	public Set<BushOrigin> finishAll() {
-		Set<BushOrigin> origins = new HashSet<BushOrigin>();
+		ForkJoinPool p = (ForkJoinPool) this.p;
 		System.out.print("\r                                ");
-		try {
-			int size = pool.size();
-			for (BushOriginBuilder t : pool.values()) {
-				System.out.print("\rFinalizing "+size+" origins     ");
-				t.join();
-				origins.add(t.orig);
-				size--;
+		p.shutdown();
+		
+		while (!p.isTerminated()) {
+			System.out.print("\rOrigins in queue: "+p.getQueuedSubmissionCount()+"\tActive: "+p.getActiveThreadCount());
+			try {
+				Thread.sleep(50);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
 		}
 		System.out.print("\rInitial trips loaded            ");
 		return origins;

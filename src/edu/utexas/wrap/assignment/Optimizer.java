@@ -124,4 +124,6 @@ public abstract class Optimizer {
 	 * @see java.lang.Object#toString()
 	 */
 	public abstract String toString();
+	
+	public abstract void writeContainers();
 }

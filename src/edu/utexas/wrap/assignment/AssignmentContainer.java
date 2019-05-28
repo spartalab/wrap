@@ -1,5 +1,7 @@
 package edu.utexas.wrap.assignment;
 
+import java.io.BufferedReader;
+import java.io.PrintStream;
 import java.util.Map;
 import java.util.Set;
 
@@ -47,5 +49,9 @@ public interface AssignmentContainer {
 	 * @return the set of link flows from this container
 	 */
 	public Map<Link, Double> getFlows();
+	
+	public void fromFile(BufferedReader in);
+	
+	public void toFile(PrintStream out);
 	
 }

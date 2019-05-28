@@ -1,7 +1,11 @@
 package edu.utexas.wrap.assignment.bush;
 
-import java.util.HashSet;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import edu.utexas.wrap.assignment.Optimizer;
 import edu.utexas.wrap.net.Graph;
@@ -18,9 +22,10 @@ import edu.utexas.wrap.util.calc.TSTTCalculator;
  *
  */
 public abstract class BushOptimizer extends Optimizer {
-	private int innerIters = 10;
+	private int innerIters = 8;
 	protected Set<BushOrigin> origins;
-	protected Integer relativeGapExp = -6;
+	protected Integer relativeGapExp = -4;
+	private boolean print = true;
 
 	/**Default constructor
 	 * @param g	the graph on which the optimizer should operate
@@ -93,31 +98,24 @@ public abstract class BushOptimizer extends Optimizer {
 		// A single general step iteration
 		// TODO explore which bushes should be examined 
 		
-		Set<Thread> pool = new HashSet<Thread>();
-		
+		ExecutorService p = Executors.newWorkStealingPool();
 		for (BushOrigin o : origins) {
 			for (Bush b : o.getContainers()) {
 				Thread t = new Thread() {
 					public void run() {
-						// Step ii: Improve bushes in parallel
+						//Improve bushes in parallel
 						b.improve();
 					}
 				};
-				pool.add(t);
-				t.start();
+				p.execute(t);
 			}
 		}
-		//Wait until all bushes have finished improving
-		try {
-			for (Thread t : pool) {
-				t.join();
 
-			}
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		//Wait until all bushes have finished improving
+		p.shutdown();
+		while (!p.isTerminated());
 		
-		// Step i: Equilibrate bushes sequentially
+		// Equilibrate bushes sequentially
 		for (int i = 0; i < innerIters; i++) {
 			for (BushOrigin o : origins) {
 				for (Bush b : o.getContainers()) {
@@ -125,6 +123,7 @@ public abstract class BushOptimizer extends Optimizer {
 				}
 			}
 		}
+		if (print) writeContainers();
 	}
 	
 	/**Set how many inner equilibrations should be performed
@@ -139,5 +138,38 @@ public abstract class BushOptimizer extends Optimizer {
 	 */
 	public void setRelativeGapExp(Integer relativeGapExp) {
 		this.relativeGapExp = relativeGapExp;
+	}
+	
+	@Override
+	public void writeContainers() {
+		ExecutorService e = Executors.newWorkStealingPool();
+		// TODO Auto-generated method stub
+		StringBuilder sb = new StringBuilder();
+		for (byte b : graph.getMD5()) {
+			sb.append(String.format("%02X", b));
+		}
+		for (BushOrigin o : origins) {
+			for (Bush c : o.getContainers()) {
+				Thread t = new Thread() {
+					public void run() {
+						
+						File file = new File(sb+"/"+o.getNode().getID()+"/"+c.getVehicleClass()+"-"+c.getVOT()+".bush");
+						file.getParentFile().mkdirs();
+						try {
+							PrintStream out = new PrintStream(file);
+							
+							c.toFile(out);
+
+						} catch (FileNotFoundException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				};
+				e.execute(t);
+			}
+		}
+		e.shutdown();
+		while (e.isTerminated());
 	}
 }

@@ -1,14 +1,12 @@
 package edu.utexas.wrap.assignment.bush;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import edu.utexas.wrap.assignment.Origin;
-import edu.utexas.wrap.demand.DemandMap;
-import edu.utexas.wrap.demand.containers.DemandHashMap;
+import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
@@ -36,8 +34,11 @@ public class BushOrigin extends Origin {
 	 * then selecting the paths which lead to destinations to which
 	 * the origin has demand.
 	 */	
-	public void buildBush(Graph g, Float vot, DemandMap destDemand, Mode c) {
-		containers.add(new Bush(this, g, vot, destDemand, c));
+	public void buildBush(Graph g, Float vot, AutoDemandMap destDemand, Mode c) {
+		Bush b = new Bush(this, g, vot, destDemand, c);
+		b.getOriginStructure();
+		b.dumpFlow();
+		containers.add(b);
 	}
 
 	/**Generate an initial bush (dag) by solving Dijkstra's Shortest Paths
@@ -50,7 +51,7 @@ public class BushOrigin extends Origin {
 		// eligible nodes to contain this origin only, and the 
 		// back-link mapping to be empty
 		Collection<Node> nodes = g.getNodes();
-		initMap = new HashMap<Node, Link>(nodes.size(),1.0f);
+		initMap = new Object2ObjectOpenHashMap<Node, Link>(nodes.size(),1.0f);
 		FibonacciHeap<Node> Q = new FibonacciHeap<Node>(nodes.size(),1.0f);
 		for (Node n : nodes) {
 			if (!n.equals(getNode())) {

@@ -52,6 +52,14 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 		split = new HashMap<Link,Double>(bm.split);
 	}
 	
+	/**Constructor for empty merge
+	 * @param b
+	 */
+	protected BushMerge(Bush b) {
+		bush = b;
+		split = new HashMap<Link,Double>();
+	}
+	
 	/**
 	 * @return the shortest cost path Link
 	 */

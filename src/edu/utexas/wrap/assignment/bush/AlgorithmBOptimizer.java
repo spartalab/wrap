@@ -1,9 +1,14 @@
 package edu.utexas.wrap.assignment.bush;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
@@ -100,10 +105,12 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 			ld = -l.getFlow();	//Maximum amount that can be subtracted
 			ud = Math.max(Math.ulp(ld), Math.ulp(td));	//Machine epsilon on the two terms (lowest precision available)
 			if (td < ld) {	//If too much flow is removed from the bush
-				if (ld-td <= numThreshold*ud) {	//See if it's within the numerical tolerance
+				if (ld-td <= numThreshold*ud || (ld-td) < Math.pow(10, -6)) {	//See if it's within the numerical tolerance
 					td = ld;	//Cap at the smaller amount if so
 				}
-				else throw new NegativeFlowException("Too much link flow removed. Required threshold: "+(ld-td)/ud);
+				else throw new NegativeFlowException("Too much link flow removed. "
+						+ "Required threshold: "+(ld-td)/ud+"\tLink flow: "+ld
+						+ "\tdelta H: "+td);
 			}
 			
 			//Safeguard cap at the smaller of the two to ensure bush flow never exceeds link flow

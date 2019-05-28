@@ -36,9 +36,10 @@ public class GapCalculator extends Thread {
 			for (Bush b : o.getContainers()) {
 				b.shortTopoSearch();
 				Map<Node, Double> cache = new HashMap<Node, Double>(graph.numNodes());
+				Map<Node, Double> dem = b.getDemandMap().doubleClone(); 
 				for (Node d : b.getNodes()) {
 					
-					Float demand = b.getDemand(d).floatValue();
+					Float demand = dem.getOrDefault(d,0.0).floatValue();
 					if (demand > 0.0F) try {
 						denominator += b.getCachedL(d,cache).doubleValue() * demand;
 					} catch (UnreachableException e) {

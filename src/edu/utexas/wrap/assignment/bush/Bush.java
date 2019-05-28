@@ -1,5 +1,7 @@
 package edu.utexas.wrap.assignment.bush;
 
+import java.io.BufferedReader;
+import java.io.PrintStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -13,6 +15,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.Path;
+import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.CentroidConnector;
@@ -51,25 +54,19 @@ public class Bush implements AssignmentContainer {
 	 * @param destDemand the demand to be carried on the bush
 	 * @param c the mode of travel for the bush
 	 */
-	public Bush(BushOrigin o, Graph g, Float vot, DemandMap destDemand, Mode c) {
+	public Bush(BushOrigin o, Graph g, Float vot, AutoDemandMap destDemand, Mode c) {
 		origin = o;
 		this.vot = vot;
 		this.c = c;
 		wholeNet = g;
-		q = new HashMap<Node,BackVector>(origin.getInitMap(g));
 		demand = destDemand;
-		
-		//Load all demand onto the shortest paths
-		dumpFlow();
 	}
 
-	/**Attempt to add the bush to the link
-	 * @param l the link to be added
+	/**
+	 * Obtain the initial structure (shortest path tree) from the BushOrigin
 	 */
-	void activate(Link l) {
-		//TODO remove this method
-		if (add(l)) // If the bush structure changed, reset the topological order
-			cachedTopoOrder = null;
+	void getOriginStructure() {
+		q = new Object2ObjectOpenHashMap<Node,BackVector>(origin.getInitMap(wholeNet));
 	}
 
 	/** Add a link to the bush
@@ -77,27 +74,28 @@ public class Bush implements AssignmentContainer {
 	 * @return whether the link was successfully added to the bush
 	 */
 	private boolean add(Link l) {
+		Boolean ret = false;
 		Node head = l.getHead();
 		BackVector prior = q.get(head);
 		// If there was no backvector (should only happen during bush initialization), add link
 		if (prior == null) {
 			q.put(head, l);
-			return true;
+			ret = true;
 		}
 		// If the link is already the sole backvector, do nothing
-		else if (prior.equals(l)) return false;
+		else if (prior.equals(l)) ret = false;
 		// If the head node already has a merge backvector, delegate 
 		else if (prior instanceof BushMerge) {
-			return ((BushMerge) prior).add(l);
+			ret = ((BushMerge) prior).add(l);
 		}
 		// Else, we need to create a new merge backvector to replace the current back link
 		else if (prior instanceof Link) { // If we're here, the back link needs to be replaced by a merge
 			BushMerge nuevo = new BushMerge(this, (Link) prior, l);
 			q.put(head, nuevo);
-			return true;
+			ret = true;
 		}
-		//Something went wrong - there was no backvector
-		throw new RuntimeException("No backvector found");
+		if (ret) cachedTopoOrder = null;
+		return ret;
 	}
 
 	/**Determine whether a link is active in the bush
@@ -184,11 +182,13 @@ public class Bush implements AssignmentContainer {
 	 * Initialize demand flow on shortest paths Add each destination's demand to the
 	 * shortest path to that destination
 	 */
-	private void dumpFlow() {
+	void dumpFlow() {
 		//TODO redo this method
-		for (Node node : demand.getNodes()) {
+		Map<Node,Double> d = demand.doubleClone();
+		Collection<Node> nodes = demand.getNodes();
+		for (Node node : nodes) {
 
-			Float x = demand.getOrDefault(node, 0.0F);
+			Float x = d.getOrDefault(node, 0.0).floatValue();
 			if (x <= 0.0)
 				continue;
 			Path p;
@@ -300,6 +300,10 @@ public class Bush implements AssignmentContainer {
 	 */
 	public Float getDemand(Node node) {
 		return demand.get(node);
+	}
+	
+	public DemandMap getDemandMap(){
+		return demand;
 	}
 	
 	/**Recursively calculate the shortest path cost to a node
@@ -608,8 +612,7 @@ public class Bush implements AssignmentContainer {
 	 */
 	public Double getFlow(Link l) {
 		//Get the reverse topological ordering and a place to store node flows
-		Map<Node,Double> flow = new HashMap<Node,Double>();
-		for (Node d : demand.getNodes()) flow.put(d, demand.get(d).doubleValue());
+		Map<Node,Double> flow = demand.doubleClone();
 		Iterator<Node> iter = getTopologicalOrder().descendingIterator();
 		
 		//For each node in reverse topological order
@@ -803,7 +806,7 @@ public class Bush implements AssignmentContainer {
 
 		}
 		//Add all marked links to the Bush
-		for (Link l : tba) activate(l);
+		for (Link l : tba) add(l);
 		return modified;
 	}
 	
@@ -855,5 +858,70 @@ public class Bush implements AssignmentContainer {
 		}
 	}
 	
+	/**This method writes the structure of the bush to a given print stream
+	 * @param out the print stream to which the structure will be written
+	 */
+	public void toFile(PrintStream out) {
+		for (Node n : getTopologicalOrder()) {
+			BackVector qn = q.get(n);
+			if (qn instanceof Link) {
+				out.println(n.getID()+","+((Link) qn).hashCode()+",1.0");
+			}
+			else if (qn instanceof BushMerge) {
+				BushMerge qm = (BushMerge) qn;
+				for (Link l : qm) {
+					out.println(n.getID()+","+l.hashCode()+","+qm.getSplit(l));
+				}
+			}
+		}
+	}
 	
+	/**Attempt to read the bush structure from a file, rather than building a
+	 * new structure using Dijkstra's algorithm
+	 * @param in
+	 */
+	public void fromFile(BufferedReader in) {
+		q = new HashMap<Node,BackVector>();
+		Iterator<String> lines = in.lines().iterator();
+		while (lines.hasNext()) {
+			String line = lines.next();
+			String[] args = line.split(",");
+			if (args.length < 3) throw new RuntimeException("File input error");
+			Integer nid = Integer.valueOf(args[0]);
+			Node n = wholeNet.getNode(nid);
+			Integer bvhc = Integer.valueOf(args[1]);
+			Link bv = null;
+			for (Link l : wholeNet.inLinks(n)) {
+				if (l.hashCode() == bvhc) {
+					bv = l;
+					break;
+				}
+			}
+			if (bv == null) throw new RuntimeException("Unknown Link");
+			Double split = Double.valueOf(args[2]);
+			
+			if (!q.containsKey(n) ) {
+				if (split == 1.0) q.put(n, bv);
+				else {
+					BushMerge qm = new BushMerge(this);
+					qm.add(bv);
+					qm.setSplit(bv, split);
+					q.put(n, qm);
+				}
+			}
+			else {
+				BackVector qb = q.get(n);
+				if (qb instanceof BushMerge) {
+					BushMerge qm = (BushMerge) qb;
+					qm.add(bv);
+					qm.setSplit(bv, split);
+				}
+				else if (qb instanceof Link) {
+					BushMerge qm = new BushMerge(this, (Link) qb, bv);
+					qm.setSplit(bv, split);
+					q.put(n, qm);
+				}
+			}
+		}
+	}
 }
