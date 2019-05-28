@@ -24,7 +24,8 @@ public class DBPAMatrix implements AggregatePAMatrix {
         String createQuery = "CREATE TABLE IF NOT EXISTS  " + tableName +
                 " (origin integer, " +
                 "destination integer, " +
-                "demand real)";
+                "demand real, " +
+                "UNIQUE (origin, destination))";
         try(PreparedStatement ps = db.prepareStatement(createQuery)) {
             ps.executeUpdate();
         } catch (SQLException s) {
@@ -79,6 +80,8 @@ public class DBPAMatrix implements AggregatePAMatrix {
         }
         return output;
     }
+
+    public String getTableName(){return tableName;}
 
     @Override
     public float getVOT() {

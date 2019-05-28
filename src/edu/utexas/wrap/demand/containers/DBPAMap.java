@@ -17,13 +17,15 @@ public class DBPAMap implements PAMap {
     private String tableName;
     private Graph g;
     private float vot;
+    private String marketSeg;
 
     /**
      * See PA Map
      */
-    public DBPAMap(Graph g,Connection db, String table,  float vot) {
+    public DBPAMap(Graph g,Connection db, String marketSeg ,String table,  float vot) {
         this.db = db;
         this.g = g;
+        this.marketSeg = marketSeg;
         tableName = table;
         this.vot = vot;
         String createQuery = "CREATE TABLE IF NOT EXISTS " + tableName +
@@ -137,6 +139,8 @@ public class DBPAMap implements PAMap {
     public String getTableName() {
         return tableName;
     }
+
+    public String getMarketSeg() {return marketSeg;}
 
     /**
      * @return the value of time of trips associated with this matrix
