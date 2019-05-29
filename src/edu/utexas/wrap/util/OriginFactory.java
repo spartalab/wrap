@@ -79,20 +79,20 @@ public class OriginFactory {
 				if (curOrig != null) {
 					// build previous bushes
 					
-					dl.add(g.getNode(curOrig), solo17);
-					dl.add(g.getNode(curOrig), solo35);
-					dl.add(g.getNode(curOrig), solo45);
-					dl.add(g.getNode(curOrig), solo90);
+					dl.submit(g.getNode(curOrig), solo17);
+					dl.submit(g.getNode(curOrig), solo35);
+					dl.submit(g.getNode(curOrig), solo45);
+					dl.submit(g.getNode(curOrig), solo90);
 
-					dl.add(g.getNode(curOrig), hov17);
-					dl.add(g.getNode(curOrig), hov35);
-					dl.add(g.getNode(curOrig), hov45);
-					dl.add(g.getNode(curOrig), hov90);
+					dl.submit(g.getNode(curOrig), hov17);
+					dl.submit(g.getNode(curOrig), hov35);
+					dl.submit(g.getNode(curOrig), hov45);
+					dl.submit(g.getNode(curOrig), hov90);
 					
-					dl.add(g.getNode(curOrig), medTrucks);
-					dl.add(g.getNode(curOrig), hvyTrucks);
+					dl.submit(g.getNode(curOrig), medTrucks);
+					dl.submit(g.getNode(curOrig), hvyTrucks);
 					
-					dl.load(g.getNode(curOrig));
+					dl.start(g.getNode(curOrig));
 				}
 				break;
 			}
@@ -116,20 +116,20 @@ public class OriginFactory {
 				// Moving on to next origin
 				if (curOrig != null) {
 					// build previous origin's bushes
-					dl.add(g.getNode(curOrig), solo17);
-					dl.add(g.getNode(curOrig), solo35);
-					dl.add(g.getNode(curOrig), solo45);
-					dl.add(g.getNode(curOrig), solo90);
+					dl.submit(g.getNode(curOrig), solo17);
+					dl.submit(g.getNode(curOrig), solo35);
+					dl.submit(g.getNode(curOrig), solo45);
+					dl.submit(g.getNode(curOrig), solo90);
 
-					dl.add(g.getNode(curOrig), hov17);
-					dl.add(g.getNode(curOrig), hov35);
-					dl.add(g.getNode(curOrig), hov45);
-					dl.add(g.getNode(curOrig), hov90);
+					dl.submit(g.getNode(curOrig), hov17);
+					dl.submit(g.getNode(curOrig), hov35);
+					dl.submit(g.getNode(curOrig), hov45);
+					dl.submit(g.getNode(curOrig), hov90);
 					
-					dl.add(g.getNode(curOrig), medTrucks);
-					dl.add(g.getNode(curOrig), hvyTrucks);
+					dl.submit(g.getNode(curOrig), medTrucks);
+					dl.submit(g.getNode(curOrig), hvyTrucks);
 					
-					dl.load(g.getNode(curOrig));
+					dl.start(g.getNode(curOrig));
 
 				}
 
@@ -221,10 +221,10 @@ public class OriginFactory {
 				for (Node dest : unified.keySet()) { //Split each destination proportionally
 					split.put(dest, entry[1] * unified.get(dest));
 				}
-				dl.add(root,split);
+				dl.submit(root,split);
 			}
 			
-			dl.load(root);
+			dl.start(root);
 			
 			line = of.readLine();
 

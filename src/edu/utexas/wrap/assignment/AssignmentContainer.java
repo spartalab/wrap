@@ -50,7 +50,7 @@ public interface AssignmentContainer {
 	 */
 	public Map<Link, Double> getFlows();
 	
-	public void fromFile(BufferedReader in);
+	void fromFile(BufferedReader in);
 	
 	public void toFile(PrintStream out);
 	

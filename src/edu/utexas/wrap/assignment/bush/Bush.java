@@ -1,6 +1,9 @@
 package edu.utexas.wrap.assignment.bush;
 
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Collection;
 import java.util.HashMap;
@@ -183,27 +186,31 @@ public class Bush implements AssignmentContainer {
 	 * shortest path to that destination
 	 */
 	void dumpFlow() {
-		//TODO redo this method
 		Map<Node,Double> d = demand.doubleClone();
-		Collection<Node> nodes = demand.getNodes();
-		for (Node node : nodes) {
+		for (Node node : getTopologicalOrder()) {
 
-			Float x = d.getOrDefault(node, 0.0).floatValue();
-			if (x <= 0.0)
-				continue;
-			Path p;
-			try {
-				p = getShortPath(node);
-			} catch (UnreachableException e) {
-				System.err.println("No path exists from Node " + origin.getNode().getID() + " to Node " + node
-						+ ". Lost demand = " + x);
-				continue;
-			}
-			for (Link l : p) {
-				l.changeFlow((double)x);
+			Double x = d.getOrDefault(node, 0.0);
+			if (x <= 0.0) continue;
+			dumpFlow(node,x);
+		}
+	}
+	
+	private void dumpFlow(Node node, Double x) {
+		if (node.equals(origin.getNode())) return;
+		BackVector bv = q.get(node);
+		if (bv instanceof Link) {
+			Link l = (Link) bv;
+			l.changeFlow(x);
+			dumpFlow(l.getTail(),x);
+		}
+		else if (bv instanceof BushMerge) {
+			BushMerge bm = (BushMerge) bv;
+			for (Link l : bm) {
+				Double split = bm.getSplit(l);
+				l.changeFlow(x*split);
+				dumpFlow(l.getTail(),x*split);
 			}
 		}
-
 	}
 
 	/**Generate a topological ordering from scratch for this bush
@@ -923,5 +930,19 @@ public class Bush implements AssignmentContainer {
 				}
 			}
 		}
+	}
+
+	public void loadStructureFile() throws IOException {
+		StringBuilder sb = new StringBuilder();
+		for (byte b : wholeNet.getMD5()) {
+			sb.append(String.format("%02X", b));
+		}
+		
+		File file = new File(sb+"/"+
+		getOrigin().getNode().getID()+"/"+
+				getVehicleClass()+"-"+getVOT()+".bush");	
+		BufferedReader in = new BufferedReader(new FileReader(file));
+		fromFile(in);
+		in.close();
 	}
 }

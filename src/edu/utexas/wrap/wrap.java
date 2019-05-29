@@ -8,7 +8,7 @@ import java.util.Set;
 
 import edu.utexas.wrap.assignment.Optimizer;
 import edu.utexas.wrap.assignment.bush.AlgorithmBOptimizer;
-import edu.utexas.wrap.assignment.bush.BushLoader;
+import edu.utexas.wrap.assignment.bush.BushOriginFactory;
 import edu.utexas.wrap.assignment.bush.BushOrigin;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.util.GraphFactory;
@@ -118,7 +118,7 @@ public class wrap{
 				}
 				System.out.println(sb);
 				
-				BushLoader dl = new BushLoader(g);
+				BushOriginFactory dl = new BushOriginFactory(g);
 				System.out.println("Reading trips...");				
 				OriginFactory.readEnhancedTrips(odMatrix, g, dl);
 				o = dl.finishAll();
@@ -137,7 +137,7 @@ public class wrap{
 				System.out.println(sb);
 				
 				System.out.println("Reading trips...");
-				BushLoader dl = new BushLoader(g);
+				BushOriginFactory dl = new BushOriginFactory(g);
 				OriginFactory.readTNTPUniformVOTtrips(votFile, odMatrix, g, dl);
 				o = dl.finishAll();
 			}

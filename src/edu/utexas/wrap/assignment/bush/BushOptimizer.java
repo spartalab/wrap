@@ -159,7 +159,7 @@ public abstract class BushOptimizer extends Optimizer {
 							PrintStream out = new PrintStream(file);
 							
 							c.toFile(out);
-
+							out.close();
 						} catch (FileNotFoundException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -170,6 +170,6 @@ public abstract class BushOptimizer extends Optimizer {
 			}
 		}
 		e.shutdown();
-		while (e.isTerminated());
+		while (!e.isTerminated());
 	}
 }

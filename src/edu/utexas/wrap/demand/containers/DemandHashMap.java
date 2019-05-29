@@ -7,8 +7,9 @@ import java.util.Map;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
-public class DemandHashMap extends HashMap<Node, Float> implements DemandMap {
+public class DemandHashMap extends Object2ObjectOpenHashMap<Node, Float> implements DemandMap {
 
 	/**
 	 * 

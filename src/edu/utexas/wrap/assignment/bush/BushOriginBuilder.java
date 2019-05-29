@@ -9,7 +9,7 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
-/**Child threads created by {@link edu.utexas.wrap.assignment.BushLoader}
+/**Child threads created by {@link edu.utexas.wrap.assignment.BushOriginFactory}
  * to build the initial bush for each origin
  * @author William
  *

@@ -20,7 +20,7 @@ import edu.utexas.wrap.net.Node;
  * @author William
  *
  */
-public class BushLoader extends AssignmentLoader {
+public class BushOriginFactory extends AssignmentLoader {
 	Map<Node, BushOriginBuilder> pool;
 	ExecutorService p;
 	Set<BushOrigin> origins;
@@ -28,7 +28,7 @@ public class BushLoader extends AssignmentLoader {
 	/**Default constructor
 	 * @param g the graph onto which Origins should be built
 	 */
-	public BushLoader(Graph g) {
+	public BushOriginFactory(Graph g) {
 		super(g);
 		pool = new HashMap<Node, BushOriginBuilder>();
 		p = Executors.newWorkStealingPool();
@@ -38,24 +38,24 @@ public class BushLoader extends AssignmentLoader {
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.assignment.AssignmentLoader#add(edu.utexas.wrap.net.Node, edu.utexas.wrap.demand.containers.AutoDemandHashMap)
 	 */
-	public void add(Node o, AutoDemandMap map) {
-		pool.putIfAbsent(o, new BushOriginBuilder(graph,o,origins));
+	public void submit(Node o, AutoDemandMap map) {
+		pool.putIfAbsent(o, new BushOriginLoader(graph,o,origins));
 		pool.get(o).addMap(map);
 	} 
 	
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.assignment.AssignmentLoader#addAll(edu.utexas.wrap.demand.containers.AutoODHashMatrix)
 	 */
-	public void addAll(AutoODHashMatrix matrix) {
+	public void submitAll(AutoODHashMatrix matrix) {
 		for (Node o : matrix.keySet()) {
-			add(o, matrix.get(o));
+			submit(o, matrix.get(o));
 		}
 	}
 	
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.assignment.AssignmentLoader#load(edu.utexas.wrap.net.Node)
 	 */
-	public void load(Node o) {
+	public void start(Node o) {
 		p.execute(pool.get(o));
 	}
 	
@@ -72,7 +72,6 @@ public class BushLoader extends AssignmentLoader {
 			try {
 				Thread.sleep(50);
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

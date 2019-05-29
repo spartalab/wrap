@@ -1,5 +1,6 @@
 package edu.utexas.wrap.assignment.bush;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -122,5 +123,13 @@ public class BushOrigin extends Origin {
 		initMap = null;
 	}
 
+	public void loadBush(Graph g, Float vot, AutoDemandMap destDemand, Mode c) throws IOException {
+		Bush b = new Bush(this, g, vot, destDemand, c);
+		b.loadStructureFile();
+		b.shortTopoSearch();
+		b.longTopoSearch(false);
+		b.dumpFlow();
+		containers.add(b);
+	}
 
 }
