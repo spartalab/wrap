@@ -35,11 +35,12 @@ public class BushOrigin extends Origin {
 	 * then selecting the paths which lead to destinations to which
 	 * the origin has demand.
 	 */	
-	public void buildBush(Graph g, Float vot, AutoDemandMap destDemand, Mode c) {
+	public Bush buildBush(Graph g, Float vot, AutoDemandMap destDemand, Mode c) {
 		Bush b = new Bush(this, g, vot, destDemand, c);
 		b.getOriginStructure();
 		b.dumpFlow();
 		containers.add(b);
+		return b;
 	}
 
 	/**Generate an initial bush (dag) by solving Dijkstra's Shortest Paths

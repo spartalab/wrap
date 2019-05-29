@@ -161,7 +161,6 @@ public abstract class BushOptimizer extends Optimizer {
 							c.toFile(out);
 							out.close();
 						} catch (FileNotFoundException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}
