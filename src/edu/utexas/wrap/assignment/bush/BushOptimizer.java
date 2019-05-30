@@ -2,7 +2,8 @@ package edu.utexas.wrap.assignment.bush;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.PrintStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -156,11 +157,12 @@ public abstract class BushOptimizer extends Optimizer {
 						File file = new File(sb+"/"+o.getNode().getID()+"/"+c.getVehicleClass()+"-"+c.getVOT()+".bush");
 						file.getParentFile().mkdirs();
 						try {
-							PrintStream out = new PrintStream(file);
-							
+							FileOutputStream out = new FileOutputStream(file);
 							c.toFile(out);
 							out.close();
 						} catch (FileNotFoundException e) {
+							e.printStackTrace();
+						} catch (IOException e) {
 							e.printStackTrace();
 						}
 					}

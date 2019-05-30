@@ -2,8 +2,8 @@ package edu.utexas.wrap.assignment.bush;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.Set;
 
 import edu.utexas.wrap.demand.AutoDemandMap;
@@ -38,11 +38,13 @@ public class BushOriginLoader extends BushOriginBuilder {
 						File file = new File(sb+"/"+o.getID()+"/"+c+"-"+vot+".bush");
 						file.getParentFile().mkdirs();
 						try {
-							PrintStream out = new PrintStream(file);
-
+							FileOutputStream out = new FileOutputStream(file);
 							bush.toFile(out);
 							out.close();
 						} catch (FileNotFoundException e) {
+							e.printStackTrace();
+						} catch (IOException e) {
+							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					}

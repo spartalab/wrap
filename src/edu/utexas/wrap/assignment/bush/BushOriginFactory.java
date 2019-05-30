@@ -16,7 +16,9 @@ import edu.utexas.wrap.net.Node;
 
 /**An instance of a {@link edu.utexas.wrap.assignment.AssignmentLoader}
  * used for loading demand into Bushes for use by Bush-based assignment
- * methods.
+ * methods. This class first attempts to read a bush file given at the 
+ * relative path "./{MD5 hash of input graph file}/{origin ID}/{Mode}-{VOT}.bush"
+ * then builds from Dijkstra's shortest path algorithm if it can't be found.
  * @author William
  *
  */

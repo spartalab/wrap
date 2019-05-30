@@ -1,7 +1,8 @@
 package edu.utexas.wrap.assignment;
 
-import java.io.BufferedReader;
-import java.io.PrintStream;
+import java.io.BufferedInputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Map;
 import java.util.Set;
 
@@ -50,8 +51,8 @@ public interface AssignmentContainer {
 	 */
 	public Map<Link, Double> getFlows();
 	
-	void fromFile(BufferedReader in);
+	void fromFile(BufferedInputStream in) throws IOException;
 	
-	public void toFile(PrintStream out);
+	public void toFile(OutputStream out) throws IOException;
 	
 }

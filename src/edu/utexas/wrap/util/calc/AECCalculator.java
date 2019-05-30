@@ -35,7 +35,8 @@ class AECCalculator extends Thread {
 		
 		for (BushOrigin o : origins) {
 			for (Bush b : o.getContainers()) {
-				for (Node d : b.getNodes()) {
+				Map<Node,Double> od = b.getDemandMap().doubleClone();
+				for (Node d : od.keySet()) {
 					Double demand = o.getDemand(d);
 					if (demand > 0.0) {
 						Map<Node, Double> cache = new HashMap<Node, Double>();

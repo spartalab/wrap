@@ -89,7 +89,6 @@ public class DBAutoDemandMap implements AutoDemandMap {
 //				ret.add(g.getNode(id));
 //			}
 //		} catch (SQLException e) {
-//			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		} finally {
 //			try {

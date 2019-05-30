@@ -1,7 +1,7 @@
 package edu.utexas.wrap.assignment;
 
-import java.io.BufferedReader;
-import java.io.PrintStream;
+import java.io.BufferedInputStream;
+import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -210,13 +210,13 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	}
 
 	@Override
-	public void fromFile(BufferedReader in) {
+	public void fromFile(BufferedInputStream in) {
 		// TODO Auto-generated method stub
 		throw new RuntimeException("Not Yet Implemented");
 	}
 
 	@Override
-	public void toFile(PrintStream out) {
+	public void toFile(OutputStream out) {
 		// TODO Auto-generated method stub
 		throw new RuntimeException("Not Yet Implemented");
 	}
