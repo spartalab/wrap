@@ -1,10 +1,11 @@
 package edu.utexas.wrap.assignment.bush;
 
-import java.io.BufferedReader;
+import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.PrintStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -867,36 +868,58 @@ public class Bush implements AssignmentContainer {
 	
 	/**This method writes the structure of the bush to a given print stream
 	 * @param out the print stream to which the structure will be written
+	 * @throws IOException 
 	 */
-	public void toFile(PrintStream out) {
+	public void toFile(OutputStream out) throws IOException {
+		int size = Integer.BYTES*2+Double.BYTES;
 		for (Node n : getTopologicalOrder()) {
 			BackVector qn = q.get(n);
+			
 			if (qn instanceof Link) {
-				out.println(n.getID()+","+((Link) qn).hashCode()+",1.0");
+//				out.println(n.getID()+","+((Link) qn).hashCode()+",1.0");
+				byte[] b = ByteBuffer.allocate(size)
+						.putInt(n.getID())
+						.putInt(((Link) qn).hashCode())
+						.putDouble(1.0)
+						.array();
+				out.write(b);
 			}
+			
 			else if (qn instanceof BushMerge) {
 				BushMerge qm = (BushMerge) qn;
 				for (Link l : qm) {
-					out.println(n.getID()+","+l.hashCode()+","+qm.getSplit(l));
-				}
+					byte[] b = ByteBuffer.allocate(size)
+							.putInt(n.getID())
+							.putInt(l.hashCode())
+							.putDouble(qm.getSplit(l))
+							.array();
+					out.write(b);
+					}
 			}
+			out.flush();
 		}
 	}
 	
 	/**Attempt to read the bush structure from a file, rather than building a
 	 * new structure using Dijkstra's algorithm
 	 * @param in
+	 * @throws IOException 
 	 */
-	public void fromFile(BufferedReader in) {
+	public void fromFile(BufferedInputStream in) throws IOException {
 		q = new HashMap<Node,BackVector>();
-		Iterator<String> lines = in.lines().iterator();
-		while (lines.hasNext()) {
-			String line = lines.next();
-			String[] args = line.split(",");
-			if (args.length < 3) throw new RuntimeException("File input error");
-			Integer nid = Integer.valueOf(args[0]);
+		byte[] b = new byte[Integer.BYTES*2+Double.BYTES];
+		
+		//For each link in the bush
+		while (in.available() >= Integer.BYTES*2+Double.BYTES) {
+			//File IO, formatting
+			in.read(b);
+			ByteBuffer bb = ByteBuffer.wrap(b);
+			Integer nid = bb.getInt();
+			Integer bvhc = bb.getInt();
+			Double split = bb.getDouble();
 			Node n = wholeNet.getNode(nid);
-			Integer bvhc = Integer.valueOf(args[1]);
+
+			//Find the appropriate link instance
 			Link bv = null;
 			for (Link l : wholeNet.inLinks(n)) {
 				if (l.hashCode() == bvhc) {
@@ -904,11 +927,14 @@ public class Bush implements AssignmentContainer {
 					break;
 				}
 			}
+			//If it can't be found, throw an error
 			if (bv == null) throw new RuntimeException("Unknown Link");
-			Double split = Double.valueOf(args[2]);
 			
+			//If this is the first link read which leads to this head node
 			if (!q.containsKey(n) ) {
+				//Check to see if this holds all flow through this node
 				if (split == 1.0) q.put(n, bv);
+				//create a merge if it doesn't
 				else {
 					BushMerge qm = new BushMerge(this);
 					qm.add(bv);
@@ -918,12 +944,15 @@ public class Bush implements AssignmentContainer {
 			}
 			else {
 				BackVector qb = q.get(n);
+				//If we already constructed the merge
 				if (qb instanceof BushMerge) {
+					//add the link
 					BushMerge qm = (BushMerge) qb;
 					qm.add(bv);
 					qm.setSplit(bv, split);
 				}
 				else if (qb instanceof Link) {
+					//otherwise construct a new one
 					BushMerge qm = new BushMerge(this, (Link) qb, bv);
 					qm.setSplit(bv, split);
 					q.put(n, qm);
@@ -932,16 +961,25 @@ public class Bush implements AssignmentContainer {
 		}
 	}
 
+	/**This method searches for a bush structure file in the location
+	 * given by the relative path
+	 * "./{MD5 hash of input graph file}/{origin ID}/{Mode}-{VOT}.bush"
+	 * @throws IOException if the defined path is not found or is corrupt
+	 */
 	public void loadStructureFile() throws IOException {
+		//Convert the graph's MD5 hash to a hex string
 		StringBuilder sb = new StringBuilder();
 		for (byte b : wholeNet.getMD5()) {
 			sb.append(String.format("%02X", b));
 		}
 		
+		//find the file at the predefined relative path
 		File file = new File(sb+"/"+
 		getOrigin().getNode().getID()+"/"+
-				getVehicleClass()+"-"+getVOT()+".bush");	
-		BufferedReader in = new BufferedReader(new FileReader(file));
+				getVehicleClass()+"-"+getVOT()+".bush");
+		
+		//Read the file in
+		BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
 		fromFile(in);
 		in.close();
 	}
