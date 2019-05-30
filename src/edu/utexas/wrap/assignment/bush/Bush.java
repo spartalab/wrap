@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -15,8 +14,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.Path;
 import edu.utexas.wrap.demand.AutoDemandMap;
@@ -138,8 +138,8 @@ public class Bush implements AssignmentContainer {
 		Path uPath = getLongPath(start);
 
 		//Store the nodes seen on the paths in reverse order
-		Set<Node> lNodes = new HashSet<Node>();
-		Set<Node> uNodes = new HashSet<Node>();
+		Set<Node> lNodes = new ObjectOpenHashSet<Node>();
+		Set<Node> uNodes = new ObjectOpenHashSet<Node>();
 		Iterator<Link> lIter = lPath.descendingIterator();
 		Iterator<Link> uIter = uPath.descendingIterator();
 
@@ -207,7 +207,7 @@ public class Bush implements AssignmentContainer {
 		else if (bv instanceof BushMerge) {
 			BushMerge bm = (BushMerge) bv;
 			for (Link l : bm) {
-				Double split = bm.getSplit(l);
+				Float split = bm.getSplit(l);
 				l.changeFlow(x*split);
 				dumpFlow(l.getTail(),x*split);
 			}
@@ -557,7 +557,7 @@ public class Bush implements AssignmentContainer {
 	 */
 	public Map<Node, Double> longTopoSearch(boolean longestUsed) {
 		List<Node> to = getTopologicalOrder();
-		Map<Node, Double> cache = new HashMap<Node, Double>(wholeNet.numNodes());
+		Map<Node, Double> cache = new Object2DoubleOpenHashMap<Node>(wholeNet.numNodes());
 
 		//In topological order,
 		for (Node d : to) {
@@ -687,7 +687,7 @@ public class Bush implements AssignmentContainer {
 		
 		Map<Node,Double> nodeFlow = demand.doubleClone();
 		Iterator<Node> iter = getTopologicalOrder().descendingIterator();
-		Map<Link,Double> ret = new HashMap<Link,Double>();
+		Map<Link,Double> ret = new Object2DoubleOpenHashMap<Link>();
 
 		//For each node in reverse topological order
 		for (Node n = iter.next(); iter.hasNext(); n = iter.next()) {
@@ -754,7 +754,7 @@ public class Bush implements AssignmentContainer {
 	 */
 	public Map<Node, Double> shortTopoSearch() {
 		List<Node> to = getTopologicalOrder();
-		Map<Node, Double> cache = new HashMap<Node, Double>(wholeNet.numNodes());
+		Map<Node, Double> cache = new Object2DoubleOpenHashMap<Node>(wholeNet.numNodes());
 
 		//In topological order,
 		for (Node d : to) {
@@ -860,7 +860,7 @@ public class Bush implements AssignmentContainer {
 				//If there is no total, leave the splits alone
 				if (total > 0) for (Link l : bm) {
 					//Otherwise, set them proportional to total demand share
-					bm.setSplit(l, flows.get(l)/total);
+					bm.setSplit(l, (float) (flows.get(l)/total));
 				}
 			}
 		}
@@ -871,7 +871,7 @@ public class Bush implements AssignmentContainer {
 	 * @throws IOException 
 	 */
 	public void toFile(OutputStream out) throws IOException {
-		int size = Integer.BYTES*2+Double.BYTES;
+		int size = Integer.BYTES*2+Float.BYTES;
 		for (Node n : getTopologicalOrder()) {
 			BackVector qn = q.get(n);
 			
@@ -880,7 +880,7 @@ public class Bush implements AssignmentContainer {
 				byte[] b = ByteBuffer.allocate(size)
 						.putInt(n.getID())
 						.putInt(((Link) qn).hashCode())
-						.putDouble(1.0)
+						.putFloat(1.0F)
 						.array();
 				out.write(b);
 			}
@@ -891,7 +891,7 @@ public class Bush implements AssignmentContainer {
 					byte[] b = ByteBuffer.allocate(size)
 							.putInt(n.getID())
 							.putInt(l.hashCode())
-							.putDouble(qm.getSplit(l))
+							.putFloat(qm.getSplit(l))
 							.array();
 					out.write(b);
 					}
@@ -906,17 +906,17 @@ public class Bush implements AssignmentContainer {
 	 * @throws IOException 
 	 */
 	public void fromFile(BufferedInputStream in) throws IOException {
-		q = new HashMap<Node,BackVector>();
-		byte[] b = new byte[Integer.BYTES*2+Double.BYTES];
+		q = new Object2ObjectOpenHashMap<Node,BackVector>();
+		byte[] b = new byte[Integer.BYTES*2+Float.BYTES];
 		
 		//For each link in the bush
-		while (in.available() >= Integer.BYTES*2+Double.BYTES) {
+		while (in.available() >= Integer.BYTES*2+Float.BYTES) {
 			//File IO, formatting
 			in.read(b);
 			ByteBuffer bb = ByteBuffer.wrap(b);
 			Integer nid = bb.getInt();
 			Integer bvhc = bb.getInt();
-			Double split = bb.getDouble();
+			Float split = bb.getFloat();
 			Node n = wholeNet.getNode(nid);
 
 			//Find the appropriate link instance

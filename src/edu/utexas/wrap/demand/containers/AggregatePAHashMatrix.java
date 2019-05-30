@@ -1,12 +1,11 @@
 package edu.utexas.wrap.demand.containers;
 
-import java.util.HashMap;
-
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
-public class AggregatePAHashMatrix extends HashMap<Node, DemandHashMap> implements AggregatePAMatrix {
+public class AggregatePAHashMatrix extends Object2ObjectOpenHashMap<Node, DemandHashMap> implements AggregatePAMatrix {
 
 	/**
 	 * 

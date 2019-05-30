@@ -1,12 +1,12 @@
 package edu.utexas.wrap.demand.containers;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 public class DemandHashMap extends Object2ObjectOpenHashMap<Node, Float> implements DemandMap {
@@ -69,7 +69,7 @@ public class DemandHashMap extends Object2ObjectOpenHashMap<Node, Float> impleme
 
 	@Override
 	public Map<Node, Double> doubleClone() {
-		Map<Node,Double> ret = new HashMap<Node,Double>(size());
+		Map<Node,Double> ret = new Object2DoubleOpenHashMap<Node>(size());
 		for (Node key : keySet()) ret.put(key, get(key).doubleValue());
 		return ret;
 	}

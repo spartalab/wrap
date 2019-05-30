@@ -19,6 +19,7 @@ import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TolledBPRLink;
 import edu.utexas.wrap.net.TolledEnhancedLink;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 public class GraphFactory {
 	public static Graph readTNTPGraph(File linkFile) throws FileNotFoundException, IOException {
@@ -31,7 +32,7 @@ public class GraphFactory {
 			String line;
 			Graph g = new Graph();
 			BufferedReader lf = new BufferedReader(new InputStreamReader(dis));
-			Map<Integer, Node> nodes = new HashMap<Integer, Node>();
+			Map<Integer, Node> nodes = new Int2ObjectOpenHashMap<Node>();
 			Integer ftn = 1;
 			do { // Move past headers in the file
 				line = lf.readLine();
@@ -93,7 +94,7 @@ public class GraphFactory {
 		int numZones = 0;
 		DigestInputStream dis = new DigestInputStream(new FileInputStream(f), md);
 		BufferedReader lf = new BufferedReader(new InputStreamReader(dis));
-		Map<Integer, Node> nodes = new HashMap<Integer, Node>();
+		Map<Integer, Node> nodes = new Int2ObjectOpenHashMap<Node>();
 		lf.readLine(); // skip header
 
 		while (true) {

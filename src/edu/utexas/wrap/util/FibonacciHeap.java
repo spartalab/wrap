@@ -10,6 +10,10 @@ import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+
 public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 	private Integer n;
 	private FibonacciLeaf<E> min;
@@ -28,12 +32,12 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 		n = 0;
 		min = null;
 		rootList = new LinkedList<FibonacciLeaf<E>>();
-		map = new HashMap<E,FibonacciLeaf<E>>(size,loadFactor);
+		map = new Object2ObjectOpenHashMap<E,FibonacciLeaf<E>>(size,loadFactor);
 	}
 	
-	public boolean add(E node, Double d) {
+	public boolean add(E node, Float d) {
 		if (map.containsKey(node)) throw new UnsupportedOperationException("Duplicate node in Fibonacci Heap. Keys must be unique.");
-		FibonacciLeaf<E> e = new FibonacciLeaf<E>(node,d);
+		FibonacciLeaf<E> e = new FibonacciLeaf<E>(node,d.floatValue());
 		map.put(node, e);
 		
 		return offer(e);
@@ -53,8 +57,8 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 
 
 	private void consolidate() {
-		HashMap<Integer, FibonacciLeaf<E>> A = new HashMap<Integer, FibonacciLeaf<E>>();
-		Set<FibonacciLeaf<E>> ignore = new HashSet<FibonacciLeaf<E>>();
+		Map<Integer, FibonacciLeaf<E>> A = new Int2ObjectOpenHashMap<FibonacciLeaf<E>>();
+		Set<FibonacciLeaf<E>> ignore = new ObjectOpenHashSet<FibonacciLeaf<E>>();
 		for (FibonacciLeaf<E> w : rootList) {
 			if (ignore.contains(w)) continue;
 			FibonacciLeaf<E> x = w;
@@ -100,9 +104,9 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 		x.mark = false;
 	}
 
-	public void decreaseKey(FibonacciLeaf<E> x, Double k) {
-		if (k > x.key) return; //throw new Exception();
-		x.key = k;
+	public void decreaseKey(FibonacciLeaf<E> x, Float alt) {
+		if (alt > x.key) return; //throw new Exception();
+		x.key = alt.floatValue();
 		FibonacciLeaf<E> y = x.parent;
 		if (y != null && x.key < y.key) {
 			cut(x,y);
@@ -113,7 +117,7 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 
 	public void delete(E n) throws Exception {
 		FibonacciLeaf<E> x = map.remove(n);
-		decreaseKey(x,-Double.MAX_VALUE);
+		decreaseKey(x,-Float.MAX_VALUE);
 		poll();
 	}
 

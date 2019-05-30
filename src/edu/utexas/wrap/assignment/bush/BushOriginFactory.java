@@ -1,6 +1,5 @@
 package edu.utexas.wrap.assignment.bush;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -13,6 +12,7 @@ import edu.utexas.wrap.demand.containers.AutoODHashMatrix;
 import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 /**An instance of a {@link edu.utexas.wrap.assignment.AssignmentLoader}
  * used for loading demand into Bushes for use by Bush-based assignment
@@ -32,7 +32,7 @@ public class BushOriginFactory extends AssignmentLoader {
 	 */
 	public BushOriginFactory(Graph g) {
 		super(g);
-		pool = new HashMap<Node, BushOriginBuilder>();
+		pool = new Object2ObjectOpenHashMap<Node, BushOriginBuilder>(g.getNumZones());
 		p = Executors.newWorkStealingPool();
 		origins = new HashSet<BushOrigin>();
 	}

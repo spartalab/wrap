@@ -57,10 +57,10 @@ public class BushOrigin extends Origin {
 		FibonacciHeap<Node> Q = new FibonacciHeap<Node>(nodes.size(),1.0f);
 		for (Node n : nodes) {
 			if (!n.equals(getNode())) {
-				Q.add(n, Double.MAX_VALUE);
+				Q.add(n, Float.MAX_VALUE);
 			}
 		}
-		Q.add(getNode(), 0.0);
+		Q.add(getNode(), 0.0F);
 
 		while (!Q.isEmpty()) {
 			FibonacciLeaf<Node> u = Q.poll();
@@ -71,7 +71,7 @@ public class BushOrigin extends Origin {
 				//If this link doesn't allow this bush's class of driver on the link, don't consider it
 				
 				FibonacciLeaf<Node> v = Q.getLeaf(uv.getHead());
-				Double alt = uv.freeFlowTime()+u.key;
+				Float alt = uv.freeFlowTime()+u.key;
 				if (alt<v.key) {
 					Q.decreaseKey(v, alt);
 					initMap.put(v.n, uv);

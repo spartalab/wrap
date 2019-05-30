@@ -4,8 +4,10 @@ import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 import edu.utexas.wrap.net.Node;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 
 class FibonacciHeapTest {
@@ -14,11 +16,11 @@ class FibonacciHeapTest {
 	void test() throws Exception {
 		Integer numCases = 50000;
 		FibonacciHeap<Node> heap = new FibonacciHeap<Node>();
-		HashMap<Integer, Node> map = new HashMap<Integer, Node>();
+		Map<Integer, Node> map = new Int2ObjectOpenHashMap<Node>();
 		random.setSeed(90210L);
 		
 		for (Integer i = 0; i < numCases; i++) {
-			Double key = random.nextDouble();
+			Float key = random.nextFloat();
 			//System.out.println(key);
 			Node p = new Node(i,false);
 			map.put(i, p);
@@ -27,7 +29,7 @@ class FibonacciHeapTest {
 		System.out.println("-----");
 		for (Integer j = 0; j < 2; j++) {
 			for (Integer i = 0; i < numCases; i++) {
-				Double key = random.nextDouble();
+				Float key = random.nextFloat();
 				//System.out.println(key);
 				FibonacciLeaf<Node> p = heap.getLeaf(map.get(i));
 				heap.decreaseKey(p, key);

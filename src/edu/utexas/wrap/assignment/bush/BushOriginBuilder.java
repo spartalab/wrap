@@ -1,6 +1,5 @@
 package edu.utexas.wrap.assignment.bush;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -8,6 +7,8 @@ import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import it.unimi.dsi.fastutil.floats.Float2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 /**Child threads created by {@link edu.utexas.wrap.assignment.BushOriginFactory}
  * to build the initial bush for each origin
@@ -28,7 +29,7 @@ public class BushOriginBuilder extends Thread {
 	 */
 	public BushOriginBuilder(Graph g, Node o, Set<BushOrigin> origins) {
 		this.o = o;
-		this.map = new HashMap<Mode, Map<Float, AutoDemandMap>>();
+		this.map = new Object2ObjectOpenHashMap<Mode, Map<Float, AutoDemandMap>>();
 		this.g = g;
 		this.origins = origins;
 	}
@@ -37,7 +38,7 @@ public class BushOriginBuilder extends Thread {
 	 * @param m
 	 */
 	public void addMap(AutoDemandMap m) {
-		map.putIfAbsent(m.getMode(), new HashMap<Float, AutoDemandMap>());
+		map.putIfAbsent(m.getMode(), new Float2ObjectOpenHashMap<AutoDemandMap>());
 		map.get(m.getMode()).put(m.getVOT(), m);
 	}
 	

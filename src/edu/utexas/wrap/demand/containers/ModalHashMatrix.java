@@ -7,8 +7,9 @@ import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
-public class ModalHashMatrix extends HashMap<Node, DemandHashMap> implements ODMatrix, ModalPAMatrix {
+public class ModalHashMatrix extends Object2ObjectOpenHashMap<Node, DemandHashMap> implements ODMatrix, ModalPAMatrix {
 	
 	
 	/**

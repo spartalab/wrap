@@ -1,12 +1,12 @@
 package edu.utexas.wrap.assignment.bush;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.util.AlternateSegmentPair;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 /**A way to represent the Links which merge at a given Node in a Bush,
  * namely, a set of Links with a longest and shortest path named and a
@@ -14,7 +14,7 @@ import edu.utexas.wrap.util.AlternateSegmentPair;
  * @author William
  *
  */
-public class BushMerge extends HashSet<Link> implements BackVector{
+public class BushMerge extends ObjectOpenHashSet<Link> implements BackVector{
 	/**
 	 * 
 	 */
@@ -22,7 +22,7 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 	private Link shortLink;
 	private Link longLink;
 	private AlternateSegmentPair asp;
-	private Map<Link, Double> split;
+	private Map<Link, Float> split;
 	private final Bush bush;
 	
 	/** Create a BushMerge by adding a shortcut link to a node
@@ -31,13 +31,14 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 	 * @param l the shortcut link providing a shorter path to the node
 	 */
 	public BushMerge(Bush b, Link u, Link l) {
+		super(4);
 		bush = b;
 
 		add(l);
 		add(u);
 
-		split = new HashMap<Link, Double>();
-		split.put(u, 1.0);
+		split = new Object2ObjectOpenHashMap<Link, Float>();
+		split.put(u, 1.0F);
 	}
 	
 	/**Duplication constructor
@@ -49,15 +50,16 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 		longLink = bm.longLink;
 		shortLink = bm.shortLink;
 		asp = bm.asp;
-		split = new HashMap<Link,Double>(bm.split);
+		split = new Object2ObjectOpenHashMap<Link,Float>(bm.split);
 	}
 	
 	/**Constructor for empty merge
 	 * @param b
 	 */
 	protected BushMerge(Bush b) {
+		super(4);
 		bush = b;
-		split = new HashMap<Link,Double>();
+		split = new Object2ObjectOpenHashMap<Link,Float>();
 	}
 	
 	/**
@@ -124,8 +126,8 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 	 * @param l the link whose split should be returned
 	 * @return the share of the demand through this node carried by the Link
 	 */
-	public double getSplit(Link l) {
-		Double r = split.getOrDefault(l, 0.0);
+	public Float getSplit(Link l) {
+		Float r = split.getOrDefault(l, 0.0F);
 		if (r.isNaN()) {	//NaN check
 			throw new RuntimeException("BushMerge split is NaN");
 		}
@@ -156,11 +158,11 @@ public class BushMerge extends HashSet<Link> implements BackVector{
 	 * @param d	the split value
 	 * @return	the previous value, or 0.0 if the link wasn't in the Merge before
 	 */
-	public double setSplit(Link l, double d) {
-		if (((Double) d).isNaN()) {
+	public Float setSplit(Link l, Float d) {
+		if (d.isNaN()) {
 			throw new RuntimeException("BushMerge split set to NaN");
 		}
-		Double val = split.put(l, d);
-		return val == null? 0.0 : val;
+		Float val = split.put(l, d);
+		return val == null? 0.0F : val;
 	}
 }

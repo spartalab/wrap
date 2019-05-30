@@ -17,6 +17,8 @@ import edu.utexas.wrap.demand.containers.DemandHashMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import it.unimi.dsi.fastutil.floats.Float2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 public class OriginFactory {
 	
@@ -195,7 +197,7 @@ public class OriginFactory {
 		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
 		String line;
 		
-		Map<Float, AutoODHashMatrix> ods = new HashMap<Float, AutoODHashMatrix>();
+		Map<Float, AutoODHashMatrix> ods = new Float2ObjectOpenHashMap<AutoODHashMatrix>();
 		
 		
 		do { // Move past headers in the file
@@ -269,7 +271,7 @@ public class OriginFactory {
 		} while (!line.equals(""));
 		vf.close();
 
-		Map<Node, List<Float[]>> votMap = new HashMap<Node, List<Float[]>>();
+		Map<Node, List<Float[]>> votMap = new Object2ObjectOpenHashMap<Node, List<Float[]>>();
 		for (Node n : g.getNodes()) {
 			votMap.put(n, VOTs);
 		}

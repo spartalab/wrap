@@ -16,6 +16,7 @@ import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 
 public class DBAutoDemandMap implements AutoDemandMap {
 	private final String tableName;
@@ -171,7 +172,7 @@ public class DBAutoDemandMap implements AutoDemandMap {
 	@Override
 	public Map<Node, Double> doubleClone() {
 		PreparedStatement ps = null; ResultSet rs = null; Connection conn = null;
-		Map<Node, Double> ret = new HashMap<Node,Double>();
+		Map<Node, Double> ret = new Object2DoubleOpenHashMap<Node>();
 		String query = "select dest, "+columnName+" from "+tableName+" where orig=?";
 		
 		try {
