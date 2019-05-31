@@ -1,12 +1,13 @@
 package edu.utexas.wrap.assignment.bush;
 
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.util.AlternateSegmentPair;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 /**A way to represent the Links which merge at a given Node in a Bush,
  * namely, a set of Links with a longest and shortest path named and a
@@ -14,11 +15,7 @@ import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
  * @author William
  *
  */
-public class BushMerge extends ObjectOpenHashSet<Link> implements BackVector{
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+public class BushMerge implements BackVector, Iterable<Link>{
 	private Link shortLink;
 	private Link longLink;
 	private AlternateSegmentPair asp;
@@ -31,21 +28,18 @@ public class BushMerge extends ObjectOpenHashSet<Link> implements BackVector{
 	 * @param l the shortcut link providing a shorter path to the node
 	 */
 	public BushMerge(Bush b, Link u, Link l) {
-		super(4);
 		bush = b;
 
-		add(l);
-		add(u);
 
-		split = new Object2ObjectOpenHashMap<Link, Float>();
+		split = new Object2ObjectOpenHashMap<Link, Float>(2);
 		split.put(u, 1.0F);
+		split.put(l, 0.0F);
 	}
 	
 	/**Duplication constructor
 	 * @param bm	the BushMerge to be copied
 	 */
 	public BushMerge(BushMerge bm) {
-		super(bm);
 		bush = bm.bush;
 		longLink = bm.longLink;
 		shortLink = bm.shortLink;
@@ -57,9 +51,8 @@ public class BushMerge extends ObjectOpenHashSet<Link> implements BackVector{
 	 * @param b
 	 */
 	protected BushMerge(Bush b) {
-		super(4);
 		bush = b;
-		split = new Object2ObjectOpenHashMap<Link,Float>();
+		split = new Object2ObjectOpenHashMap<Link,Float>(2);
 	}
 	
 	/**
@@ -116,9 +109,9 @@ public class BushMerge extends ObjectOpenHashSet<Link> implements BackVector{
 		else if (longLink != null && longLink.equals(l)) {
 			longLink = null;
 		}
-		if (!super.remove(l)) 
+		if (split.remove(l) == null) 
 			throw new RuntimeException("A Link was removed that wasn't in the BushMerge");
-		if (size() < 2) return true;
+		if (split.size() < 2) return true;
 		return false;
 	}
 	
@@ -164,5 +157,31 @@ public class BushMerge extends ObjectOpenHashSet<Link> implements BackVector{
 		}
 		Float val = split.put(l, d);
 		return val == null? 0.0F : val;
+	}
+
+	@Override
+	public Iterator<Link> iterator() {
+		// TODO Auto-generated method stub
+		return split.keySet().iterator();
+	}
+
+	public Boolean add(Link l) {
+		// TODO Auto-generated method stub
+		try { 
+			split.put(l, 0.0F);
+			return true;
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	public boolean contains(Link i) {
+		// TODO Auto-generated method stub
+		return split.containsKey(i);
+	}
+
+	public Set<Link> getLinks() {
+		// TODO Auto-generated method stub
+		return split.keySet();
 	}
 }

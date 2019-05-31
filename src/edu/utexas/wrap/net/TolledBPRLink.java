@@ -90,7 +90,7 @@ public class TolledBPRLink extends TolledLink {
 		Double ca = Math.pow(c, -a);
 		Double r = a*va*t*b*ca;
 		if (r.isNaN()) {
-			throw new RuntimeException();
+			throw new RuntimeException("Invalid BPR parameters");
 		}
 		return r;
 	}

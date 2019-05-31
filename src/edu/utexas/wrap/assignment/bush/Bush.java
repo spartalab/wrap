@@ -759,9 +759,11 @@ public class Bush implements AssignmentContainer {
 		//In topological order,
 		for (Node d : to) {
 			try {
-				for (Link l : wholeNet.inLinks(d)) {
+				BackVector bv = q.get(d);
+				if (bv instanceof Link) shortRelax((Link) bv, cache);
+				else if (bv instanceof BushMerge) for (Link l : (BushMerge) bv) {
 					//Try to relax all incoming links
-					if (contains(l)) shortRelax(l, cache);
+					shortRelax(l, cache);
 				}
 			} catch (UnreachableException e) {
 				if (getDemand(d) > 0.0) {
@@ -787,7 +789,7 @@ public class Bush implements AssignmentContainer {
 
 		boolean modified = false;
 		Set<Link> usedLinks = getLinks();
-		Set<Link> unusedLinks = new HashSet<Link>(wholeNet.getLinks());
+		Set<Link> unusedLinks = new ObjectOpenHashSet<Link>(wholeNet.getLinks());
 		unusedLinks.removeAll(usedLinks);
 		
 		//Calculate the longest path costs
@@ -828,7 +830,7 @@ public class Bush implements AssignmentContainer {
 			//For every backvector, add its link(s) to the return set
 			if (b instanceof Link) ret.add((Link) b);
 			else if (b instanceof BushMerge) 
-				ret.addAll((BushMerge) b);
+				ret.addAll(((BushMerge) b).getLinks());
 		}
 		return ret;
 

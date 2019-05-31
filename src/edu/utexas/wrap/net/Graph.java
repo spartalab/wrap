@@ -20,13 +20,13 @@ public class Graph {
 	private byte[] md5;
 	
 	public Graph() {
-		outLinks = new Object2ObjectOpenHashMap<Node, Set<Link>>();
+		outLinks = new HashMap<Node, Set<Link>>();
 		inLinks = new Object2ObjectOpenHashMap<Node, Set<Link>>();
 		nodeMap = new Int2ObjectOpenHashMap<Node>();
 	}
 	
 	public Graph(Graph g) {
-		outLinks = new Object2ObjectOpenHashMap<Node, Set<Link>>();
+		outLinks = new HashMap<Node, Set<Link>>();
 		for (Node n : g.outLinks.keySet()) {
 			outLinks.put(n, new ObjectOpenHashSet<Link>(g.outLinks.get(n)));
 		}

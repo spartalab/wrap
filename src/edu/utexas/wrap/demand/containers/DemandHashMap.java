@@ -18,7 +18,7 @@ public class DemandHashMap extends Object2ObjectOpenHashMap<Node, Float> impleme
 	Graph g;
 
 	public DemandHashMap(Graph g) {
-		super();
+		super(g.getNumZones());
 		this.g = g;
 	}
 	
