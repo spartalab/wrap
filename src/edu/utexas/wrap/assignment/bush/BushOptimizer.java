@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 
 import edu.utexas.wrap.assignment.Optimizer;
 import edu.utexas.wrap.net.Graph;
@@ -99,7 +100,7 @@ public abstract class BushOptimizer extends Optimizer {
 		// A single general step iteration
 		// TODO explore which bushes should be examined 
 		
-		ExecutorService p = Executors.newWorkStealingPool();
+		ForkJoinPool p = (ForkJoinPool) Executors.newWorkStealingPool();
 		for (BushOrigin o : origins) {
 			for (Bush b : o.getContainers()) {
 				Thread t = new Thread() {
@@ -114,11 +115,16 @@ public abstract class BushOptimizer extends Optimizer {
 
 		//Wait until all bushes have finished improving
 		p.shutdown();
-		while (!p.isTerminated());
+		while (!p.isTerminated()) {
+			System.out.print("\tImproving origins\tIn queue: "+p.getQueuedSubmissionCount()+"   \tActive: "+p.getActiveThreadCount()+"\r");
+
+		}
 		
 		// Equilibrate bushes sequentially
 		for (int i = 0; i < innerIters; i++) {
+			System.out.print("\tEquilibration # "+i+" out of "+innerIters+"\r");
 			for (BushOrigin o : origins) {
+				
 				for (Bush b : o.getContainers()) {
 					equilibrateBush(b);
 				}

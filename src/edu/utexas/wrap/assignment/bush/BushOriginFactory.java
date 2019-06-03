@@ -70,7 +70,7 @@ public class BushOriginFactory extends AssignmentLoader {
 		p.shutdown();
 		
 		while (!p.isTerminated()) {
-			System.out.print("\rOrigins in queue: "+p.getQueuedSubmissionCount()+"\tActive: "+p.getActiveThreadCount());
+			System.out.print("\rLoading origins...\tIn queue: "+p.getQueuedSubmissionCount()+"   \tActive: "+p.getActiveThreadCount());
 			try {
 				Thread.sleep(50);
 			} catch (InterruptedException e) {

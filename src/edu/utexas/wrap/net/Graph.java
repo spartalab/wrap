@@ -5,17 +5,21 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 public class Graph {
 	private Map<Node, Set<Link>> outLinks;
 	private Map<Node, Set<Link>> inLinks;
 	private Map<Integer, Node> nodeMap;
+	private List<Node> order;
+	private Set<Link> links;
 	private int numZones;
 	private byte[] md5;
 	
@@ -23,6 +27,7 @@ public class Graph {
 		outLinks = new HashMap<Node, Set<Link>>();
 		inLinks = new Object2ObjectOpenHashMap<Node, Set<Link>>();
 		nodeMap = new Int2ObjectOpenHashMap<Node>();
+		order = new ObjectArrayList<Node>();
 	}
 	
 	public Graph(Graph g) {
@@ -35,6 +40,7 @@ public class Graph {
 			inLinks.put(n, new ObjectOpenHashSet<Link>(g.inLinks.get(n)));
 		}
 		nodeMap = g.nodeMap;
+		order = new ObjectArrayList<Node>(g.order);
 	}
 	
 	public Boolean add(Link link) {
@@ -51,6 +57,8 @@ public class Graph {
 			nodeMap.put(link.getHead().getID(), head);
 			nodeMap.put(link.getTail().getID(), tail);
 		}
+		if (!order.contains(head)) order.add(head);
+		if (!order.contains(tail)) order.add(tail);
 		return altered;
 	}
 	
@@ -59,15 +67,23 @@ public class Graph {
 	}
 	
 	public Boolean contains(Link l) {
-		return outLinks(l.getTail()).contains(l) || inLinks(l.getHead()).contains(l);
+		for (Link m : inLinks(l.getHead())) {
+			if (m.equals(l)) return true;
+		}
+		for (Link m : outLinks(l.getHead())) {
+			if (m.equals(l)) return true;
+		}
+		return false;
 	}
 	
 	public Set<Link> getLinks(){
-		HashSet<Link> ret = new HashSet<Link>();
+		if (links != null) return links;
+			HashSet<Link> ret = new HashSet<Link>();
 		outLinks.values().stream().reduce(ret, (a,b)->{
 			a.addAll(b);
 			return a;
 		});
+		links = ret;
 //		for (Node n : outLinks.keySet()) ret.addAll(outLinks.get(n));
 		return ret;
 	}
@@ -77,7 +93,7 @@ public class Graph {
 	}
 	
 	public Collection<Node> getNodes(){
-		return nodeMap.values();
+		return order;
 	}
 
 	public int getNumZones() {
@@ -88,16 +104,16 @@ public class Graph {
 		this.numZones = numZones;
 	}
 
-	public Set<Link> inLinks(Node u){
-		return inLinks.getOrDefault(u, Collections.emptySet());
+	public Link[] inLinks(Node u){
+		return inLinks.getOrDefault(u, Collections.emptySet()).stream().toArray(n->new Link[n]);
 	}
 
 	public Integer numNodes() {
 		return nodeMap.size();
 	}
 	
-	public Set<Link> outLinks(Node u) {
-		return outLinks.getOrDefault(u, Collections.emptySet());
+	public Link[] outLinks(Node u) {
+		return outLinks.getOrDefault(u, Collections.emptySet()).stream().toArray(n->new Link[n]);
 	}
 
 	public Boolean remove(Link link) {
@@ -107,10 +123,10 @@ public class Graph {
 	}
 
 	public void remove(Node node) {
-		for (Link link : inLinks.getOrDefault(node, new HashSet<Link>())) {
+		for (Link link : inLinks.getOrDefault(node, Collections.emptySet())) {
 			outLinks.get(link.getTail()).remove(link);
 		}
-		for (Link link : outLinks.getOrDefault(node, new HashSet<Link>())) {
+		for (Link link : outLinks.getOrDefault(node, Collections.emptySet())) {
 			inLinks.get(link.getHead()).remove(link);
 		}
 		inLinks.remove(node);
@@ -134,4 +150,7 @@ public class Graph {
 		return md5;
 	}
 	
+	public int getOrder(Node n) {
+		return order.indexOf(n);
+	}
 }

@@ -7,7 +7,7 @@ import java.util.Set;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.util.AlternateSegmentPair;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 
 /**A way to represent the Links which merge at a given Node in a Bush,
  * namely, a set of Links with a longest and shortest path named and a
@@ -15,11 +15,9 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
  * @author William
  *
  */
-public class BushMerge implements BackVector, Iterable<Link>{
+public class BushMerge extends Object2FloatOpenHashMap<Link> implements BackVector, Iterable<Link>{
 	private Link shortLink;
 	private Link longLink;
-	private AlternateSegmentPair asp;
-	private Map<Link, Float> split;
 	private final Bush bush;
 	
 	/** Create a BushMerge by adding a shortcut link to a node
@@ -28,31 +26,30 @@ public class BushMerge implements BackVector, Iterable<Link>{
 	 * @param l the shortcut link providing a shorter path to the node
 	 */
 	public BushMerge(Bush b, Link u, Link l) {
-		bush = b;
+		this(b);
 
-
-		split = new Object2ObjectOpenHashMap<Link, Float>(2);
-		split.put(u, 1.0F);
-		split.put(l, 0.0F);
+		put(u, 1.0F);
+		put(l, 0.0F);
 	}
 	
 	/**Duplication constructor
 	 * @param bm	the BushMerge to be copied
 	 */
 	public BushMerge(BushMerge bm) {
+		super(bm);
 		bush = bm.bush;
 		longLink = bm.longLink;
 		shortLink = bm.shortLink;
-		asp = bm.asp;
-		split = new Object2ObjectOpenHashMap<Link,Float>(bm.split);
+		defaultReturnValue(-1F);
 	}
 	
 	/**Constructor for empty merge
 	 * @param b
 	 */
 	protected BushMerge(Bush b) {
+		super(3,1.0f);
+		defaultReturnValue(-1F);
 		bush = b;
-		split = new Object2ObjectOpenHashMap<Link,Float>(2);
 	}
 	
 	/**
@@ -73,8 +70,7 @@ public class BushMerge implements BackVector, Iterable<Link>{
 	 * @return the shortest and longest path AlternateSegmentPair merging here
 	 */
 	public AlternateSegmentPair getShortLongASP() {
-		if (asp == null) asp = bush.getShortLongASP(shortLink.getHead());
-		return asp;
+		return bush.getShortLongASP(shortLink.getHead());
 	}
 	
 	/**Set the shortest path cost link
@@ -109,9 +105,10 @@ public class BushMerge implements BackVector, Iterable<Link>{
 		else if (longLink != null && longLink.equals(l)) {
 			longLink = null;
 		}
-		if (split.remove(l) == null) 
+		if (super.removeFloat(l) == defaultReturnValue()) 
 			throw new RuntimeException("A Link was removed that wasn't in the BushMerge");
-		if (split.size() < 2) return true;
+		if (size() == 1) return true;
+		trim();
 		return false;
 	}
 	
@@ -120,7 +117,7 @@ public class BushMerge implements BackVector, Iterable<Link>{
 	 * @return the share of the demand through this node carried by the Link
 	 */
 	public Float getSplit(Link l) {
-		Float r = split.getOrDefault(l, 0.0F);
+		Float r = getOrDefault(l, 0.0F);
 		if (r.isNaN()) {	//NaN check
 			throw new RuntimeException("BushMerge split is NaN");
 		}
@@ -155,20 +152,21 @@ public class BushMerge implements BackVector, Iterable<Link>{
 		if (d.isNaN()) {
 			throw new RuntimeException("BushMerge split set to NaN");
 		}
-		Float val = split.put(l, d);
+		Float val = put(l, d.floatValue());
 		return val == null? 0.0F : val;
 	}
 
 	@Override
 	public Iterator<Link> iterator() {
 		// TODO Auto-generated method stub
-		return split.keySet().iterator();
+		return keySet().iterator();
 	}
 
 	public Boolean add(Link l) {
 		// TODO Auto-generated method stub
 		try { 
-			split.put(l, 0.0F);
+			put(l, 0.0F);
+			trim();
 			return true;
 		} catch (Exception e) {
 			return false;
@@ -177,11 +175,12 @@ public class BushMerge implements BackVector, Iterable<Link>{
 
 	public boolean contains(Link i) {
 		// TODO Auto-generated method stub
-		return split.containsKey(i);
+		return containsKey(i);
 	}
 
 	public Set<Link> getLinks() {
 		// TODO Auto-generated method stub
-		return split.keySet();
+		return keySet();
 	}
+	
 }

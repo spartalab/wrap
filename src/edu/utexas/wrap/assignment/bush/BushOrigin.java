@@ -1,10 +1,9 @@
 package edu.utexas.wrap.assignment.bush;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import edu.utexas.wrap.assignment.Origin;
 import edu.utexas.wrap.demand.AutoDemandMap;
@@ -14,18 +13,17 @@ import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.util.FibonacciHeap;
 import edu.utexas.wrap.util.FibonacciLeaf;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 public class BushOrigin extends Origin {
 	private List<Bush> containers;
-	private Map<Node, Link> initMap;
+	private BackVector[] initMap;
 
 	/**Default constructor
 	 * @param self the Node from which the Bushes will emanate
 	 */
 	public BushOrigin(Node self) {
 		super(self);
-		containers = new LinkedList<Bush>();
+		containers = new ArrayList<Bush>();
 	}
 
 	/** Build the origin's initial bush using Dijkstra's algorithm
@@ -53,8 +51,8 @@ public class BushOrigin extends Origin {
 		// eligible nodes to contain this origin only, and the 
 		// back-link mapping to be empty
 		Collection<Node> nodes = g.getNodes();
-		initMap = new Object2ObjectOpenHashMap<Node, Link>(nodes.size(),1.0f);
-		FibonacciHeap<Node> Q = new FibonacciHeap<Node>(nodes.size(),1.0f);
+		initMap = new BackVector[nodes.size()+1];
+		FibonacciHeap<Node> Q = new FibonacciHeap<Node>((int) Math.round(nodes.size()*1.05),1.0f);
 		for (Node n : nodes) {
 			if (!n.equals(getNode())) {
 				Q.add(n, Float.MAX_VALUE);
@@ -74,7 +72,7 @@ public class BushOrigin extends Origin {
 				Float alt = uv.freeFlowTime()+u.key;
 				if (alt<v.key) {
 					Q.decreaseKey(v, alt);
-					initMap.put(v.n, uv);
+					initMap[g.getOrder(v.n)] = uv;
 				}
 			}
 		}
@@ -105,7 +103,7 @@ public class BushOrigin extends Origin {
 	 * @param g the graph to search for shortest paths
 	 * @return the back-vector mapping of the shortest path tree
 	 */
-	public Map<Node, Link> getInitMap(Graph g) {
+	public BackVector[] getInitMap(Graph g) {
 		if (initMap == null) buildInitMap(g);	//caching speeds this up
 		return initMap;
 	}

@@ -8,6 +8,7 @@ import java.util.Set;
 
 import edu.utexas.wrap.assignment.Optimizer;
 import edu.utexas.wrap.assignment.bush.AlgorithmBOptimizer;
+import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.bush.BushOriginFactory;
 import edu.utexas.wrap.assignment.bush.BushOrigin;
 import edu.utexas.wrap.net.Graph;
@@ -105,6 +106,7 @@ public class wrap{
 			if (args.length < 3) {
 				printHelp();
 			}
+			if (args[args.length-1].trim().equals("-d")) Bush.cachingAllowed = false;
 			if ((args[0].trim().equals("-e") || args[0].trim().equals("--enhanced"))) {
 				File links		= new File(args[1]);
 				File odMatrix	= new File(args[2]);

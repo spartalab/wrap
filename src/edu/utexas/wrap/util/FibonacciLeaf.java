@@ -6,11 +6,11 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 public class FibonacciLeaf<E>{
 	public E n;
-	public Float key;
-	public Integer degree;
+	public float key;
+	public int degree;
 	public FibonacciLeaf<E> parent;
 	public List<FibonacciLeaf<E>> child;
-	public Boolean mark;
+	public boolean mark;
 	
 	public FibonacciLeaf(E n, Float d) {
 		this.n = n;
@@ -23,7 +23,7 @@ public class FibonacciLeaf<E>{
 
 	@Override
 	public String toString() {
-		return "Leaf\t"+n.toString()+"\t"+key.toString();
+		return "Leaf\t"+n.toString()+"\t"+key;
 	}
 
 }
