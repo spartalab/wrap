@@ -172,10 +172,12 @@ public class wrap{
 	}
 
 	private static void printHelp() {
-		System.err.println("Uniform VOT usage: wrap network.tntp odMatrix.tntp votSplit.tntp");
-		System.err.println("Variable VOT usage: wrap {-v || --variable} network.tntp odMatrix.tntp");
-		System.err.println("Enahnced usage: wrap {-e || --enhanced} network.csv odMatrix.csv firstThruNode");
+		System.err.println("Uniform VOT usage: wrap network.tntp odMatrix.tntp votSplit.tntp [-d]");
+		System.err.println("Variable VOT usage: wrap {-v || --variable} network.tntp odMatrix.tntp [-d]");
+		System.err.println("Enahnced usage: wrap {-e || --enhanced} network.csv odMatrix.csv firstThruNode [-d]");
 		System.exit(3);
 	}
+	
+	
 }
 

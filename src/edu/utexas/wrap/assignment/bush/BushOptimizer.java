@@ -116,13 +116,20 @@ public abstract class BushOptimizer extends Optimizer {
 		//Wait until all bushes have finished improving
 		p.shutdown();
 		while (!p.isTerminated()) {
-			System.out.print("\tImproving origins\tIn queue: "+p.getQueuedSubmissionCount()+"   \tActive: "+p.getActiveThreadCount()+"\r");
-
+			try {
+			System.out.print("\tImproving origins\t"
+					+ "In queue: "+p.getQueuedSubmissionCount()+"   \t"
+						+ "Active: "+p.getActiveThreadCount()+"\t"
+							+ "Memory usage: "+(Runtime.getRuntime().totalMemory()/1048576)+" MiB\t\r");
+			Thread.sleep(50);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 		
 		// Equilibrate bushes sequentially
 		for (int i = 0; i < innerIters; i++) {
-			System.out.print("\tEquilibration # "+i+" out of "+innerIters+"\r");
+			System.out.print("\tEquilibration # "+(i+1)+" out of "+innerIters+"\t\t\t\t\t\t\t\t\r");
 			for (BushOrigin o : origins) {
 				
 				for (Bush b : o.getContainers()) {

@@ -81,10 +81,10 @@ public class Bush implements AssignmentContainer {
 	private boolean add(Link l) {
 		Boolean ret = false;
 		Node head = l.getHead();
-		BackVector prior = q[network.getOrder(head)];
+		BackVector prior = getBackVector(head);
 		// If there was no backvector (should only happen during bush initialization), add link
 		if (prior == null) {
-			q[network.getOrder(head)] = l;
+			setBackVector(head, l);
 			ret = true;
 		}
 		// If the link is already the sole backvector, do nothing
@@ -96,11 +96,15 @@ public class Bush implements AssignmentContainer {
 		// Else, we need to create a new merge backvector to replace the current back link
 		else if (prior instanceof Link) { // If we're here, the back link needs to be replaced by a merge
 			BushMerge nuevo = new BushMerge(this, (Link) prior, l);
-			q[network.getOrder(head)] = (BackVector) nuevo;
+			setBackVector(head, nuevo);
 			ret = true;
 		}
 		if (ret) cachedTopoOrder = null;
 		return ret;
+	}
+
+	void setBackVector(Node head, BackVector backvector) {
+		q[network.getOrder(head)] = backvector;
 	}
 
 	/**Determine whether a link is active in the bush
@@ -108,7 +112,7 @@ public class Bush implements AssignmentContainer {
 	 * @return whether the given link is in the bush structure
 	 */
 	private boolean contains(Link i) {
-		BackVector back = q[network.getOrder(i.getHead())];
+		BackVector back = getBackVector(i.getHead());
 		//Look at the head node's backvector
 		return back instanceof BushMerge? 
 				//If it's a merge, determine if the merge contains the link
@@ -124,60 +128,49 @@ public class Bush implements AssignmentContainer {
 	 */
 	protected Node divergeNode(Node start) {
 		// If the given node is the origin or it has only one backvector, there is no diverge node
-		if (start.equals(origin.getNode()) || !(q[network.getOrder(start)] instanceof BushMerge))
+		if (start.equals(origin.getNode()) || !(getBackVector(start) instanceof BushMerge))
 			return start;
-
-		//Assemble the shortest path to the origin
-		Path lPath;
-		try {
-			lPath = getShortPath(start);
-		} catch (UnreachableException e) {
-			e.printStackTrace();
-			return null;
-		}
-		//Assemble the longest path to the origin
-		Path uPath = getLongPath(start);
 
 		//Store the nodes seen on the paths in reverse order
 		List<Node> lNodes = new ObjectArrayList<Node>();
 		List<Node> uNodes = new ObjectArrayList<Node>();
-		Iterator<Link> lIter = lPath.descendingIterator();
-		Iterator<Link> uIter = uPath.descendingIterator();
 
 		//Iterate backwards through the shortest and longest paths until one runs out of links
-		Link uLink, lLink;
-		while (lIter.hasNext() && uIter.hasNext()) {
-			lLink = lIter.next();
-			uLink = uIter.next();
+		Link uLink = getqLong(start);
+		Link lLink = getqShort(start);
+		while (lLink != null && uLink != null) {
+
+			Node lNode = lLink.getTail();
+			Node uNode = uLink.getTail();
 
 			//If the next node in both is the same, return that node
-			if (lLink.getTail().equals(uLink.getTail()))
-				return lLink.getTail();
+			if (lNode.equals(uNode)) return lNode;
 			//If the shortest path just got to a node that was already seen in the longest path, return it
-			else if (uNodes.contains(lLink.getTail()))
-				return lLink.getTail();
+			else if (uNodes.contains(lNode)) return lNode;
 			//If the longest path just got to a node that was already seen in the shortest path, return it
-			else if (lNodes.contains(uLink.getTail()))
-				return uLink.getTail();
+			else if (lNodes.contains(uNode)) return uNode;
 			//Otherwise, add both to the lists of seen nodes
 			else {
 				lNodes.add(lLink.getTail());
 				uNodes.add(uLink.getTail());
 			}
+			
+			lLink = getqShort(lNode);
+			uLink = getqLong(uNode);
 		}
 		//If there are still more links to examine on the longest path, do so
-		while (uIter.hasNext()) {
-			uLink = uIter.next();
+		while (uLink != null) {
+			Node uNode = uLink.getTail();
 			//If the longest path just got to a node that was already seen in the shortest path, return it
-			if (lNodes.contains(uLink.getTail()))
-				return uLink.getTail();
+			if (lNodes.contains(uNode)) return uNode;
+			uLink = getqLong(uNode);
 		}
 		//If there are still more links to examine on the shortest path, do so
-		while (lIter.hasNext()) {
-			lLink = lIter.next();
+		while (lLink != null) {
+			Node lNode = lLink.getTail();
 			//If the shortest path just got to a node that was already seen in the longest path, return it
-			if (uNodes.contains(lLink.getTail()))
-				return lLink.getTail();
+			if (uNodes.contains(lNode))	return lNode;
+			lLink = getqShort(lNode);
 		}
 		//Something went wrong - the two paths never intersected
 		throw new RuntimeException("No diverge node found");
@@ -189,7 +182,7 @@ public class Bush implements AssignmentContainer {
 	 */
 	void dumpFlow() {
 		Map<Node,Double> d = demand.doubleClone();
-		for (Node node : getTopologicalOrder()) {
+		for (Node node : getTopologicalOrder(false)) {
 
 			Double x = d.getOrDefault(node, 0.0);
 			if (x <= 0.0) continue;
@@ -199,7 +192,7 @@ public class Bush implements AssignmentContainer {
 	
 	private void dumpFlow(Node node, Double x) {
 		if (node.equals(origin.getNode())) return;
-		BackVector bv = q[network.getOrder(node)];
+		BackVector bv = getBackVector(node);
 		if (bv instanceof Link) {
 			Link l = (Link) bv;
 			l.changeFlow(x);
@@ -218,7 +211,7 @@ public class Bush implements AssignmentContainer {
 	/**Generate a topological ordering from scratch for this bush
 	 * @return Nodes in topological order
 	 */
-	private LinkedList<Node> generateTopoOrder() {
+	private LinkedList<Node> generateTopoOrder(boolean toCache) {
 		// Start with a set of all bush edges
 		Set<Link> currentLinks = getLinks();
 
@@ -258,7 +251,7 @@ public class Bush implements AssignmentContainer {
 		}
 		if (!currentLinks.isEmpty())
 			throw new RuntimeException("Cyclic graph error");
-		if (Bush.cachingAllowed) cachedTopoOrder = to;
+		if (Bush.cachingAllowed || toCache) cachedTopoOrder = to;
 		return to;
 	}
 
@@ -383,7 +376,7 @@ public class Bush implements AssignmentContainer {
 	 * @return the last link in the longest path to the given node
 	 */
 	public Link getqLong(Node n) {
-		BackVector qq = q[network.getOrder(n)];
+		BackVector qq = getBackVector(n);
 		return qq instanceof Link? (Link) qq :	//If the BackVector is a Link, it's the only candidate
 			qq instanceof BushMerge? ((BushMerge) qq).getLongLink() :	//Else delegate to the BushMerge
 				null;	//This shouldn't happen
@@ -394,7 +387,7 @@ public class Bush implements AssignmentContainer {
 	 * @return the last link in the shortest path to the given node
 	 */
 	public Link getqShort(Node n) {
-		BackVector qq = q[network.getOrder(n)];
+		BackVector qq = getBackVector(n);
 		return qq instanceof Link? (Link) qq :	//If the BackVector is a Link, it's the only candidate
 			qq instanceof BushMerge ? ((BushMerge) qq).getShortLink() :	//Otherwise, delegate to the BushMerge
 				null;	//This shouldn't happen
@@ -402,9 +395,10 @@ public class Bush implements AssignmentContainer {
 
 	/**Assemble the alternate segment pair of longest and shortest paths emanating from the terminus
 	 * @param terminus the node whose longest-shortest ASP should be calculated
+	 * @param bushFlows 
 	 * @return the alternate segment pair consisting of the shortest and longest paths to the terminus
 	 */
-	public AlternateSegmentPair getShortLongASP(Node terminus) {
+	public AlternateSegmentPair getShortLongASP(Node terminus, Map<Link, Double> bushFlows) {
 		//Iterate through longest paths until reaching a node in shortest path
 
 		//Reiterate through shortest path to build path up to divergence node
@@ -413,17 +407,17 @@ public class Bush implements AssignmentContainer {
 		Link longLink = getqLong(terminus);
 
 		// If there is no divergence node, move on to the next topological node
-		if (!(q[network.getOrder(terminus)] instanceof BushMerge) || longLink == null || longLink.equals(shortLink))
+		if (!(getBackVector(terminus) instanceof BushMerge) || longLink == null || longLink.equals(shortLink))
 			return null;
 
 		// Else calculate divergence node
 		Node diverge = divergeNode(terminus);
-		try {
-			return new AlternateSegmentPair(getShortPath(terminus, diverge), getLongPath(terminus, diverge), this);
-		} catch (UnreachableException e) {
-			e.printStackTrace();
-			return null;
-		}
+
+		return new AlternateSegmentPair(terminus, diverge, getMaxDelta(terminus, bushFlows),this);
+	}
+
+	BackVector getBackVector(Node node) {
+		return q[network.getOrder(node)];
 	}
 
 	/** Assemble the shortest path from the origin to a given node
@@ -465,8 +459,8 @@ public class Bush implements AssignmentContainer {
 	 * 
 	 * @return a topological ordering of this bush's nodes
 	 */
-	public LinkedList<Node> getTopologicalOrder() {
-		return (cachedTopoOrder != null) ? cachedTopoOrder : generateTopoOrder();
+	public LinkedList<Node> getTopologicalOrder(boolean toCache) {
+		return (cachedTopoOrder != null) ? cachedTopoOrder : generateTopoOrder(toCache);
 	}
 
 	/**Recursively calculate the longest path to a node
@@ -542,7 +536,7 @@ public class Bush implements AssignmentContainer {
 		//If the longest path doesn't exist, is already through the proposed link, or the cost is longer,
 		if (getqLong(head) == null || getqLong(head).equals(l) || Uicij > getCachedU(head, cache)) {
 			//Update the BushMerge if need be
-			BackVector back = q[network.getOrder(head)];
+			BackVector back = getBackVector(head);
 			if (back instanceof BushMerge) ((BushMerge) back).setLongLink(l);
 			//Store the cost in the cache
 			cache.put(head, Uicij);
@@ -557,14 +551,14 @@ public class Bush implements AssignmentContainer {
 	 * @param longestUsed whether to relax only links that are in use
 	 */
 	public Map<Node, Double> longTopoSearch(boolean longestUsed) {
-		List<Node> to = getTopologicalOrder();
+		List<Node> to = getTopologicalOrder(false);
 		Map<Node, Double> cache = new Object2DoubleOpenHashMap<Node>(network.numNodes());
 
 		//In topological order,
 		for (Node d : to) {
 			try {
 				//Try to relax the backvector (all links in the BushMerge, if applicable)
-				BackVector bv = q[network.getOrder(d)];
+				BackVector bv = getBackVector(d);
 				if (bv instanceof Link) longRelax((Link) bv, cache);
 				else if (bv instanceof BushMerge) {
 					BushMerge bm = (BushMerge) bv;
@@ -586,7 +580,7 @@ public class Bush implements AssignmentContainer {
 	 * @return whether the link was removed successfully
 	 */
 	private boolean remove(Link l) {
-		BackVector b = q[network.getOrder(l.getHead())];
+		BackVector b = getBackVector(l.getHead());
 		// If there was a merge present at the head node, attempt to remove the link from it
 		if (b instanceof BushMerge) {
 			BushMerge bm = (BushMerge) b;
@@ -594,7 +588,7 @@ public class Bush implements AssignmentContainer {
 			if (size > 1) {
 				bm.remove(l);
 				if (size==2){ //If there is only one link left, replace BushMerge with Link
-					q[network.getOrder(l.getHead())] = bm.iterator().next();
+					setBackVector(l.getHead(),bm.iterator().next());
 					return true;
 				} 
 			}
@@ -628,11 +622,11 @@ public class Bush implements AssignmentContainer {
 	public Double getFlow(Link l) {
 		//Get the reverse topological ordering and a place to store node flows
 		Map<Node,Double> flow = demand.doubleClone();
-		Iterator<Node> iter = getTopologicalOrder().descendingIterator();
+		Iterator<Node> iter = getTopologicalOrder(false).descendingIterator();
 		
 		//For each node in reverse topological order
 		for (Node n = iter.next(); iter.hasNext(); n = iter.next()) {
-			BackVector back = q[network.getOrder(n)];
+			BackVector back = getBackVector(n);
 			Double downstream = flow.getOrDefault(n,0.0);
 			//Get the node flow and the backvector that feeds it into the node
 			
@@ -693,13 +687,13 @@ public class Bush implements AssignmentContainer {
 //		for (Node d : demand.getNodes()) nodeFlow.put(d, demand.get(d).doubleValue());
 		
 		Map<Node,Double> nodeFlow = demand.doubleClone();
-		Iterator<Node> iter = getTopologicalOrder().descendingIterator();
+		Iterator<Node> iter = getTopologicalOrder(false).descendingIterator();
 		Map<Link,Double> ret = new Object2DoubleOpenHashMap<Link>();
 
 		//For each node in reverse topological order
 		for (Node n = iter.next(); iter.hasNext(); n = iter.next()) {
 			//Get the node flow and the backvector that feeds it into the node
-			BackVector back = q[network.getOrder(n)];
+			BackVector back = getBackVector(n);
 			Double downstream = nodeFlow.getOrDefault(n,0.0);
 
 			//If there is only one backvector,all node flow must pass through it
@@ -746,7 +740,7 @@ public class Bush implements AssignmentContainer {
 		//If the shortest path doesn't exist, already flows through the link, or this has a lower cost,
 		if (getqShort(head) == null || getqShort(head).equals(l) || Licij < getCachedL(head, cache)) {
 			//Update the BushMerge, if applicable
-			BackVector back = q[network.getOrder(head)];
+			BackVector back = getBackVector(head);
 			if (back instanceof BushMerge) ((BushMerge) back).setShortLink(l);
 			//Store this cost in the cache
 			cache.put(head, Licij);
@@ -760,13 +754,13 @@ public class Bush implements AssignmentContainer {
 	 * shortest paths calculation
 	 */
 	public Map<Node, Double> shortTopoSearch() {
-		List<Node> to = getTopologicalOrder();
+		List<Node> to = getTopologicalOrder(false);
 		Object2DoubleOpenHashMap<Node> cache = new Object2DoubleOpenHashMap<Node>((int) Math.round(network.numNodes()*1.05),1.0F);
 
 		//In topological order,
 		for (Node d : to) {
 			try {
-				BackVector bv = q[network.getOrder(d)];
+				BackVector bv = getBackVector(d);
 				if (bv instanceof Link) shortRelax((Link) bv, cache);
 				else if (bv instanceof BushMerge) for (Link l : (BushMerge) bv) {
 					//Try to relax all incoming links
@@ -850,7 +844,7 @@ public class Bush implements AssignmentContainer {
 	 * @return the maximum flow that can be shifted from the longest to the shortest path
 	 */
 	public Double getMaxDelta(Node cur, Map<Link, Double> bushFlows) {
-		BackVector bv = q[network.getOrder(cur)];
+		BackVector bv = getBackVector(cur);
 		return bv instanceof BushMerge ? //If the backvector is a BushMerge,
 				((BushMerge) bv).getMaxDelta(bushFlows) //Delegate finding the maximum delta
 				: 0.0; //Otherwise the maximum delta is zero since there's only one path here
@@ -882,8 +876,8 @@ public class Bush implements AssignmentContainer {
 	 */
 	public void toFile(OutputStream out) throws IOException {
 		int size = Integer.BYTES*2+Float.BYTES;
-		for (Node n : getTopologicalOrder()) {
-			BackVector qn = q[network.getOrder(n)];
+		for (Node n : getTopologicalOrder(false)) {
+			BackVector qn = getBackVector(n);
 			
 			if (qn instanceof Link) {
 //				out.println(n.getID()+","+((Link) qn).hashCode()+",1.0");
@@ -941,19 +935,19 @@ public class Bush implements AssignmentContainer {
 			if (bv == null) throw new RuntimeException("Unknown Link");
 			
 			//If this is the first link read which leads to this head node
-			if (q[network.getOrder(n)] == null) {
+			if (getBackVector(n) == null) {
 				//Check to see if this holds all flow through this node
-				if (split == 1.0) q[network.getOrder(n)] = bv;
-				//create a merge if it doesn't
+				if (split == 1.0)
+					setBackVector(n, bv);
 				else {
 					BushMerge qm = new BushMerge(this);
 					qm.add(bv);
 					qm.setSplit(bv, split);
-					q[network.getOrder(n)] = qm;
+					setBackVector(n,qm);
 				}
 			}
 			else {
-				BackVector qb = q[network.getOrder(n)];
+				BackVector qb = getBackVector(n);
 				//If we already constructed the merge
 				if (qb instanceof BushMerge) {
 					//add the link
@@ -965,7 +959,7 @@ public class Bush implements AssignmentContainer {
 					//otherwise construct a new one
 					BushMerge qm = new BushMerge(this, (Link) qb, bv);
 					qm.setSplit(bv, split);
-					q[network.getOrder(n)] = qm;
+					setBackVector(n,qm);
 				}
 			}
 		}
@@ -992,5 +986,9 @@ public class Bush implements AssignmentContainer {
 		BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
 		fromFile(in);
 		in.close();
+	}
+	
+	public void clearCache() {
+		cachedTopoOrder = null;
 	}
 }

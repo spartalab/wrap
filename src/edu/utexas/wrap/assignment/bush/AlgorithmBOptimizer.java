@@ -32,7 +32,7 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 	 * @param b a bush to be equilibrated
 	 */
 	protected synchronized void equilibrateBush(Bush b) {
-		LinkedList<Node> to = b.getTopologicalOrder();
+		LinkedList<Node> to = b.getTopologicalOrder(true);
 		Node cur;
 		
 		//Assign the correct back-pointers to BushMerges using topological search
@@ -49,21 +49,17 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 			if (cur.equals(b.getOrigin().getNode())) continue; //Ignore the origin. Should be same as break if topoOrder is correct 
 			
 			//Determine the maximum delta that can be shifted
-			Double md = b.getMaxDelta(cur, bushFlows);
 			//TODO: streamline this inside bush structure
-			AlternateSegmentPair asp = b.getShortLongASP(cur);
-			if (asp == null || 
-					md <= 0) 
-				continue;
+			AlternateSegmentPair asp = b.getShortLongASP(cur, bushFlows);
+			if (asp == null) continue;
 
 			//calculate delta h, capping at maxDelta
-			Double deltaH = getDeltaH(asp, md);
+			Double deltaH = getDeltaH(asp);
 
 			//Modify link flows
 			updateDeltaX(asp, bushFlows, deltaH);
 		}
-
-		
+		b.clearCache();
 	}
 
 	/** Apply link flow changes on an AlternateSegmentPair
@@ -126,16 +122,15 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 	 * difference in the ASP's longest and shortest path costs divided by
 	 * the sum of the first derivatives of the costs for all links in the ASP
 	 * @param asp	The AlternateSegmentPair used to calculate delta H
-	 * @param md	The maximum delta allowed
 	 * @return		The smaller of the calculated delta H or the max delta
 	 */
-	private Double getDeltaH(AlternateSegmentPair asp, Double md) {
+	private Double getDeltaH(AlternateSegmentPair asp) {
 		Double denom = 0.0;
 		Float vot = asp.getBush().getVOT();
 		for (Link l : asp.shortPath()) denom += (l.pricePrime(vot));			
 		for (Link l : asp.longPath()) denom += (l.pricePrime(vot));
 
-		return Math.min(md, asp.priceDiff()/denom);
+		return Math.min(asp.maxDelta(), asp.priceDiff()/denom);
 	}
 
 	@Override

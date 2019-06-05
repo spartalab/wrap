@@ -1,44 +1,43 @@
 package edu.utexas.wrap.util;
 
-import java.util.Map;
+import java.util.Iterator;
 
-import edu.utexas.wrap.assignment.Path;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 
 public class AlternateSegmentPair {
-	private final Path longPath;
-	private final Path shortPath;
+	private Node merge, diverge;
+	private Double maxDelta;
 	private final Bush bush;
 
-	public AlternateSegmentPair(Path shortPath, Path longPath, Bush bush) {
-		this.longPath = longPath;
-		this.shortPath = shortPath;
+	public AlternateSegmentPair(Node merge, Node diverge, Double maxDelta, Bush bush) {
+		this.diverge = diverge;
+		this.merge = merge;
 		this.bush = bush;
+		this.maxDelta = maxDelta;
 	}
 	
 	public Node diverge() {
-		return shortPath.node(0);
+		return diverge;
 	}
 	
-	public Path longPath() {
-		return longPath;
-	}
-	
-	public Double maxDelta(Map<Link,Double> flows) {
-		return longPath.getMinFlow(flows);
+	public Double maxDelta() {
+		return maxDelta;
 	}
 	
 	public Node merge() {
-		return shortPath.getLast().getHead();
+		return merge;
 	}
 	
 	public Double priceDiff() {
-		Double longPrice = longPath.getPrice(bush.getVOT(), bush.getVehicleClass());				
-		Double shortPrice = shortPath.getPrice(bush.getVOT(), bush.getVehicleClass()); 
+		Double longPrice = 0.0, shortPrice = 0.0;
+		
+		for (Link l : longPath()) longPrice += l.getPrice(bush.getVOT(), bush.getVehicleClass());				
+		for (Link l : shortPath()) shortPrice += l.getPrice(bush.getVOT(), bush.getVehicleClass()); 
+		
 		Double ulp = Math.max(Math.ulp(longPrice),Math.ulp(shortPrice));
-		if (longPrice< shortPrice) {
+		if (longPrice < shortPrice) {
 			if (longPrice-shortPrice < 2*ulp) return 0.0;
 			else throw new RuntimeException("Longest path cheaper than shortest path");
 		}
@@ -46,11 +45,60 @@ public class AlternateSegmentPair {
 		return longPrice-shortPrice;
 	}
 	
-	public Path shortPath() {
-		return shortPath;
-	}
-	
 	public Bush getBush() {
 		return bush;
+	}
+
+	public Iterable<Link> shortPath() {
+		return new ShortPathIterator();
+	}
+
+	public Iterable<Link> longPath() {
+		return new LongPathIterator();
+	}
+	
+	private class ShortPathIterator implements Iterable<Link> {
+
+		@Override
+		public Iterator<Link> iterator() {
+			return new Iterator<Link>(){
+				Node current = merge;
+				@Override
+				public boolean hasNext() {
+					return current != diverge && bush.getqShort(current) != null;
+				}
+
+				@Override
+				public Link next() {
+					Link qs = bush.getqShort(current);
+					current = qs.getTail();
+					return qs;
+				}
+				
+			};
+		}
+		
+	}
+	private class LongPathIterator implements Iterable<Link>{
+
+		@Override
+		public Iterator<Link> iterator() {
+			return new Iterator<Link>() {
+				Node current = merge;
+				@Override
+				public boolean hasNext() {
+					return current != diverge && bush.getqLong(current) != null;
+				}
+
+				@Override
+				public Link next() {
+					Link ql = bush.getqLong(current);
+					current = ql.getTail();
+					return ql;
+				}
+				
+			};
+		}
+		
 	}
 }

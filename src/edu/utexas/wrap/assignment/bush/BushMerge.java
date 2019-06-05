@@ -6,7 +6,6 @@ import java.util.Set;
 
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
-import edu.utexas.wrap.util.AlternateSegmentPair;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 
 /**A way to represent the Links which merge at a given Node in a Bush,
@@ -16,6 +15,10 @@ import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
  *
  */
 public class BushMerge extends Object2FloatOpenHashMap<Link> implements BackVector, Iterable<Link>{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 497136906150582949L;
 	private Link shortLink;
 	private Link longLink;
 	private final Bush bush;
@@ -64,13 +67,6 @@ public class BushMerge extends Object2FloatOpenHashMap<Link> implements BackVect
 	 */
 	public Link getLongLink() {
 		return longLink;
-	}
-	
-	/**
-	 * @return the shortest and longest path AlternateSegmentPair merging here
-	 */
-	public AlternateSegmentPair getShortLongASP() {
-		return bush.getShortLongASP(shortLink.getHead());
 	}
 	
 	/**Set the shortest path cost link
