@@ -24,6 +24,7 @@ import edu.utexas.wrap.util.calc.TSTTCalculator;
  *
  */
 public abstract class BushOptimizer extends Optimizer {
+	public static boolean printProgress = true;
 	private int innerIters = 8;
 	protected Set<BushOrigin> origins;
 	protected Integer relativeGapExp = -4;
@@ -116,9 +117,9 @@ public abstract class BushOptimizer extends Optimizer {
 		//Wait until all bushes have finished improving
 		p.shutdown();
 		while (!p.isTerminated()) {
-			try {
+			if (printProgress) try {
 			System.out.print("\tImproving origins\t"
-					+ "In queue: "+p.getQueuedSubmissionCount()+"   \t"
+					+ "In queue: "+String.format("%1$4s",p.getQueuedSubmissionCount())+"\t"
 						+ "Active: "+p.getActiveThreadCount()+"\t"
 							+ "Memory usage: "+(Runtime.getRuntime().totalMemory()/1048576)+" MiB\t\r");
 			Thread.sleep(50);
@@ -126,16 +127,25 @@ public abstract class BushOptimizer extends Optimizer {
 				e.printStackTrace();
 			}
 		}
-		
+		int numZones = graph.getNumZones();
 		// Equilibrate bushes sequentially
 		for (int i = 0; i < innerIters; i++) {
-			System.out.print("\tEquilibration # "+(i+1)+" out of "+innerIters+"\t\t\t\t\t\t\t\t\r");
+			if (printProgress) System.out.print("\tEquilibration # "+(i+1)+" out of "+innerIters+"\t");
+			int j = 1;
 			for (BushOrigin o : origins) {
-				
+				if (printProgress) System.out.print("Origin "+String.format("%1$4s",j)+" out of "+numZones+"\t");
+				int k = 1;
+				int numBushes = o.getContainers().size();
 				for (Bush b : o.getContainers()) {
+					if (printProgress) System.out.print("Bush "+String.format("%1$2s",k)+" out of "+String.format("%1$2s",numBushes));
 					equilibrateBush(b);
+					if (printProgress) System.out.print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+					k++;
 				}
+				if (printProgress) System.out.print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 			}
+			j++;
+			if (printProgress) System.out.print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\r");
 		}
 		if (print) writeContainers();
 	}

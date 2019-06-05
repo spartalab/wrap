@@ -568,7 +568,7 @@ public class Bush implements AssignmentContainer {
 				}
 			} catch (UnreachableException e) {
 				if (getDemand(d) > 0.0) {
-					throw new RuntimeException();
+					throw new RuntimeException(d.toString()+" unreachable from "+origin.getNode().toString()+"\tDemand="+getDemand(d));
 				}
 			}
 		}

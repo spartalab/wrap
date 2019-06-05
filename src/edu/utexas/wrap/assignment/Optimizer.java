@@ -67,9 +67,8 @@ public abstract class Optimizer {
 		Long end; Double runtime;
 		
 		do {
-			System.out.print(iteration);
 			iterate();
-			System.out.print("\t"+getStatLine());
+			System.out.print(iteration+"\t"+getStatLine());
 			
 			end = System.currentTimeMillis();
 			runtime = (end - start)/1000.0;
