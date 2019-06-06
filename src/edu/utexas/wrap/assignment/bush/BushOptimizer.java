@@ -127,7 +127,7 @@ public abstract class BushOptimizer extends Optimizer {
 				e.printStackTrace();
 			}
 		}
-		int numZones = graph.getNumZones();
+		int numZones = origins.size();
 		// Equilibrate bushes sequentially
 		for (int i = 0; i < innerIters; i++) {
 			if (printProgress) System.out.print("\tEquilibration # "+(i+1)+" out of "+innerIters+"\t");
@@ -143,8 +143,8 @@ public abstract class BushOptimizer extends Optimizer {
 					k++;
 				}
 				if (printProgress) System.out.print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+				j++;
 			}
-			j++;
 			if (printProgress) System.out.print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\r");
 		}
 		if (print) writeContainers();
