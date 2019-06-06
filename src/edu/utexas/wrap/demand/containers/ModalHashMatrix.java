@@ -1,7 +1,5 @@
 package edu.utexas.wrap.demand.containers;
 
-import java.util.HashMap;
-
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.modechoice.Mode;

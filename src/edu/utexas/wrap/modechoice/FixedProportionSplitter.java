@@ -3,11 +3,9 @@ package edu.utexas.wrap.modechoice;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.HashMap;
 import edu.utexas.wrap.net.Node;
 
 import edu.utexas.wrap.demand.containers.ModalHashMatrix;
-import it.unimi.dsi.fastutil.Hash;
 import javafx.util.Pair;
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.ModalPAMatrix;

@@ -126,16 +126,18 @@ public class BushMerge extends Object2FloatOpenHashMap<Link> implements BackVect
 	 */
 	public double getMaxDelta(Map<Link, Double> bushFlows) {
 		//Find the start and end of the ASP
-		Node cur = longLink.getHead();
-		Node stop = bush.divergeNode(cur);
-		//Check all links in the longest path, taking the smallest Bush flow
+		Link ll = longLink;
+		Node stop = bush.divergeNode(ll.getHead());
+		Node cur;
 		Double max = null;
-		while (cur != stop) {
-			Link ll = bush.getqLong(cur);
+		do {
 			if (max == null) max = bushFlows.get(ll);
 			else max = Math.min(max,bushFlows.get(ll));
 			cur = ll.getTail();
-		}
+			ll = bush.getqLong(cur);
+		} while (cur != stop);
+		
+		//Check all links in the longest path, taking the smallest Bush flow
 		return max;
 	}
 

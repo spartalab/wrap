@@ -3,11 +3,9 @@ package edu.utexas.wrap.distribution;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
-import java.io.IOException;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 /**
  *

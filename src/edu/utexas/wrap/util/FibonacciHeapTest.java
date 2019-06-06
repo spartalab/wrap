@@ -6,7 +6,6 @@ import org.junit.jupiter.api.Test;
 import edu.utexas.wrap.net.Node;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 

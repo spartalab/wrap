@@ -2,7 +2,6 @@ package edu.utexas.wrap.balancing;
 
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.containers.DBPAMap;
-import edu.utexas.wrap.net.Graph;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
