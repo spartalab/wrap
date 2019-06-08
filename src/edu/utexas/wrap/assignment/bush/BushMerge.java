@@ -58,6 +58,7 @@ public class BushMerge extends Object2FloatOpenHashMap<Link> implements BackVect
 	/**
 	 * @return the shortest cost path Link
 	 */
+	@Override
 	public Link getShortLink() {
 		return shortLink;
 	}
@@ -65,6 +66,7 @@ public class BushMerge extends Object2FloatOpenHashMap<Link> implements BackVect
 	/**
 	 * @return the longest cost path Link
 	 */
+	@Override
 	public Link getLongLink() {
 		return longLink;
 	}

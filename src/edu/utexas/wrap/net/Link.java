@@ -103,4 +103,12 @@ public abstract class Link implements Priced, BackVector {
 	}
 	
 	public abstract Double tPrime();
+	
+	public Link getShortLink() {
+		return this;
+	}
+	
+	public Link getLongLink() {
+		return this;
+	}
 }
