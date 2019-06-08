@@ -26,7 +26,7 @@ public class TSGCCalculator extends Thread {
 			for (AssignmentContainer b : o.getContainers()) {
 				Map<Link,Double> flows = b.getFlows();
 				for (Link l : b.getLinks()) {
-					tsgc += flows.getOrDefault(l, 0.0).doubleValue() * l.getPrice(b.getVOT(),b.getVehicleClass()).doubleValue();
+					tsgc += flows.getOrDefault(l, 0.0) * l.getPrice(b.getVOT(),b.getVehicleClass());
 				}
 			}
 		}

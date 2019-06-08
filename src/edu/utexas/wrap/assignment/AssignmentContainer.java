@@ -53,6 +53,6 @@ public interface AssignmentContainer {
 	
 	void fromFile(BufferedInputStream in) throws IOException;
 	
-	public void toFile(OutputStream out) throws IOException;
+	public void toFile(OutputStream out) throws IOException, InterruptedException;
 	
 }

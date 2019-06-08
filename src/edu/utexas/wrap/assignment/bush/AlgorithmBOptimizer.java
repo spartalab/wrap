@@ -32,34 +32,44 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 	 * @param b a bush to be equilibrated
 	 */
 	protected synchronized void equilibrateBush(Bush b) {
-		LinkedList<Node> to = b.getTopologicalOrder(true);
-		Node cur;
-		
-		//Assign the correct back-pointers to BushMerges using topological search
-		b.shortTopoSearch();
-		b.longTopoSearch(true);
-		//Get the flows on the current bush
-		Map<Link,Double> bushFlows = b.getFlows();
-		
-		//In reverse topological order,
-		Iterator<Node> it = to.descendingIterator();
-		while (it.hasNext()) {
-			cur = it.next();
-			
-			if (cur.equals(b.getOrigin().getNode())) continue; //Ignore the origin. Should be same as break if topoOrder is correct 
-			
-			//Determine the maximum delta that can be shifted
-			//TODO: streamline this inside bush structure
-			AlternateSegmentPair asp = b.getShortLongASP(cur, bushFlows);
-			if (asp == null) continue;
+		try {
+			b.acquire();
+			LinkedList<Node> to = b.getTopologicalOrder(true);
+			Node cur;
 
-			//calculate delta h, capping at maxDelta
-			Double deltaH = getDeltaH(asp);
+			//Assign the correct back-pointers to BushMerges using topological search
+			b.shortTopoSearch();
+			b.longTopoSearch(true);
+			//Get the flows on the current bush
+			Map<Link,Double> bushFlows = b.getFlows();
 
-			//Modify link flows
-			updateDeltaX(asp, bushFlows, deltaH);
+			//In reverse topological order,
+			Iterator<Node> it = to.descendingIterator();
+			while (it.hasNext()) {
+
+				cur = it.next();
+				if (cur.equals(b.getOrigin().getNode())) continue; //Ignore the origin. Should be same as break if topoOrder is correct 
+
+				//Determine the maximum delta that can be shifted
+				AlternateSegmentPair asp = b.getShortLongASP(cur, bushFlows);
+				if (asp == null) continue;
+
+				//calculate delta h, capping at maxDelta
+				Double deltaH = getDeltaH(asp);
+
+				//Modify link flows
+				updateDeltaX(asp, bushFlows, deltaH);
+			}
+
+			//Update bush merge splits for next flow calculation
+			b.updateSplits(bushFlows);
+			b.clearCache();
+			b.release();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		b.clearCache();
+
 	}
 
 	/** Apply link flow changes on an AlternateSegmentPair
@@ -72,7 +82,7 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 		for (Link l : asp.shortPath()) {
 			flows.put(l, flows.getOrDefault(l, 0.0)+deltaH); //Modify bush flow
 			l.changeFlow(deltaH);	//Modify total flow on link
-			
+
 			if (deltaH > l.getFlow()) {
 				throw new RuntimeException("Link flow was already negative?? This shouldn't happen");
 			}
@@ -91,7 +101,7 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 				}
 				else throw new NegativeFlowException("Too much bush flow removed. Required threshold: "+(ld-td)/ud);
 			}
-			
+
 			//Now do the same thing, but this time for link flow
 			ld = -l.getFlow();	//Maximum amount that can be subtracted
 			ud = Math.max(Math.ulp(ld), Math.ulp(td));	//Machine epsilon on the two terms (lowest precision available)
@@ -103,7 +113,7 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 						+ "Required threshold: "+(ld-td)/ud+"\tLink flow: "+ld
 						+ "\tdelta H: "+td);
 			}
-			
+
 			//Safeguard cap at the smaller of the two to ensure bush flow never exceeds link flow
 			Double newBushFlow = Math.min(flows.getOrDefault(l, 0.0)+td,l.getFlow()+td);
 			flows.put(l, newBushFlow);
@@ -113,9 +123,7 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 			//Modify the total link flow
 			l.changeFlow(td);
 		}
-		
-		//backtrack through bush and update splits
-		asp.getBush().updateSplits(flows);
+
 	}
 
 	/** Calculate the amount of flow to shift. Delta H is defined as the

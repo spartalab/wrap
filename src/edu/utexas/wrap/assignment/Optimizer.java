@@ -124,5 +124,4 @@ public abstract class Optimizer {
 	 */
 	public abstract String toString();
 	
-	public abstract void writeContainers();
 }

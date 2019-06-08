@@ -3,6 +3,8 @@ package edu.utexas.wrap.assignment.bush;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -13,6 +15,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Semaphore;
 
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -51,6 +54,8 @@ public class Bush implements AssignmentContainer {
 
 	//Topological order can be cached for expediency
 	private LinkedList<Node> cachedTopoOrder;
+	
+	private Semaphore writing;
 
 	/** Default constructor
 	 * @param o the root of the bush
@@ -65,6 +70,7 @@ public class Bush implements AssignmentContainer {
 		this.c = c;
 		network = g;
 		demand = destDemand;
+		writing = new Semaphore(1);
 	}
 
 	/**
@@ -787,6 +793,11 @@ public class Bush implements AssignmentContainer {
 	 * @return whether the bush structure was modified
 	 */
 	public boolean improve() {
+		try {
+			writing.acquire();
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
 		prune();	//Remove unused links
 
 		boolean modified = false;
@@ -819,6 +830,7 @@ public class Bush implements AssignmentContainer {
 		}
 		//Add all marked links to the Bush
 		for (Link l : tba) add(l);
+		writing.release();
 		return modified;
 	}
 	
@@ -858,9 +870,8 @@ public class Bush implements AssignmentContainer {
 			if (bv instanceof BushMerge) {	//For each BushMerge in the Bush
 				BushMerge bm = (BushMerge) bv;
 				double total = 0.0;	//Calculate the total demand through this node
-				for (Link l : bm) {
-					total += flows.get(l);
-				}
+				for (Link l : bm) total += flows.get(l);
+				
 				//If there is no total, leave the splits alone
 				if (total > 0) for (Link l : bm) {
 					//Otherwise, set them proportional to total demand share
@@ -873,8 +884,10 @@ public class Bush implements AssignmentContainer {
 	/**This method writes the structure of the bush to a given print stream
 	 * @param out the print stream to which the structure will be written
 	 * @throws IOException 
+	 * @throws InterruptedException 
 	 */
-	public void toFile(OutputStream out) throws IOException {
+	public void toFile(OutputStream out) throws IOException, InterruptedException {
+		writing.acquire();
 		int size = Integer.BYTES*2+Float.BYTES;
 		for (Node n : getTopologicalOrder(false)) {
 			BackVector qn = getBackVector(n);
@@ -902,6 +915,36 @@ public class Bush implements AssignmentContainer {
 			}
 			out.flush();
 		}
+		writing.release();
+	}
+	
+	public Thread toDefaultFile() {
+		return new Thread() {
+			public void run() {
+				
+				File file = new File(network.toString()+"/"+origin.getNode().getID()+"/"+getVehicleClass()+"-"+getVOT()+".bush");
+				file.getParentFile().mkdirs();
+				FileOutputStream out = null;
+				try {
+					out = new FileOutputStream(file);
+					toFile(out);
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				finally {
+					if (out != null)
+						try {
+							out.close();
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+				}
+			}
+		};
 	}
 	
 	/**Attempt to read the bush structure from a file, rather than building a
@@ -990,5 +1033,13 @@ public class Bush implements AssignmentContainer {
 	
 	public void clearCache() {
 		cachedTopoOrder = null;
+	}
+
+	public void release() {
+		writing.release();
+	}
+
+	public void acquire() throws InterruptedException {
+		writing.acquire();
 	}
 }

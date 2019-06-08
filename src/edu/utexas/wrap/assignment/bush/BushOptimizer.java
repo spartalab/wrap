@@ -1,11 +1,6 @@
 package edu.utexas.wrap.assignment.bush;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 
@@ -25,10 +20,11 @@ import edu.utexas.wrap.util.calc.TSTTCalculator;
  */
 public abstract class BushOptimizer extends Optimizer {
 	public static boolean printProgress = true;
+	public static boolean printBushes = true;
+
 	private int innerIters = 8;
 	protected Set<BushOrigin> origins;
 	protected Integer relativeGapExp = -4;
-	private boolean print = true;
 
 	/**Default constructor
 	 * @param g	the graph on which the optimizer should operate
@@ -118,8 +114,8 @@ public abstract class BushOptimizer extends Optimizer {
 		p.shutdown();
 		while (!p.isTerminated()) {
 			if (printProgress) try {
-			System.out.print("\tImproving origins\t"
-					+ "In queue: "+String.format("%1$4s",p.getQueuedSubmissionCount())+"\t"
+			System.out.print("\tImproving bushes\t"
+					+ "In queue: "+String.format("%1$5s",p.getQueuedSubmissionCount())+"\t"
 						+ "Active: "+p.getActiveThreadCount()+"\t"
 							+ "Memory usage: "+(Runtime.getRuntime().totalMemory()/1048576)+" MiB\t\r");
 			Thread.sleep(50);
@@ -129,6 +125,7 @@ public abstract class BushOptimizer extends Optimizer {
 		}
 		int numZones = origins.size();
 		// Equilibrate bushes sequentially
+		//TODO redesign status visualization
 		for (int i = 0; i < innerIters; i++) {
 			if (printProgress) System.out.print("\tEquilibration # "+(i+1)+" out of "+innerIters+"\t");
 			int j = 1;
@@ -139,6 +136,7 @@ public abstract class BushOptimizer extends Optimizer {
 				for (Bush b : o.getContainers()) {
 					if (printProgress) System.out.print("Bush "+String.format("%1$2s",k)+" out of "+String.format("%1$2s",numBushes)+"     ");
 					equilibrateBush(b);
+					if (printBushes) b.toDefaultFile().start();
 					if (printProgress) System.out.print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 					k++;
 				}
@@ -147,7 +145,7 @@ public abstract class BushOptimizer extends Optimizer {
 			}
 			if (printProgress) System.out.print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\r");
 		}
-		if (print) writeContainers();
+//		if (printBushes) writeContainers();
 	}
 	
 	/**Set how many inner equilibrations should be performed
@@ -164,36 +162,4 @@ public abstract class BushOptimizer extends Optimizer {
 		this.relativeGapExp = relativeGapExp;
 	}
 	
-	@Override
-	public void writeContainers() {
-		ExecutorService e = Executors.newWorkStealingPool();
-		// TODO Auto-generated method stub
-		StringBuilder sb = new StringBuilder();
-		for (byte b : graph.getMD5()) {
-			sb.append(String.format("%02X", b));
-		}
-		for (BushOrigin o : origins) {
-			for (Bush c : o.getContainers()) {
-				Thread t = new Thread() {
-					public void run() {
-						
-						File file = new File(sb+"/"+o.getNode().getID()+"/"+c.getVehicleClass()+"-"+c.getVOT()+".bush");
-						file.getParentFile().mkdirs();
-						try {
-							FileOutputStream out = new FileOutputStream(file);
-							c.toFile(out);
-							out.close();
-						} catch (FileNotFoundException e) {
-							e.printStackTrace();
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
-				};
-				e.execute(t);
-			}
-		}
-		e.shutdown();
-		while (!e.isTerminated());
-	}
 }

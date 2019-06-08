@@ -153,4 +153,13 @@ public class Graph {
 	public int getOrder(Node n) {
 		return order.indexOf(n);
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		for (byte b : getMD5()) {
+			sb.append(String.format("%02X", b));
+		}
+		return sb.toString();
+	}
 }

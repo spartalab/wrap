@@ -37,15 +37,22 @@ public class BushOriginLoader extends BushOriginBuilder {
 
 						File file = new File(sb+"/"+o.getID()+"/"+c+"-"+vot+".bush");
 						file.getParentFile().mkdirs();
+						FileOutputStream out = null;
 						try {
-							FileOutputStream out = new FileOutputStream(file);
+							out = new FileOutputStream(file);
 							bush.toFile(out);
-							out.close();
 						} catch (FileNotFoundException e) {
 							e.printStackTrace();
 						} catch (IOException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						} finally {
+							try {
+								if (out != null) out.close();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
 						}
 					}
 				}
