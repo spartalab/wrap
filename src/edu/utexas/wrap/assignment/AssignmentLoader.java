@@ -1,6 +1,6 @@
 package edu.utexas.wrap.assignment;
  
-import edu.utexas.wrap.demand.containers.AutoODHashMatrix;
+import edu.utexas.wrap.demand.containers.AutoODMatrix;
 import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
@@ -20,7 +20,7 @@ public abstract class AssignmentLoader {
 		this.graph = g;
 	}
 	
-	protected abstract void submitAll(AutoODHashMatrix od);
+	protected abstract void submitAll(AutoODMatrix od);
 
 	/** add a given node's DemandHashMap to the pool of demand to be loaded onto the network 
 	 * TODO: figure out AutoDemand vs general Demand and generalizing to any Map

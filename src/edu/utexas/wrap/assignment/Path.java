@@ -98,10 +98,8 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	 * @see edu.utexas.wrap.net.Priced#getPrice(java.lang.Float, edu.utexas.wrap.modechoice.Mode)
 	 */
 	@Override
-	public Double getPrice(Float vot, Mode c) {
-		Double sum = 0.0;
-		for (Link l : this) sum += l.getPrice(vot,c);
-		return sum;
+	public double getPrice(Float vot, Mode c) {
+		return this.stream().mapToDouble(x -> x.getPrice(vot, c)).sum();
 	}
 
 	/* (non-Javadoc)

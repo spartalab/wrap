@@ -7,9 +7,9 @@ import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 
-public class DemandHashMap extends Object2ObjectOpenHashMap<Node, Float> implements DemandMap {
+public class DemandHashMap extends Object2FloatOpenHashMap<Node> implements DemandMap {
 
 	/**
 	 * 

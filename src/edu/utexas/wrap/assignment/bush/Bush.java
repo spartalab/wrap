@@ -187,17 +187,16 @@ public class Bush implements AssignmentContainer {
 	 * shortest path to that destination
 	 */
 	void dumpFlow() {
-		Map<Node,Double> d = demand.doubleClone();
 		for (Node node : getTopologicalOrder(false)) {
 
-			Double x = d.getOrDefault(node, 0.0);
+			Float x = demand.getOrDefault(node, 0.0F);
 			if (x <= 0.0) continue;
-			dumpFlow(node,x);
+			dumpFlow(node,x.doubleValue());
 		}
 	}
 	
 	private void dumpFlow(Node node, Double x) {
-		if (node.equals(origin.getNode())) return;
+		if (node.equals(origin.getNode()) || x == 0.0) return;
 		BackVector bv = getBackVector(node);
 		if (bv instanceof Link) {
 			Link l = (Link) bv;
@@ -208,6 +207,7 @@ public class Bush implements AssignmentContainer {
 			BushMerge bm = (BushMerge) bv;
 			for (Link l : bm) {
 				Float split = bm.getSplit(l);
+				if (split == 0.0f) continue;
 				l.changeFlow(x*split);
 				dumpFlow(l.getTail(),x*split);
 			}
@@ -292,7 +292,7 @@ public class Bush implements AssignmentContainer {
 		Link back = getqLong(n);	//The next link in the longest path
 		if (n.equals(origin.getNode()))	//Return 0 at the origin
 			return 0.0;
-		else if (back == null)	//Something went wrong - can't find the longest path
+		else if (back == null && getDemand(n) > 0.0)	//Something went wrong - can't find the longest path
 			throw new UnreachableException(n, this);
 		else if (cache.containsKey(n))	//If this value was already calculated,
 			return cache.get(n);	//return the cached value
@@ -419,7 +419,28 @@ public class Bush implements AssignmentContainer {
 		// Else calculate divergence node
 		Node diverge = divergeNode(terminus);
 
-		return new AlternateSegmentPair(terminus, diverge, getMaxDelta(terminus, bushFlows),this);
+		Node cur = terminus;
+		Link ll = getqLong(cur);
+		Double max = null;
+		int lpl = 0;
+		do {
+			lpl++;
+			if (max == null) max = bushFlows.get(ll);
+			else max = Math.min(max,bushFlows.get(ll));
+			cur = ll.getTail();
+			ll = getqLong(cur);
+		} while (cur != diverge);
+		
+		cur = terminus;
+		ll = getqShort(cur);
+		int spl = 0;
+		do {
+			spl++;
+			cur = ll.getTail();
+			ll = getqShort(cur);
+		} while (cur != diverge);
+		
+		return new AlternateSegmentPair(terminus, diverge, max, this, lpl, spl);
 	}
 
 	BackVector getBackVector(Node node) {
@@ -539,10 +560,11 @@ public class Bush implements AssignmentContainer {
 		//Calculate the cost of adding the link to the longest path
 		Double Uicij = l.getPrice(vot, c) + getCachedU(l.getTail(), cache);
 		Node head = l.getHead();
+		
+		BackVector back = getBackVector(head);
 		//If the longest path doesn't exist, is already through the proposed link, or the cost is longer,
-		if (getqLong(head) == null || getqLong(head).equals(l) || Uicij > getCachedU(head, cache)) {
+		if (back.getLongLink() == null || Uicij > getCachedU(head, cache)) {
 			//Update the BushMerge if need be
-			BackVector back = getBackVector(head);
 			if (back instanceof BushMerge) ((BushMerge) back).setLongLink(l);
 			//Store the cost in the cache
 			cache.put(head, Uicij);
@@ -556,28 +578,24 @@ public class Bush implements AssignmentContainer {
 	 * longest paths calculation
 	 * @param longestUsed whether to relax only links that are in use
 	 */
-	public Map<Node, Double> longTopoSearch(boolean longestUsed) {
+	public Map<Node, Double> longTopoSearch(boolean longestUsed) throws UnreachableException {
 		List<Node> to = getTopologicalOrder(false);
 		Map<Node, Double> cache = new Object2DoubleOpenHashMap<Node>(network.numNodes());
 
 		//In topological order,
 		for (Node d : to) {
-			try {
-				//Try to relax the backvector (all links in the BushMerge, if applicable)
-				BackVector bv = getBackVector(d);
-				if (bv instanceof Link) longRelax((Link) bv, cache);
-				else if (bv instanceof BushMerge) {
-					BushMerge bm = (BushMerge) bv;
-					for (Link l : bm) {
-						if (!longestUsed || bm.getSplit(l) > 0.0) longRelax(l,cache);
-					}
-				}
-			} catch (UnreachableException e) {
-				if (getDemand(d) > 0.0) {
-					throw new RuntimeException(d.toString()+" unreachable from "+origin.getNode().toString()+"\tDemand="+getDemand(d));
+
+			//Try to relax the backvector (all links in the BushMerge, if applicable)
+			BackVector bv = getBackVector(d);
+			if (bv instanceof Link) longRelax((Link) bv, cache);
+			else if (bv instanceof BushMerge) {
+				BushMerge bm = (BushMerge) bv;
+				for (Link l : bm) {
+					if (!longestUsed || bm.getSplit(l) > 0.0) longRelax(l,cache);
 				}
 			}
-		}
+
+		}			
 		return cache;
 	}
 
@@ -625,6 +643,7 @@ public class Bush implements AssignmentContainer {
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getFlow(edu.utexas.wrap.net.Link)
 	 */
+	@Deprecated 
 	public Double getFlow(Link l) {
 		//Get the reverse topological ordering and a place to store node flows
 		Map<Node,Double> flow = demand.doubleClone();
@@ -742,11 +761,11 @@ public class Bush implements AssignmentContainer {
 		//Calculate the cost of adding this link to the shortest path
 		Double Licij = l.getPrice(vot, c) + getCachedL(l.getTail(), cache);
 		Node head = l.getHead();
+		BackVector back = getBackVector(head);
 		
 		//If the shortest path doesn't exist, already flows through the link, or this has a lower cost,
-		if (getqShort(head) == null || getqShort(head).equals(l) || Licij < getCachedL(head, cache)) {
+		if (back.getShortLink() == null || Licij < getCachedL(head, cache)) {
 			//Update the BushMerge, if applicable
-			BackVector back = getBackVector(head);
 			if (back instanceof BushMerge) ((BushMerge) back).setShortLink(l);
 			//Store this cost in the cache
 			cache.put(head, Licij);
@@ -806,7 +825,19 @@ public class Bush implements AssignmentContainer {
 		unusedLinks.removeAll(usedLinks);
 		
 		//Calculate the longest path costs
-		Map<Node, Double> cache = longTopoSearch(true);
+		Map<Node, Double> cache;
+		try {
+			cache = longTopoSearch(true);
+		} catch (UnreachableException e1) {
+			// TODO Auto-generated catch block
+			q = origin.getInitMap(network);
+			try{
+				cache = longTopoSearch(true);
+				}
+			catch (UnreachableException e2) {
+				throw new RuntimeException(e2);
+			}
+		} 
 		Set<Link> tba = new HashSet<Link>();	//Set of links to be added
 		for (Link l : unusedLinks) {
 			// If link is active, do nothing (removing flow should mark as inactive)
@@ -823,7 +854,10 @@ public class Bush implements AssignmentContainer {
 					modified = true;
 				}
 			} catch (UnreachableException e) {
-				if (e.demand > 0) e.printStackTrace();
+				if (e.demand > 0) {
+					q = origin.buildInitMap(network);
+					e.printStackTrace();
+				}
 				continue;
 			}
 
@@ -848,18 +882,6 @@ public class Bush implements AssignmentContainer {
 		}
 		return ret;
 
-	}
-
-	/**Calculate the most flow that can be shifted at this node
-	 * @param cur the node where flow should be balanced
-	 * @param bushFlows the current flows on the bush
-	 * @return the maximum flow that can be shifted from the longest to the shortest path
-	 */
-	public Double getMaxDelta(Node cur, Map<Link, Double> bushFlows) {
-		BackVector bv = getBackVector(cur);
-		return bv instanceof BushMerge ? //If the backvector is a BushMerge,
-				((BushMerge) bv).getMaxDelta(bushFlows) //Delegate finding the maximum delta
-				: 0.0; //Otherwise the maximum delta is zero since there's only one path here
 	}
 
 	/**Update the BushMerges' splits based on current Bush flows

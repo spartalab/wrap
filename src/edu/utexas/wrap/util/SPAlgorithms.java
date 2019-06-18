@@ -29,7 +29,7 @@ public class SPAlgorithms {
 			FibonacciLeaf<Node> u = Q.poll();
 			for (Link uv : g.outLinks(u.n)) {
 				FibonacciLeaf<Node> v = Q.getLeaf(uv.getHead());
-				Float alt = uv.getTravelTime().floatValue() + u.key;
+				Float alt = (float) uv.getTravelTime() + u.key;
 				if (alt < v.key) {
 					Q.decreaseKey(v, alt);
 					back.put(v.n, uv);

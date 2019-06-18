@@ -1,7 +1,6 @@
 package edu.utexas.wrap.util.calc;
 
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.Link;
 
 public class TSTTCalculator extends Thread {
 	public Double val;
@@ -13,11 +12,6 @@ public class TSTTCalculator extends Thread {
 	
 	@Override
 	public void run() {
-		Double tstt = 0.0;
-		
-		for(Link l: graph.getLinks()){
-			tstt += l.getFlow().doubleValue() * l.getTravelTime().doubleValue();
-		}
-		val = tstt;
+		val = graph.getLinks().parallelStream().mapToDouble(x -> x.getFlow()*x.getTravelTime()).sum();
 	}
 }

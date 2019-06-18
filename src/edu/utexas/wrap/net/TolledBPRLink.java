@@ -5,6 +5,7 @@ import edu.utexas.wrap.modechoice.Mode;
 public class TolledBPRLink extends TolledLink {
 	
 	private final float b, power, toll;
+	private final Double tp;
 
 	
 	public TolledBPRLink(Node tail, Node head, Float capacity, Float length, Float fftime, Float b, Float power, Float toll) {
@@ -13,6 +14,9 @@ public class TolledBPRLink extends TolledLink {
 		this.b = b;
 		this.power = power;
 		this.toll = toll;
+		
+		Double ca = Math.pow(capacity, -power);
+		tp = power*fftime*b*ca;
 	}
 
 	public Boolean allowsClass(Mode c) {
@@ -29,7 +33,7 @@ public class TolledBPRLink extends TolledLink {
 	}
 	
 	@Override
-	public Double getPrice(Float vot, Mode c) {
+	public double getPrice(Float vot, Mode c) {
 //		if (cachedPrice != null) return cachedPrice; // Causes a convergence failure for some reason
 
 		return getTravelTime() * vot + getToll(null);
@@ -46,13 +50,13 @@ public class TolledBPRLink extends TolledLink {
 	 * link characteristics (current flow, capacity, & free flow travel time)
 	 * @return travel time for the link at current flow
 	 */
-	public Double getTravelTime() {
+	public double getTravelTime() {
 		if (cachedTT == null) cachedTT = freeFlowTime()*(1+
-				getBValue()*Math.pow(getFlow().doubleValue()/getCapacity(), getPower()));
+				b*Math.pow(getFlow()/getCapacity(), power));
 		return cachedTT;
 	}
 	
-	public Double pricePrime(Float vot) {
+	public double pricePrime(Float vot) {
 		Double r = vot*tPrime() + tollPrime();
 		if (r.isNaN()) {
 			throw new RuntimeException();
@@ -60,7 +64,7 @@ public class TolledBPRLink extends TolledLink {
 		return r;
 	}
 	
-	public Double tIntegral() {
+	public double tIntegral() {
 		Float a = getPower();
 		Double b = (double) getBValue();
 		Double t = (double) freeFlowTime();
@@ -70,7 +74,7 @@ public class TolledBPRLink extends TolledLink {
 		return t*v + t*b*(Math.pow(v,a+1))/((a+1)*(Math.pow(c, a)));
 	}
 	
-	public Double tollPrime() {
+	public double tollPrime() {
 		return 0.0;
 	}
 
@@ -78,20 +82,17 @@ public class TolledBPRLink extends TolledLink {
 	 * Calculate the derivative of the BPR function with respect to the flow
 	 * @return t': the derivative of the BPR function
 	 */
-	public Double tPrime()  {
+	public double tPrime()  {
 		// Return (a*b*t*(v/c)^a)/v
-		//TODO: cache this
-		Float a = getPower();
-		Double b = (double) getBValue();
-		Double t = (double) freeFlowTime();
-		Double v = getFlow();
-		Float c = getCapacity();
-		Double va = Math.pow(v, a-1);
-		Double ca = Math.pow(c, -a);
-		Double r = a*va*t*b*ca;
+		//TODO: cache this		
+		if (cachedTP != null) return cachedTP;
+		Double va = Math.pow(getFlow(), power-1);
+
+		Double r = va*tp;
 		if (r.isNaN()) {
 			throw new RuntimeException("Invalid BPR parameters");
 		}
+		cachedTP = r;
 		return r;
 	}
 }

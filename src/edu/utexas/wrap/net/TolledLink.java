@@ -11,6 +11,6 @@ public abstract class TolledLink extends Link {
 
 	public abstract Float getToll(Mode c);
 	
-	public abstract Double tollPrime();
+	public abstract double tollPrime();
 }
 

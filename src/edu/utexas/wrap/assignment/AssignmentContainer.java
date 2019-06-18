@@ -44,6 +44,7 @@ public interface AssignmentContainer {
 	 * @param l the link whose flow should be measured
 	 * @return the flow on a given link from this container
 	 */
+	@Deprecated
 	public Double getFlow(Link l);
 
 	/**

@@ -27,6 +27,7 @@ public class BushOriginLoader extends BushOriginBuilder {
 				if (!odm.isEmpty()) try {
 					orig.loadBush(g, vot, odm, c);
 				} catch (IOException ex) {
+//					if (print) System.out.println("Couldn't load origin "+o.getID()+" "+c+" VOT="+vot+". Building...");
 					Bush bush = orig.buildBush(g, vot, odm, c);
 					
 					if (print) {

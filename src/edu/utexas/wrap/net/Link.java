@@ -21,6 +21,7 @@ public abstract class Link implements Priced, BackVector {
 
 //	private Double cachedFlow = null;
 	protected Double cachedTT = null;
+	protected Double cachedTP = null;
 	private final int hc;
 
 	public Link(Node tail, Node head, Float capacity, Float length, Float fftime) {
@@ -52,7 +53,10 @@ public abstract class Link implements Priced, BackVector {
 		if (flo.isNaN()) {
 			throw new RuntimeException();
 		}
-		if (delta != 0.0) cachedTT = null;
+		if (delta != 0.0) {
+			cachedTT = null;
+			cachedTP = null;
+		}
 		return flo > 0.0;
 //
 	}
@@ -82,27 +86,27 @@ public abstract class Link implements Priced, BackVector {
 		return length;
 	}
 	
-	public abstract Double getPrice(Float vot, Mode c);
+	public abstract double getPrice(Float vot, Mode c);
 
 	public Node getTail() {
 		return tail;
 	}
 
-	public abstract Double getTravelTime();
+	public abstract double getTravelTime();
 
 	public int hashCode() {
 		return hc;
 	}
 	
-	public abstract Double pricePrime(Float float1);
+	public abstract double pricePrime(Float float1);
 
-	public abstract Double tIntegral();
+	public abstract double tIntegral();
 
 	public String toString() {
 		return tail.toString() + "\t" + head.toString();
 	}
 	
-	public abstract Double tPrime();
+	public abstract double tPrime();
 	
 	public Link getShortLink() {
 		return this;

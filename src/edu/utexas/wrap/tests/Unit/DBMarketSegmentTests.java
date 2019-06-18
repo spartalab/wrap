@@ -91,67 +91,67 @@ public class DBMarketSegmentTests {
         List<Link> allLinks = new ArrayList<>();
         allLinks.add(new TolledBPRLink(a,i, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
             @Override
-            public Double getTravelTime() { return 15.0;}
+            public double getTravelTime() { return 15.0;}
         });
         allLinks.add(new TolledBPRLink(i,a, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
             @Override
-            public Double getTravelTime() { return 18.0;}
+            public double getTravelTime() { return 18.0;}
         });
         allLinks.add(new TolledBPRLink(b,j, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
             @Override
-            public Double getTravelTime() { return 22.0;}
+            public double getTravelTime() { return 22.0;}
         });
         allLinks.add(new TolledBPRLink(j,b, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
             @Override
-            public Double getTravelTime() { return 10.0;}
+            public double getTravelTime() { return 10.0;}
         });
         allLinks.add(new TolledBPRLink(c,k, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
             @Override
-            public Double getTravelTime() { return 11.0;}
+            public double getTravelTime() { return 11.0;}
         });
         allLinks.add(new TolledBPRLink(k,c, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
             @Override
-            public Double getTravelTime() { return 19.0;}
+            public double getTravelTime() { return 19.0;}
         });
         allLinks.add(new TolledBPRLink(d,l, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
             @Override
-            public Double getTravelTime() { return 21.0;}
+            public double getTravelTime() { return 21.0;}
         });
         allLinks.add(new TolledBPRLink(l,d, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
             @Override
-            public Double getTravelTime() { return 21.0;}
+            public double getTravelTime() { return 21.0;}
         });
         allLinks.add(new TolledBPRLink(e,m, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
             @Override
-            public Double getTravelTime() { return 19.0;}
+            public double getTravelTime() { return 19.0;}
         });
         allLinks.add(new TolledBPRLink(m,e, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
             @Override
-            public Double getTravelTime() { return 7.0;}
+            public double getTravelTime() { return 7.0;}
         });
         allLinks.add(new TolledBPRLink(f,n, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
             @Override
-            public Double getTravelTime() { return 29.0;}
+            public double getTravelTime() { return 29.0;}
         });
         allLinks.add(new TolledBPRLink(n,f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
             @Override
-            public Double getTravelTime() { return 15.0;}
+            public double getTravelTime() { return 15.0;}
         });
         allLinks.add(new TolledBPRLink(o,gl, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
             @Override
-            public Double getTravelTime() { return 18.0;}
+            public double getTravelTime() { return 18.0;}
         });
         allLinks.add(new TolledBPRLink(gl,o, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
             @Override
-            public Double getTravelTime() { return 5.0;}
+            public double getTravelTime() { return 5.0;}
         });
         allLinks.add(new TolledBPRLink(h,p, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
             @Override
-            public Double getTravelTime() { return 6.0;}
+            public double getTravelTime() { return 6.0;}
         });
         allLinks.add(new TolledBPRLink(p,h, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {
             @Override
-            public Double getTravelTime() { return 9.0;}
+            public double getTravelTime() { return 9.0;}
         });
         g.addAll(allLinks);
 

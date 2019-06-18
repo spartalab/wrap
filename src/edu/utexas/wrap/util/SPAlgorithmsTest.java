@@ -30,23 +30,23 @@ class SPAlgorithmsTest {
 		
 		AB = new TolledBPRLink(A, B, null, null, null, null, null,null) {
 			@Override
-			public Double getTravelTime() { return 15.0;}
+			public double getTravelTime() { return 15.0;}
 		};
 		AC = new TolledBPRLink(A, C, null, null, null, null, null, null) {
 			@Override
-			public Double getTravelTime() { return 22.0;}
+			public double getTravelTime() { return 22.0;}
 		};
 		BC = new TolledBPRLink(B, C, null, null, null, null, null, null) {
 			@Override
-			public Double getTravelTime() { return 5.0;}
+			public double getTravelTime() { return 5.0;}
 		};
 		CD = new TolledBPRLink(C, D, null, null, null, null, null, null) {
 			@Override
-			public Double getTravelTime() { return 6.0;}
+			public double getTravelTime() { return 6.0;}
 		};
 		BD = new TolledBPRLink(B, D, null, null, null, null, null, null) {
 			@Override
-			public Double getTravelTime() { return 17.0;}
+			public double getTravelTime() { return 17.0;}
 		};
 		graph.add(AB);
 		graph.add(AC);

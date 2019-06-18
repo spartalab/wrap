@@ -8,7 +8,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 
 import edu.utexas.wrap.assignment.AssignmentLoader;
-import edu.utexas.wrap.demand.containers.AutoODHashMatrix;
+import edu.utexas.wrap.demand.containers.AutoODMatrix;
 import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
@@ -48,7 +48,7 @@ public class BushOriginFactory extends AssignmentLoader {
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.assignment.AssignmentLoader#addAll(edu.utexas.wrap.demand.containers.AutoODHashMatrix)
 	 */
-	public void submitAll(AutoODHashMatrix matrix) {
+	public void submitAll(AutoODMatrix matrix) {
 		for (Node o : matrix.keySet()) {
 			submit(o, matrix.get(o));
 		}
@@ -72,7 +72,7 @@ public class BushOriginFactory extends AssignmentLoader {
 		while (!p.isTerminated()) {
 			System.out.print("\rLoading origins...\tIn queue: "+String.format("%1$4s",p.getQueuedSubmissionCount())+"\tActive: "+p.getActiveThreadCount());
 			try {
-				Thread.sleep(50);
+				Thread.sleep(250);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

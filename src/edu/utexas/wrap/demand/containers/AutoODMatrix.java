@@ -1,5 +1,6 @@
 package edu.utexas.wrap.demand.containers;
 
+import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
@@ -8,10 +9,10 @@ import edu.utexas.wrap.net.Node;
  * @author William
  *
  */
-public class AutoODHashMatrix extends ModalHashMatrix {
+public class AutoODMatrix extends ModalHashMatrix {
 	private final Float vot;
 	
-	public AutoODHashMatrix(Graph g, Float vot, Mode c) {
+	public AutoODMatrix(Graph g, Float vot, Mode c) {
 		super(g, c);
 		this.vot = vot;
 	}
@@ -39,8 +40,8 @@ public class AutoODHashMatrix extends ModalHashMatrix {
 	 * @param origin the Node whose associated demand map should be returned
 	 * @return a copy of the stored demand map
 	 */
-	public AutoDemandHashMap get(Node origin) {
-		return new AutoDemandHashMap(super.get(origin), this);
+	public AutoDemandMap get(Node origin) {
+		return (AutoDemandMap) super.get(origin);
 	}
 	
 	/* (non-Javadoc)

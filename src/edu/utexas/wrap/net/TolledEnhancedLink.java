@@ -39,7 +39,7 @@ public class TolledEnhancedLink extends TolledLink {
 		return allowedClasses.getOrDefault(c, true);
 	}
 
-	private Double arsinh(Double x) {
+	private double arsinh(Double x) {
 
 		// From Wikipedia
 		// arsinh(x) == ln( x + sqrt(x^2 + 1) )
@@ -49,18 +49,18 @@ public class TolledEnhancedLink extends TolledLink {
 		);
 	}
 
-	private Double beta() {
+	private double beta() {
 		// b == ( 2*a - 1 )/( 2*a - 2 )
 		return ((double) conicalParam * 2 - 1) / (conicalParam * 2 - 2);
 	}
 
-	private Double conicalDelay() {
+	private double conicalDelay() {
 		// c(v) == T_0 * (h(v) - h(0))
 		Double x = getFlow() / getCapacity();
 		return freeFlowTime() * (h(x) - h(0.0));
 	}
 
-	private Double conicalIntegral() {
+	private double conicalIntegral() {
 
 		// Integral from 0 to v of:
 		//
@@ -69,24 +69,24 @@ public class TolledEnhancedLink extends TolledLink {
 		// == f * Integral of h(x) dx
 		// - f * v * h(0)
 
-		Double f = (double) freeFlowTime();
+		double f = (double) freeFlowTime();
 
 		return f * (hIntegral() - (getFlow() * h(0.0)));
 	}
 
-	private Double conicalPrime() {
+	private double conicalPrime() {
 		// c'(v) == d( T_0 * (h(v) - h(0))/dv
 		// == T_0 * h'(v)
 		return freeFlowTime() * hPrime();
 	}
 
-	private Double g(Double x) {
+	private double g(Double x) {
 		// g(x) == 1 + e - x
 		return 1 - x + VDFshift;
 	}
 
 	@Override
-	public Double getPrice(Float vot, Mode c) {
+	public double getPrice(Float vot, Mode c) {
 		return getToll(c) + getTravelTime() * vot;
 	}
 
@@ -98,12 +98,12 @@ public class TolledEnhancedLink extends TolledLink {
 	}
 
 	@Override
-	public Double getTravelTime() {
+	public double getTravelTime() {
 		// T == T_0 + c(v) + s(v) + u(v)
 		return (cachedTT != null) ? cachedTT : freeFlowTime() + conicalDelay() + signalDelay() + unsignalizedDelay();
 	}
 
-	private Double gIntegral() {
+	private double gIntegral() {
 		// Integral from 0 to v of g(x) dx ==
 
 		// Integral from 0 to v of:
@@ -112,24 +112,24 @@ public class TolledEnhancedLink extends TolledLink {
 		//
 		// == -(v^2)/(2*c) + v + 1
 
-		Double v = getFlow();
+		double v = getFlow();
 
 		return -Math.pow(v, 2) / (2 * getCapacity()) // -(v^2)/(2*c)
 				+ v + 1;
 	}
 
-	private Double gPrime() {
+	private double gPrime() {
 		// g'(v) == d( 1 + e - v/c )/dv
 		// == - 1/c
 		return -1.0 / getCapacity();
 	}
 
-	private Double h(Double x) {
+	private double h(Double x) {
 		// h(x) == 1 + r(x) - (a * g(x)) - b
 		return 1 + r(x) - (conicalParam * g(x)) - beta();
 	}
 
-	private Double hIntegral() {
+	private double hIntegral() {
 		// Integral from 0 to v of h(x) dx ==
 
 		// Integral from 0 to v of:
@@ -143,25 +143,25 @@ public class TolledEnhancedLink extends TolledLink {
 		return getFlow() * (1 - beta()) + rIntegral() - conicalParam * gIntegral();
 	}
 
-	private Double hPrime() {
+	private double hPrime() {
 		// h'(v) == d( 1 + r(v) - (a * g(v)) - b )/dv
 		// == r'(v) - a * g'(v)
 		return rPrime() - conicalParam * gPrime();
 	}
 
 	@Override
-	public Double pricePrime(Float vot) {
+	public double pricePrime(Float vot) {
 		// d( k(v) + m*t(v) )/dv
 		// == t'(v) * m + k'(v)
 		return tPrime() * vot + tollPrime();
 	}
 
-	private Double r(Double x) {
+	private double r(Double x) {
 		// r(x) == sqrt( a^2 * g(x)^2 + b^2 )
 		return Math.sqrt(Math.pow(conicalParam, 2) * Math.pow(g(x), 2) + Math.pow(beta(), 2));
 	}
 
-	private Double rIntegral() {
+	private double rIntegral() {
 		// From Integral Calculator
 		// Integral from 0 to v of r(x) dx ==
 
@@ -183,44 +183,44 @@ public class TolledEnhancedLink extends TolledLink {
 
 		// NOTE: assume a, b != 0
 
-		Double a = (double) conicalParam;
-		Double b = beta();
-		Double c = (double) getCapacity();
-		Double h = 1.0 + VDFshift;
-		Double v = getFlow();
+		double a = (double) conicalParam;
+		double b = beta();
+		double c = (double) getCapacity();
+		double h = 1.0 + VDFshift;
+		double v = getFlow();
 
 		// sqrt( (b^2 * c^2) + (h^2 * a^2 * c^2) )
-		Double smallRootTerm = Math
+		double smallRootTerm = Math
 				.sqrt(Math.pow(a, 2) * Math.pow(h, 2) * Math.pow(c, 2) + (Math.pow(b, 2) * Math.pow(c, 2)));
 
 		// sqrt( (a^2 * v^2) - (2 * c * h * a^2 * v) + (h^2 * a^2 * c^2) + (b^2 * c^2) )
-		Double bigRootTerm = Math.sqrt(Math.pow(a, 2) * Math.pow(v, 2) - (2.0 * Math.pow(a, 2) * h * v * c)
+		double bigRootTerm = Math.sqrt(Math.pow(a, 2) * Math.pow(v, 2) - (2.0 * Math.pow(a, 2) * h * v * c)
 				+ (Math.pow(a, 2) * Math.pow(h, 2) * Math.pow(c, 2)) + (Math.pow(b, 2) * Math.pow(c, 2)));
 
-		Double firstTerm = Math.pow(b, 2) * Math.pow(c, 2) * arsinh(a * (v - (c * h)) / (b * c));
-		Double secondTerm = a * (v - (h * c)) * bigRootTerm;
-		Double thirdTerm = Math.pow(b, 2) * Math.pow(c, 2) * arsinh(a * h / b);
-		Double fourthTerm = a * h * c * smallRootTerm;
+		double firstTerm = Math.pow(b, 2) * Math.pow(c, 2) * arsinh(a * (v - (c * h)) / (b * c));
+		double secondTerm = a * (v - (h * c)) * bigRootTerm;
+		double thirdTerm = Math.pow(b, 2) * Math.pow(c, 2) * arsinh(a * h / b);
+		double fourthTerm = a * h * c * smallRootTerm;
 
 		return (firstTerm + secondTerm + thirdTerm + fourthTerm) / (a * c * 2.0);
 	}
 
-	private Double rPrime() {
+	private double rPrime() {
 		// r'(x) == d( sqrt( a^2 * g(x)^2 + b^2 ) )/dx
 		// == a^2 * g(x) * g'(x) / sqrt( a^2 * g(x)^2 + b^2 )
-		Double x = getFlow() / getCapacity();
+		double x = getFlow() / getCapacity();
 		return Math.pow(conicalParam, 2) * g(x) * gPrime() / r(x);
 	}
 
-	private Double signalDelay() {
+	private double signalDelay() {
 		// S(v) == s / max(0.1, 1 - v/s)
 		return s / Math.max(0.1, 1 - (getFlow() / saturatedFlowRate));
 	}
 
-	private Double signalizedIntegral() {
+	private double signalizedIntegral() {
 
 		// u = v/m
-		Double u = getFlow() / saturatedFlowRate;
+		double u = getFlow() / saturatedFlowRate;
 
 		// Integral from 0 to v of s(x) dx ==
 
@@ -261,20 +261,20 @@ public class TolledEnhancedLink extends TolledLink {
 		// + d * v
 
 		else {
-			Double v = getFlow();
+			double v = getFlow();
 
-			Double firstTerm = a * Math.pow(v, 4) / (4 * Math.pow(saturatedFlowRate, 3)); // a * v^4 / (4 * m^3)
-			Double secondTerm = b * Math.pow(v, 3) / (3 * Math.pow(saturatedFlowRate, 2)); // b * v^3 / (3 * m^2)
-			Double thirdTerm = c * Math.pow(v, 2) / (2 * saturatedFlowRate); // c * v^2 / (2 * m)
+			double firstTerm = a * Math.pow(v, 4) / (4 * Math.pow(saturatedFlowRate, 3)); // a * v^4 / (4 * m^3)
+			double secondTerm = b * Math.pow(v, 3) / (3 * Math.pow(saturatedFlowRate, 2)); // b * v^3 / (3 * m^2)
+			double thirdTerm = c * Math.pow(v, 2) / (2 * saturatedFlowRate); // c * v^2 / (2 * m)
 			return firstTerm + secondTerm + thirdTerm + (d * v); // d * v
 		}
 	}
 
-	private Double signalPrime() {
+	private double signalPrime() {
 		// TODO: Explore boundary cases (0.875 and 0.925) where not differentiable
 
 		// u = v/m
-		Double vOverS = getFlow() / saturatedFlowRate;
+		double vOverS = getFlow() / saturatedFlowRate;
 
 		// S'(v) ==
 
@@ -299,7 +299,7 @@ public class TolledEnhancedLink extends TolledLink {
 	}
 
 	@Override
-	public Double tIntegral() {
+	public double tIntegral() {
 
 		// Integral from 0 to v of:
 		//
@@ -318,23 +318,23 @@ public class TolledEnhancedLink extends TolledLink {
 	}
 
 	@Override
-	public Double tollPrime() {
+	public double tollPrime() {
 		return 0.0;
 	}
 
 	@Override
-	public Double tPrime() {
+	public double tPrime() {
 		// t'(v) == d( T_0 + c(v) + s(v) + u(v) )/dv
 		// == c'(v) + s'(v) + u'(v)
 		return conicalPrime() + signalPrime() + unsignalPrime();
 	}
 
-	private Double unsignalizedDelay() {
+	private double unsignalizedDelay() {
 		// u(v) == m + u*v/c
 		return minDelay + u * getFlow() / getCapacity();
 	}
 
-	private Double unsignalizedIntegral() {
+	private double unsignalizedIntegral() {
 
 		// Integral from 0 to v of u(x) dx ==
 		// Integral from 0 to v of:
@@ -348,7 +348,7 @@ public class TolledEnhancedLink extends TolledLink {
 				+ (minDelay * getFlow()); // + m*v
 	}
 
-	private Double unsignalPrime() {
+	private double unsignalPrime() {
 		// d'(v) == d( m + u*v/c )/dv
 		// == u/c
 		return ((double) u) / getCapacity();

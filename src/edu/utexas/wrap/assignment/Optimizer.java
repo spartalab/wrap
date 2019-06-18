@@ -16,6 +16,7 @@ import edu.utexas.wrap.util.calc.TSTTCalculator;
  *
  */
 public abstract class Optimizer {
+	public boolean sigTerm = false;
 	protected Integer iteration = 1;
 	protected Integer maxIterations = 1000;
 
@@ -67,7 +68,9 @@ public abstract class Optimizer {
 		Long end; Double runtime;
 		
 		do {
+			if (sigTerm) break;
 			iterate();
+			if (sigTerm) break;
 			System.out.print(iteration+"\t"+getStatLine());
 			
 			end = System.currentTimeMillis();

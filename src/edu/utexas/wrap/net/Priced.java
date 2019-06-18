@@ -4,6 +4,6 @@ import edu.utexas.wrap.modechoice.Mode;
 
 public interface Priced {
 
-	public Double getPrice(Float vot, Mode c);
+	public double getPrice(Float vot, Mode c);
 
 }

@@ -1,11 +1,9 @@
 package edu.utexas.wrap.assignment.bush;
 
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 import edu.utexas.wrap.net.Link;
-import edu.utexas.wrap.net.Node;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 
 /**A way to represent the Links which merge at a given Node in a Bush,
@@ -122,27 +120,6 @@ public class BushMerge extends Object2FloatOpenHashMap<Link> implements BackVect
 		return r;
 	}
 
-	/**Get the maximum flow that can be shifted from the longest to shortest cost path
-	 * @param bushFlows	the current flows on the Bush
-	 * @return the nmax flow that can be shifted away from the longest path
-	 */
-	public double getMaxDelta(Map<Link, Double> bushFlows) {
-		//Find the start and end of the ASP
-		Link ll = longLink;
-		Node stop = bush.divergeNode(ll.getHead());
-		Node cur;
-		Double max = null;
-		do {
-			if (max == null) max = bushFlows.get(ll);
-			else max = Math.min(max,bushFlows.get(ll));
-			cur = ll.getTail();
-			ll = bush.getqLong(cur);
-		} while (cur != stop);
-		
-		//Check all links in the longest path, taking the smallest Bush flow
-		return max;
-	}
-
 	/**Set the split for a given link
 	 * @param l	the link whose split should be set
 	 * @param d	the split value
@@ -158,12 +135,10 @@ public class BushMerge extends Object2FloatOpenHashMap<Link> implements BackVect
 
 	@Override
 	public Iterator<Link> iterator() {
-		// TODO Auto-generated method stub
 		return keySet().iterator();
 	}
 
 	public Boolean add(Link l) {
-		// TODO Auto-generated method stub
 		try { 
 			put(l, 0.0F);
 			trim();
@@ -174,12 +149,10 @@ public class BushMerge extends Object2FloatOpenHashMap<Link> implements BackVect
 	}
 
 	public boolean contains(Link i) {
-		// TODO Auto-generated method stub
 		return containsKey(i);
 	}
 
 	public Set<Link> getLinks() {
-		// TODO Auto-generated method stub
 		return keySet();
 	}
 	

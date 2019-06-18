@@ -4,12 +4,15 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.util.AlternateSegmentPair;
 import edu.utexas.wrap.util.NegativeFlowException;
+import edu.utexas.wrap.util.UnreachableException;
 
 
 /** This class implements Dial's Algorithm B to equilibrate
@@ -68,6 +71,9 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (UnreachableException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 
 	}
@@ -79,51 +85,56 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 	 */
 	private void updateDeltaX(AlternateSegmentPair asp, Map<Link,Double> flows, Double deltaH) {
 		//add delta h to all x values in the shortest path
-		for (Link l : asp.shortPath()) {
+		StreamSupport.stream(asp.shortPath().spliterator(), true).unordered().forEach(l ->{
 			flows.put(l, flows.getOrDefault(l, 0.0)+deltaH); //Modify bush flow
 			l.changeFlow(deltaH);	//Modify total flow on link
 
 			if (deltaH > l.getFlow()) {
 				throw new RuntimeException("Link flow was already negative?? This shouldn't happen");
 			}
-		}
+		});
 
 		//subtract delta h from all x values in longest path
-		for (Link l : asp.longPath()) {
-			//This next section handles some numerical instability
-			Double td = -deltaH.doubleValue();	//Current amount to be subtracted
-			Double ld = -flows.get(l);	//Maximum amount that can be subtracted
-			Double ud = Math.max(Math.ulp(ld),Math.ulp(td)); //Machine epsilon on these two terms (lowest precision available)
-
-			if (td < ld) { //If too much flow is removed from the bush
-				if (ld-td <= numThreshold*ud) {	//See if it's within the numerical tolerance
-					td = ld;	//Cap at the smaller amount if so
-				}
-				else throw new NegativeFlowException("Too much bush flow removed. Required threshold: "+(ld-td)/ud);
-			}
-
-			//Now do the same thing, but this time for link flow
-			ld = -l.getFlow();	//Maximum amount that can be subtracted
-			ud = Math.max(Math.ulp(ld), Math.ulp(td));	//Machine epsilon on the two terms (lowest precision available)
-			if (td < ld) {	//If too much flow is removed from the bush
-				if (ld-td <= numThreshold*ud || (ld-td) < Math.pow(10, -4)) {	//See if it's within the numerical tolerance
-					td = ld;	//Cap at the smaller amount if so
-				}
-				else throw new NegativeFlowException("Too much link flow removed. "
-						+ "Required threshold: "+(ld-td)/ud+"\tLink flow: "+ld
-						+ "\tdelta H: "+td);
-			}
+		StreamSupport.stream(asp.longPath().spliterator(), true).unordered().forEach(l->{
+			Double safeDeltaH = numericalGuard(l, flows, deltaH);
 
 			//Safeguard cap at the smaller of the two to ensure bush flow never exceeds link flow
-			Double newBushFlow = Math.min(flows.getOrDefault(l, 0.0)+td,l.getFlow()+td);
-			flows.put(l, newBushFlow);
-			if (flows.get(l) > l.getFlow()+td) {
+			Double newBushFlow = Math.min(flows.getOrDefault(l, 0.0),l.getFlow())+safeDeltaH;
+			if (newBushFlow > l.getFlow()+safeDeltaH) {
 				throw new RuntimeException("Bush flow larger than link flow");
 			}
+			flows.put(l, newBushFlow);
 			//Modify the total link flow
-			l.changeFlow(td);
+			l.changeFlow(safeDeltaH);
+		});
+	}
+
+	private Double numericalGuard(Link l, Map<Link, Double> bushFlows, Double deltaH) {
+		//This next section handles some numerical instability
+		if (deltaH == null || deltaH == 0.0) return 0.0;
+		Double td = -deltaH;	//Current amount to be subtracted
+		Double ld = -bushFlows.getOrDefault(l,0.0);	//Maximum amount that can be subtracted
+		Double ud = Math.max(Math.ulp(ld),Math.ulp(td)); //Machine epsilon on these two terms (lowest precision available)
+
+		if (td < ld) { //If too much flow is removed from the bush
+			if (ld-td <= numThreshold*ud) {	//See if it's within the numerical tolerance
+				td = ld;	//Cap at the smaller amount if so
+			}
+			else throw new NegativeFlowException("Too much bush flow removed. Required threshold: "+(ld-td)/ud);
 		}
 
+		//Now do the same thing, but this time for link flow
+		ld = -l.getFlow();	//Maximum amount that can be subtracted
+		ud = Math.max(Math.ulp(ld), Math.ulp(td));	//Machine epsilon on the two terms (lowest precision available)
+		if (td < ld) {	//If too much flow is removed from the bush
+			if (ld-td <= numThreshold*ud || (ld-td) < Math.pow(10, -4)) {	//See if it's within the numerical tolerance
+				td = ld;	//Cap at the smaller amount if so
+			}
+			else throw new NegativeFlowException("Too much link flow removed. "
+					+ "Required threshold: "+(ld-td)/ud+"\tLink flow: "+ld
+					+ "\tdelta H: "+td);
+		}
+		return td;
 	}
 
 	/** Calculate the amount of flow to shift. Delta H is defined as the
@@ -133,10 +144,13 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 	 * @return		The smaller of the calculated delta H or the max delta
 	 */
 	private Double getDeltaH(AlternateSegmentPair asp) {
-		Double denom = 0.0;
 		Float vot = asp.getBush().getVOT();
-		for (Link l : asp.shortPath()) denom += (l.pricePrime(vot));			
-		for (Link l : asp.longPath()) denom += (l.pricePrime(vot));
+		Double denom = Stream.concat(
+				
+				StreamSupport.stream(asp.shortPath().spliterator(), true),
+				StreamSupport.stream(asp.longPath().spliterator(), true)
+				
+				).unordered().mapToDouble(x -> x.pricePrime(vot)).sum();
 
 		return Math.min(asp.maxDelta(), asp.priceDiff()/denom);
 	}

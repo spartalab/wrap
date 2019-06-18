@@ -16,7 +16,7 @@ public class CentroidConnector extends TolledLink {
 	}
 
 	@Override
-	public Double getPrice(Float vot, Mode c) {
+	public double getPrice(Float vot, Mode c) {
 		return (double) (vot*freeFlowTime() + toll);
 	}
 
@@ -27,27 +27,27 @@ public class CentroidConnector extends TolledLink {
 	}
 
 	@Override
-	public Double getTravelTime() {
+	public double getTravelTime() {
 		return (double) freeFlowTime();
 	}
 
 	@Override
-	public Double pricePrime(Float vot) {
+	public double pricePrime(Float vot) {
 		return 0.0;
 	}
 
 	@Override
-	public Double tIntegral() {
+	public double tIntegral() {
 		return freeFlowTime()*getFlow();
 	}
 
 	@Override
-	public Double tollPrime() {
+	public double tollPrime() {
 		return 0.0;
 	}
 
 	@Override
-	public Double tPrime() {
+	public double tPrime() {
 		return 0.0;
 	}
 

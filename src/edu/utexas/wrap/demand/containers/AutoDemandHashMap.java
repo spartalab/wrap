@@ -14,14 +14,14 @@ public class AutoDemandHashMap extends DemandHashMap implements AutoDemandMap {
 	 * 
 	 */
 	private static final long serialVersionUID = 2176027918628424731L;
-	private final AutoODHashMatrix parent;
+	private final AutoODMatrix parent;
 	
-	public AutoDemandHashMap(Graph g, AutoODHashMatrix parent) {
+	public AutoDemandHashMap(Graph g, AutoODMatrix parent) {
 		super(g);
 		this.parent = parent;
 	}
 
-	public AutoDemandHashMap(DemandHashMap sub, AutoODHashMatrix parent) {
+	public AutoDemandHashMap(DemandHashMap sub, AutoODMatrix parent) {
 		super(sub);
 		this.parent = parent;
 	}
