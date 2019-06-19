@@ -292,8 +292,13 @@ public class Bush implements AssignmentContainer {
 		Link back = getqLong(n);	//The next link in the longest path
 		if (n.equals(origin.getNode()))	//Return 0 at the origin
 			return 0.0;
-		else if (back == null && getDemand(n) > 0.0)	//Something went wrong - can't find the longest path
-			throw new UnreachableException(n, this);
+		else if (back == null) {	//Something went wrong - can't find the longest path
+			if (getDemand(n) > 0.0) throw new UnreachableException(n, this);
+			else {
+				cache.put(n, Double.MAX_VALUE);
+				return Double.MAX_VALUE;
+			}
+		}
 		else if (cache.containsKey(n))	//If this value was already calculated,
 			return cache.get(n);	//return the cached value
 		else {	//calculate from scratch, adding to the prior link's value
@@ -856,7 +861,7 @@ public class Bush implements AssignmentContainer {
 			} catch (UnreachableException e) {
 				if (e.demand > 0) {
 					q = origin.buildInitMap(network);
-					e.printStackTrace();
+//					e.printStackTrace();
 				}
 				continue;
 			}
