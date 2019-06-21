@@ -1,6 +1,11 @@
 package edu.utexas.wrap.demand.containers;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
 import edu.utexas.wrap.demand.AggregatePAMatrix;
+import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
@@ -57,8 +62,25 @@ public class AggregatePAHashMatrix extends Object2ObjectOpenHashMap<Node, Demand
 	@Override
 	public void put(Node origin, Node destination, Float demand) {
 		putIfAbsent(origin,new DemandHashMap(g));
-		get(origin).put(destination,demand);
+		((DemandMap) get(origin)).put(destination,demand);
 		
+	}
+
+	@Override
+	public void toFile(File out) throws IOException {
+		FileWriter o = null;
+		try{
+			o = new FileWriter(out);
+
+			for (Node orig : this.keys) {
+				DemandHashMap demand = get(orig);
+				for (Node dest : demand.keySet()) {
+					o.write(""+orig.getID()+","+dest.getID()+","+demand.getFloat(dest)+"\n");
+				}
+			}
+		} finally {
+			if (o != null) o.close();
+		}
 	}
 
 }

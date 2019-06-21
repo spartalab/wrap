@@ -70,14 +70,18 @@ public class BushOriginFactory extends AssignmentLoader {
 		p.shutdown();
 		
 		while (!p.isTerminated()) {
-			System.out.print("\rLoading origins...\tIn queue: "+String.format("%1$4s",p.getQueuedSubmissionCount())+"\tActive: "+p.getActiveThreadCount());
+			System.out.print("\rLoading origins...\t"
+					+ "In queue: "+String.format("%1$4s",p.getQueuedSubmissionCount())+"\t"
+					+ "Active: "+p.getActiveThreadCount()+"\t"
+					+ "Memory usage: "
+					+ (Runtime.getRuntime().totalMemory()/1048576)+" MiB");
 			try {
 				Thread.sleep(250);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
-		System.out.print("\rInitial trips loaded            ");
+		System.out.print("\rInitial trips loaded\tMemory usage: "+(Runtime.getRuntime().totalMemory()/1048576)+" MiB            ");
 		return origins;
 	}
 

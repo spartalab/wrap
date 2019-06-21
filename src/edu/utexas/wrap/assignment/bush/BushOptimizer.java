@@ -119,7 +119,7 @@ public abstract class BushOptimizer extends Optimizer {
 					+ "In queue: "+String.format("%1$5s",p.getQueuedSubmissionCount())+"\t"
 						+ "Active: "+p.getActiveThreadCount()+"\t"
 							+ "Memory usage: "+(Runtime.getRuntime().totalMemory()/1048576)+" MiB\t\r");
-			Thread.sleep(50);
+			Thread.sleep(250);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -128,26 +128,29 @@ public abstract class BushOptimizer extends Optimizer {
 		// Equilibrate bushes sequentially
 		//TODO redesign status visualization
 		outer: for (int i = 0; i < innerIters; i++) {
-			if (printProgress) System.out.print("\tEquilibration # "+(i+1)+" out of "+innerIters+"\t");
+//			if (printProgress) System.out.print("\tEquilibration # "+(i+1)+" out of "+innerIters+"\t");
 			int j = 1;
 			for (BushOrigin o : origins) {
-				if (printProgress) System.out.print("Origin "+String.format("%1$4s",j)+" out of "+numZones+"\t");
+//				if (printProgress) System.out.print("Origin "+String.format("%1$4s",j)+" out of "+numZones+"\t");
 				int k = 1;
 				int numBushes = o.getContainers().size();
 				for (Bush b : o.getContainers()) {
 					if (sigTerm) break outer;
-					if (printProgress) System.out.print("Bush "+String.format("%1$2s",k)+" out of "+String.format("%1$2s",numBushes)+"     ");
+//					if (printProgress) System.out.print("Bush "+String.format("%1$2s",k)+" out of "+String.format("%1$2s",numBushes)+"     ");
+					if (printProgress) System.out.print("Equilibration "+(i+1)+" out of "+innerIters+"\t"
+							+ "Origin "+String.format("%1$5s", j)+" out of "+numZones+"\t"
+							+ "Bush "+String.format("%1$2s", k)+" out of "+String.format("%1$2s", numBushes)+"\r");
 					
 					equilibrateBush(b);
 					if (printBushes) b.toDefaultFile().start();
 					
-					if (printProgress) System.out.print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+//					if (printProgress) System.out.print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 					k++;
 				}
-				if (printProgress) System.out.print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
+//				if (printProgress) System.out.print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 				j++;
 			}
-			if (printProgress) System.out.print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\r");
+//			if (printProgress) System.out.print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\r");
 		}
 //		if (printBushes) writeContainers();
 	}

@@ -4,6 +4,7 @@ import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -96,4 +97,10 @@ public class DBPAMatrix implements AggregatePAMatrix {
             }
         }
     }
+
+	@Override
+	public void toFile(File out) {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("No toFile implementation");
+	}
 }

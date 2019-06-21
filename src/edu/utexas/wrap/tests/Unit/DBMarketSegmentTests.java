@@ -5,7 +5,7 @@ import edu.utexas.wrap.demand.MarketSegment;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.containers.DBPAMap;
 import edu.utexas.wrap.distribution.DBGravityDistributor;
-import edu.utexas.wrap.distribution.FrictionFactorMap;
+import edu.utexas.wrap.distribution.DBFrictionFactorMap;
 import edu.utexas.wrap.distribution.GravityDistributor;
 import edu.utexas.wrap.distribution.TripDistributor;
 import edu.utexas.wrap.generation.DBTripGenerator;

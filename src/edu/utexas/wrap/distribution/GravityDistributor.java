@@ -9,6 +9,7 @@ import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
 import edu.utexas.wrap.demand.containers.DemandHashMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 
 public class GravityDistributor extends TripDistributor {
 	private FrictionFactorMap friction;
@@ -20,13 +21,15 @@ public class GravityDistributor extends TripDistributor {
 	}
 	@Override
 	public AggregatePAMatrix distribute(PAMap pa) {
-		Map<Node, Double> a = new HashMap<Node,Double>();
-		Map<Node, Double> b = new HashMap<Node, Double>();
+		Map<Node, Double> a = new Object2DoubleOpenHashMap<Node>();
+		Map<Node, Double> b = new Object2DoubleOpenHashMap<Node>();
 		AggregatePAHashMatrix pam = new AggregatePAHashMatrix(g);
 		Boolean converged = false;
-		while (!converged) {
+		int iterations = 0;
+		while (!converged && iterations < 100) {
 			converged = true;
-			
+			iterations++;
+			System.out.println("Iteration "+iterations);
 			for (Node i : pa.getProducers()) {
 				Double denom = 0.0;
 				
@@ -66,7 +69,7 @@ public class GravityDistributor extends TripDistributor {
 	}
 	
 	private Boolean converged(Double a, Double b) {
-		Double margin = 2*Math.max(Math.ulp(a), Math.ulp(b));
+		Double margin = 0.001;
 		return  ((a < b && b-a < margin) || a-b < margin); 
 	}
 	//TODO Use JDBC to write out the PA Matrix into the actual database

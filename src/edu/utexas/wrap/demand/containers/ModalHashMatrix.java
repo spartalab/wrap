@@ -1,5 +1,7 @@
 package edu.utexas.wrap.demand.containers;
 
+import java.io.File;
+
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.ODMatrix;
@@ -43,7 +45,7 @@ public class ModalHashMatrix extends Object2ObjectOpenHashMap<Node, DemandMap> i
 	@Override
 	public void put(Node origin, Node destination, Float demand) {
 		putIfAbsent(origin, new DemandHashMap(getGraph()));
-		((DemandHashMap) get(origin)).put(destination, demand);
+		get(origin).put(destination, demand);
 		
 	}
 
@@ -69,6 +71,12 @@ public class ModalHashMatrix extends Object2ObjectOpenHashMap<Node, DemandMap> i
 	@Override
 	public Graph getGraph() {
 		return g;
+	}
+
+	@Override
+	public void toFile(File out) {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("No toFile implementation");
 	}
 
 

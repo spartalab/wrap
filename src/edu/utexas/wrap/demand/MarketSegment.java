@@ -37,7 +37,19 @@ public class MarketSegment implements Runnable{
     private TripInterchangeSplitter mc;
     private AssignmentLoader rc;
 
-    public MarketSegment(Graph g, TripGenerator tripGen, TripBalancer tb, TripDistributor tripDist, TripInterchangeSplitter modeChoice, AssignmentLoader routeChoice, boolean homeBased, boolean workTrip, char peakTrip, char incomeQ, boolean hasVeh, boolean asManyVehAsWork, float vot) {
+    public MarketSegment(Graph g, 
+    		TripGenerator tripGen, 
+    		TripBalancer tb, 
+    		TripDistributor tripDist, 
+    		TripInterchangeSplitter modeChoice, 
+    		AssignmentLoader routeChoice, 
+    		boolean homeBased, 
+    		boolean workTrip, 
+    		char peakTrip, 
+    		char incomeQ, 
+    		boolean hasVeh, 
+    		boolean asManyVehAsWork, 
+    		float vot) {
         if(peakTrip != 'a' && peakTrip != 'p' && peakTrip != 'o')
             throw new IllegalArgumentException("peakTrip must be 'a' or 'p' or 'o' ");
         if(incomeQ != '1' && incomeQ != '2' && incomeQ != '3' && incomeQ != '4')
@@ -91,6 +103,7 @@ public class MarketSegment implements Runnable{
     private void routeChoice() {
 
     }
+    
     @Override
     public int hashCode() {
         if(hash != 0) {

@@ -1,5 +1,8 @@
 package edu.utexas.wrap.demand;
 
+import java.io.File;
+import java.io.IOException;
+
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
@@ -42,5 +45,7 @@ public interface PAMatrix {
 	 * @return the value of time of trips associated with this matrix
 	 */
 	public float getVOT();
+	
+	public void toFile(File out) throws IOException;
 
 }

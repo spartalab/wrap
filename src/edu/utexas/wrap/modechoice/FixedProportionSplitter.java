@@ -8,6 +8,7 @@ import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.demand.containers.ModalHashMatrix;
 import javafx.util.Pair;
 import edu.utexas.wrap.demand.AggregatePAMatrix;
+import edu.utexas.wrap.demand.MarketSegment;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 
 /**The purpose of this class is to return
@@ -20,9 +21,9 @@ import edu.utexas.wrap.demand.ModalPAMatrix;
  */
 public class FixedProportionSplitter extends TripInterchangeSplitter {
 
-	private Map<Mode, Map<Pair<Node, Node>, Float>> map;
+	private Map<MarketSegment, Map<Mode, Float>> map;
 
-	public FixedProportionSplitter(Map<Mode, Map<Pair<Node, Node>, Float>> map) {
+	public FixedProportionSplitter(Map<MarketSegment, Map<Mode, Float>> map) {
 		this.map = map;
 	}
 
@@ -35,13 +36,15 @@ public class FixedProportionSplitter extends TripInterchangeSplitter {
 	 *  which is added to a set.
 	 */
 	@Override
-	public Set<ModalPAMatrix> split(AggregatePAMatrix aggregate) {
+	public Set<ModalPAMatrix> split(AggregatePAMatrix aggregate, MarketSegment ms) {
 		Set<ModalPAMatrix> fixedProp = new HashSet<ModalPAMatrix>();
+		Map<Mode, Float> map = this.map.get(ms);
 		for (Mode m : map.keySet()) {
-			Map<Pair<Node,Node>,Float> pctMap = map.get(m);
+			Float pct = map.get(m);
 
 			// Everything between here and the line marked !!!!! can (and should) be parallelized, I think. -Wm
 			ModalPAMatrix pa = new ModalHashMatrix(aggregate.getGraph(), m);
+			
 			
 			// TODO Consider replacing with Strassen's algorithm
 			for (Pair<Node,Node> p : pctMap.keySet()) {
