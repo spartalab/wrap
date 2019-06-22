@@ -98,7 +98,7 @@ public abstract class Link implements Priced, BackVector {
 		return hc;
 	}
 	
-	public abstract double pricePrime(Float float1);
+	public abstract double pricePrime(Float vot);
 
 	public abstract double tIntegral();
 

@@ -52,8 +52,17 @@ public interface AssignmentContainer {
 	 */
 	public Map<Link, Double> getFlows();
 	
+	/**Read an assignment container from an input stream
+	 * @param in the stream providing a byte-level representation of the links used by the container
+	 * @throws IOException
+	 */
 	void fromFile(BufferedInputStream in) throws IOException;
 	
+	/**Write a byte-level representation of the container's links to an ouptut stream
+	 * @param out the stream to which the assignment container will be output
+	 * @throws IOException
+	 * @throws InterruptedException
+	 */
 	public void toFile(OutputStream out) throws IOException, InterruptedException;
 	
 }

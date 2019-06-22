@@ -18,7 +18,7 @@ public class DemandHashMap extends Object2FloatOpenHashMap<Node> implements Dema
 	Graph g;
 
 	public DemandHashMap(Graph g) {
-		super(g.getNumZones());
+		super(g.numZones(),1.0f);
 		this.g = g;
 	}
 	

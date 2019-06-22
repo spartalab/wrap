@@ -113,7 +113,7 @@ public abstract class BushOptimizer extends Optimizer {
 		//Wait until all bushes have finished improving
 		p.shutdown();
 		while (!p.isTerminated()) {
-			if (sigTerm) p.shutdownNow();
+			if (shuttingDown) p.shutdownNow();
 			if (printProgress) try {
 			System.out.print("\tImproving bushes\t"
 					+ "In queue: "+String.format("%1$5s",p.getQueuedSubmissionCount())+"\t"
@@ -135,7 +135,7 @@ public abstract class BushOptimizer extends Optimizer {
 				int k = 1;
 				int numBushes = o.getContainers().size();
 				for (Bush b : o.getContainers()) {
-					if (sigTerm) break outer;
+					if (shuttingDown) break outer;
 //					if (printProgress) System.out.print("Bush "+String.format("%1$2s",k)+" out of "+String.format("%1$2s",numBushes)+"     ");
 					if (printProgress) System.out.print("Equilibration "+(i+1)+" out of "+innerIters+"\t"
 							+ "Origin "+String.format("%1$5s", j)+" out of "+numZones+"\t"

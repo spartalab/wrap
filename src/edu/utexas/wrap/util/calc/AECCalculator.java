@@ -39,7 +39,7 @@ class AECCalculator extends Thread {
 				for (Node d : od.keySet()) {
 					Double demand = o.getDemand(d);
 					if (demand > 0.0) {
-						Map<Node, Double> cache = new HashMap<Node, Double>();
+						Double[] cache = new Double[graph.numNodes()];
 						try {
 							numerator -= b.getCachedL(d, cache).doubleValue() * demand;
 						} catch (UnreachableException e) {

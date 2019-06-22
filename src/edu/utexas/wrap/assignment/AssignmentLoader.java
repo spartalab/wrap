@@ -20,6 +20,9 @@ public abstract class AssignmentLoader {
 		this.graph = g;
 	}
 	
+	/**Load all demand from an OD matrix
+	 * @param od the ODMatrix to be loaded into the network
+	 */
 	protected abstract void submitAll(AutoODMatrix od);
 
 	/** add a given node's DemandHashMap to the pool of demand to be loaded onto the network 

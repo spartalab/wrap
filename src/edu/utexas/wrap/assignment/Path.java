@@ -199,11 +199,13 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	 */
 	@Override
 	public Double getFlow(Link l) {
+		//TODO
 		throw new RuntimeException("Not Yet Implemented");
 	}
 
 	@Override
 	public Map<Link, Double> getFlows() {
+		//TODO
 		throw new RuntimeException("Not Yet Implemented");
 	}
 

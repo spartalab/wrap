@@ -1,11 +1,10 @@
-package edu.utexas.wrap.util;
+package edu.utexas.wrap.assignment.bush;
 
 import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.function.Consumer;
 import java.util.stream.StreamSupport;
 
-import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
@@ -38,15 +37,12 @@ public class AlternateSegmentPair {
 	}
 	
 	public Double priceDiff() {
-//		Double longPrice = 0.0, shortPrice = 0.0;
 		Float vot = bush.getVOT();
 		Mode klass = bush.getVehicleClass();
 		
 		Double longPrice = StreamSupport.stream(longPath().spliterator(), true).unordered().mapToDouble(x -> x.getPrice(vot, klass)).sum();
 		Double shortPrice = StreamSupport.stream(shortPath().spliterator(), true).unordered().mapToDouble(x -> x.getPrice(vot, klass)).sum();
-//		for (Link l : longPath()) longPrice += l.getPrice(vot, klass);				
-//		for (Link l : shortPath()) shortPrice += l.getPrice(vot, klass); 
-		
+
 		Double ulp = Math.max(Math.ulp(longPrice),Math.ulp(shortPrice));
 		if (longPrice < shortPrice) {
 			if (longPrice-shortPrice < 2*ulp) return 0.0;

@@ -16,11 +16,13 @@ import edu.utexas.wrap.util.calc.TSTTCalculator;
  *
  */
 public abstract class Optimizer {
-	public boolean sigTerm = false;
+	//Loop control variables
+	public boolean shuttingDown = false;
 	protected Integer iteration = 1;
 	protected Integer maxIterations = 1000;
 
 	protected final Graph graph;
+	//Measurement utils
 	protected TSTTCalculator tc;
 	protected TSGCCalculator cc;
 	protected BeckmannCalculator bc;
@@ -49,6 +51,7 @@ public abstract class Optimizer {
 	 */
 	public void optimize(){
 		
+		//TODO: build a better network stat interface
 		System.out.println("\r\n"
 				+ "Iter. #\t"
 				+ "AEC\t\t\t"
@@ -64,56 +67,35 @@ public abstract class Optimizer {
 				"----------------------------------"
 				);
 		
-		Long start = System.currentTimeMillis();
-		Long end; Double runtime;
+		Long start, end; Double runtime;
 		
 		do {
-			if (sigTerm) break;
-			iterate();
-			if (sigTerm) break;
-			System.out.print(iteration+"\t"+getStatLine());
 			
+			if (shuttingDown) break;
+			//Perform a full iteration, measuring performance time
+			start = System.currentTimeMillis();
+			iterate();
 			end = System.currentTimeMillis();
+			
+			if (shuttingDown) break;
+			
+			//Measure stats of the network and write to terminal
+			System.out.print(iteration+"\t"+getStatLine());
 			runtime = (end - start)/1000.0;
 			System.out.println("\t"+String.format("%4.3f", runtime)+" s");
 			
 			iteration++;
-			start = System.currentTimeMillis();
-
+		
+		//Check for convergence
 		} while (!converged());
 		
 	}
 		
 	/** Build a set of statistics about the network and combine them as a string
-	 * TODO clean this shit up, future William! Love, present William, who is
-	 * currently very saddened by past William's actions
+	 * Should return the following stats in order: AEC, TSTT, Beckmann, Relative Gap, TSGC
 	 * @return a string consisting of statistics about the current Graph
 	 */
-	protected String getStatLine() {
-		String out = "";
-
-		tc = new TSTTCalculator(graph);
-		bc = new BeckmannCalculator(graph);
-//		cc = new TSGCCalculator(graph, origins);
-//		ac = new AECCalculator(this,cc);
-//		gc = new GapCalculator(graph, origins,cc);
-
-		tc.start();bc.start();//gc.start();cc.start();//ac.start();
-		try {
-			tc.join();bc.join();//gc.join();cc.join();//ac.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-//		out += String.format("%6.10E",ac.val) + "\t";
-		out += "\t\t\t";
-		
-		out += String.format("%6.10E",tc.val) + "\t";
-		out += String.format("%6.10E",bc.val) + "\t";
-//		out += String.format("%6.10E",gc.val) + "\t";
-//		out += String.format("%6.10E", cc.val);
-	
-		return out;
-	}
+	abstract protected String getStatLine();
 
 	/**
 	 * @param maxIterations the maximum number of iterations to be performed

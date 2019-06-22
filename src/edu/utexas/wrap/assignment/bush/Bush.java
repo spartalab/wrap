@@ -10,7 +10,6 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -29,7 +28,6 @@ import edu.utexas.wrap.net.CentroidConnector;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
-import edu.utexas.wrap.util.AlternateSegmentPair;
 import edu.utexas.wrap.util.UnreachableException;
 
 /** An instance of a {@link edu.utexas.wrap.assignment.AssignmentContainer}
@@ -53,7 +51,7 @@ public class Bush implements AssignmentContainer {
 	private BackVector[] q;
 
 	//Topological order can be cached for expediency
-	private LinkedList<Node> cachedTopoOrder;
+	private Node[] cachedTopoOrder;
 	
 	private Semaphore writing;
 
@@ -217,20 +215,21 @@ public class Bush implements AssignmentContainer {
 	/**Generate a topological ordering from scratch for this bush
 	 * @return Nodes in topological order
 	 */
-	private LinkedList<Node> generateTopoOrder(boolean toCache) {
+	private Node[] generateTopoOrder(boolean toCache) {
 		// Start with a set of all bush edges
 		Set<Link> currentLinks = getLinks();
 
-		LinkedList<Node> to = new LinkedList<Node>();
+		Node[] to = new Node[network.numNodes()];
 		LinkedList<Node> S = new LinkedList<Node>();
 		// "start nodes"
 		S.add(origin.getNode());
 		Node n;
+		int pos = 0;
 
 		while (!S.isEmpty()) {
 			n = S.pop();// remove node from S
-			to.add(n); // append node to L
-			
+			to[pos] = n; // append node to L
+			pos++;
 			
 			// for each active edge out of this node
 			for (Link l : network.outLinks(n)) {
@@ -267,17 +266,17 @@ public class Bush implements AssignmentContainer {
 	 * @return the cost of the shortest path to the given node
 	 * @throws UnreachableException if a node can't be reached
 	 */
-	public Double getCachedL(Node n, Map<Node, Double> cache) throws UnreachableException {
+	public Double getCachedL(Node n, Double[] cache) throws UnreachableException {
 		Link back = getqShort(n); //Next link on the shortest path
 		if (n.equals(origin.getNode())) //Return 0 at the origin
 			return 0.0;
 		else if (back == null)	//Something went wrong - can't find a backvector
 			throw new UnreachableException(n, this);
-		else if (cache.containsKey(n))	//If the value's been calculated before,
-			return cache.get(n);	//return the cached value
+		else if (cache[network.getOrder(n)] != null)	//If the value's been calculated before,
+			return cache[network.getOrder(n)];	//return the cached value
 		else {	//Calculate the value recursively, adding to the prior value
 			Double newL = getCachedL(back.getTail(), cache) + back.getPrice(vot, c);
-			cache.put(n, newL);	//Store this value in the cache
+			cache[network.getOrder(n)] = newL;	//Store this value in the cache
 			return newL;
 		}
 	}
@@ -288,22 +287,22 @@ public class Bush implements AssignmentContainer {
 	 * @return the cost of the longest path to the given node
 	 * @throws UnreachableException if a node can't be reached
 	 */
-	public Double getCachedU(Node n, Map<Node, Double> cache) throws UnreachableException {
+	public Double getCachedU(Node n, Double[] cache) throws UnreachableException {
 		Link back = getqLong(n);	//The next link in the longest path
 		if (n.equals(origin.getNode()))	//Return 0 at the origin
 			return 0.0;
 		else if (back == null) {	//Something went wrong - can't find the longest path
 			if (getDemand(n) > 0.0) throw new UnreachableException(n, this);
 			else {
-				cache.put(n, Double.MAX_VALUE);
+				cache[network.getOrder(n)] = Double.MAX_VALUE;
 				return Double.MAX_VALUE;
 			}
 		}
-		else if (cache.containsKey(n))	//If this value was already calculated,
-			return cache.get(n);	//return the cached value
+		else if (cache[network.getOrder(n)] != null)	//If this value was already calculated,
+			return cache[network.getOrder(n)];	//return the cached value
 		else {	//calculate from scratch, adding to the prior link's value
 			Double newU = getCachedU(back.getTail(), cache) + back.getPrice(vot, c);
-			cache.put(n, newU);	//store this value in the cache
+			cache[network.getOrder(n)] = newU;	//store this value in the cache
 			return newU;
 		}
 	}
@@ -491,7 +490,7 @@ public class Bush implements AssignmentContainer {
 	 * 
 	 * @return a topological ordering of this bush's nodes
 	 */
-	public LinkedList<Node> getTopologicalOrder(boolean toCache) {
+	public Node[] getTopologicalOrder(boolean toCache) {
 		return (cachedTopoOrder != null) ? cachedTopoOrder : generateTopoOrder(toCache);
 	}
 
@@ -561,7 +560,7 @@ public class Bush implements AssignmentContainer {
 	 * @param cache a cache of longest path costs
 	 * @throws UnreachableException if a node can´t be reached
 	 */
-	private void longRelax(Link l, Map<Node, Double> cache) throws UnreachableException {
+	private void longRelax(Link l, Double[] cache) throws UnreachableException {
 		//Calculate the cost of adding the link to the longest path
 		Double Uicij = l.getPrice(vot, c) + getCachedU(l.getTail(), cache);
 		Node head = l.getHead();
@@ -572,7 +571,7 @@ public class Bush implements AssignmentContainer {
 			//Update the BushMerge if need be
 			if (back instanceof BushMerge) ((BushMerge) back).setLongLink(l);
 			//Store the cost in the cache
-			cache.put(head, Uicij);
+			cache[network.getOrder(head)] = Uicij;
 		}
 	}
 
@@ -583,9 +582,9 @@ public class Bush implements AssignmentContainer {
 	 * longest paths calculation
 	 * @param longestUsed whether to relax only links that are in use
 	 */
-	public Map<Node, Double> longTopoSearch(boolean longestUsed) throws UnreachableException {
-		List<Node> to = getTopologicalOrder(false);
-		Map<Node, Double> cache = new Object2DoubleOpenHashMap<Node>(network.numNodes());
+	public Double[] longTopoSearch(boolean longestUsed) throws UnreachableException {
+		Node[] to = getTopologicalOrder(false);
+		Double[] cache = new Double[network.numNodes()];
 
 		//In topological order,
 		for (Node d : to) {
@@ -652,10 +651,13 @@ public class Bush implements AssignmentContainer {
 	public Double getFlow(Link l) {
 		//Get the reverse topological ordering and a place to store node flows
 		Map<Node,Double> flow = demand.doubleClone();
-		Iterator<Node> iter = getTopologicalOrder(false).descendingIterator();
+		Node[] iter = getTopologicalOrder(false);
 		
 		//For each node in reverse topological order
-		for (Node n = iter.next(); iter.hasNext(); n = iter.next()) {
+//		for (Node n = iter.next(); iter.hasNext(); n = iter.next()) {
+		for (int i = iter.length - 1; i >= 0; i--) {
+			Node n = iter[i];
+			if (n == null) continue;
 			BackVector back = getBackVector(n);
 			Double downstream = flow.getOrDefault(n,0.0);
 			//Get the node flow and the backvector that feeds it into the node
@@ -717,11 +719,14 @@ public class Bush implements AssignmentContainer {
 //		for (Node d : demand.getNodes()) nodeFlow.put(d, demand.get(d).doubleValue());
 		
 		Map<Node,Double> nodeFlow = demand.doubleClone();
-		Iterator<Node> iter = getTopologicalOrder(false).descendingIterator();
+		Node[] iter = getTopologicalOrder(false);
 		Map<Link,Double> ret = new Object2DoubleOpenHashMap<Link>();
 
 		//For each node in reverse topological order
-		for (Node n = iter.next(); iter.hasNext(); n = iter.next()) {
+//		for (Node n = iter.next(); iter.hasNext(); n = iter.next()) {
+		for (int i = iter.length - 1; i >= 0; i--) {
+			Node n = iter[i];
+			if (n == null) continue;
 			//Get the node flow and the backvector that feeds it into the node
 			BackVector back = getBackVector(n);
 			Double downstream = nodeFlow.getOrDefault(n,0.0);
@@ -762,7 +767,7 @@ public class Bush implements AssignmentContainer {
 	 * @param cache a cache of shortest path costs
 	 * @throws UnreachableException if a node can't be reached
 	 */
-	private void shortRelax(Link l, Map<Node, Double> cache) throws UnreachableException {
+	private void shortRelax(Link l, Double[] cache) throws UnreachableException {
 		//Calculate the cost of adding this link to the shortest path
 		Double Licij = l.getPrice(vot, c) + getCachedL(l.getTail(), cache);
 		Node head = l.getHead();
@@ -773,7 +778,7 @@ public class Bush implements AssignmentContainer {
 			//Update the BushMerge, if applicable
 			if (back instanceof BushMerge) ((BushMerge) back).setShortLink(l);
 			//Store this cost in the cache
-			cache.put(head, Licij);
+			cache[network.getOrder(head)] = Licij;
 		}
 	}
 
@@ -783,9 +788,9 @@ public class Bush implements AssignmentContainer {
 	 * Leverage the presence of a topological order to decrease search time for
 	 * shortest paths calculation
 	 */
-	public Map<Node, Double> shortTopoSearch() {
-		List<Node> to = getTopologicalOrder(false);
-		Object2DoubleOpenHashMap<Node> cache = new Object2DoubleOpenHashMap<Node>((int) Math.round(network.numNodes()*1.05),1.0F);
+	public Double[] shortTopoSearch() {
+		Node[] to = getTopologicalOrder(false);
+		Double[] cache = new Double[network.numNodes()];
 
 		//In topological order,
 		for (Node d : to) {
@@ -802,7 +807,6 @@ public class Bush implements AssignmentContainer {
 				}
 			}
 		}
-		cache.trim();
 		return cache;
 	}
 
@@ -830,11 +834,10 @@ public class Bush implements AssignmentContainer {
 		unusedLinks.removeAll(usedLinks);
 		
 		//Calculate the longest path costs
-		Map<Node, Double> cache;
+		Double[] cache;
 		try {
 			cache = longTopoSearch(true);
 		} catch (UnreachableException e1) {
-			// TODO Auto-generated catch block
 			q = origin.getInitMap(network);
 			try{
 				cache = longTopoSearch(true);
@@ -861,7 +864,6 @@ public class Bush implements AssignmentContainer {
 			} catch (UnreachableException e) {
 				if (e.demand > 0) {
 					q = origin.buildInitMap(network);
-//					e.printStackTrace();
 				}
 				continue;
 			}

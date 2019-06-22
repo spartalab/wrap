@@ -1,7 +1,5 @@
 package edu.utexas.wrap.util.calc;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 import edu.utexas.wrap.assignment.bush.Bush;
@@ -36,7 +34,7 @@ public class GapCalculator extends Thread {
 		for (BushOrigin o : origins) {
 			for (Bush b : o.getContainers()) {
 				b.shortTopoSearch();
-				Map<Node, Double> cache = new HashMap<Node, Double>(graph.numNodes());
+				Double[] cache = new Double[graph.numNodes()];
 				DemandMap dem = b.getDemandMap(); 
 				for (Node d : b.getNodes()) {
 					

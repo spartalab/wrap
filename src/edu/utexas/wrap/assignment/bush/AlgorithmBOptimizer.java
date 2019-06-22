@@ -1,7 +1,5 @@
 package edu.utexas.wrap.assignment.bush;
 
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -10,7 +8,6 @@ import java.util.stream.StreamSupport;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
-import edu.utexas.wrap.util.AlternateSegmentPair;
 import edu.utexas.wrap.util.NegativeFlowException;
 import edu.utexas.wrap.util.UnreachableException;
 
@@ -36,26 +33,29 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 	 */
 	protected synchronized void equilibrateBush(Bush b) {
 		try {
+			//Wait for the bush to be idle (it may be being written to a file)
 			b.acquire();
-			LinkedList<Node> to = b.getTopologicalOrder(true);
+			//Acquire the topological order of the bush and cahce for later use
+			Node[] to = b.getTopologicalOrder(true);
 			Node cur;
 
 			//Assign the correct back-pointers to BushMerges using topological search
 			b.shortTopoSearch();
 			b.longTopoSearch(true);
+			
 			//Get the flows on the current bush
 			Map<Link,Double> bushFlows = b.getFlows();
 
 			//In reverse topological order,
-			Iterator<Node> it = to.descendingIterator();
-			while (it.hasNext()) {
+			for (int i = to.length - 1; i >= 0; i--) {
+				cur = to[i];
+				
+				//Ignore the origin. Should be same as break if topoOrder is correct 
+				if (cur == null || cur.equals(b.getOrigin().getNode())) continue;
 
-				cur = it.next();
-				if (cur.equals(b.getOrigin().getNode())) continue; //Ignore the origin. Should be same as break if topoOrder is correct 
-
-				//Determine the maximum delta that can be shifted
+				//Determine the ASP, including the maximum delta that can be shifted
 				AlternateSegmentPair asp = b.getShortLongASP(cur, bushFlows);
-				if (asp == null) continue;
+				if (asp == null) continue; //No ASP exists
 
 				//calculate delta h, capping at maxDelta
 				Double deltaH = getDeltaH(asp);
@@ -66,7 +66,9 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 
 			//Update bush merge splits for next flow calculation
 			b.updateSplits(bushFlows);
+			//Release cached topological order memory for later use
 			b.clearCache();
+			//The bush can now be written or improved
 			b.release();
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
@@ -109,6 +111,13 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 		});
 	}
 
+	/**Given an amount to shift on a link and the bush flows available, calculate
+	 * the numerically safe amount that can be removed.
+	 * @param l
+	 * @param bushFlows
+	 * @param deltaH
+	 * @return
+	 */
 	private Double numericalGuard(Link l, Map<Link, Double> bushFlows, Double deltaH) {
 		//This next section handles some numerical instability
 		if (deltaH == null || deltaH == 0.0) return 0.0;

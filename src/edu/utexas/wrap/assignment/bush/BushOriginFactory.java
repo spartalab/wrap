@@ -32,7 +32,7 @@ public class BushOriginFactory extends AssignmentLoader {
 	 */
 	public BushOriginFactory(Graph g) {
 		super(g);
-		pool = new Object2ObjectOpenHashMap<Node, BushOriginBuilder>(g.getNumZones());
+		pool = new Object2ObjectOpenHashMap<Node, BushOriginBuilder>(g.numZones());
 		p = Executors.newWorkStealingPool();
 		origins = new HashSet<BushOrigin>();
 	}

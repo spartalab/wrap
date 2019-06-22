@@ -21,6 +21,8 @@ public class Graph {
 	private List<Node> order;
 	private Set<Link> links;
 	private int numZones;
+	private int numNodes;
+	private int numLinks;
 	private byte[] md5;
 	
 	public Graph() {
@@ -28,6 +30,9 @@ public class Graph {
 		inLinks = new Object2ObjectOpenHashMap<Node, Set<Link>>();
 		nodeMap = new Int2ObjectOpenHashMap<Node>();
 		order = new ObjectArrayList<Node>();
+		numZones = 0;
+		numNodes = 0;
+		numLinks = 0;
 	}
 	
 	public Graph(Graph g) {
@@ -41,11 +46,16 @@ public class Graph {
 		}
 		nodeMap = g.nodeMap;
 		order = new ObjectArrayList<Node>(g.order);
+		numZones = g.numZones;
+		numNodes = g.numNodes;
+		numLinks = g.numLinks;
 	}
 	
 	public Boolean add(Link link) {
+		numLinks++;
 		Node head = link.getHead();
 		Node tail = link.getTail();
+
 		Set<Link> headIns = inLinks.getOrDefault(head, new ObjectOpenHashSet<Link>());
 		Set<Link> tailOuts= outLinks.getOrDefault(tail, new ObjectOpenHashSet<Link>());
 
@@ -57,8 +67,14 @@ public class Graph {
 			nodeMap.put(link.getHead().getID(), head);
 			nodeMap.put(link.getTail().getID(), tail);
 		}
-		if (!order.contains(head)) order.add(head);
-		if (!order.contains(tail)) order.add(tail);
+		if (!order.contains(head)) {
+			order.add(head);
+			numNodes++;
+		}
+		if (!order.contains(tail)) {
+			order.add(tail);
+			numNodes++;
+		}
 		return altered;
 	}
 	
@@ -75,16 +91,15 @@ public class Graph {
 		}
 		return false;
 	}
-	
+
 	public Set<Link> getLinks(){
 		if (links != null) return links;
-			HashSet<Link> ret = new HashSet<Link>();
+		HashSet<Link> ret = new HashSet<Link>();
 		outLinks.values().stream().reduce(ret, (a,b)->{
 			a.addAll(b);
 			return a;
 		});
 		links = ret;
-//		for (Node n : outLinks.keySet()) ret.addAll(outLinks.get(n));
 		return ret;
 	}
 	
@@ -96,7 +111,7 @@ public class Graph {
 		return order;
 	}
 
-	public int getNumZones() {
+	public int numZones() {
 		return numZones;
 	}
 
@@ -109,7 +124,7 @@ public class Graph {
 	}
 
 	public Integer numNodes() {
-		return nodeMap.size();
+		return numNodes;
 	}
 	
 	public Link[] outLinks(Node u) {
@@ -136,13 +151,12 @@ public class Graph {
 	public void printFlows(PrintStream out) {
 		out.println("\r\nTail\tHead\tflow");
 		for (Link l : getLinks()) {
-			Double sum = l.getFlow().doubleValue();
+			Double sum = l.getFlow();
 			out.println(l+"\t"+sum);
 		}
 	}
 
 	public void setMD5(byte[] md5) {
-		// TODO Auto-generated method stub
 		this.md5 = md5;
 	}
 	
@@ -161,5 +175,9 @@ public class Graph {
 			sb.append(String.format("%02X", b));
 		}
 		return sb.toString();
+	}
+	
+	public int numLinks() {
+		return numLinks;
 	}
 }

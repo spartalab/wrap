@@ -162,7 +162,7 @@ public class wrap{
 		Optimizer opt = new AlgorithmBOptimizer(g, o);
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
-				opt.sigTerm = true;
+				opt.shuttingDown = true;
 			}
 		});
 		System.out.println("Starting " + opt.toString() + "...");
