@@ -115,11 +115,11 @@ public abstract class BushOptimizer extends Optimizer {
 		while (!p.isTerminated()) {
 			if (shuttingDown) p.shutdownNow();
 			if (printProgress) try {
-			System.out.print("\tImproving bushes\t"
-					+ "In queue: "+String.format("%1$5s",p.getQueuedSubmissionCount())+"\t"
+				System.out.print("\tImproving bushes\t"
+						+ "In queue: "+String.format("%1$5s",p.getQueuedSubmissionCount())+"\t"
 						+ "Active: "+p.getActiveThreadCount()+"\t"
-							+ "Memory usage: "+(Runtime.getRuntime().totalMemory()/1048576)+" MiB\t\r");
-			Thread.sleep(250);
+						+ "Memory usage: "+(Runtime.getRuntime().totalMemory()/1048576)+" MiB\t\r");
+				Thread.sleep(250);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -128,31 +128,23 @@ public abstract class BushOptimizer extends Optimizer {
 		// Equilibrate bushes sequentially
 		//TODO redesign status visualization
 		outer: for (int i = 0; i < innerIters; i++) {
-//			if (printProgress) System.out.print("\tEquilibration # "+(i+1)+" out of "+innerIters+"\t");
 			int j = 1;
 			for (BushOrigin o : origins) {
-//				if (printProgress) System.out.print("Origin "+String.format("%1$4s",j)+" out of "+numZones+"\t");
 				int k = 1;
 				int numBushes = o.getContainers().size();
 				for (Bush b : o.getContainers()) {
 					if (shuttingDown) break outer;
-//					if (printProgress) System.out.print("Bush "+String.format("%1$2s",k)+" out of "+String.format("%1$2s",numBushes)+"     ");
 					if (printProgress) System.out.print("Equilibration "+(i+1)+" out of "+innerIters+"\t"
 							+ "Origin "+String.format("%1$5s", j)+" out of "+numZones+"\t"
 							+ "Bush "+String.format("%1$2s", k)+" out of "+String.format("%1$2s", numBushes)+"\r");
 					
 					equilibrateBush(b);
 					if (printBushes) b.toDefaultFile().start();
-					
-//					if (printProgress) System.out.print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 					k++;
 				}
-//				if (printProgress) System.out.print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b");
 				j++;
 			}
-//			if (printProgress) System.out.print("\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\b\r");
 		}
-//		if (printBushes) writeContainers();
 	}
 	
 	/**Set how many inner equilibrations should be performed

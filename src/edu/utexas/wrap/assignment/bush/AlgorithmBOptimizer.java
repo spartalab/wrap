@@ -154,14 +154,16 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 	 */
 	private Double getDeltaH(AlternateSegmentPair asp) {
 		Float vot = asp.getBush().getVOT();
-		Double denom = Stream.concat(
-				
+		
+		Double denominator = Stream.concat(
+				//for all links in the longest and shortest paths
 				StreamSupport.stream(asp.shortPath().spliterator(), true),
 				StreamSupport.stream(asp.longPath().spliterator(), true)
-				
+				//In no particular order, sum the price derivatives
 				).unordered().mapToDouble(x -> x.pricePrime(vot)).sum();
 
-		return Math.min(asp.maxDelta(), asp.priceDiff()/denom);
+		//cut off at the maximum delta
+		return Math.min(asp.maxDelta(), asp.priceDiff()/denominator);
 	}
 
 	@Override

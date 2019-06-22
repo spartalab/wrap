@@ -125,11 +125,16 @@ public class BushOrigin extends Origin {
 		initMap = null;
 	}
 
+	/**Load a bush onto initial paths from the default file
+	 * @param g	the graph to which 
+	 * @param vot the vot of the bush to be loaded
+	 * @param destDemand the DemandMap associated with the bush
+	 * @param c the mode of the bush to be loaded
+	 * @throws IOException
+	 */
 	public void loadBush(Graph g, Float vot, AutoDemandMap destDemand, Mode c) throws IOException {
 		Bush b = new Bush(this, g, vot, destDemand, c);
 		b.loadStructureFile();
-//		b.shortTopoSearch();
-//		b.longTopoSearch(false);
 		b.dumpFlow();
 		containers.add(b);
 	}

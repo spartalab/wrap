@@ -15,7 +15,7 @@ public abstract class Link implements Priced, BackVector {
 	private final Node head;
 	private final Node tail;
 	
-	private Double flo;
+	protected Double flo;
 
 //	private Map<AssignmentContainer,Double> flow;
 
@@ -38,6 +38,20 @@ public abstract class Link implements Priced, BackVector {
 		hc = (((head.getID()*a + tail.getID())*b + capacity.intValue())*c + fftime.intValue());
 	}
  
+
+	/**Duplicate constructor
+	 * @param l a duplicate of the link with zero flow
+	 */
+	public Link(Link l) {
+		this.tail = l.tail;
+		this.head = l.head;
+		this.capacity = l.capacity;
+		this.length = l.length;
+		this.fftime = l.fftime;
+		this.flo = 0.0;
+		this.hc = l.hc;
+	}
+
 
 	public abstract Boolean allowsClass(Mode c);
 

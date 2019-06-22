@@ -107,6 +107,10 @@ public class Bush implements AssignmentContainer {
 		return ret;
 	}
 
+	/**Set the backvector of a given node
+	 * @param head the node where the BackVector leads
+	 * @param backvector the BackVector associated with the node
+	 */
 	void setBackVector(Node head, BackVector backvector) {
 		q[network.getOrder(head)] = backvector;
 	}
@@ -185,28 +189,38 @@ public class Bush implements AssignmentContainer {
 	 * shortest path to that destination
 	 */
 	void dumpFlow() {
-		for (Node node : getTopologicalOrder(false)) {
-
+		for (BackVector bv : q) {
+			if (bv == null) continue;
+			Node node = bv.getHead();
 			Float x = demand.getOrDefault(node, 0.0F);
 			if (x <= 0.0) continue;
-			dumpFlow(node,x.doubleValue());
+			dumpFlow(node,x);	//recursively push flow onto the bush
 		}
 	}
 	
-	private void dumpFlow(Node node, Double x) {
+	/**Recursive helper method to load demand onto links on the bush
+	 * @param node the node on whose backvector demand should be loaded
+	 * @param x the amount of demand passing through that node
+	 */
+	private void dumpFlow(Node node, Float x) {
+		//If we've reached the end of the bush or there's no demand, stop
 		if (node.equals(origin.getNode()) || x == 0.0) return;
+		
+		//For each link leading into the current node
 		BackVector bv = getBackVector(node);
-		if (bv instanceof Link) {
+		if (bv instanceof Link) { //If there's only one such link
+			//modify it and move to the next level
 			Link l = (Link) bv;
-			l.changeFlow(x);
+			l.changeFlow(x.doubleValue());
 			dumpFlow(l.getTail(),x);
 		}
 		else if (bv instanceof BushMerge) {
+			//Otherwise recursively load onto all links in the backvector
 			BushMerge bm = (BushMerge) bv;
 			for (Link l : bm) {
 				Float split = bm.getSplit(l);
 				if (split == 0.0f) continue;
-				l.changeFlow(x*split);
+				l.changeFlow(x.doubleValue()*split);
 				dumpFlow(l.getTail(),x*split);
 			}
 		}
@@ -314,6 +328,9 @@ public class Bush implements AssignmentContainer {
 		return demand.get(node);
 	}
 	
+	/**
+	 * @return the demand map associated with this bush
+	 */
 	public DemandMap getDemandMap(){
 		return demand;
 	}
@@ -423,22 +440,28 @@ public class Bush implements AssignmentContainer {
 		// Else calculate divergence node
 		Node diverge = divergeNode(terminus);
 
+		//Trace back through the longest path
 		Node cur = terminus;
 		Link ll = getqLong(cur);
 		Double max = null;
 		int lpl = 0;
 		do {
+			//Keep track of the number of links until the diverge
 			lpl++;
+			//Keep track of the maximum bush flow that can be removed
 			if (max == null) max = bushFlows.get(ll);
 			else max = Math.min(max,bushFlows.get(ll));
 			cur = ll.getTail();
 			ll = getqLong(cur);
 		} while (cur != diverge);
 		
+		
+		//Trace back through the shortest path
 		cur = terminus;
 		ll = getqShort(cur);
 		int spl = 0;
 		do {
+			//Count how many links until the diverge
 			spl++;
 			cur = ll.getTail();
 			ll = getqShort(cur);
@@ -447,6 +470,10 @@ public class Bush implements AssignmentContainer {
 		return new AlternateSegmentPair(terminus, diverge, max, this, lpl, spl);
 	}
 
+	/**Get the backvector at a given node
+	 * @param node where the BackVector leads
+	 * @return the backvector from this bush leading to this node
+	 */
 	BackVector getBackVector(Node node) {
 		return q[network.getOrder(node)];
 	}
@@ -535,7 +562,9 @@ public class Bush implements AssignmentContainer {
 		int a = 2017;	//	Year of inception for this project
 		int b = 76537;	//	UT 76-5-37 TAMC \m/
 		
-		return (origin.getNode().getID()*a + vot.intValue())*b + (c == null? 0 : c.hashCode());
+		return (
+				origin.getNode().getID()*a + vot.intValue()
+				)*b + (c == null? 0 : c.hashCode());
 	}
 	
 	/**Determine whether a link can be used in the bush
@@ -633,9 +662,12 @@ public class Bush implements AssignmentContainer {
 	void prune() {
 		for (BackVector v : q) {
 			if (v instanceof BushMerge) {	//For every BushMerge in the bush
+				
+				//Duplicate the link list to avoid a ConcurrentModificationException
 				BushMerge bm = new BushMerge((BushMerge) v);
+				
 				for (Link l : bm) {	//See if the split is approximately 0
-					if (bm.getSplit(l) <= Math.ulp(bm.getSplit(l))*2) {
+					if (bm.getSplit(l) <= Math.ulp(bm.getSplit(l))*20) {
 						//If so, try to remove the Link
 						if (remove(l)) cachedTopoOrder = null;
 					}
@@ -654,7 +686,6 @@ public class Bush implements AssignmentContainer {
 		Node[] iter = getTopologicalOrder(false);
 		
 		//For each node in reverse topological order
-//		for (Node n = iter.next(); iter.hasNext(); n = iter.next()) {
 		for (int i = iter.length - 1; i >= 0; i--) {
 			Node n = iter[i];
 			if (n == null) continue;
@@ -715,18 +746,15 @@ public class Bush implements AssignmentContainer {
 	@Override
 	public Map<Link, Double> getFlows(){
 		//Get the reverse topological ordering and a place to store node flows
-//		Map<Node,Double> nodeFlow = new HashMap<Node,Double>();
-//		for (Node d : demand.getNodes()) nodeFlow.put(d, demand.get(d).doubleValue());
-		
 		Map<Node,Double> nodeFlow = demand.doubleClone();
 		Node[] iter = getTopologicalOrder(false);
-		Map<Link,Double> ret = new Object2DoubleOpenHashMap<Link>();
+		Map<Link,Double> ret = new Object2DoubleOpenHashMap<Link>((int) (network.numZones()*1.5),1.0f);
 
 		//For each node in reverse topological order
-//		for (Node n = iter.next(); iter.hasNext(); n = iter.next()) {
 		for (int i = iter.length - 1; i >= 0; i--) {
 			Node n = iter[i];
 			if (n == null) continue;
+			
 			//Get the node flow and the backvector that feeds it into the node
 			BackVector back = getBackVector(n);
 			Double downstream = nodeFlow.getOrDefault(n,0.0);
@@ -917,12 +945,14 @@ public class Bush implements AssignmentContainer {
 	 */
 	public void toFile(OutputStream out) throws IOException, InterruptedException {
 		writing.acquire();
-		int size = Integer.BYTES*2+Float.BYTES;
+		int size = Integer.BYTES*2+Float.BYTES; //Size of each link's data
+		
+		//For each node
 		for (Node n : getTopologicalOrder(false)) {
 			BackVector qn = getBackVector(n);
-			
+			//get all the links leading to the node
+			//write them to a file
 			if (qn instanceof Link) {
-//				out.println(n.getID()+","+((Link) qn).hashCode()+",1.0");
 				byte[] b = ByteBuffer.allocate(size)
 						.putInt(n.getID())
 						.putInt(((Link) qn).hashCode())
@@ -947,6 +977,10 @@ public class Bush implements AssignmentContainer {
 		writing.release();
 	}
 	
+	/**Create a thread that writes the current bush to the default file
+	 * location, namely, ./{NetworkID}/{OriginID}/{VehicleClass}-{VOT}.bush
+	 * @return a thread which writes to the default file location
+	 */
 	public Thread toDefaultFile() {
 		return new Thread() {
 			public void run() {
@@ -1012,7 +1046,7 @@ public class Bush implements AssignmentContainer {
 				if (split == 1.0)
 					setBackVector(n, bv);
 				else {
-					BushMerge qm = new BushMerge(this);
+					BushMerge qm = new BushMerge(this,n);
 					qm.add(bv);
 					qm.setSplit(bv, split);
 					setBackVector(n,qm);
@@ -1060,14 +1094,23 @@ public class Bush implements AssignmentContainer {
 		in.close();
 	}
 	
+	/**Delete any cached topological order to conserve space
+	 * 
+	 */
 	public void clearCache() {
 		cachedTopoOrder = null;
 	}
 
+	/**This bush is no longer being read/written
+	 * 
+	 */
 	public void release() {
 		writing.release();
 	}
 
+	/**Begin reading/writing this bush
+	 * @throws InterruptedException
+	 */
 	public void acquire() throws InterruptedException {
 		writing.acquire();
 	}

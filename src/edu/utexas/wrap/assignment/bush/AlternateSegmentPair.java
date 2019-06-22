@@ -9,6 +9,13 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 
+/**A pair of alternative paths for equilibration, consisting of two paths in
+ * a bush, with at least one of the two being utilized already. Flow can be
+ * shifted from one path to the other, allowing the assignment to be drawn
+ * closer into equilibrium. 
+ * @author William
+ *
+ */
 public class AlternateSegmentPair {
 	private Node merge, diverge;
 	private Double maxDelta;
@@ -24,25 +31,39 @@ public class AlternateSegmentPair {
 		shortPathLength = spl;
 	}
 	
+	/**
+	 * @return the point from which bush flows diverge
+	 */
 	public Node diverge() {
 		return diverge;
 	}
 	
+	/**
+	 * @return the amount of flow which can be shifted from one path to the other
+	 */
 	public Double maxDelta() {
 		return maxDelta;
 	}
 	
+	/**
+	 * @return the point at which bush flows merge back
+	 */
 	public Node merge() {
 		return merge;
 	}
 	
+	/**
+	 * @return the difference in path costs between the alternate segments
+	 */
 	public Double priceDiff() {
 		Float vot = bush.getVOT();
 		Mode klass = bush.getVehicleClass();
 		
+		//For each link in the longest and shortest paths, sum the link prices in parallel through a Stream
 		Double longPrice = StreamSupport.stream(longPath().spliterator(), true).unordered().mapToDouble(x -> x.getPrice(vot, klass)).sum();
 		Double shortPrice = StreamSupport.stream(shortPath().spliterator(), true).unordered().mapToDouble(x -> x.getPrice(vot, klass)).sum();
 
+		//Perform a quick numerical check
 		Double ulp = Math.max(Math.ulp(longPrice),Math.ulp(shortPrice));
 		if (longPrice < shortPrice) {
 			if (longPrice-shortPrice < 2*ulp) return 0.0;
@@ -52,30 +73,48 @@ public class AlternateSegmentPair {
 		return longPrice-shortPrice;
 	}
 	
+	/**
+	 * @return the bush containing the ASP
+	 */
 	public Bush getBush() {
 		return bush;
 	}
 
+	/**
+	 * @return an iterator over the links in the shortest path of this ASP
+	 */
 	public Iterable<Link> shortPath() {
 		return new ShortPathIterator();
 	}
 
+	/**
+	 * @return an iterator over the links in the longest path of this ASP
+	 */
 	public Iterable<Link> longPath() {
 		return new LongPathIterator();
 	}
 	
+	/**An iterator that follows the shortest path backvector links until
+	 * the diverge node is reached
+	 * @author William
+	 *
+	 */
 	private class ShortPathIterator implements Iterable<Link> {
 		@Override
 		public Iterator<Link> iterator() {
 			return new Iterator<Link>(){
+				
 				Node current = merge;
+				
 				@Override
 				public boolean hasNext() {
+					//Stop when the diverge is reached or we run out of path
 					return current != diverge && bush.getqShort(current) != null;
 				}
 
 				@Override
 				public Link next() {
+					//advance the current node back up the bush
 					Link qs = bush.getqShort(current);
 					current = qs.getTail();
 					return qs;
@@ -89,19 +128,28 @@ public class AlternateSegmentPair {
 		}
 	}
 	
+	/**An iterator that follows the longest path backvector links until
+	 * the diverge node is reached
+	 * @author William
+	 *
+	 */
 	private class LongPathIterator implements Iterable<Link>{
 
 		@Override
 		public Iterator<Link> iterator() {
 			return new Iterator<Link>() {
+				
 				Node current = merge;
+				
 				@Override
 				public boolean hasNext() {
+					//Stop when the diverge is reached or we run out of path
 					return current != diverge && bush.getqLong(current) != null;
 				}
 
 				@Override
 				public Link next() {
+					//advance the current node back up the bush
 					Link ql = bush.getqLong(current);
 					current = ql.getTail();
 					return ql;
@@ -115,6 +163,10 @@ public class AlternateSegmentPair {
 		}
 	}
 	
+	/**Spliterator that encapsulates all Links in the longest path
+	 * @author William
+	 *
+	 */
 	private class LongPathSpliterator implements Spliterator<Link>{
 		private int size, elapsed;
 		private Node cur;
@@ -132,44 +184,52 @@ public class AlternateSegmentPair {
 
 		@Override
 		public int characteristics() {
-			// TODO Auto-generated method stub
-			return	Spliterator.ORDERED | 
-					Spliterator.DISTINCT | 
-					Spliterator.SIZED | 
-					Spliterator.NONNULL | 
-					Spliterator.IMMUTABLE |
-					Spliterator.SUBSIZED;
+			return	Spliterator.ORDERED | 	//The reverse ordering of the backvector links
+					Spliterator.DISTINCT | 	//The path is acyclic
+					Spliterator.SIZED | 	//The exact size of the spliterator is predefined
+					Spliterator.NONNULL | 	//No null links should ever be returned
+					Spliterator.IMMUTABLE |	//The bush structure shouldn't change while examining ASPs
+					Spliterator.SUBSIZED;	//The subdivisions of this Spliterator also have known sizes
 		}
 
 		@Override
 		public boolean tryAdvance(Consumer<? super Link> action) {
-			if (elapsed == size) return false;
-			Link v = bush.getqLong(cur);
-			if (v == null) return false;
-			cur = v.getTail();
+			if (elapsed == size) return false; //We've reached the diverge node
+			Link v = bush.getqLong(cur);	//Advance to the next link
+			if (v == null) return false;	//We've reached the end of the road
+			
+			cur = v.getTail();	//Advance the current node
 			elapsed++;
-			action.accept(v);
+			
+			action.accept(v);	//Accept the action on the prior link
 			return true;
 		}
 
 		@Override
 		public Spliterator<Link> trySplit() {
-			// TODO Auto-generated method stub
-			int curSize = size-elapsed;
-			if (curSize < 10) return null;
-			int splitPos = curSize / 2;
+			int curSize = size-elapsed;	//The amount of unvisited links remaining
+			if (curSize < 6) return null;	//Optimization TODO revisit this size
+			
+			int splitPos = curSize / 2;	//Divide in two
 			Spliterator<Link> s = new LongPathSpliterator(cur,splitPos);
+			
+			//Advance backward halfway, skipping the Links allocated to the new Spliterator
 			for (int i = 0; i < splitPos; i++) {
 				Link v = bush.getqLong(cur);
 				if (v == null) throw new RuntimeException("Wrong longest-path length");
 				cur = v.getTail();
 				elapsed++;
 			}
+			
 			return s;
 		}
 	}
 	
 	
+	/**Spliterator that encapsulates all Links in the shortest path
+	 * @author William
+	 *
+	 */
 	private class ShortPathSpliterator implements Spliterator<Link>{
 		private int size, elapsed;
 		private Node cur;
@@ -187,37 +247,44 @@ public class AlternateSegmentPair {
 		
 		@Override
 		public int characteristics() {
-			return	Spliterator.ORDERED
-					| Spliterator.DISTINCT
-					| Spliterator.SIZED
-					| Spliterator.NONNULL
-					| Spliterator.IMMUTABLE
-					| Spliterator.SUBSIZED;
+			return	Spliterator.ORDERED | 	//The reverse ordering of the backvector links
+					Spliterator.DISTINCT | 	//The path is acyclic
+					Spliterator.SIZED | 	//The exact size of the spliterator is predefined
+					Spliterator.NONNULL | 	//No null links should ever be returned
+					Spliterator.IMMUTABLE |	//The bush structure shouldn't change while examining ASPs
+					Spliterator.SUBSIZED;	//The subdivisions of this Spliterator also have known sizes
 		}
 		
 		@Override
 		public boolean tryAdvance(Consumer<? super Link> action) {
-			if (elapsed == size) return false;
-			Link v = bush.getqShort(cur);
-			if (v == null) return false;
+			if (elapsed == size) return false;	//we've reached the diverge node
+			Link v = bush.getqShort(cur); //get the next link
+			if (v == null) return false;	//we've run out of path
+			
+			//advance the current node
 			cur = v.getTail();
 			elapsed++;
-			action.accept(v);
+			
+			action.accept(v);	//accept the action on the prior link
 			return true;
 		}
 		
 		@Override
 		public Spliterator<Link> trySplit(){
-			int curSize = size - elapsed;
-			if (curSize < 10) return null;
-			int splitSize = curSize / 2;
+			int curSize = size - elapsed;	//the remaining number of links
+			if (curSize < 6) return null;	//optimization TODO Reevaluate this size
+			
+			int splitSize = curSize / 2;	//divide the remaining links in half
 			Spliterator<Link> s = new ShortPathSpliterator(cur, splitSize);
+			
+			//advance backward halfway, skipping the links allotted to the new Spliterator
 			for (int i = 0; i < splitSize; i++) {
 				Link v = bush.getqShort(cur);
 				if (v == null) throw new RuntimeException("Wrong shortest-path length");
 				cur = v.getTail();
 				elapsed++;
 			}
+			
 			return s;
 		}
 	}

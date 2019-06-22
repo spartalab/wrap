@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import edu.utexas.wrap.net.Link;
+import edu.utexas.wrap.net.Node;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 
 /**A way to represent the Links which merge at a given Node in a Bush,
@@ -20,6 +21,7 @@ public class BushMerge extends Object2FloatOpenHashMap<Link> implements BackVect
 	private Link shortLink;
 	private Link longLink;
 	private final Bush bush;
+	private final Node head;
 	
 	/** Create a BushMerge by adding a shortcut link to a node
 	 * @param b the bush upon whose structure the merge depends
@@ -27,7 +29,7 @@ public class BushMerge extends Object2FloatOpenHashMap<Link> implements BackVect
 	 * @param l the shortcut link providing a shorter path to the node
 	 */
 	public BushMerge(Bush b, Link u, Link l) {
-		this(b);
+		this(b,u == null? l.getHead() : u.getHead());
 
 		put(u, 1.0F);
 		put(l, 0.0F);
@@ -41,16 +43,18 @@ public class BushMerge extends Object2FloatOpenHashMap<Link> implements BackVect
 		bush = bm.bush;
 		longLink = bm.longLink;
 		shortLink = bm.shortLink;
+		this.head = bm.head;
 		defaultReturnValue(-1F);
 	}
 	
 	/**Constructor for empty merge
 	 * @param b
 	 */
-	protected BushMerge(Bush b) {
+	protected BushMerge(Bush b, Node n) {
 		super(3,1.0f);
 		defaultReturnValue(-1F);
 		bush = b;
+		head = n;
 	}
 	
 	/**
@@ -138,6 +142,10 @@ public class BushMerge extends Object2FloatOpenHashMap<Link> implements BackVect
 		return keySet().iterator();
 	}
 
+	/**Add a link to the BushMerge
+	 * @param l the link to be added
+	 * @return whether the link was successfully added
+	 */
 	public Boolean add(Link l) {
 		try { 
 			put(l, 0.0F);
@@ -148,12 +156,24 @@ public class BushMerge extends Object2FloatOpenHashMap<Link> implements BackVect
 		}
 	}
 
-	public boolean contains(Link i) {
-		return containsKey(i);
+	/**
+	 * @param link the link which may be in the Bush<erge
+	 * @return whether the link is in the BushMerge
+	 */
+	public boolean contains(Link link) {
+		return containsKey(link);
 	}
 
+	/**
+	 * @return the set of links in this BushMerge
+	 */
 	public Set<Link> getLinks() {
 		return keySet();
+	}
+
+	@Override
+	public Node getHead() {
+		return head;
 	}
 	
 }

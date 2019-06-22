@@ -199,7 +199,7 @@ public class OriginFactory {
 		String line;
 		
 		Map<Float, AutoODMatrix> ods = new Float2ObjectOpenHashMap<AutoODMatrix>();
-		
+		int numZones = 0;
 		
 		do { // Move past headers in the file
 			line = of.readLine();
@@ -215,7 +215,7 @@ public class OriginFactory {
 			Node root = g.getNode(origID); // Retrieve the existing node with that ID
 			System.out.print("\rReading demand for origin " + origID);
 			DemandHashMap unified = readDestinationDemand(of, g);
-
+			numZones++;
 			
 			for (Float[] entry : VOTs.get(root)) {
 				ods.putIfAbsent(entry[0], new AutoODMatrix(g, entry[0], null)); //Ensure a parent OD matrix exists
@@ -232,6 +232,7 @@ public class OriginFactory {
 			line = of.readLine();
 
 		}
+		g.setNumZones(numZones);
 		of.close();
 
 	}

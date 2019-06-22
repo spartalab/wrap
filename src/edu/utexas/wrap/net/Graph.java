@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.utexas.wrap.modechoice.Mode;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -179,5 +180,107 @@ public class Graph {
 	
 	public int numLinks() {
 		return numLinks;
+	}
+
+	public Graph getDerivativeGraph(Map<Link, Double> derivs) {
+		// TODO Auto-generated method stub
+		Graph ret = new Graph();
+		ret.order = order;
+		ret.outLinks = new HashMap<Node,Set<Link>>(outLinks.size(),1.0f);
+		ret.inLinks = new HashMap<Node,Set<Link>>(inLinks.size(),1.0f);
+		ret.nodeMap = nodeMap;
+		ret.order = order;
+		ret.numLinks = numLinks;
+		ret.numNodes = numNodes;
+		ret.numZones = numZones;
+		ret.setMD5(getMD5());
+		
+		for (Node n : outLinks.keySet()) {
+			Set<Link> ol = outLinks.get(n);
+			Set<Link> nl = new HashSet<Link>(ol.size(),1.0f);
+			for (Link l : ol) {
+				Link ll = new Link(l) {
+					Link parent = l;
+					Double deriv = derivs.getOrDefault(l, 0.0);
+					@Override
+					public Boolean allowsClass(Mode c) {
+						return parent.allowsClass(c);
+					}
+
+					@Override
+					public double getPrice(Float vot, Mode c) {
+						return getTravelTime();
+					}
+
+					@Override
+					public double getTravelTime() {
+						return deriv*flo;
+					}
+
+					@Override
+					public double pricePrime(Float vot) {
+						return tPrime();
+					}
+
+					@Override
+					public double tIntegral() {
+						// TODO Auto-generated method stub
+						return 0;
+					}
+
+					@Override
+					public double tPrime() {
+						return deriv;
+					}
+					
+				};
+				nl.add(ll);
+			}
+			ret.outLinks.put(n, nl);
+		}
+		
+		for (Node n : inLinks.keySet()) {
+			Set<Link> ol = inLinks.get(n);
+			Set<Link> nl = new HashSet<Link>(ol.size(),1.0f);
+			for (Link l : ol) {
+				Link ll = new Link(l) {
+					Link parent = l;
+					Double deriv = derivs.getOrDefault(l, 0.0);
+					@Override
+					public Boolean allowsClass(Mode c) {
+						return parent.allowsClass(c);
+					}
+
+					@Override
+					public double getPrice(Float vot, Mode c) {
+						return getTravelTime();
+					}
+
+					@Override
+					public double getTravelTime() {
+						return deriv*flo;
+					}
+
+					@Override
+					public double pricePrime(Float vot) {
+						return tPrime();
+					}
+
+					@Override
+					public double tIntegral() {
+						// TODO Auto-generated method stub
+						return 0;
+					}
+
+					@Override
+					public double tPrime() {
+						return deriv;
+					}
+				};
+				nl.add(ll);
+			}
+			ret.inLinks.put(n, nl);
+		}
+		return ret;
 	}
 }
