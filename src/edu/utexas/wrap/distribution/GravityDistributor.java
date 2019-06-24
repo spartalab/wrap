@@ -1,6 +1,5 @@
 package edu.utexas.wrap.distribution;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
@@ -21,10 +20,11 @@ public class GravityDistributor extends TripDistributor {
 	}
 	@Override
 	public AggregatePAMatrix distribute(PAMap pa) {
-		Map<Node, Double> a = new Object2DoubleOpenHashMap<Node>();
-		Map<Node, Double> b = new Object2DoubleOpenHashMap<Node>();
+		Map<Node, Double> a = new Object2DoubleOpenHashMap<Node>(g.numZones(),1.0f);
+		Map<Node, Double> b = new Object2DoubleOpenHashMap<Node>(g.numZones(),1.0f);
 		AggregatePAHashMatrix pam = new AggregatePAHashMatrix(g);
 		Boolean converged = false;
+		
 		int iterations = 0;
 		while (!converged && iterations < 100) {
 			converged = true;

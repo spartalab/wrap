@@ -1,6 +1,7 @@
 package edu.utexas.wrap.demand.containers;
 
 import java.io.File;
+import java.util.Collection;
 
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ModalPAMatrix;
@@ -77,6 +78,18 @@ public class ModalHashMatrix extends Object2ObjectOpenHashMap<Node, DemandMap> i
 	public void toFile(File out) {
 		// TODO Auto-generated method stub
 		throw new RuntimeException("No toFile implementation");
+	}
+
+	@Override
+	public DemandMap getDemandMap(Node producer) {
+		// TODO Auto-generated method stub
+		return get(producer);
+	}
+
+	@Override
+	public Collection<Node> getProducers() {
+		// TODO Auto-generated method stub
+		return keySet();
 	}
 
 

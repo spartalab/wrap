@@ -3,6 +3,7 @@ package edu.utexas.wrap.demand.containers;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Collection;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
@@ -81,6 +82,18 @@ public class AggregatePAHashMatrix extends Object2ObjectOpenHashMap<Node, Demand
 		} finally {
 			if (o != null) o.close();
 		}
+	}
+
+	@Override
+	public DemandMap getDemandMap(Node producer) {
+		// TODO Auto-generated method stub
+		return get(producer);
+	}
+
+	@Override
+	public Collection<Node> getProducers() {
+		// TODO Auto-generated method stub
+		return keySet();
 	}
 
 }

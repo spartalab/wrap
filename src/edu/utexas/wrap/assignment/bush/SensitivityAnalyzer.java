@@ -29,10 +29,8 @@ public class SensitivityAnalyzer extends AlgorithmBOptimizer {
 		for (BushOrigin origin : origins) {
 			for (Bush bush : origin.getContainers()) {
 				for (Node destination : bush.getDemandMap().getNodes()){
-					
 					Map<Link,Double> dXdD = getDerivatives(gprime, origin, bush, destination);
 				}
-			
 			}
 		}	
 	}
