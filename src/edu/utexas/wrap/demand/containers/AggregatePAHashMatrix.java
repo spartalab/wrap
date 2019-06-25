@@ -73,7 +73,7 @@ public class AggregatePAHashMatrix extends Object2ObjectOpenHashMap<Node, Demand
 		try{
 			o = new FileWriter(out);
 
-			for (Node orig : this.keys) {
+			for (Node orig : keySet()) {
 				DemandHashMap demand = get(orig);
 				for (Node dest : demand.keySet()) {
 					o.write(""+orig.getID()+","+dest.getID()+","+demand.getFloat(dest)+"\n");

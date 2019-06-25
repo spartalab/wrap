@@ -27,10 +27,13 @@ public class CostBasedFrictionFactorMap implements FrictionFactorMap {
 		if (lowerBd == null && upperBd != null) lowerBd = upperBd;
 		else if (lowerBd != null && upperBd == null) upperBd = lowerBd;
 		else if (lowerBd == null && upperBd == null) throw new RuntimeException("No mappings in cost factor tree");
+		if (lowerBd == upperBd) return costFactors.get(lowerBd);
 
 		Float pct = (cost - lowerBd)/(upperBd - lowerBd);
 		
-		return pct*costFactors.get(upperBd) + (1-pct)*costFactors.get(lowerBd);
+		Float c = pct*costFactors.get(upperBd) + (1-pct)*costFactors.get(lowerBd);
+		if (c.isNaN()) throw new RuntimeException();
+		return c;
 	}
 
 }

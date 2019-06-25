@@ -857,9 +857,8 @@ public class Bush implements AssignmentContainer {
 		prune();	//Remove unused links
 
 		boolean modified = false;
-		Set<Link> usedLinks = getLinks();
 		Set<Link> unusedLinks = new ObjectOpenHashSet<Link>(network.getLinks());
-		unusedLinks.removeAll(usedLinks);
+		unusedLinks.removeAll(getLinks());
 		
 		//Calculate the longest path costs
 		Double[] cache;
@@ -874,6 +873,7 @@ public class Bush implements AssignmentContainer {
 				throw new RuntimeException(e2);
 			}
 		} 
+		
 		Set<Link> tba = new HashSet<Link>();	//Set of links to be added
 		for (Link l : unusedLinks) {
 			// If link is active, do nothing (removing flow should mark as inactive)
@@ -881,9 +881,9 @@ public class Bush implements AssignmentContainer {
 			if (!l.allowsClass(getVehicleClass()) || !isValidLink(l)) continue;
 			try {
 				// Else if Ui + tij < Uj
-				Double tailU = getCachedU(l.getTail(), cache);
-				Double headU = getCachedU(l.getHead(), cache);
-				Double linkVal = l.getPrice(getVOT(), getVehicleClass());
+				double tailU = getCachedU(l.getTail(), cache);
+				double headU = getCachedU(l.getHead(), cache);
+				double linkVal = l.getPrice(getVOT(), getVehicleClass());
 				
 				if (tailU + linkVal < headU) {
 					tba.add(l);	//Mark the link as one which should be added
@@ -908,7 +908,7 @@ public class Bush implements AssignmentContainer {
 	 */
 	@Override
 	public Set<Link> getLinks() {
-		Set<Link> ret = new HashSet<Link>();
+		Set<Link> ret = new HashSet<Link>((int) (q.length*1.3));
 		for (BackVector b : q) {
 			//For every backvector, add its link(s) to the return set
 			if (b instanceof Link) ret.add((Link) b);
