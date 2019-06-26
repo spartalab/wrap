@@ -4,23 +4,23 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
-public class AggregatePAHashMatrix extends Object2ObjectOpenHashMap<Node, DemandHashMap> implements AggregatePAMatrix {
+public class AggregatePAHashMatrix implements AggregatePAMatrix {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -4656252954122078293L;
 	private Graph g;
+	private Map<Node,DemandMap> matrix;
 
 	public AggregatePAHashMatrix(Graph g) {
 		this.g = g;
+		matrix = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<Node,DemandMap>(g.numZones()));
 	}
 
 	/**
@@ -28,8 +28,8 @@ public class AggregatePAHashMatrix extends Object2ObjectOpenHashMap<Node, Demand
 	 * @param i the Node from which there is demand
 	 * @param d the map of demand from the given Node to other Nodes
 	 */
-	public void putDemandMap(Node i, DemandHashMap d) {
-		put(i, d);
+	public void putDemandMap(Node i, DemandMap d) {
+		matrix.put(i, d);
 	}
 
 	/* (non-Javadoc)
@@ -38,7 +38,7 @@ public class AggregatePAHashMatrix extends Object2ObjectOpenHashMap<Node, Demand
 	@Override
 	public Float getDemand(Node origin, Node destination) {
 		// TODO Auto-generated method stub
-		return get(origin) == null ? 0.0F : get(origin).getOrDefault(destination, 0.0F);
+		return matrix.get(origin) == null ? 0.0F : matrix.get(origin).getOrDefault(destination, 0.0F);
 	}
 
 	/* (non-Javadoc)
@@ -62,8 +62,8 @@ public class AggregatePAHashMatrix extends Object2ObjectOpenHashMap<Node, Demand
 	 */
 	@Override
 	public void put(Node origin, Node destination, Float demand) {
-		putIfAbsent(origin,new DemandHashMap(g));
-		((DemandMap) get(origin)).put(destination,demand);
+		matrix.putIfAbsent(origin,new DemandHashMap(g));
+		((DemandMap) matrix.get(origin)).put(destination,demand);
 		
 	}
 
@@ -73,10 +73,10 @@ public class AggregatePAHashMatrix extends Object2ObjectOpenHashMap<Node, Demand
 		try{
 			o = new FileWriter(out);
 
-			for (Node orig : keySet()) {
-				DemandHashMap demand = get(orig);
-				for (Node dest : demand.keySet()) {
-					o.write(""+orig.getID()+","+dest.getID()+","+demand.getFloat(dest)+"\n");
+			for (Node orig : matrix.keySet()) {
+				DemandMap demand = matrix.get(orig);
+				for (Node dest : demand.getNodes()) {
+					o.write(""+orig.getID()+","+dest.getID()+","+demand.get(dest)+"\n");
 				}
 			}
 		} finally {
@@ -87,13 +87,13 @@ public class AggregatePAHashMatrix extends Object2ObjectOpenHashMap<Node, Demand
 	@Override
 	public DemandMap getDemandMap(Node producer) {
 		// TODO Auto-generated method stub
-		return get(producer);
+		return matrix.get(producer);
 	}
 
 	@Override
 	public Collection<Node> getProducers() {
 		// TODO Auto-generated method stub
-		return keySet();
+		return matrix.keySet();
 	}
 
 }

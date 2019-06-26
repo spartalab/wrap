@@ -23,15 +23,19 @@ public class CostBasedFrictionFactorMap implements FrictionFactorMap {
 		
 		Integer lowerBd = costFactors.floorKey((int) Math.floor(cost));
 		Integer upperBd = costFactors.ceilingKey((int) Math.ceil(cost));
-		
+		Float c;
 		if (lowerBd == null && upperBd != null) lowerBd = upperBd;
 		else if (lowerBd != null && upperBd == null) upperBd = lowerBd;
 		else if (lowerBd == null && upperBd == null) throw new RuntimeException("No mappings in cost factor tree");
-		if (lowerBd == upperBd) return costFactors.get(lowerBd);
+		if (lowerBd == upperBd) {
+			c = costFactors.get(lowerBd);
+			if (c.isNaN()) throw new RuntimeException();
+			return c;
+		}
 
 		Float pct = (cost - lowerBd)/(upperBd - lowerBd);
 		
-		Float c = pct*costFactors.get(upperBd) + (1-pct)*costFactors.get(lowerBd);
+		 c = pct*costFactors.get(upperBd) + (1-pct)*costFactors.get(lowerBd);
 		if (c.isNaN()) throw new RuntimeException();
 		return c;
 	}

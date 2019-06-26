@@ -7,24 +7,22 @@ import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2FloatMaps;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 
-public class DemandHashMap extends Object2FloatOpenHashMap<Node> implements DemandMap {
+public class DemandHashMap implements DemandMap {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -8268461681839852205L;
 	Graph g;
+	private Map<Node,Float> map; 
 
 	public DemandHashMap(Graph g) {
-		super(g.numZones(),1.0f);
 		this.g = g;
+		map = Object2FloatMaps.synchronize(new Object2FloatOpenHashMap<Node>(g.numZones()),1.0f);
 	}
 	
 	protected DemandHashMap(DemandHashMap d) {
-		super(d);
 		this.g = d.getGraph();
+		map = Object2FloatMaps.synchronize(new Object2FloatOpenHashMap<Node>(d.map));
 	}
 	
 	/* (non-Javadoc)
@@ -56,7 +54,7 @@ public class DemandHashMap extends Object2FloatOpenHashMap<Node> implements Dema
 	 */
 	@Override
 	public Collection<Node> getNodes() {
-		return keySet();
+		return map.keySet();
 	}
 
 	/* (non-Javadoc)
@@ -64,14 +62,24 @@ public class DemandHashMap extends Object2FloatOpenHashMap<Node> implements Dema
 	 */
 	@Override
 	public Float getOrDefault(Node node, float f) {
-		return super.getOrDefault(node, f);
+		return map.getOrDefault(node, f);
 	}
 
 	@Override
 	public Map<Node, Double> doubleClone() {
-		Map<Node,Double> ret = new Object2DoubleOpenHashMap<Node>(size());
-		for (Node key : keySet()) ret.put(key, get(key).doubleValue());
+		Map<Node,Double> ret = new Object2DoubleOpenHashMap<Node>(map.size());
+		for (Node key : map.keySet()) ret.put(key, get(key).doubleValue());
 		return ret;
+	}
+
+	@Override
+	public Float put(Node dest, Float demand) {
+		return map.put(dest, demand);
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return map.isEmpty();
 	}
 
 	

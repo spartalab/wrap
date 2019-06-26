@@ -50,12 +50,12 @@ public class MarketSegment implements Runnable{
 			boolean hasVeh, 
 			boolean asManyVehAsWork, 
 			float vot) {
-		if(peakTrip != 'a' && peakTrip != 'p' && peakTrip != 'o')
-			throw new IllegalArgumentException("peakTrip must be 'a' or 'p' or 'o' ");
-		if(incomeQ != '1' && incomeQ != '2' && incomeQ != '3' && incomeQ != '4')
-			throw new IllegalArgumentException("incomeQ must be '1','2','3', or '4'");
-		if(!hasVeh && asManyVehAsWork)
-			throw new IllegalArgumentException("Cannot have 0 vehicles and have as many vehicles as workers");
+//		if(peakTrip != 'a' && peakTrip != 'p' && peakTrip != 'o')
+//			throw new IllegalArgumentException("peakTrip must be 'a' or 'p' or 'o' ");
+//		if(incomeQ != '1' && incomeQ != '2' && incomeQ != '3' && incomeQ != '4')
+//			throw new IllegalArgumentException("incomeQ must be '1','2','3', or '4'");
+//		if(!hasVeh && asManyVehAsWork)
+//			throw new IllegalArgumentException("Cannot have 0 vehicles and have as many vehicles as workers");
 		this.homeBased = homeBased;
 		this.workTrip = workTrip;
 		this.peakTrip = peakTrip;

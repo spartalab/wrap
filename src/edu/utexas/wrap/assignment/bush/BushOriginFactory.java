@@ -49,7 +49,7 @@ public class BushOriginFactory extends AssignmentLoader {
 	 * @see edu.utexas.wrap.assignment.AssignmentLoader#addAll(edu.utexas.wrap.demand.containers.AutoODHashMatrix)
 	 */
 	public void submitAll(AutoODMatrix matrix) {
-		for (Node o : matrix.keySet()) {
+		for (Node o : matrix.getProducers()) {
 			submit(o, matrix.get(o));
 		}
 	}

@@ -475,7 +475,10 @@ public class Bush implements AssignmentContainer {
 	 * @return the backvector from this bush leading to this node
 	 */
 	BackVector getBackVector(Node node) {
-		return q[network.getOrder(node)];
+		int index = network.getOrder(node);
+		if (index == -1) 
+			throw new RuntimeException();
+		return q[index];
 	}
 
 	/** Assemble the shortest path from the origin to a given node
@@ -617,7 +620,7 @@ public class Bush implements AssignmentContainer {
 
 		//In topological order,
 		for (Node d : to) {
-
+			if (d == null) continue;
 			//Try to relax the backvector (all links in the BushMerge, if applicable)
 			BackVector bv = getBackVector(d);
 			if (bv instanceof Link) longRelax((Link) bv, cache);
@@ -822,6 +825,7 @@ public class Bush implements AssignmentContainer {
 
 		//In topological order,
 		for (Node d : to) {
+			if (d == null) continue;
 			try {
 				BackVector bv = getBackVector(d);
 				if (bv instanceof Link) shortRelax((Link) bv, cache);
@@ -949,6 +953,7 @@ public class Bush implements AssignmentContainer {
 		
 		//For each node
 		for (Node n : getTopologicalOrder(false)) {
+			if (n == null) continue;
 			BackVector qn = getBackVector(n);
 			//get all the links leading to the node
 			//write them to a file

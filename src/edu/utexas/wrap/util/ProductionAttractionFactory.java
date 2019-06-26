@@ -6,7 +6,9 @@ import java.io.FileReader;
 import java.io.IOException;
 
 import edu.utexas.wrap.demand.PAMap;
+import edu.utexas.wrap.demand.PAMatrix;
 import edu.utexas.wrap.demand.containers.AggregatePAHashMap;
+import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
@@ -18,9 +20,7 @@ public class ProductionAttractionFactory {
 		try {
 			in = new BufferedReader(new FileReader(file));
 			if (header) in.readLine();
-			String line = in.readLine();
-
-			while (line != null) {
+			in.lines().parallel().forEach(line -> {
 				String[] args = line.split(",");
 				Node n = g.getNode(Integer.parseInt(args[0]));
 				Float prods = Float.parseFloat(args[1]);
@@ -28,9 +28,7 @@ public class ProductionAttractionFactory {
 
 				ret.putProductions(n, prods);
 				ret.putAttractions(n, attrs);
-
-				line = in.readLine();
-			}
+			});
 
 		} finally {
 			if (in != null) in.close();
@@ -38,5 +36,25 @@ public class ProductionAttractionFactory {
 		return ret;
 	}
 	
-	//TODO read matrices from files
+	public static PAMatrix readMatrix(File file, boolean header, Graph g) throws IOException {
+		PAMatrix ret = new AggregatePAHashMatrix(g);
+		BufferedReader in = null;
+
+		try {
+			in = new BufferedReader(new FileReader(file));
+			if (header) in.readLine();
+			in.lines().parallel().forEach(line -> {
+				String[] args = line.split(",");
+				Node prod = g.getNode(Integer.parseInt(args[0]));
+				Node attr = g.getNode(Integer.parseInt(args[1]));
+				Float trips = Float.parseFloat(args[2]);
+
+				ret.put(prod, attr, trips);
+			});
+
+		} finally {
+			if (in != null) in.close();
+		}
+		return ret;
+	}
 }

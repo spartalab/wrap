@@ -16,7 +16,7 @@ import edu.utexas.wrap.util.GraphFactory;
 import edu.utexas.wrap.util.ProductionAttractionFactory;
 import edu.utexas.wrap.util.SkimFactory;
 
-public class frictionRun {
+public class GravityDistributionTest {
 
 	public static void main(String[] args) {
 

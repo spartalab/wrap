@@ -17,11 +17,6 @@ public class AutoODMatrix extends ModalHashMatrix {
 		this.vot = vot;
 	}
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -5344167950596246262L;
-
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.demand.containers.ModalHashMatrix#getVOT()
 	 */
@@ -41,7 +36,7 @@ public class AutoODMatrix extends ModalHashMatrix {
 	 * @return a copy of the stored demand map
 	 */
 	public AutoDemandMap get(Node origin) {
-		return (AutoDemandMap) super.get(origin);
+		return (AutoDemandMap) map.get(origin);
 	}
 	
 	/* (non-Javadoc)
@@ -49,7 +44,7 @@ public class AutoODMatrix extends ModalHashMatrix {
 	 */
 	@Override
 	public void put(Node origin, Node destination, Float demand) {
-		putIfAbsent(origin, new AutoDemandHashMap(getGraph(), this));
+		map.putIfAbsent(origin, new AutoDemandHashMap(getGraph(), this));
 		get(origin).put(destination, demand);
 	}
 

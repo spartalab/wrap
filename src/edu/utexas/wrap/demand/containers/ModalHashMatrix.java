@@ -1,7 +1,10 @@
 package edu.utexas.wrap.demand.containers;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Collection;
+import java.util.Map;
 
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ModalPAMatrix;
@@ -9,21 +12,19 @@ import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
-public class ModalHashMatrix extends Object2ObjectOpenHashMap<Node, DemandMap> implements ODMatrix, ModalPAMatrix {
+public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 	
-	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 6104047201084019367L;
 	private final Mode m;
 	private Graph g;
-
+	protected Map<Node,DemandMap> map;
+	
 	public ModalHashMatrix(Graph g, Mode mode) {
 		this.g = g;
 		this.m = mode;
+		map = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<Node, DemandMap>());
 	}
 
  	/* (non-Javadoc)
@@ -37,7 +38,7 @@ public class ModalHashMatrix extends Object2ObjectOpenHashMap<Node, DemandMap> i
 	 * @see edu.utexas.wrap.demand.ODMatrix#getDemand(edu.utexas.wrap.net.Node, edu.utexas.wrap.net.Node)
 	 */
 	public Float getDemand(Node origin, Node destination) {
-		return get(origin) == null? 0.0F : get(origin).getOrDefault(destination,0.0F);
+		return map.get(origin) == null? 0.0F : map.get(origin).getOrDefault(destination,0.0F);
 	}
 
 	/* (non-Javadoc)
@@ -45,8 +46,8 @@ public class ModalHashMatrix extends Object2ObjectOpenHashMap<Node, DemandMap> i
 	 */
 	@Override
 	public void put(Node origin, Node destination, Float demand) {
-		putIfAbsent(origin, new DemandHashMap(getGraph()));
-		get(origin).put(destination, demand);
+		map.putIfAbsent(origin, new DemandHashMap(getGraph()));
+		map.get(origin).put(destination, demand);
 		
 	}
 
@@ -55,7 +56,7 @@ public class ModalHashMatrix extends Object2ObjectOpenHashMap<Node, DemandMap> i
 	 * @param d the map of demand from the given Node to other Nodes
 	 */
 	public void putDemand(Node i, DemandHashMap d) {
-		put(i, d);
+		map.put(i, d);
 	}
 
 	/* (non-Javadoc)
@@ -75,21 +76,30 @@ public class ModalHashMatrix extends Object2ObjectOpenHashMap<Node, DemandMap> i
 	}
 
 	@Override
-	public void toFile(File out) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("No toFile implementation");
+	public void toFile(File out) throws IOException {
+		FileWriter o = null;
+		try{
+			o = new FileWriter(out);
+
+			for (Node orig : map.keySet()) {
+				DemandMap demand = map.get(orig);
+				for (Node dest : demand.getNodes()) {
+					o.write(""+orig.getID()+","+dest.getID()+","+demand.get(dest)+"\n");
+				}
+			}
+		} finally {
+			if (o != null) o.close();
+		}
 	}
 
 	@Override
 	public DemandMap getDemandMap(Node producer) {
-		// TODO Auto-generated method stub
-		return get(producer);
+		return map.get(producer);
 	}
 
 	@Override
 	public Collection<Node> getProducers() {
-		// TODO Auto-generated method stub
-		return keySet();
+		return map.keySet();
 	}
 
 

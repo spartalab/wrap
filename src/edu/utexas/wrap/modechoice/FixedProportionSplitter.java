@@ -3,11 +3,8 @@ package edu.utexas.wrap.modechoice;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
-import edu.utexas.wrap.net.Node;
-
-import edu.utexas.wrap.demand.containers.ModalHashMatrix;
+import edu.utexas.wrap.demand.containers.ModalFixedProportionPassthroughMatrix;
 import edu.utexas.wrap.demand.AggregatePAMatrix;
-import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.MarketSegment;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 
@@ -43,18 +40,19 @@ public class FixedProportionSplitter extends TripInterchangeSplitter {
 			Float pct = map.get(m);
 			if (pct <= 0.0) continue;
 			
-			// Everything between here and the line marked !!!!! can (and should) be parallelized, I think. -Wm
-			ModalPAMatrix pa = new ModalHashMatrix(aggregate.getGraph(), m);
-			
-			for (Node orig : aggregate.getProducers()) {
-			// TODO Consider replacing with Strassen's algorithm
-				DemandMap origProds = aggregate.getDemandMap(orig);
-				for (Node dest : origProds.getNodes()) {
-					float demand = aggregate.getDemand(orig, dest);
-					pa.put(orig, dest, demand*pct);
-				}
-			}
-			// !!!!!
+			ModalPAMatrix pa = new ModalFixedProportionPassthroughMatrix(m,pct,aggregate);
+//			// Everything between here and the line marked !!!!! can (and should) be parallelized, I think. -Wm
+//			ModalPAMatrix pa = new ModalHashMatrix(aggregate.getGraph(), m);
+//			
+//			for (Node orig : aggregate.getProducers()) {
+//			// TODO Consider replacing with Strassen's algorithm
+//				DemandMap origProds = aggregate.getDemandMap(orig);
+//				for (Node dest : origProds.getNodes()) {
+//					float demand = aggregate.getDemand(orig, dest);
+//					pa.put(orig, dest, demand*pct);
+//				}
+//			}
+//			// !!!!!
 			
 			fixedProp.add(pa);
 		}

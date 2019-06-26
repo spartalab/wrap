@@ -3,6 +3,7 @@ package edu.utexas.wrap.assignment;
 import java.util.Collection;
 
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**A point connected to the network from which trip demand emanates.
  * This point is associated with a Node that connects the demand to the
@@ -16,6 +17,7 @@ import edu.utexas.wrap.net.Node;
 public abstract class Origin {
 	//The network node with which the origin is associated
 	private final Node self;
+	private TravelSurveyZone parent;
 	
 	/**
 	 * @param self the Node from whence a set of assignment containers originate
@@ -35,5 +37,9 @@ public abstract class Origin {
 	 */
 	public Node getNode() {
 		return self;
+	}
+	
+	public void setParent(TravelSurveyZone tsz) {
+		parent = tsz;
 	}
 }

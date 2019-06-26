@@ -92,8 +92,8 @@ public class DBPAMatrix implements AggregatePAMatrix {
 	}
 
 	public void writeToDB(AggregatePAHashMatrix aggPAMtx) {
-		for(Node p:aggPAMtx.keySet()) {
-			DemandHashMap dem = aggPAMtx.get(p);
+		for(Node p : aggPAMtx.getProducers()) {
+			DemandMap dem = aggPAMtx.getDemandMap(p);
 			for(Node a: dem.getNodes()) {
 				this.put(p, a, dem.get(p));
 			}

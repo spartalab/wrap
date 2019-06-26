@@ -38,6 +38,9 @@ public class FixedSizeDemandMap implements DemandMap {
 	@Override
 	public Float getOrDefault(Node node, float f) {
 		// TODO Auto-generated method stub
+		int index = graph.getOrder(node);
+		if (index == -1) 
+			throw new RuntimeException();
 		return demand[graph.getOrder(node)];
 	}
 

@@ -3,6 +3,7 @@ package edu.utexas.wrap.demand.containers;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import it.unimi.dsi.fastutil.objects.Object2FloatMaps;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 
 import java.util.Map;
@@ -24,8 +25,8 @@ public class AggregatePAHashMap implements PAMap {
 
     public AggregatePAHashMap(Graph graph) {
         this.g = graph;
-        attractors = new Object2FloatOpenHashMap<Node>();
-        producers = new Object2FloatOpenHashMap<Node>();
+        attractors = Object2FloatMaps.synchronize(new Object2FloatOpenHashMap<Node>());
+        producers = Object2FloatMaps.synchronize(new Object2FloatOpenHashMap<Node>());
     }
     
     /* (non-Javadoc)

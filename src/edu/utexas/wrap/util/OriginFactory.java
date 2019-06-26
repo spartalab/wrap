@@ -221,7 +221,7 @@ public class OriginFactory {
 				ods.putIfAbsent(entry[0], new AutoODMatrix(g, entry[0], null)); //Ensure a parent OD matrix exists
 				AutoDemandMap split = new AutoFixedSizeDemandMap(g, ods.get(entry[0]));	//Attach the parent OD
 				
-				for (Node dest : unified.keySet()) { //Split each destination proportionally
+				for (Node dest : unified.getNodes()) { //Split each destination proportionally
 					split.put(dest, entry[1] * unified.get(dest));
 				}
 				dl.submit(root,split);

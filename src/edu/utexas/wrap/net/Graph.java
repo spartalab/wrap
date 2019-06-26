@@ -10,10 +10,14 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.utexas.wrap.modechoice.Mode;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectLists;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import it.unimi.dsi.fastutil.objects.ObjectSets;
 
 public class Graph {
 	private Map<Node, Set<Link>> outLinks;
@@ -27,26 +31,26 @@ public class Graph {
 	private byte[] md5;
 	
 	public Graph() {
-		outLinks = new HashMap<Node, Set<Link>>();
-		inLinks = new Object2ObjectOpenHashMap<Node, Set<Link>>();
-		nodeMap = new Int2ObjectOpenHashMap<Node>();
-		order = new ObjectArrayList<Node>();
+		outLinks = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<Node, Set<Link>>());
+		inLinks = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<Node, Set<Link>>());
+		nodeMap = Int2ObjectMaps.synchronize(new Int2ObjectOpenHashMap<Node>());
+		order = ObjectLists.synchronize(new ObjectArrayList<Node>());
 		numZones = 0;
 		numNodes = 0;
 		numLinks = 0;
 	}
 	
 	public Graph(Graph g) {
-		outLinks = new HashMap<Node, Set<Link>>();
+		outLinks = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<Node, Set<Link>>());
 		for (Node n : g.outLinks.keySet()) {
-			outLinks.put(n, new ObjectOpenHashSet<Link>(g.outLinks.get(n)));
+			outLinks.put(n, ObjectSets.synchronize(new ObjectOpenHashSet<Link>(g.outLinks.get(n))));
 		}
-		inLinks = new Object2ObjectOpenHashMap<Node, Set<Link>>();
+		inLinks = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<Node, Set<Link>>());
 		for (Node n : g.inLinks.keySet()) {
-			inLinks.put(n, new ObjectOpenHashSet<Link>(g.inLinks.get(n)));
+			inLinks.put(n, ObjectSets.synchronize(new ObjectOpenHashSet<Link>(g.inLinks.get(n))));
 		}
 		nodeMap = g.nodeMap;
-		order = new ObjectArrayList<Node>(g.order);
+		order = ObjectLists.synchronize(new ObjectArrayList<Node>(g.order));
 		numZones = g.numZones;
 		numNodes = g.numNodes;
 		numLinks = g.numLinks;
@@ -57,8 +61,8 @@ public class Graph {
 		Node head = link.getHead();
 		Node tail = link.getTail();
 
-		Set<Link> headIns = inLinks.getOrDefault(head, new ObjectOpenHashSet<Link>());
-		Set<Link> tailOuts= outLinks.getOrDefault(tail, new ObjectOpenHashSet<Link>());
+		Set<Link> headIns = inLinks.getOrDefault(head, ObjectSets.synchronize(new ObjectOpenHashSet<Link>()));
+		Set<Link> tailOuts= outLinks.getOrDefault(tail, ObjectSets.synchronize(new ObjectOpenHashSet<Link>()));
 
 		Boolean altered = headIns.add(link);
 		altered |= tailOuts.add(link);
