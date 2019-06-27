@@ -25,6 +25,7 @@ public class Graph {
 	private Map<Integer, Node> nodeMap;
 	private List<Node> order;
 	private Set<Link> links;
+	private Collection<TravelSurveyZone> zones;
 	private int numZones;
 	private int numNodes;
 	private int numLinks;
@@ -124,8 +125,8 @@ public class Graph {
 		this.numZones = numZones;
 	}
 
-	public Link[] inLinks(Node u){
-		return inLinks.getOrDefault(u, Collections.emptySet()).stream().toArray(n->new Link[n]);
+	public Set<Link> inLinks(Node u){
+		return inLinks.getOrDefault(u, Collections.emptySet());
 	}
 
 	public Integer numNodes() {
@@ -286,5 +287,10 @@ public class Graph {
 			ret.inLinks.put(n, nl);
 		}
 		return ret;
+	}
+
+	public Collection<TravelSurveyZone> getTSZs() {
+		// TODO Auto-generated method stub
+		return zones;
 	}
 }

@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 
@@ -1035,18 +1036,15 @@ public class Bush implements AssignmentContainer {
 			Node n = network.getNode(nid);
 
 			//Find the appropriate link instance
-			Link bv = null;
-			for (Link l : network.inLinks(n)) {
-				if (l.hashCode() == bvhc) {
-					bv = l;
-					break;
-				}
-			}
+//			Link bv = null;
+			Optional<Link> bvo = network.inLinks(n).parallelStream().filter(l -> l.hashCode()==bvhc).findAny();
+
 			//If it can't be found, throw an error
-			if (bv == null) throw new RuntimeException("Unknown Link");
-			
+			if (!bvo.isPresent()) throw new RuntimeException("Unknown Link");
+			Link bv = bvo.get();
+			BackVector qb = getBackVector(n);
 			//If this is the first link read which leads to this head node
-			if (getBackVector(n) == null) {
+			if (qb == null) {
 				//Check to see if this holds all flow through this node
 				if (split == 1.0)
 					setBackVector(n, bv);
@@ -1058,7 +1056,6 @@ public class Bush implements AssignmentContainer {
 				}
 			}
 			else {
-				BackVector qb = getBackVector(n);
 				//If we already constructed the merge
 				if (qb instanceof BushMerge) {
 					//add the link
@@ -1118,5 +1115,37 @@ public class Bush implements AssignmentContainer {
 	 */
 	public void acquire() throws InterruptedException {
 		writing.acquire();
+	}
+	
+	public boolean cycleCheck() {
+		Set<Node> visited = new HashSet<Node>(network.numNodes(),1.0f);
+		Set<Node> stack = new HashSet<Node>(network.numNodes(),1.0f);
+		for (Node node : network.getNodes()) {
+			if (cycleCheck(node,visited,stack)) return true;
+		}
+		return false;
+	}
+
+	private boolean cycleCheck(Node node, Set<Node> visited, Set<Node> stack) {
+		// TODO Auto-generated method stub
+		if (stack.contains(node)) return true;
+		if (visited.contains(node)) return false;
+		visited.add(node);
+		stack.add(node);
+		
+		BackVector bv = getBackVector(node);
+		if (bv instanceof Link) {
+			if (cycleCheck(((Link) bv).getTail(),visited,stack)) return true;
+			stack.remove(node);
+			return false;
+		}
+		else if (bv instanceof BushMerge) {
+			for (Link l : (BushMerge) bv) {
+				if (cycleCheck(l.getTail(),visited,stack)) return true;
+				stack.remove(node);
+				return false;
+			}
+		}
+		throw new RuntimeException();
 	}
 }

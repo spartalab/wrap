@@ -5,6 +5,7 @@ import java.util.Map;
 import edu.utexas.wrap.demand.MarketSegment;
 import edu.utexas.wrap.demand.containers.AggregatePAHashMap;
 import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class HashMapTripGenerator extends TripGenerator {
 	
@@ -19,18 +20,18 @@ public class HashMapTripGenerator extends TripGenerator {
 		Map<String,Float> segmentAttrRates = attrRates.get(segment);
 		AggregatePAHashMap aggregate = new AggregatePAHashMap(graph);
 		
-		double prods = 0.0;
-		double attrs = 0.0;
+		float prods = 0.0f;
+		float attrs = 0.0f;
 		
-		for (Zone z : graph.getZones()) {
+		for (TravelSurveyZone z : graph.getTSZs()) {
 			for (String attribute : segmentProdRates.keySet()) {
-				prods += prodRates.get(attribute)*z.valueOf(attribute);
+				prods += segmentProdRates.get(attribute)*z.valueOf(attribute);
 			}
 			for (String attribute : segmentAttrRates.keySet()) {
-				attrs += attrRates.get(attribute)*z.valueOf(attribute);
+				attrs += segmentAttrRates.get(attribute)*z.valueOf(attribute);
 			}
-			aggregate.putProductions(z, prods);
-			aggregate.putAttractions(z, attrs);
+			aggregate.putProductions(z.getNode(), prods);
+			aggregate.putAttractions(z.getNode(), attrs);
 		}
 		return aggregate;
 	}

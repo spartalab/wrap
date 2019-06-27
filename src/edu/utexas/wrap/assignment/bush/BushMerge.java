@@ -157,7 +157,7 @@ public class BushMerge extends Object2FloatOpenHashMap<Link> implements BackVect
 	}
 
 	/**
-	 * @param link the link which may be in the Bush<erge
+	 * @param link the link which may be in the BushMerge
 	 * @return whether the link is in the BushMerge
 	 */
 	public boolean contains(Link link) {

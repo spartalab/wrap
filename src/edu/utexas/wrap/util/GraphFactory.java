@@ -153,8 +153,8 @@ public class GraphFactory {
 			Float opCostA = (parse(args[25]));
 			Float opCostB = (parse(args[26]));
 
-			Map<Mode, Float> tollsA = new HashMap<Mode, Float>();
-			Map<Mode, Float> tollsB = new HashMap<Mode, Float>();
+			Map<Mode, Float> tollsA = new HashMap<Mode, Float>(4,1.0f);
+			Map<Mode, Float> tollsB = new HashMap<Mode, Float>(4,1.0f);
 
 			tollsA.put(Mode.SINGLE_OCC, (parse(args[27])));
 			tollsB.put(Mode.SINGLE_OCC, (parse(args[28])));
@@ -165,12 +165,12 @@ public class GraphFactory {
 			tollsA.put(Mode.HVY_TRUCK, (parse(args[33])));
 			tollsB.put(Mode.HVY_TRUCK, (parse(args[34])));
 
-			Map<Mode, Boolean> allowed = new HashMap<Mode, Boolean>();
+			Map<Mode, Boolean> allowed = new HashMap<Mode, Boolean>(3,1.0f);
+			Boolean a = !Boolean.parseBoolean(args[35].trim());
+			allowed.put(Mode.SINGLE_OCC, a);
+			allowed.put(Mode.HVY_TRUCK, a);
+			allowed.put(Mode.MED_TRUCK, a);
 
-			allowed.put(Mode.SINGLE_OCC, !Boolean.parseBoolean(args[35].trim()));
-
-			// TODO: find out which links are not symmetric
-			// TODO: figure out what I meant by ^^^ that ^^^ comment
 			if (aCap > 0.0) {
 				Link AB = null;
 				if (satFlowA > 0) {
