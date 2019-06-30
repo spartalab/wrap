@@ -10,20 +10,18 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.utexas.wrap.modechoice.Mode;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
+import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectLists;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
-import it.unimi.dsi.fastutil.objects.ObjectSets;
 
 public class Graph {
 	private Map<Node, Set<Link>> outLinks;
 	private Map<Node, Set<Link>> inLinks;
 	private Map<Integer, Node> nodeMap;
 	private List<Node> order;
+	private Map<Node,Integer> nodeOrder;
 	private Set<Link> links;
 	private Collection<TravelSurveyZone> zones;
 	private int numZones;
@@ -32,29 +30,31 @@ public class Graph {
 	private byte[] md5;
 	
 	public Graph() {
-		outLinks = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<Node, Set<Link>>());
-		inLinks = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<Node, Set<Link>>());
-		nodeMap = Int2ObjectMaps.synchronize(new Int2ObjectOpenHashMap<Node>());
-		order = ObjectLists.synchronize(new ObjectArrayList<Node>());
+		outLinks = (new Object2ObjectOpenHashMap<Node, Set<Link>>());
+		inLinks = (new Object2ObjectOpenHashMap<Node, Set<Link>>());
+		nodeMap = (new Int2ObjectOpenHashMap<Node>());
+		order = (new ObjectArrayList<Node>());
+		nodeOrder = new Object2IntOpenHashMap<Node>();
 		numZones = 0;
 		numNodes = 0;
 		numLinks = 0;
 	}
 	
 	public Graph(Graph g) {
-		outLinks = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<Node, Set<Link>>());
+		outLinks = (new Object2ObjectOpenHashMap<Node, Set<Link>>());
 		for (Node n : g.outLinks.keySet()) {
-			outLinks.put(n, ObjectSets.synchronize(new ObjectOpenHashSet<Link>(g.outLinks.get(n))));
+			outLinks.put(n, (new ObjectOpenHashSet<Link>(g.outLinks.get(n))));
 		}
-		inLinks = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<Node, Set<Link>>());
+		inLinks = (new Object2ObjectOpenHashMap<Node, Set<Link>>());
 		for (Node n : g.inLinks.keySet()) {
-			inLinks.put(n, ObjectSets.synchronize(new ObjectOpenHashSet<Link>(g.inLinks.get(n))));
+			inLinks.put(n, (new ObjectOpenHashSet<Link>(g.inLinks.get(n))));
 		}
 		nodeMap = g.nodeMap;
-		order = ObjectLists.synchronize(new ObjectArrayList<Node>(g.order));
+		order = (new ObjectArrayList<Node>(g.order));
 		numZones = g.numZones;
 		numNodes = g.numNodes;
 		numLinks = g.numLinks;
+		nodeOrder = g.nodeOrder;
 	}
 	
 	public Boolean add(Link link) {
@@ -62,8 +62,8 @@ public class Graph {
 		Node head = link.getHead();
 		Node tail = link.getTail();
 
-		Set<Link> headIns = inLinks.getOrDefault(head, ObjectSets.synchronize(new ObjectOpenHashSet<Link>()));
-		Set<Link> tailOuts= outLinks.getOrDefault(tail, ObjectSets.synchronize(new ObjectOpenHashSet<Link>()));
+		Set<Link> headIns = inLinks.getOrDefault(head, (new ObjectOpenHashSet<Link>()));
+		Set<Link> tailOuts= outLinks.getOrDefault(tail,  (new ObjectOpenHashSet<Link>()));
 
 		Boolean altered = headIns.add(link);
 		altered |= tailOuts.add(link);
@@ -75,9 +75,11 @@ public class Graph {
 		}
 		if (!order.contains(head)) {
 			order.add(head);
+			nodeOrder.put(head,numNodes);
 			numNodes++;
 		}
 		if (!order.contains(tail)) {
+			nodeOrder.put(tail, numNodes);
 			order.add(tail);
 			numNodes++;
 		}
@@ -114,7 +116,7 @@ public class Graph {
 	}
 	
 	public Collection<Node> getNodes(){
-		return order;
+		return nodeOrder.keySet();
 	}
 
 	public int numZones() {
@@ -171,7 +173,7 @@ public class Graph {
 	}
 	
 	public int getOrder(Node n) {
-		return order.indexOf(n);
+		return nodeOrder.getOrDefault(n,-1);
 	}
 
 	@Override
@@ -194,10 +196,10 @@ public class Graph {
 		ret.outLinks = new HashMap<Node,Set<Link>>(outLinks.size(),1.0f);
 		ret.inLinks = new HashMap<Node,Set<Link>>(inLinks.size(),1.0f);
 		ret.nodeMap = nodeMap;
-		ret.order = order;
 		ret.numLinks = numLinks;
 		ret.numNodes = numNodes;
 		ret.numZones = numZones;
+		ret.nodeOrder = nodeOrder;
 		ret.setMD5(getMD5());
 		
 		for (Node n : outLinks.keySet()) {

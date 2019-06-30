@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -16,6 +17,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -43,6 +47,7 @@ public class Bush implements AssignmentContainer {
 	private final BushOrigin origin;
 	private final Float vot;
 	private final Mode c;
+	private int numLinks;
 
 	//Underlying problem characteristics
 	private final Graph network;
@@ -74,9 +79,10 @@ public class Bush implements AssignmentContainer {
 
 	/**
 	 * Obtain the initial structure (shortest path tree) from the BushOrigin
-	 */
+	 */ 
 	void getOriginStructure() {
-		q = origin.getInitMap(network).clone();
+		q = origin.getShortestPathTree(network).clone(); 
+		numLinks = network.numNodes()-1;
 	}
 
 	/** Add a link to the bush
@@ -128,7 +134,7 @@ public class Bush implements AssignmentContainer {
 				((BushMerge) back).contains(i) : 
 					//Otherwise, determine if the back vector is the same link
 					back != null && back.equals(i);
-	}
+	} 
 
 	/** Calculates the divergence between the shortest and longest paths from two nodes
 	 * @param l the node from which the shortest path should trace back
@@ -455,7 +461,7 @@ public class Bush implements AssignmentContainer {
 			cur = ll.getTail();
 			ll = getqLong(cur);
 		} while (cur != diverge);
-		
+		if (Math.abs(max)==0) return null;
 		
 		//Trace back through the shortest path
 		cur = terminus;
@@ -664,20 +670,20 @@ public class Bush implements AssignmentContainer {
 	 * Remove unused links that aren't needed for connectivity
 	 */
 	void prune() {
-		for (BackVector v : q) {
-			if (v instanceof BushMerge) {	//For every BushMerge in the bush
-				
-				//Duplicate the link list to avoid a ConcurrentModificationException
-				BushMerge bm = new BushMerge((BushMerge) v);
-				
-				for (Link l : bm) {	//See if the split is approximately 0
-					if (bm.getSplit(l) <= Math.ulp(bm.getSplit(l))*20) {
-						//If so, try to remove the Link
-						if (remove(l)) cachedTopoOrder = null;
-					}
-				}
-			}
-		}
+		Stream.of(q).parallel().filter(v -> v instanceof BushMerge).forEach(v ->{	//For every BushMerge in the bush
+
+			//Duplicate the link list to avoid a ConcurrentModificationException
+			BushMerge bm = new BushMerge((BushMerge) v);
+
+			StreamSupport.stream(bm.spliterator(), false)
+			.filter(l -> bm.getSplit(l) <= Math.ulp(bm.getSplit(l))*20)
+			.filter(l -> remove(l))
+			.forEach(l -> {
+				//If so, try to remove the Link
+				cachedTopoOrder = null;
+				numLinks--;
+			});
+		});
 	}
 
 	/* (non-Javadoc)
@@ -752,7 +758,7 @@ public class Bush implements AssignmentContainer {
 		//Get the reverse topological ordering and a place to store node flows
 		Map<Node,Double> nodeFlow = demand.doubleClone();
 		Node[] iter = getTopologicalOrder(false);
-		Map<Link,Double> ret = new Object2DoubleOpenHashMap<Link>((int) (network.numZones()*1.5),1.0f);
+		Map<Link,Double> ret = new Object2DoubleOpenHashMap<Link>(numLinks,1.0f);
 
 		//For each node in reverse topological order
 		for (int i = iter.length - 1; i >= 0; i--) {
@@ -870,7 +876,7 @@ public class Bush implements AssignmentContainer {
 		try {
 			cache = longTopoSearch(true);
 		} catch (UnreachableException e1) {
-			q = origin.getInitMap(network);
+			q = origin.getShortestPathTree(network);
 			try{
 				cache = longTopoSearch(true);
 				}
@@ -896,14 +902,14 @@ public class Bush implements AssignmentContainer {
 				}
 			} catch (UnreachableException e) {
 				if (e.demand > 0) {
-					q = origin.buildInitMap(network);
+					q = origin.getShortestPathTree(network);
 				}
 				continue;
 			}
 
 		}
 		//Add all marked links to the Bush
-		for (Link l : tba) add(l);
+		for (Link l : tba) if (add(l)) numLinks++;
 		writing.release();
 		return modified;
 	}
@@ -1022,7 +1028,7 @@ public class Bush implements AssignmentContainer {
 	 * @throws IOException 
 	 */
 	public void fromFile(BufferedInputStream in) throws IOException {
-		q = new BackVector[network.numNodes()+1];
+		q = new BackVector[network.numNodes()];
 		byte[] b = new byte[Integer.BYTES*2+Float.BYTES];
 		
 		//For each link in the bush
@@ -1046,11 +1052,13 @@ public class Bush implements AssignmentContainer {
 			//If this is the first link read which leads to this head node
 			if (qb == null) {
 				//Check to see if this holds all flow through this node
-				if (split == 1.0)
+				if (split == 1.0) {
 					setBackVector(n, bv);
+					numLinks++;
+				}
 				else {
 					BushMerge qm = new BushMerge(this,n);
-					qm.add(bv);
+					if (qm.add(bv)) numLinks++;
 					qm.setSplit(bv, split);
 					setBackVector(n,qm);
 				}
@@ -1060,7 +1068,7 @@ public class Bush implements AssignmentContainer {
 				if (qb instanceof BushMerge) {
 					//add the link
 					BushMerge qm = (BushMerge) qb;
-					qm.add(bv);
+					if (qm.add(bv)) numLinks++;
 					qm.setSplit(bv, split);
 				}
 				else if (qb instanceof Link) {
@@ -1068,6 +1076,7 @@ public class Bush implements AssignmentContainer {
 					BushMerge qm = new BushMerge(this, (Link) qb, bv);
 					qm.setSplit(bv, split);
 					setBackVector(n,qm);
+					numLinks++;
 				}
 			}
 		}
@@ -1118,30 +1127,32 @@ public class Bush implements AssignmentContainer {
 	}
 	
 	public boolean cycleCheck() {
-		Set<Node> visited = new HashSet<Node>(network.numNodes(),1.0f);
+		Node[] visited = new Node[network.numNodes()];
+		int index = 0;
 		Set<Node> stack = new HashSet<Node>(network.numNodes(),1.0f);
 		for (Node node : network.getNodes()) {
-			if (cycleCheck(node,visited,stack)) return true;
+			if (cycleCheck(node,visited,stack,index)) return true;
 		}
 		return false;
 	}
 
-	private boolean cycleCheck(Node node, Set<Node> visited, Set<Node> stack) {
-		// TODO Auto-generated method stub
+	private boolean cycleCheck(Node node, Node[] visited, Set<Node> stack, int nextIndex) {
+		// TODO explore modifying Set to Deque
 		if (stack.contains(node)) return true;
-		if (visited.contains(node)) return false;
-		visited.add(node);
+		
+		if (Arrays.stream(visited).parallel().anyMatch(x -> x.equals(node))) return false;
+		visited[nextIndex++] = node;
 		stack.add(node);
 		
 		BackVector bv = getBackVector(node);
 		if (bv instanceof Link) {
-			if (cycleCheck(((Link) bv).getTail(),visited,stack)) return true;
+			if (cycleCheck(((Link) bv).getTail(),visited,stack,nextIndex)) return true;
 			stack.remove(node);
 			return false;
 		}
 		else if (bv instanceof BushMerge) {
 			for (Link l : (BushMerge) bv) {
-				if (cycleCheck(l.getTail(),visited,stack)) return true;
+				if (cycleCheck(l.getTail(),visited,stack,nextIndex)) return true;
 				stack.remove(node);
 				return false;
 			}

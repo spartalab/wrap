@@ -45,13 +45,13 @@ public class BushOrigin extends Origin {
 	 * 
 	 * To be called on initialization. Overwrites nodeL and qShort.
 	 */
-	public BackVector[] buildInitMap(Graph g) {
+	public BackVector[] getShortestPathTree(Graph g) {
 		// Initialize every nodeL to infinity except this, the origin
 		// Initialize the empty map of finalized nodes, the map of 
 		// eligible nodes to contain this origin only, and the 
 		// back-link mapping to be empty
 		Collection<Node> nodes = g.getNodes();
-		BackVector[] initMap = new BackVector[nodes.size()+1];
+		BackVector[] initMap = new BackVector[nodes.size()];
 		FibonacciHeap<Node> Q = new FibonacciHeap<Node>((int) Math.round(nodes.size()*1.05),1.0f);
 		for (Node n : nodes) {
 			if (!n.equals(getNode())) {
@@ -106,7 +106,7 @@ public class BushOrigin extends Origin {
 	 */
 	public BackVector[] getInitMap(Graph g) {
 		if (initMap == null) {
-			initMap = buildInitMap(g);	//caching speeds this up
+			initMap = getShortestPathTree(g);	//caching speeds this up
 		}
 		return initMap;
 	}
