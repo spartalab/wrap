@@ -3,8 +3,8 @@ package edu.utexas.wrap.assignment;
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Link;
@@ -38,7 +38,7 @@ public interface AssignmentContainer {
 	/**
 	 * @return the set of used links in the container
 	 */
-	public Set<Link> getLinks();
+	public Collection<Link> getLinks();
 
 	/**
 	 * @param l the link whose flow should be measured

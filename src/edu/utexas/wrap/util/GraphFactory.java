@@ -58,10 +58,10 @@ public class GraphFactory {
 
 				// Create new node(s) if new, then add to map
 				if (!nodes.containsKey(tail))
-					nodes.put(tail, new Node(tail, tail < ftn? true : false));
+					nodes.put(tail, new Node(tail, tail < ftn? true : false, nodes.size()));
 
 				if (!nodes.containsKey(head))
-					nodes.put(head, new Node(head, head < ftn? true: false));
+					nodes.put(head, new Node(head, head < ftn? true: false, nodes.size()));
 
 				// Construct new link and add to the list
 				Link link;
@@ -109,18 +109,18 @@ public class GraphFactory {
 
 			if (!nodes.containsKey(nodeA)) {
 				if (nodeA < thruNode) {
-					nodes.put(nodeA, new Node(nodeA, true));
+					nodes.put(nodeA, new Node(nodeA, true, nodes.size()));
 					numZones++;
 				} else
-					nodes.put(nodeA, new Node(nodeA, false));
+					nodes.put(nodeA, new Node(nodeA, false, nodes.size()));
 			}
 
 			if (!nodes.containsKey(nodeB)) {
 				if (nodeB < thruNode) {
-					nodes.put(nodeB, new Node(nodeB, true));
+					nodes.put(nodeB, new Node(nodeB, true, nodes.size()));
 					numZones++;
 				} else
-					nodes.put(nodeB, new Node(nodeB, false));
+					nodes.put(nodeB, new Node(nodeB, false, nodes.size()));
 
 			}
 

@@ -71,22 +71,22 @@ public class DBMarketSegmentTests {
     private static void createGraph() {
         g = new Graph();
 
-        Node a = new Node(1,false);
-        Node b = new Node(2,false);
-        Node c = new Node(3,false);
-        Node d = new Node(4,false);
-        Node e = new Node(5,false);
-        Node f = new Node(6,false);
-        Node gl = new Node(7,false);
-        Node h = new Node(8,false);
-        Node i = new Node(9,false);
-        Node j = new Node(10,false);
-        Node k = new Node(11,false);
-        Node l = new Node(12,false);
-        Node m = new Node(13,false);
-        Node n = new Node(14,false);
-        Node o = new Node(15,false);
-        Node p = new Node(16,false);
+        Node a = new Node(1,false,0);
+        Node b = new Node(2,false,1);
+        Node c = new Node(3,false,2);
+        Node d = new Node(4,false,3);
+        Node e = new Node(5,false,4);
+        Node f = new Node(6,false,5);
+        Node gl = new Node(7,false,6);
+        Node h = new Node(8,false,7);
+        Node i = new Node(9,false,8);
+        Node j = new Node(10,false,9);
+        Node k = new Node(11,false,10);
+        Node l = new Node(12,false,11);
+        Node m = new Node(13,false,12);
+        Node n = new Node(14,false,13);
+        Node o = new Node(15,false,14);
+        Node p = new Node(16,false,15);
 
         List<Link> allLinks = new ArrayList<>();
         allLinks.add(new TolledBPRLink(a,i, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,0.0f) {

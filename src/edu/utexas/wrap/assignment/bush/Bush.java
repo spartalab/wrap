@@ -18,6 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -238,7 +239,7 @@ public class Bush implements AssignmentContainer {
 	 */
 	private Node[] generateTopoOrder(boolean toCache) {
 		// Start with a set of all bush edges
-		Set<Link> currentLinks = getLinks();
+		Collection<Link> currentLinks = getLinks();
 
 		Node[] to = new Node[network.numNodes()];
 		LinkedList<Node> S = new LinkedList<Node>();
@@ -918,8 +919,8 @@ public class Bush implements AssignmentContainer {
 	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getLinks()
 	 */
 	@Override
-	public Set<Link> getLinks() {
-		Set<Link> ret = new HashSet<Link>((int) (q.length*1.3));
+	public Collection<Link> getLinks() {
+		Set<Link> ret = new HashSet<Link>(numLinks,1.0f);
 		for (BackVector b : q) {
 			//For every backvector, add its link(s) to the return set
 			if (b instanceof Link) ret.add((Link) b);

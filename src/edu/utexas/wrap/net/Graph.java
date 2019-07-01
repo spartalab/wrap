@@ -21,7 +21,7 @@ public class Graph {
 	private Map<Node, Set<Link>> inLinks;
 	private Map<Integer, Node> nodeMap;
 	private List<Node> order;
-	private Map<Node,Integer> nodeOrder;
+//	private Map<Node,Integer> nodeOrder;
 	private Set<Link> links;
 	private Collection<TravelSurveyZone> zones;
 	private int numZones;
@@ -34,7 +34,7 @@ public class Graph {
 		inLinks = (new Object2ObjectOpenHashMap<Node, Set<Link>>());
 		nodeMap = (new Int2ObjectOpenHashMap<Node>());
 		order = (new ObjectArrayList<Node>());
-		nodeOrder = new Object2IntOpenHashMap<Node>();
+//		nodeOrder = new Object2IntOpenHashMap<Node>();
 		numZones = 0;
 		numNodes = 0;
 		numLinks = 0;
@@ -54,7 +54,7 @@ public class Graph {
 		numZones = g.numZones;
 		numNodes = g.numNodes;
 		numLinks = g.numLinks;
-		nodeOrder = g.nodeOrder;
+//		nodeOrder = g.nodeOrder;
 	}
 	
 	public Boolean add(Link link) {
@@ -75,11 +75,11 @@ public class Graph {
 		}
 		if (!order.contains(head)) {
 			order.add(head);
-			nodeOrder.put(head,numNodes);
+//			nodeOrder.put(head,numNodes);
 			numNodes++;
 		}
 		if (!order.contains(tail)) {
-			nodeOrder.put(tail, numNodes);
+//			nodeOrder.put(tail, numNodes);
 			order.add(tail);
 			numNodes++;
 		}
@@ -116,7 +116,10 @@ public class Graph {
 	}
 	
 	public Collection<Node> getNodes(){
-		return nodeOrder.keySet();
+		Set<Node> ret = new HashSet<Node>(inLinks.keySet());
+		ret.addAll(outLinks.keySet());
+		return ret;
+//		return nodeOrder.keySet();
 	}
 
 	public int numZones() {
@@ -173,7 +176,8 @@ public class Graph {
 	}
 	
 	public int getOrder(Node n) {
-		return nodeOrder.getOrDefault(n,-1);
+		return n.getOrder();
+//		return nodeOrder.getOrDefault(n,-1);
 	}
 
 	@Override
@@ -199,7 +203,7 @@ public class Graph {
 		ret.numLinks = numLinks;
 		ret.numNodes = numNodes;
 		ret.numZones = numZones;
-		ret.nodeOrder = nodeOrder;
+//		ret.nodeOrder = nodeOrder;
 		ret.setMD5(getMD5());
 		
 		for (Node n : outLinks.keySet()) {
