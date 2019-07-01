@@ -11,12 +11,12 @@ import java.util.Set;
 
 import edu.utexas.wrap.modechoice.Mode;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 public class Graph {
+	
 	private Map<Node, Set<Link>> outLinks;
 	private Map<Node, Set<Link>> inLinks;
 	private Map<Integer, Node> nodeMap;
@@ -45,12 +45,14 @@ public class Graph {
 		for (Node n : g.outLinks.keySet()) {
 			outLinks.put(n, (new ObjectOpenHashSet<Link>(g.outLinks.get(n))));
 		}
+		outLinks = Collections.unmodifiableMap(outLinks);
 		inLinks = (new Object2ObjectOpenHashMap<Node, Set<Link>>());
 		for (Node n : g.inLinks.keySet()) {
 			inLinks.put(n, (new ObjectOpenHashSet<Link>(g.inLinks.get(n))));
 		}
+		inLinks = Collections.unmodifiableMap(inLinks);
 		nodeMap = g.nodeMap;
-		order = (new ObjectArrayList<Node>(g.order));
+		order = Collections.unmodifiableList(g.order);
 		numZones = g.numZones;
 		numNodes = g.numNodes;
 		numLinks = g.numLinks;

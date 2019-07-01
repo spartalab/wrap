@@ -17,14 +17,13 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.Path;
 import edu.utexas.wrap.demand.AutoDemandMap;
@@ -868,51 +867,55 @@ public class Bush implements AssignmentContainer {
 		}
 		prune();	//Remove unused links
 
-		boolean modified = false;
-		Set<Link> unusedLinks = new ObjectOpenHashSet<Link>(network.getLinks());
-		unusedLinks.removeAll(getLinks());
-		
+		AtomicBoolean modified = new AtomicBoolean(false);
+		Set<Link> unusedLinks = network.getLinks().parallelStream().filter(x -> !contains(x)).collect(Collectors.toSet());
+
 		//Calculate the longest path costs
-		Double[] cache;
+		final List<Double> cache;
 		try {
-			cache = longTopoSearch(true);
+			cache = Arrays.asList(longTopoSearch(true));
+			Set<Link> tba = unusedLinks.parallelStream().filter(l -> 
+			l.allowsClass(getVehicleClass()) && 
+			isValidLink(l) && 
+			checkForShortcut(l, cache))
+			.collect(Collectors.toSet());
+
+			tba.parallelStream().filter(l -> add(l)).forEach(x -> {
+				modified.set(true);
+				numLinks++;
+			});
+
+			writing.release();
+			return modified.get();
 		} catch (UnreachableException e1) {
 			q = origin.getShortestPathTree(network);
-			try{
-				cache = longTopoSearch(true);
-				}
-			catch (UnreachableException e2) {
-				throw new RuntimeException(e2);
-			}
+			numLinks = network.numNodes()-1;
+			writing.release();
+			return true;
 		} 
 		
-		Set<Link> tba = new HashSet<Link>();	//Set of links to be added
-		for (Link l : unusedLinks) {
-			// If link is active, do nothing (removing flow should mark as inactive)
-			//Could potentially delete both incoming links to a node
-			if (!l.allowsClass(getVehicleClass()) || !isValidLink(l)) continue;
-			try {
-				// Else if Ui + tij < Uj
-				double tailU = getCachedU(l.getTail(), cache);
-				double headU = getCachedU(l.getHead(), cache);
-				double linkVal = l.getPrice(getVOT(), getVehicleClass());
-				
-				if (tailU + linkVal < headU) {
-					tba.add(l);	//Mark the link as one which should be added
-					modified = true;
-				}
-			} catch (UnreachableException e) {
-				if (e.demand > 0) {
-					q = origin.getShortestPathTree(network);
-				}
-				continue;
-			}
-
-		}
 		//Add all marked links to the Bush
-		for (Link l : tba) if (add(l)) numLinks++;
-		writing.release();
-		return modified;
+
+	}
+
+	boolean checkForShortcut(Link l, List<Double> cache) {
+		try {
+			// Else if Ui + tij < Uj
+			double tailU = getCachedU(l.getTail(), (Double[]) cache.toArray());
+			double headU = getCachedU(l.getHead(), (Double[]) cache.toArray());
+			double linkVal = l.getPrice(getVOT(), getVehicleClass());
+			
+			if (tailU + linkVal < headU) {
+				return true;
+			}
+		} catch (UnreachableException e) {
+			if (e.demand > 0) {
+				q = origin.getShortestPathTree(network);
+				numLinks = network.numZones()-1;
+			}
+			
+		}
+		return false;
 	}
 	
 	/* (non-Javadoc)
