@@ -77,6 +77,7 @@ public class GraphFactory {
 			}
 			lf.close();
 			g.setMD5(md.digest());
+			g.complete();
 			return g;
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
@@ -171,17 +172,17 @@ public class GraphFactory {
 			allowed.put(Mode.HVY_TRUCK, a);
 			allowed.put(Mode.MED_TRUCK, a);
 
-			if (aCap > 0.0) {
+//			if (aCap > 0.0) {
 				Link AB = null;
-				if (satFlowA > 0) {
+				if (aCap > 0 && satFlowA > 0) {
 					AB = new TolledEnhancedLink(nodes.get(nodeA), nodes.get(nodeB), aCap, length, ffTimeA, alpha,
 							epsilon, sParA, uParA, satFlowA, minDel, opCostA, caA, cbA, ccA, cdA, allowed, tollsA);
-				} else if (aCap > 0.0) {
+				} else {
 					AB = new CentroidConnector(nodes.get(nodeA), nodes.get(nodeB), aCap, length, ffTimeA,
 							opCostA.floatValue());
 				}
 				g.add(AB);
-			}
+//			}
 
 			if (bCap > 0.0) {
 				Link BA = null;
@@ -198,6 +199,7 @@ public class GraphFactory {
 		lf.close();
 		g.setNumZones(numZones);
 		g.setMD5(md.digest());
+		g.complete();
 		return g;
 		
 		} catch (NoSuchAlgorithmException e) {

@@ -3,7 +3,6 @@ package edu.utexas.wrap.net;
 import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -29,15 +28,21 @@ public class Graph {
 	private int numLinks;
 	private byte[] md5;
 	
+	private Link[][] forwardStar;
+	private Link[][] reverseStar;
+	
+	
 	public Graph() {
 		outLinks = (new Object2ObjectOpenHashMap<Node, Set<Link>>());
 		inLinks = (new Object2ObjectOpenHashMap<Node, Set<Link>>());
 		nodeMap = (new Int2ObjectOpenHashMap<Node>());
 		order = (new ObjectArrayList<Node>());
+		links = new ObjectOpenHashSet<Link>();
 //		nodeOrder = new Object2IntOpenHashMap<Node>();
 		numZones = 0;
 		numNodes = 0;
 		numLinks = 0;
+		
 	}
 	
 	public Graph(Graph g) {
@@ -53,6 +58,7 @@ public class Graph {
 		inLinks = Collections.unmodifiableMap(inLinks);
 		nodeMap = g.nodeMap;
 		order = Collections.unmodifiableList(g.order);
+		links = g.links;
 		numZones = g.numZones;
 		numNodes = g.numNodes;
 		numLinks = g.numLinks;
@@ -61,6 +67,7 @@ public class Graph {
 	
 	public Boolean add(Link link) {
 		numLinks++;
+		links.add(link);
 		Node head = link.getHead();
 		Node tail = link.getTail();
 
@@ -103,14 +110,15 @@ public class Graph {
 	}
 
 	public Set<Link> getLinks(){
-		if (links != null) return links;
-		HashSet<Link> ret = new HashSet<Link>();
-		outLinks.values().stream().reduce(ret, (a,b)->{
-			a.addAll(b);
-			return a;
-		});
-		links = ret;
-		return ret;
+		return links;
+//		if (links != null) return links;
+//		HashSet<Link> ret = new HashSet<Link>();
+//		outLinks.values().stream().reduce(ret, (a,b)->{
+//			a.addAll(b);
+//			return a;
+//		});
+//		links = ret;
+//		return ret;
 	}
 	
 	public Node getNode(Integer id) {
@@ -118,9 +126,10 @@ public class Graph {
 	}
 	
 	public Collection<Node> getNodes(){
-		Set<Node> ret = new HashSet<Node>(inLinks.keySet());
-		ret.addAll(outLinks.keySet());
-		return ret;
+		return nodeMap.values();
+//		Set<Node> ret = new HashSet<Node>(inLinks.keySet());
+//		ret.addAll(outLinks.keySet());
+//		return ret;
 //		return nodeOrder.keySet();
 	}
 
@@ -132,8 +141,9 @@ public class Graph {
 		this.numZones = numZones;
 	}
 
-	public Set<Link> inLinks(Node u){
-		return inLinks.getOrDefault(u, Collections.emptySet());
+	public Link[] inLinks(Node u){
+		return reverseStar[u.getOrder()];
+//		return inLinks.getOrDefault(u, Collections.emptySet());
 	}
 
 	public Integer numNodes() {
@@ -141,12 +151,31 @@ public class Graph {
 	}
 	
 	public Link[] outLinks(Node u) {
-		return outLinks.getOrDefault(u, Collections.emptySet()).stream().toArray(n->new Link[n]);
+		return forwardStar[u.getOrder()];
+//		return outLinks.getOrDefault(u, Collections.emptySet()).stream().toArray(n->new Link[n]);
 	}
 
 	public Boolean remove(Link link) {
-		Boolean altered = outLinks.get(link.getTail()).remove(link);
-		altered |= inLinks.get(link.getHead()).remove(link);
+		Node tail = link.getTail();
+		Node head = link.getHead();
+		Boolean altered = false;
+		for (int i = 0; i < forwardStar[tail.getOrder()].length;i++) {
+			if (forwardStar[tail.getOrder()][i].equals(link)) {
+				altered = true;
+				forwardStar[tail.getOrder()][i] = null;
+				break;
+			}
+		}
+		for (int i = 0; i < reverseStar[head.getOrder()].length;i++) {
+			if (reverseStar[tail.getOrder()][i].equals(link)) {
+				altered = true;
+				reverseStar[tail.getOrder()][i] = null;
+				break;
+			}
+		}
+		
+//		Boolean altered = outLinks.get(link.getTail()).remove(link);
+//		altered |= inLinks.get(link.getHead()).remove(link);
 		return altered;
 	}
 
@@ -199,19 +228,24 @@ public class Graph {
 		// TODO Auto-generated method stub
 		Graph ret = new Graph();
 		ret.order = order;
-		ret.outLinks = new HashMap<Node,Set<Link>>(outLinks.size(),1.0f);
-		ret.inLinks = new HashMap<Node,Set<Link>>(inLinks.size(),1.0f);
+//		ret.outLinks = new HashMap<Node,Set<Link>>(outLinks.size(),1.0f);
+//		ret.inLinks = new HashMap<Node,Set<Link>>(inLinks.size(),1.0f);
 		ret.nodeMap = nodeMap;
 		ret.numLinks = numLinks;
 		ret.numNodes = numNodes;
 		ret.numZones = numZones;
+		ret.forwardStar = forwardStar;
+		ret.reverseStar = reverseStar;
 //		ret.nodeOrder = nodeOrder;
 		ret.setMD5(getMD5());
 		
-		for (Node n : outLinks.keySet()) {
-			Set<Link> ol = outLinks.get(n);
-			Set<Link> nl = new HashSet<Link>(ol.size(),1.0f);
-			for (Link l : ol) {
+		for (int j = 0; j<forwardStar.length;j++) {
+			Link[] ol = forwardStar[j];
+//			Set<Link> ol = outLinks.get(n);
+//			Set<Link> nl = new HashSet<Link>(ol.size(),1.0f);
+			Link[] nl = new Link[ol.length];
+			for (int i = 0; i < ol.length; i++) {
+				Link l = ol[i];
 				Link ll = new Link(l) {
 					Link parent = l;
 					Double deriv = derivs.getOrDefault(l, 0.0);
@@ -247,15 +281,18 @@ public class Graph {
 					}
 					
 				};
-				nl.add(ll);
+				nl[i] = ll;
 			}
-			ret.outLinks.put(n, nl);
+			ret.forwardStar[j] = nl;
 		}
 		
-		for (Node n : inLinks.keySet()) {
-			Set<Link> ol = inLinks.get(n);
-			Set<Link> nl = new HashSet<Link>(ol.size(),1.0f);
-			for (Link l : ol) {
+		for (int i = 0; i < reverseStar.length; i++) {
+			Link[] ol = reverseStar[i];
+			Link[] nl = new Link[ol.length];
+//			Set<Link> ol = inLinks.get(n);
+//			Set<Link> nl = new HashSet<Link>(ol.size(),1.0f);
+			for (int j = 0; j < ol.length; j++) {
+				Link l = ol[j];
 				Link ll = new Link(l) {
 					Link parent = l;
 					Double deriv = derivs.getOrDefault(l, 0.0);
@@ -290,11 +327,24 @@ public class Graph {
 						return deriv;
 					}
 				};
-				nl.add(ll);
+				nl[j] = ll;
 			}
-			ret.inLinks.put(n, nl);
+			ret.reverseStar[i] = nl;
 		}
 		return ret;
+	}
+	
+	public void complete() {
+		forwardStar = new Link[numNodes][];
+		reverseStar = new Link[numNodes][];
+		outLinks.keySet().parallelStream().forEach(x -> {
+			forwardStar[x.getOrder()] = outLinks.get(x).stream().toArray(Link[]::new);
+		});
+		inLinks.keySet().parallelStream().forEach(x ->{
+			reverseStar[x.getOrder()] = inLinks.get(x).stream().toArray(Link[]::new);
+		});
+		outLinks = null;
+		inLinks = null;
 	}
 
 	public Collection<TravelSurveyZone> getTSZs() {

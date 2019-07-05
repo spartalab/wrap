@@ -2,21 +2,22 @@ package edu.utexas.wrap.util;
 
 import java.util.AbstractQueue;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
-import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectLists;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 	private Integer n;
 	private FibonacciLeaf<E> min;
-	private Queue<FibonacciLeaf<E>> rootList;
+	private List<FibonacciLeaf<E>> rootList;
 	private Map<E,FibonacciLeaf<E>> map;
 	
 	public FibonacciHeap() {
@@ -30,8 +31,9 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 	public FibonacciHeap(Integer size, Float loadFactor){
 		n = 0;
 		min = null;
-		rootList = new ConcurrentLinkedQueue<FibonacciLeaf<E>>();
+//		rootList = new ConcurrentLinkedQueue<FibonacciLeaf<E>>();
 		map = new Object2ObjectOpenHashMap<E,FibonacciLeaf<E>>(size,loadFactor);
+		rootList = ObjectLists.synchronize(new ObjectArrayList<FibonacciLeaf<E>>());
 	}
 	
 	public boolean add(E node, Float d) {
@@ -58,7 +60,7 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 	private void consolidate() {
 		Map<Integer, FibonacciLeaf<E>> A = Int2ObjectMaps.synchronize(new Int2ObjectOpenHashMap<FibonacciLeaf<E>>());
 		Set<FibonacciLeaf<E>> ignore = (new ObjectOpenHashSet<FibonacciLeaf<E>>());
-		rootList.stream().filter(x -> !ignore.contains(x)).forEach(w->{
+		rootList.parallelStream().filter(x -> !ignore.contains(x)).sequential().forEach(w->{
 			FibonacciLeaf<E> x = w;
 			Integer d = x.degree;
 			while (A.get(d) != null) {
@@ -75,14 +77,14 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 			A.put(d, x);
 		});
 
-		ignore.parallelStream().forEach(w -> rootList.remove(w));
+		rootList.removeAll(ignore);
 
 		min = null;
 		for (Integer i : new PriorityQueue<Integer>(A.keySet())) {
 			FibonacciLeaf<E> ai = A.get(i);
 			if (ai != null) {
 				if (min == null) {
-					rootList = new ConcurrentLinkedQueue<FibonacciLeaf<E>>();
+					rootList = ObjectLists.synchronize(new ObjectArrayList<FibonacciLeaf<E>>());
 					rootList.add(ai);
 					min = ai;
 				}
@@ -185,7 +187,7 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 				min = null;
 			}
 			else {
-				min = rootList.peek();
+				min = rootList.get(0);
 				consolidate();
 			}
 			n--;
