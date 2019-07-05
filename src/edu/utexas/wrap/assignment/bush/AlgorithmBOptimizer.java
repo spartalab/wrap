@@ -136,7 +136,7 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 		ld = -l.getFlow();	//Maximum amount that can be subtracted
 		ud = Math.max(Math.ulp(ld), Math.ulp(td));	//Machine epsilon on the two terms (lowest precision available)
 		if (td < ld) {	//If too much flow is removed from the bush
-			if (ld-td <= numThreshold*ud || (ld-td) < Math.pow(10, -4)) {	//See if it's within the numerical tolerance
+			if (ld-td <= numThreshold*ud || (ld-td) < Math.pow(10, -3)) {	//See if it's within the numerical tolerance
 				td = ld;	//Cap at the smaller amount if so
 			}
 			else throw new NegativeFlowException("Too much link flow removed. "

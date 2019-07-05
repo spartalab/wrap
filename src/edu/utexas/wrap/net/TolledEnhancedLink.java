@@ -11,6 +11,7 @@ import edu.utexas.wrap.modechoice.Mode;
 public class TolledEnhancedLink extends TolledLink {
 	private final float conicalParam, VDFshift, saturatedFlowRate, minDelay, operCost;
 	private final float a, b, c, d, s, u;
+	private final double beta, h0, betaSquared, conicalSquared;
 	private final Map<Mode, Boolean> allowedClasses;
 	private final Map<Mode, Float> classTolls;
 
@@ -32,6 +33,10 @@ public class TolledEnhancedLink extends TolledLink {
 		d = CD;
 		this.allowedClasses = allowedClasses;
 		this.classTolls = classTolls;
+		beta = ((double) conicalParam * 2 - 1) / (conicalParam * 2 - 2);
+		betaSquared = Math.pow(beta, 2);
+		conicalSquared = Math.pow(conicalParam, 2);
+		h0 = h(0.0);
 	}
 
 	@Override
@@ -51,13 +56,13 @@ public class TolledEnhancedLink extends TolledLink {
 
 	private double beta() {
 		// b == ( 2*a - 1 )/( 2*a - 2 )
-		return ((double) conicalParam * 2 - 1) / (conicalParam * 2 - 2);
+		return beta;
 	}
 
 	private double conicalDelay() {
 		// c(v) == T_0 * (h(v) - h(0))
 		Double x = getFlow() / getCapacity();
-		return freeFlowTime() * (h(x) - h(0.0));
+		return freeFlowTime() * (h(x) - h0);
 	}
 
 	private double conicalIntegral() {
@@ -71,7 +76,7 @@ public class TolledEnhancedLink extends TolledLink {
 
 		double f = (double) freeFlowTime();
 
-		return f * (hIntegral() - (getFlow() * h(0.0)));
+		return f * (hIntegral() - (getFlow() * h0));
 	}
 
 	private double conicalPrime() {
@@ -100,7 +105,8 @@ public class TolledEnhancedLink extends TolledLink {
 	@Override
 	public double getTravelTime() {
 		// T == T_0 + c(v) + s(v) + u(v)
-		return (cachedTT != null) ? cachedTT : freeFlowTime() + conicalDelay() + signalDelay() + unsignalizedDelay();
+		if (cachedTT == null) cachedTT = freeFlowTime() + conicalDelay() + signalDelay() + unsignalizedDelay();	
+		return cachedTT;
 	}
 
 	private double gIntegral() {
@@ -126,7 +132,7 @@ public class TolledEnhancedLink extends TolledLink {
 
 	private double h(Double x) {
 		// h(x) == 1 + r(x) - (a * g(x)) - b
-		return 1 + r(x) - (conicalParam * g(x)) - beta();
+		return 1 + r(x) - (conicalParam * g(x)) - beta;
 	}
 
 	private double hIntegral() {
@@ -140,7 +146,7 @@ public class TolledEnhancedLink extends TolledLink {
 		// + Integral of r(x) dx
 		// - a * Integral of g(x) dx
 
-		return getFlow() * (1 - beta()) + rIntegral() - conicalParam * gIntegral();
+		return getFlow() * (1 - beta) + rIntegral() - conicalParam * gIntegral();
 	}
 
 	private double hPrime() {
@@ -158,7 +164,7 @@ public class TolledEnhancedLink extends TolledLink {
 
 	private double r(Double x) {
 		// r(x) == sqrt( a^2 * g(x)^2 + b^2 )
-		return Math.sqrt(Math.pow(conicalParam, 2) * Math.pow(g(x), 2) + Math.pow(beta(), 2));
+		return Math.sqrt(conicalSquared * Math.pow(g(x), 2) + betaSquared);
 	}
 
 	private double rIntegral() {

@@ -19,12 +19,13 @@ import edu.utexas.wrap.util.calc.TSTTCalculator;
  *
  */
 public abstract class BushOptimizer extends Optimizer {
-	public static boolean printProgress = true;
-	public static boolean printBushes = true;
+	public static boolean printProgress = false;
+	public static boolean printBushes = false;
 
-	private int innerIters = 8;
+	private int innerIters = 16;
+	
 	protected Set<BushOrigin> origins;
-	protected Integer relativeGapExp = -4;
+	protected Integer relativeGapExp = -8;
 
 	/**Default constructor
 	 * @param g	the graph on which the optimizer should operate
@@ -82,10 +83,10 @@ public abstract class BushOptimizer extends Optimizer {
 //		out += String.format("%6.10E",ac.val) + "\t";
 		out += "\t\t\t";
 		
-		out += String.format("%6.10E",tc.val) + "\t";
-		out += String.format("%6.10E",bc.val) + "\t";
+//		out += String.format("%6.10E",tc.val) + "\t";
+//		out += String.format("%6.10E",bc.val) + "\t";
 		out += String.format("%6.10E",gc.val) + "\t";
-		out += String.format("%6.10E", cc.val);
+//		out += String.format("%6.10E", cc.val);
 	
 		return out;
 	}
@@ -96,7 +97,7 @@ public abstract class BushOptimizer extends Optimizer {
 	public void iterate() {
 		// A single general step iteration
 		// TODO explore which bushes should be examined 
-		
+		Long imprStart = System.currentTimeMillis();
 		ForkJoinPool p = (ForkJoinPool) Executors.newWorkStealingPool();
 		for (BushOrigin o : origins) {
 			for (Bush b : o.getContainers()) {
@@ -127,11 +128,15 @@ public abstract class BushOptimizer extends Optimizer {
 		int numZones = origins.size();
 		// Equilibrate bushes sequentially
 		//TODO redesign status visualization
+		Long start, end; Double runtime;
+
 		outer: for (int i = 0; i < innerIters; i++) {
 			int j = 1;
+			start = imprStart != null? imprStart : System.currentTimeMillis();
 			for (BushOrigin o : origins) {
-				int k = 1;
 				int numBushes = o.getContainers().size();
+
+				int k = 1;
 				for (Bush b : o.getContainers()) {
 					if (shuttingDown) break outer;
 					if (printProgress) System.out.print("Equilibration "+(i+1)+" out of "+innerIters+"\t"
@@ -144,6 +149,13 @@ public abstract class BushOptimizer extends Optimizer {
 				}
 				j++;
 			}
+			end = System.currentTimeMillis();
+			imprStart = null;
+			//Measure stats of the network and write to terminal
+			System.out.print(iteration+"\t"+getStatLine());
+			runtime = (end - start)/1000.0;
+			ttime += end-start;
+			System.out.println("\t"+String.format("%4.3f", ttime/1000.0));
 		}
 	}
 	

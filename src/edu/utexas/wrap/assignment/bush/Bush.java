@@ -22,8 +22,10 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.Path;
 import edu.utexas.wrap.demand.AutoDemandMap;
@@ -308,22 +310,23 @@ public class Bush implements AssignmentContainer {
 	 * @return the cost of the longest path to the given node
 	 * @throws UnreachableException if a node can't be reached
 	 */
-	public Double getCachedU(Node n, Double[] cache) throws UnreachableException {
+	public Double getCachedU(Node n, Map<Integer, Double> cache) throws UnreachableException {
 		Link back = getqLong(n);	//The next link in the longest path
+		int pos = network.getOrder(n);
 		if (n.equals(origin.getNode()))	//Return 0 at the origin
 			return 0.0;
 		else if (back == null) {	//Something went wrong - can't find the longest path
 			if (getDemand(n) > 0.0) throw new UnreachableException(n, this);
 			else {
-				cache[network.getOrder(n)] = Double.MAX_VALUE;
+				cache.put(pos, Double.MAX_VALUE);
 				return Double.MAX_VALUE;
 			}
 		}
-		else if (cache[network.getOrder(n)] != null)	//If this value was already calculated,
-			return cache[network.getOrder(n)];	//return the cached value
+		else if (cache.get(pos) != null)	//If this value was already calculated,
+			return cache.get(pos);	//return the cached value
 		else {	//calculate from scratch, adding to the prior link's value
 			Double newU = getCachedU(back.getTail(), cache) + back.getPrice(vot, c);
-			cache[network.getOrder(n)] = newU;	//store this value in the cache
+			cache.put(pos, newU);	//store this value in the cache
 			return newU;
 		}
 	}
@@ -456,8 +459,9 @@ public class Bush implements AssignmentContainer {
 			//Keep track of the number of links until the diverge
 			lpl++;
 			//Keep track of the maximum bush flow that can be removed
-			if (max == null) max = bushFlows.get(ll);
-			else max = Math.min(max,bushFlows.get(ll));
+			if (max == null) max = bushFlows.getOrDefault(ll,0.0);
+			else max = Math.min(max,bushFlows.getOrDefault(ll,0.0));
+			if (Math.abs(max) <= 0.0) return null;
 			cur = ll.getTail();
 			ll = getqLong(cur);
 		} while (cur != diverge);
@@ -599,7 +603,7 @@ public class Bush implements AssignmentContainer {
 	 * @param cache a cache of longest path costs
 	 * @throws UnreachableException if a node can´t be reached
 	 */
-	private void longRelax(Link l, Double[] cache) throws UnreachableException {
+	private void longRelax(Link l, Map<Integer, Double> cache) throws UnreachableException {
 		//Calculate the cost of adding the link to the longest path
 		Double Uicij = l.getPrice(vot, c) + getCachedU(l.getTail(), cache);
 		Node head = l.getHead();
@@ -610,7 +614,7 @@ public class Bush implements AssignmentContainer {
 			//Update the BushMerge if need be
 			if (back instanceof BushMerge) ((BushMerge) back).setLongLink(l);
 			//Store the cost in the cache
-			cache[network.getOrder(head)] = Uicij;
+			cache.put(network.getOrder(head),Uicij);
 		}
 	}
 
@@ -621,9 +625,9 @@ public class Bush implements AssignmentContainer {
 	 * longest paths calculation
 	 * @param longestUsed whether to relax only links that are in use
 	 */
-	public Double[] longTopoSearch(boolean longestUsed) throws UnreachableException {
+	public Map<Integer,Double> longTopoSearch(boolean longestUsed) throws UnreachableException {
 		Node[] to = getTopologicalOrder(false);
-		Double[] cache = new Double[network.numNodes()];
+		Map<Integer,Double> cache = new Int2DoubleOpenHashMap(network.numNodes());
 
 		//In topological order,
 		for (Node d : to) {
@@ -871,14 +875,14 @@ public class Bush implements AssignmentContainer {
 		Set<Link> unusedLinks = network.getLinks().parallelStream().filter(x -> !contains(x)).collect(Collectors.toSet());
 
 		//Calculate the longest path costs
-		final List<Double> cache;
+		final Map<Integer,Double> cache;
 		try {
-			cache = Arrays.asList(longTopoSearch(true));
+			cache = longTopoSearch(true);
 			Set<Link> tba = unusedLinks.parallelStream().filter(l -> 
-			l.allowsClass(getVehicleClass()) && 
-			isValidLink(l) && 
+			l.allowsClass(getVehicleClass())).filter(l -> 
+			isValidLink(l)).filter(l -> 
 			checkForShortcut(l, cache))
-			.collect(Collectors.toSet());
+			.collect(Collectors.toCollection(ObjectOpenHashSet<Link>::new));
 
 			tba.parallelStream().filter(l -> add(l)).forEach(x -> {
 				modified.set(true);
@@ -898,11 +902,11 @@ public class Bush implements AssignmentContainer {
 
 	}
 
-	boolean checkForShortcut(Link l, List<Double> cache) {
+	boolean checkForShortcut(Link l, Map<Integer, Double> cache) {
 		try {
 			// Else if Ui + tij < Uj
-			double tailU = getCachedU(l.getTail(), (Double[]) cache.toArray());
-			double headU = getCachedU(l.getHead(), (Double[]) cache.toArray());
+			double tailU = getCachedU(l.getTail(), cache);
+			double headU = getCachedU(l.getHead(), cache);
 			double linkVal = l.getPrice(getVOT(), getVehicleClass());
 			
 			if (tailU + linkVal < headU) {
@@ -961,6 +965,7 @@ public class Bush implements AssignmentContainer {
 	public void toFile(OutputStream out) throws IOException, InterruptedException {
 		writing.acquire();
 		int size = Integer.BYTES*2+Float.BYTES; //Size of each link's data
+		
 		
 		//For each node
 		for (Node n : getTopologicalOrder(false)) {
@@ -1032,13 +1037,16 @@ public class Bush implements AssignmentContainer {
 	 * @throws IOException 
 	 */
 	public void fromFile(BufferedInputStream in) throws IOException {
+		long sz = in.available();
+		long pos = 0;
 		q = new BackVector[network.numNodes()];
 		byte[] b = new byte[Integer.BYTES*2+Float.BYTES];
 		
 		//For each link in the bush
-		while (in.available() >= Integer.BYTES*2+Float.BYTES) {
+		while (sz-pos >= Integer.BYTES*2+Float.BYTES) {
 			//File IO, formatting
 			in.read(b);
+			pos += Integer.BYTES*2+Float.BYTES;
 			ByteBuffer bb = ByteBuffer.wrap(b);
 			Integer nid = bb.getInt();
 			Integer bvhc = bb.getInt();
@@ -1047,7 +1055,7 @@ public class Bush implements AssignmentContainer {
 
 			//Find the appropriate link instance
 //			Link bv = null;
-			Optional<Link> bvo = network.inLinks(n).parallelStream().filter(l -> l.hashCode()==bvhc).findAny();
+			Optional<Link> bvo = Stream.of(network.inLinks(n)).parallel().filter(l -> l.hashCode()==bvhc).findAny();
 
 			//If it can't be found, throw an error
 			if (!bvo.isPresent()) throw new RuntimeException("Unknown Link");
