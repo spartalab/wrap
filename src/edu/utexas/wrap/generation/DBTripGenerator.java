@@ -14,7 +14,7 @@ import java.sql.*;
  *
  * @author Rishabh
  */
-public class DBTripGenerator extends TripGenerator {
+public class DBTripGenerator extends HomeBasedTripGenerator {
 
     private Connection db;
     private String attributesTable;

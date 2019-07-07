@@ -7,18 +7,18 @@ import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
-public class FixedProportionPassthroughDemandMap implements DemandMap {
+public class FixedMultiplierPassthroughDemandMap implements DemandMap {
 	private DemandMap parent;
-	private float percent;
+	private float multiplier;
 
-	public FixedProportionPassthroughDemandMap(DemandMap demandMap, float percent) {
+	public FixedMultiplierPassthroughDemandMap(DemandMap demandMap, float percent) {
 		parent = demandMap;
-		this.percent = percent;
+		this.multiplier = percent;
 	}
 
 	@Override
 	public Float get(Node dest) {
-		return percent*parent.get(dest);
+		return multiplier*parent.get(dest);
 	}
 
 	@Override
@@ -34,12 +34,12 @@ public class FixedProportionPassthroughDemandMap implements DemandMap {
 	@Override
 	public Float getOrDefault(Node node, float f) {
 		Float d = parent.get(node);
-		return d == null? f : d*percent;
+		return d == null? f : d*multiplier;
 	}
 
 	@Override
 	public Float put(Node dest, Float demand) {
-		return parent.put(dest, demand/percent);
+		return parent.put(dest, demand/multiplier);
 	}
 
 	@Override

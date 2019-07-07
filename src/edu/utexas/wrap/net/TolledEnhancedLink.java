@@ -12,13 +12,13 @@ public class TolledEnhancedLink extends TolledLink {
 	private final float conicalParam, VDFshift, saturatedFlowRate, minDelay, operCost;
 	private final float a, b, c, d, s, u;
 	private final double beta, h0, betaSquared, conicalSquared;
-	private final Map<Mode, Boolean> allowedClasses;
-	private final Map<Mode, Float> classTolls;
+	private final boolean[] classesAllowed;
+	private final float[] classTolls;
 
 	public TolledEnhancedLink(Node tail, Node head, Float capacity, Float length, Float fftime, Float conicalParam,
 			Float VDFShift, Float sParam, Float uParam, Float saturatedFlowRate, Float minDelay, Float operCost,
-			Float CA, Float CB, Float CC, Float CD, Map<Mode, Boolean> allowedClasses,
-			Map<Mode, Float> classTolls) {
+			Float CA, Float CB, Float CC, Float CD, 
+			float[] classTolls, boolean[] classesAllowed) {
 		super(tail, head, capacity, length, fftime);
 		this.conicalParam = conicalParam;
 		this.VDFshift = VDFShift;
@@ -31,7 +31,7 @@ public class TolledEnhancedLink extends TolledLink {
 		b = CB;
 		c = CC;
 		d = CD;
-		this.allowedClasses = allowedClasses;
+		this.classesAllowed = classesAllowed;
 		this.classTolls = classTolls;
 		beta = ((double) conicalParam * 2 - 1) / (conicalParam * 2 - 2);
 		betaSquared = Math.pow(beta, 2);
@@ -41,7 +41,8 @@ public class TolledEnhancedLink extends TolledLink {
 
 	@Override
 	public Boolean allowsClass(Mode c) {
-		return allowedClasses.getOrDefault(c, true);
+		return classesAllowed[c.ordinal()];
+//		return allowedClasses.getOrDefault(c, true);
 	}
 
 	private double arsinh(Double x) {
@@ -99,7 +100,7 @@ public class TolledEnhancedLink extends TolledLink {
 	public Float getToll(Mode c) {
 		if (!allowsClass(c))
 			return Float.MAX_VALUE;
-		return classTolls.get(c) + operCost;
+		return classTolls[c.ordinal()] + operCost;
 	}
 
 	@Override

@@ -20,7 +20,7 @@ public class FixedSizeDemandMap implements DemandMap {
 	@Override
 	public Float get(Node dest) {
 		// TODO Auto-generated method stub
-		return demand[graph.getOrder(dest)];
+		return demand[dest.getOrder()];
 	}
 
 	@Override
@@ -38,17 +38,18 @@ public class FixedSizeDemandMap implements DemandMap {
 	@Override
 	public Float getOrDefault(Node node, float f) {
 		// TODO Auto-generated method stub
-		int index = graph.getOrder(node);
+		int index = node.getOrder();
 		if (index == -1) 
 			throw new RuntimeException();
-		return demand[graph.getOrder(node)];
+		return demand[index];
 	}
 
 	@Override
 	public Float put(Node dest, Float put) {
 		// TODO Auto-generated method stub
-		Float d = demand[graph.getOrder(dest)];
-		demand[graph.getOrder(dest)] = put;
+		int idx = dest.getOrder();
+		Float d = demand[idx];
+		demand[idx] = put;
 		return d;
 	}
 
@@ -64,7 +65,7 @@ public class FixedSizeDemandMap implements DemandMap {
 		// TODO Auto-generated method stub
 		Map<Node, Double> ret = new HashMap<Node, Double>();
 		for (Node n : graph.getNodes()) {
-			ret.put(n,(double) demand[graph.getOrder(n)]);
+			ret.put(n,(double) demand[n.getOrder()]);
 		}
 		return ret;
 	}

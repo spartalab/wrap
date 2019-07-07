@@ -27,7 +27,7 @@ public class SPAlgorithms {
 		
 		while (!Q.isEmpty()) {
 			FibonacciLeaf<Node> u = Q.poll();
-			for (Link uv : g.outLinks(u.n)) {
+			for (Link uv : u.n.forwardStar()) {
 				FibonacciLeaf<Node> v = Q.getLeaf(uv.getHead());
 				Float alt = (float) uv.getTravelTime() + u.key;
 				if (alt < v.key) {

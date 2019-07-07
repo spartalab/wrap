@@ -9,12 +9,11 @@ import edu.utexas.wrap.distribution.DBFrictionFactorMap;
 import edu.utexas.wrap.distribution.GravityDistributor;
 import edu.utexas.wrap.distribution.TripDistributor;
 import edu.utexas.wrap.generation.DBTripGenerator;
-import edu.utexas.wrap.generation.TripGenerator;
+import edu.utexas.wrap.generation.HomeBasedTripGenerator;
 import edu.utexas.wrap.net.*;
 import org.junit.*;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.runners.MethodSorters;
 
 import java.sql.*;
 import java.util.*;
@@ -37,7 +36,7 @@ public class DBMarketSegmentTests {
 
 
         //Create 3 market Segment objects
-        TripGenerator tg = new DBTripGenerator(g, db, "demdata", "prodrates", "attrrates");
+        HomeBasedTripGenerator tg = new DBTripGenerator(g, db, "demdata", "prodrates", "attrrates");
         TripBalancer tb = new DBTripBalancer(db);
         TripDistributor td = new DBGravityDistributor(g, db);
 

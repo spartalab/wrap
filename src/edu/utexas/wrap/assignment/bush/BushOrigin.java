@@ -52,7 +52,7 @@ public class BushOrigin extends Origin {
 		// back-link mapping to be empty
 		Collection<Node> nodes = g.getNodes();
 		BackVector[] initMap = new BackVector[nodes.size()];
-		FibonacciHeap<Node> Q = new FibonacciHeap<Node>((int) Math.round(nodes.size()*1.05),1.0f);
+		FibonacciHeap<Node> Q = new FibonacciHeap<Node>(nodes.size(),1.0f);
 		for (Node n : nodes) {
 			if (!n.equals(getNode())) {
 				Q.add(n, Float.MAX_VALUE);
@@ -64,15 +64,17 @@ public class BushOrigin extends Origin {
 			FibonacciLeaf<Node> u = Q.poll();
 			
 			
-			for (Link uv : g.outLinks(u.n)) {
+			for (Link uv : u.n.forwardStar()) {
 //				if (!uv.allowsClass(c) || isInvalidConnector(uv)) continue;
 				//If this link doesn't allow this bush's class of driver on the link, don't consider it
+				//This was removed to allow flow onto all links for the initial bush, and any illegal
+				//flow will be removed on the first flow shift due to high price
 				
 				FibonacciLeaf<Node> v = Q.getLeaf(uv.getHead());
 				Float alt = uv.freeFlowTime()+u.key;
 				if (alt<v.key) {
 					Q.decreaseKey(v, alt);
-					initMap[g.getOrder(v.n)] = uv;
+					initMap[v.n.getOrder()] = uv;
 				}
 			}
 		}
@@ -134,7 +136,7 @@ public class BushOrigin extends Origin {
 	 */
 	public void loadBush(Graph g, Float vot, AutoDemandMap destDemand, Mode c) throws IOException {
 		Bush b = new Bush(this, g, vot, destDemand, c);
-		b.loadStructureFile();
+		b.fromDefaultFile();
 		b.dumpFlow();
 		containers.add(b);
 	}

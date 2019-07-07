@@ -3,7 +3,6 @@ package edu.utexas.wrap.net;
 import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -67,14 +66,14 @@ public class Graph {
 	
 	public Boolean add(Link link) {
 		numLinks++;
-		links.add(link);
+		Boolean altered = links.add(link);
 		Node head = link.getHead();
 		Node tail = link.getTail();
 
 		Set<Link> headIns = inLinks.getOrDefault(head, (new ObjectOpenHashSet<Link>()));
 		Set<Link> tailOuts= outLinks.getOrDefault(tail,  (new ObjectOpenHashSet<Link>()));
 
-		Boolean altered = headIns.add(link);
+		altered |= headIns.add(link);
 		altered |= tailOuts.add(link);
 		if (altered) {
 			inLinks.put(head, headIns);
@@ -99,15 +98,15 @@ public class Graph {
 		for (Link l : links) add(l);
 	}
 	
-	public Boolean contains(Link l) {
-		for (Link m : inLinks(l.getHead())) {
-			if (m.equals(l)) return true;
-		}
-		for (Link m : outLinks(l.getHead())) {
-			if (m.equals(l)) return true;
-		}
-		return false;
-	}
+//	public Boolean contains(Link l) {
+//		for (Link m : inLinks(l.getHead())) {
+//			if (m.equals(l)) return true;
+//		}
+//		for (Link m : outLinks(l.getHead())) {
+//			if (m.equals(l)) return true;
+//		}
+//		return false;
+//	}
 
 	public Set<Link> getLinks(){
 		return links;
@@ -141,21 +140,23 @@ public class Graph {
 		this.numZones = numZones;
 	}
 
-	public Link[] inLinks(Node u){
-		return reverseStar[u.getOrder()];
-//		return inLinks.getOrDefault(u, Collections.emptySet());
-	}
+//	public Link[] inLinks(Node u){
+//		return reverseStar[u.getOrder()];
+////		return inLinks.getOrDefault(u, Collections.emptySet());
+//	}
 
 	public Integer numNodes() {
 		return numNodes;
 	}
 	
-	public Link[] outLinks(Node u) {
-		return forwardStar[u.getOrder()];
-//		return outLinks.getOrDefault(u, Collections.emptySet()).stream().toArray(n->new Link[n]);
-	}
+//	public Link[] outLinks(Node u) {
+//		return forwardStar[u.getOrder()];
+////		return outLinks.getOrDefault(u, Collections.emptySet()).stream().toArray(n->new Link[n]);
+//	}
 
 	public Boolean remove(Link link) {
+		
+		//FIXME doesn't remove from Node object
 		Node tail = link.getTail();
 		Node head = link.getHead();
 		Boolean altered = false;
@@ -206,10 +207,10 @@ public class Graph {
 		return md5;
 	}
 	
-	public int getOrder(Node n) {
-		return n.getOrder();
-//		return nodeOrder.getOrDefault(n,-1);
-	}
+//	public int getOrder(Node n) {
+//		return n.getOrder();
+////		return nodeOrder.getOrDefault(n,-1);
+//	}
 
 	@Override
 	public String toString() {
@@ -338,10 +339,15 @@ public class Graph {
 		forwardStar = new Link[numNodes][];
 		reverseStar = new Link[numNodes][];
 		outLinks.keySet().parallelStream().forEach(x -> {
-			forwardStar[x.getOrder()] = outLinks.get(x).stream().toArray(Link[]::new);
+			Link[] fs = outLinks.get(x).stream().toArray(Link[]::new);
+			forwardStar[x.getOrder()] = fs;
+			x.setForwardStar(fs);
 		});
 		inLinks.keySet().parallelStream().forEach(x ->{
-			reverseStar[x.getOrder()] = inLinks.get(x).stream().toArray(Link[]::new);
+			Link[] rs = inLinks.get(x).stream().toArray(Link[]::new);
+			reverseStar[x.getOrder()] = rs;
+			x.setReverseStar(rs);
+			
 		});
 		outLinks = null;
 		inLinks = null;

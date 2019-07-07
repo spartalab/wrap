@@ -1,6 +1,5 @@
 package edu.utexas.wrap.tests;
 
-import java.util.HashMap;
 
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Link;
@@ -13,7 +12,7 @@ public class LinkTimeTest {
 		Node na = new Node(1,false,0);
 		Node nb = new Node(2,false,1);
 		Link a = new TolledBPRLink(na, nb, 100F, 100F, 100F, 0.15F, 4F, 0F);
-		Link b = new TolledEnhancedLink(na,nb, 100F, 100F, 0.15F, 0.15F, 0.15F, 0.15F, 100F, 0.15F, 0.15F, 0.15F, 0.15F, 0.15F, 0.15F, 0.15F, new HashMap<Mode, Boolean>(), new HashMap<Mode, Float>());
+		Link b = new TolledEnhancedLink(na,nb, 100F, 100F, 0.15F, 0.15F, 0.15F, 0.15F, 100F, 0.15F, 0.15F, 0.15F, 0.15F, 0.15F, 0.15F, 0.15F, new float[Mode.values().length], new boolean[Mode.values().length]);
 		a.changeFlow(10.0);
 		b.changeFlow(10.0);
 		double att=0.0,btt=0.0;

@@ -22,7 +22,7 @@ public abstract class BushOptimizer extends Optimizer {
 	public static boolean printProgress = false;
 	public static boolean printBushes = false;
 
-	private int innerIters = 16;
+	private int innerIters = 8;
 	
 	protected Set<BushOrigin> origins;
 	protected Integer relativeGapExp = -8;
@@ -128,7 +128,7 @@ public abstract class BushOptimizer extends Optimizer {
 		int numZones = origins.size();
 		// Equilibrate bushes sequentially
 		//TODO redesign status visualization
-		Long start, end; Double runtime;
+		Long start, end; 
 
 		outer: for (int i = 0; i < innerIters; i++) {
 			int j = 1;
@@ -153,7 +153,6 @@ public abstract class BushOptimizer extends Optimizer {
 			imprStart = null;
 			//Measure stats of the network and write to terminal
 			System.out.print(iteration+"\t"+getStatLine());
-			runtime = (end - start)/1000.0;
 			ttime += end-start;
 			System.out.println("\t"+String.format("%4.3f", ttime/1000.0));
 		}

@@ -7,7 +7,7 @@ import edu.utexas.wrap.demand.containers.AggregatePAHashMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-public class HashMapTripGenerator extends TripGenerator {
+public class HashMapTripGenerator extends HomeBasedTripGenerator {
 	
 	private Map<MarketSegment, Map<String, Float>> prodRates;
 	private Map<MarketSegment, Map<String, Float>> attrRates; 

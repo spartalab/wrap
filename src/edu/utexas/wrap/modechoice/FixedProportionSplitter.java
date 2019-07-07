@@ -3,7 +3,7 @@ package edu.utexas.wrap.modechoice;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
-import edu.utexas.wrap.demand.containers.ModalFixedProportionPassthroughMatrix;
+import edu.utexas.wrap.demand.containers.ModalFixedMultiplierPassthroughMatrix;
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.MarketSegment;
 import edu.utexas.wrap.demand.ModalPAMatrix;
@@ -40,7 +40,7 @@ public class FixedProportionSplitter extends TripInterchangeSplitter {
 			Float pct = map.get(m);
 			if (pct <= 0.0) continue;
 			
-			ModalPAMatrix pa = new ModalFixedProportionPassthroughMatrix(m,pct,aggregate);
+			ModalPAMatrix pa = new ModalFixedMultiplierPassthroughMatrix(m,pct,aggregate);
 //			// Everything between here and the line marked !!!!! can (and should) be parallelized, I think. -Wm
 //			ModalPAMatrix pa = new ModalHashMatrix(aggregate.getGraph(), m);
 //			

@@ -28,7 +28,7 @@ public abstract class Optimizer {
 	protected BeckmannCalculator bc;
 	protected GapCalculator gc;
 //	protected AECCalculator ac;
-
+	protected long ttime;
 	public Optimizer(Graph g) {
 		graph = g;
 	}
@@ -67,22 +67,22 @@ public abstract class Optimizer {
 				"----------------------------------"
 				);
 		
-		Long start, end; Double runtime;
-		
+//		Long start, end; Double runtime;
+		ttime = 0L;
 		do {
 			
 			if (shuttingDown) break;
 			//Perform a full iteration, measuring performance time
-			start = System.currentTimeMillis();
+//			start = System.currentTimeMillis();
 			iterate();
-			end = System.currentTimeMillis();
+//			end = System.currentTimeMillis();
 			
 			if (shuttingDown) break;
 			
 			//Measure stats of the network and write to terminal
-			System.out.print(iteration+"\t"+getStatLine());
-			runtime = (end - start)/1000.0;
-			System.out.println("\t"+String.format("%4.3f", runtime)+" s");
+//			System.out.print(iteration+"\t"+getStatLine());
+//			runtime = (end - start)/1000.0;
+//			System.out.println("\t"+String.format("%4.3f", runtime)+" s");
 			
 			iteration++;
 		

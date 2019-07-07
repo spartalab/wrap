@@ -1,11 +1,9 @@
 package edu.utexas.wrap.assignment.bush;
 
-import java.util.Iterator;
-import java.util.Set;
+import java.util.stream.Stream;
 
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
-import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 
 /**A way to represent the Links which merge at a given Node in a Bush,
  * namely, a set of Links with a longest and shortest path named and a
@@ -13,11 +11,8 @@ import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
  * @author William
  *
  */
-public class BushMerge extends Object2FloatOpenHashMap<Link> implements BackVector, Iterable<Link>{
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 497136906150582949L;
+public class BushMerge implements BackVector {
+	private Float[] shares;
 	private Link shortLink;
 	private Link longLink;
 	private final Bush bush;
@@ -30,29 +25,26 @@ public class BushMerge extends Object2FloatOpenHashMap<Link> implements BackVect
 	 */
 	public BushMerge(Bush b, Link u, Link l) {
 		this(b,u == null? l.getHead() : u.getHead());
-
-		put(u, 1.0F);
-		put(l, 0.0F);
+		shares[u.getHead().orderOf(u)] = 1.0f;
+		shares[l.getHead().orderOf(l)] = 0.0f;
 	}
 	
 	/**Duplication constructor
 	 * @param bm	the BushMerge to be copied
 	 */
 	public BushMerge(BushMerge bm) {
-		super(bm);
 		bush = bm.bush;
 		longLink = bm.longLink;
 		shortLink = bm.shortLink;
 		this.head = bm.head;
-		defaultReturnValue(-1F);
+		shares = bm.shares;
 	}
 	
 	/**Constructor for empty merge
 	 * @param b
 	 */
 	protected BushMerge(Bush b, Node n) {
-		super(3,1.0f);
-		defaultReturnValue(-1F);
+		shares = new Float[n.reverseStar().length];
 		bush = b;
 		head = n;
 	}
@@ -99,16 +91,17 @@ public class BushMerge extends Object2FloatOpenHashMap<Link> implements BackVect
 	 * @return whether there is one link remaining
 	 */
 	public boolean remove(Link l) {
+		int idx = head.orderOf(l);
 		if (shortLink != null && shortLink.equals(l)) {
 			shortLink = null;
 		}
 		else if (longLink != null && longLink.equals(l)) {
 			longLink = null;
 		}
-		if (super.removeFloat(l) == defaultReturnValue()) 
+		if (shares[idx] == null) 
 			throw new RuntimeException("A Link was removed that wasn't in the BushMerge");
-		if (size() == 1) return true;
-		trim();
+		shares[idx] = null;
+		if (Stream.of(shares).filter(x -> x != null).count() == 1) return true;
 		return false;
 	}
 	
@@ -117,7 +110,8 @@ public class BushMerge extends Object2FloatOpenHashMap<Link> implements BackVect
 	 * @return the share of the demand through this node carried by the Link
 	 */
 	public Float getSplit(Link l) {
-		Float r = getOrDefault(l, 0.0F);
+		int idx = head.orderOf(l);
+		Float r = shares[idx] == null? 0.0f : shares[idx];
 		if (r.isNaN()) {	//NaN check
 			throw new RuntimeException("BushMerge split is NaN");
 		}
@@ -133,47 +127,50 @@ public class BushMerge extends Object2FloatOpenHashMap<Link> implements BackVect
 		if (d.isNaN()) {
 			throw new RuntimeException("BushMerge split set to NaN");
 		}
-		Float val = put(l, d.floatValue());
+		Float val = shares[head.orderOf(l)] = d;
 		return val == null? 0.0F : val;
 	}
 
-	@Override
-	public Iterator<Link> iterator() {
-		return keySet().iterator();
-	}
+//	@Override
+//	public Iterator<Link> iterator() {
+//		return getLinks().iterator();
+//	}
 
 	/**Add a link to the BushMerge
 	 * @param l the link to be added
 	 * @return whether the link was successfully added
 	 */
 	public Boolean add(Link l) {
-		try { 
-			put(l, 0.0F);
-			trim();
-			return true;
-		} catch (Exception e) {
-			return false;
-		}
+		int idx = head.orderOf(l);
+		if (idx < 0 || idx > head.reverseStar().length) return false;
+		shares[idx] = 0.0f;
+		return true;
+
 	}
 
 	/**
 	 * @param link the link which may be in the BushMerge
 	 * @return whether the link is in the BushMerge
 	 */
-	public boolean contains(Link link) {
-		return containsKey(link);
-	}
+//	public boolean contains(Link link) {
+//		return containsKey(link);
+//	}
 
 	/**
 	 * @return the set of links in this BushMerge
 	 */
-	public Set<Link> getLinks() {
-		return keySet();
+	public Stream<Link> getLinks() {
+		return Stream.of(head.reverseStar()).filter(x -> shares[head.orderOf(x)] != null);
 	}
 
 	@Override
 	public Node getHead() {
 		return head;
+	}
+
+	public int size() {
+		// TODO Auto-generated method stub
+		return (int) Stream.of(shares).filter(x -> x != null).count();
 	}
 	
 }

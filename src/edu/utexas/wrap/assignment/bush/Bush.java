@@ -2,15 +2,13 @@ package edu.utexas.wrap.assignment.bush;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
+import java.nio.file.Files;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -20,9 +18,7 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
 
-import it.unimi.dsi.fastutil.ints.Int2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
@@ -121,22 +117,22 @@ public class Bush implements AssignmentContainer {
 	 * @param backvector the BackVector associated with the node
 	 */
 	void setBackVector(Node head, BackVector backvector) {
-		q[network.getOrder(head)] = backvector;
+		q[head.getOrder()] = backvector;
 	}
 
 	/**Determine whether a link is active in the bush
 	 * @param i the link which should be checked
 	 * @return whether the given link is in the bush structure
 	 */
-	private boolean contains(Link i) {
-		BackVector back = getBackVector(i.getHead());
-		//Look at the head node's backvector
-		return back instanceof BushMerge? 
-				//If it's a merge, determine if the merge contains the link
-				((BushMerge) back).contains(i) : 
-					//Otherwise, determine if the back vector is the same link
-					back != null && back.equals(i);
-	} 
+//	private boolean contains(Link i) {
+//		BackVector back = getBackVector(i.getHead());
+//		//Look at the head node's backvector
+//		return back instanceof BushMerge? 
+//				//If it's a merge, determine if the merge contains the link
+//				((BushMerge) back).contains(i) : 
+//					//Otherwise, determine if the back vector is the same link
+//					back != null && back.equals(i);
+//	} 
 
 	/** Calculates the divergence between the shortest and longest paths from two nodes
 	 * @param l the node from which the shortest path should trace back
@@ -226,12 +222,11 @@ public class Bush implements AssignmentContainer {
 		else if (bv instanceof BushMerge) {
 			//Otherwise recursively load onto all links in the backvector
 			BushMerge bm = (BushMerge) bv;
-			for (Link l : bm) {
+			bm.getLinks().filter(l->bm.getSplit(l) != 0.0f).forEach(l->{
 				Float split = bm.getSplit(l);
-				if (split == 0.0f) continue;
 				l.changeFlow(x.doubleValue()*split);
 				dumpFlow(l.getTail(),x*split);
-			}
+			});
 		}
 	}
 
@@ -255,7 +250,7 @@ public class Bush implements AssignmentContainer {
 			pos++;
 			
 			// for each active edge out of this node
-			for (Link l : network.outLinks(n)) {
+			for (Link l : n.forwardStar()) {
 				if (currentLinks.contains(l)) {
 
 					// remove the links from the set
@@ -265,7 +260,7 @@ public class Bush implements AssignmentContainer {
 
 					// see if this node has no other incoming active links
 					boolean mHasIncoming = false;
-					for (Link e : network.inLinks(m)) {
+					for (Link e : m.reverseStar()) {
 						if (currentLinks.contains(e)) {
 							mHasIncoming = true;
 							break;
@@ -295,11 +290,11 @@ public class Bush implements AssignmentContainer {
 			return 0.0;
 		else if (back == null)	//Something went wrong - can't find a backvector
 			throw new UnreachableException(n, this);
-		else if (cache[network.getOrder(n)] != null)	//If the value's been calculated before,
-			return cache[network.getOrder(n)];	//return the cached value
+		else if (cache[n.getOrder()] != null)	//If the value's been calculated before,
+			return cache[n.getOrder()];	//return the cached value
 		else {	//Calculate the value recursively, adding to the prior value
 			Double newL = getCachedL(back.getTail(), cache) + back.getPrice(vot, c);
-			cache[network.getOrder(n)] = newL;	//Store this value in the cache
+			cache[n.getOrder()] = newL;	//Store this value in the cache
 			return newL;
 		}
 	}
@@ -310,23 +305,23 @@ public class Bush implements AssignmentContainer {
 	 * @return the cost of the longest path to the given node
 	 * @throws UnreachableException if a node can't be reached
 	 */
-	public Double getCachedU(Node n, Map<Integer, Double> cache) throws UnreachableException {
+	public Double getCachedU(Node n, Double[] cache) throws UnreachableException {
 		Link back = getqLong(n);	//The next link in the longest path
-		int pos = network.getOrder(n);
+		int pos = n.getOrder();
 		if (n.equals(origin.getNode()))	//Return 0 at the origin
 			return 0.0;
 		else if (back == null) {	//Something went wrong - can't find the longest path
 			if (getDemand(n) > 0.0) throw new UnreachableException(n, this);
 			else {
-				cache.put(pos, Double.MAX_VALUE);
+				cache[pos] = Double.MAX_VALUE;
 				return Double.MAX_VALUE;
 			}
 		}
-		else if (cache.get(pos) != null)	//If this value was already calculated,
-			return cache.get(pos);	//return the cached value
+		else if (cache[pos] != null)	//If this value was already calculated,
+			return cache[pos];	//return the cached value
 		else {	//calculate from scratch, adding to the prior link's value
 			Double newU = getCachedU(back.getTail(), cache) + back.getPrice(vot, c);
-			cache.put(pos, newU);	//store this value in the cache
+			cache[pos] = newU;	//store this value in the cache
 			return newU;
 		}
 	}
@@ -486,7 +481,7 @@ public class Bush implements AssignmentContainer {
 	 * @return the backvector from this bush leading to this node
 	 */
 	BackVector getBackVector(Node node) {
-		int index = network.getOrder(node);
+		int index = node.getOrder();
 		if (index == -1) 
 			throw new RuntimeException();
 		return q[index];
@@ -603,7 +598,7 @@ public class Bush implements AssignmentContainer {
 	 * @param cache a cache of longest path costs
 	 * @throws UnreachableException if a node can´t be reached
 	 */
-	private void longRelax(Link l, Map<Integer, Double> cache) throws UnreachableException {
+	private void longRelax(Link l, Double[] cache) throws UnreachableException {
 		//Calculate the cost of adding the link to the longest path
 		Double Uicij = l.getPrice(vot, c) + getCachedU(l.getTail(), cache);
 		Node head = l.getHead();
@@ -614,7 +609,7 @@ public class Bush implements AssignmentContainer {
 			//Update the BushMerge if need be
 			if (back instanceof BushMerge) ((BushMerge) back).setLongLink(l);
 			//Store the cost in the cache
-			cache.put(network.getOrder(head),Uicij);
+			cache[head.getOrder()] = Uicij;
 		}
 	}
 
@@ -625,9 +620,9 @@ public class Bush implements AssignmentContainer {
 	 * longest paths calculation
 	 * @param longestUsed whether to relax only links that are in use
 	 */
-	public Map<Integer,Double> longTopoSearch(boolean longestUsed) throws UnreachableException {
+	public Double[] longTopoSearch(boolean longestUsed) throws UnreachableException {
 		Node[] to = getTopologicalOrder(false);
-		Map<Integer,Double> cache = new Int2DoubleOpenHashMap(network.numNodes());
+		Double[] cache = new Double[network.numNodes()];
 
 		//In topological order,
 		for (Node d : to) {
@@ -637,9 +632,10 @@ public class Bush implements AssignmentContainer {
 			if (bv instanceof Link) longRelax((Link) bv, cache);
 			else if (bv instanceof BushMerge) {
 				BushMerge bm = (BushMerge) bv;
-				for (Link l : bm) {
-					if (!longestUsed || bm.getSplit(l) > 0.0) longRelax(l,cache);
-				}
+				for (Link l : bm.getLinks()
+						.filter(l -> !longestUsed || bm.getSplit(l) > 0.0)
+						.collect(Collectors.toSet())) 
+					longRelax(l,cache);
 			}
 
 		}			
@@ -659,7 +655,7 @@ public class Bush implements AssignmentContainer {
 			if (size > 1) {
 				bm.remove(l);
 				if (size==2){ //If there is only one link left, replace BushMerge with Link
-					setBackVector(l.getHead(),bm.iterator().next());
+					setBackVector(l.getHead(),bm.getLinks().findAny().orElseThrow(RuntimeException::new));
 					return true;
 				} 
 			}
@@ -679,7 +675,7 @@ public class Bush implements AssignmentContainer {
 			//Duplicate the link list to avoid a ConcurrentModificationException
 			BushMerge bm = new BushMerge((BushMerge) v);
 
-			StreamSupport.stream(bm.spliterator(), false)
+			bm.getLinks()
 			.filter(l -> bm.getSplit(l) <= Math.ulp(bm.getSplit(l))*20)
 			.filter(l -> remove(l))
 			.forEach(l -> {
@@ -693,66 +689,66 @@ public class Bush implements AssignmentContainer {
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getFlow(edu.utexas.wrap.net.Link)
 	 */
-	@Deprecated 
-	public Double getFlow(Link l) {
-		//Get the reverse topological ordering and a place to store node flows
-		Map<Node,Double> flow = demand.doubleClone();
-		Node[] iter = getTopologicalOrder(false);
-		
-		//For each node in reverse topological order
-		for (int i = iter.length - 1; i >= 0; i--) {
-			Node n = iter[i];
-			if (n == null) continue;
-			BackVector back = getBackVector(n);
-			Double downstream = flow.getOrDefault(n,0.0);
-			//Get the node flow and the backvector that feeds it into the node
-			
-			//If there is only one backvector,all node flow must pass through it
-			if (back instanceof Link) {
-				//So if this link is the target link, just return the node flow
-				if (l.getHead().equals(n)) return (double) downstream;
-				//If this link isn't the backvector for its node, return 0
-				else if (n.equals(l.getHead())) return 0.0;
-				
-				//Otherwise, add the node flow onto the upstream node flow
-				Node tail = ((Link) back).getTail();
-				Double newf = flow.getOrDefault(tail,0.0)+downstream;
-				if (newf.isNaN()) {	//NaN check
-					throw new RuntimeException();
-				}
-				flow.put(tail, newf);
-			}
-			 
-			//If there is more than one link flowing into the node
-			else if (back instanceof BushMerge) {
-				for (Link bv : (BushMerge) back) {
-					//Calculate the share of the node flow that uses each link
-					Double share = ((BushMerge) back).getSplit(bv)*downstream;
-					
-					//If we've determined the share of the correct link, return it
-					if (bv.equals(l)) return share;
-					
-					//Otherwise, add the node flow onto the upstream node flow
-					Node tail = bv.getTail();
-					Double newf = flow.getOrDefault(tail,0.0)+share.doubleValue();
-					if (newf.isNaN()) {	//NaN check
-						throw new RuntimeException();
-					}
-					flow.put(tail, flow.getOrDefault(tail,0.0) + share.doubleValue());
-				}
-				//If the link flows into this node but isn't in the bush, return 0
-				if (l.getHead().equals(n)) return 0.0;
-			}
-			
-			//If we've reached a dead end in the topological ordering, throw an exception
-			else if (back == null && !n.equals(origin.getNode())) {
-				throw new RuntimeException("Missing backvector for "+n.toString());
-			}
-			
-		}
-		//If we've examined the whole bush and didn't find the link or its head node, return 0.0;
-		return 0.0;
-	}
+//	@Deprecated 
+//	public Double getFlow(Link l) {
+//		//Get the reverse topological ordering and a place to store node flows
+//		Map<Node,Double> flow = demand.doubleClone();
+//		Node[] iter = getTopologicalOrder(false);
+//		
+//		//For each node in reverse topological order
+//		for (int i = iter.length - 1; i >= 0; i--) {
+//			Node n = iter[i];
+//			if (n == null) continue;
+//			BackVector back = getBackVector(n);
+//			Double downstream = flow.getOrDefault(n,0.0);
+//			//Get the node flow and the backvector that feeds it into the node
+//			
+//			//If there is only one backvector,all node flow must pass through it
+//			if (back instanceof Link) {
+//				//So if this link is the target link, just return the node flow
+//				if (l.getHead().equals(n)) return (double) downstream;
+//				//If this link isn't the backvector for its node, return 0
+//				else if (n.equals(l.getHead())) return 0.0;
+//				
+//				//Otherwise, add the node flow onto the upstream node flow
+//				Node tail = ((Link) back).getTail();
+//				Double newf = flow.getOrDefault(tail,0.0)+downstream;
+//				if (newf.isNaN()) {	//NaN check
+//					throw new RuntimeException();
+//				}
+//				flow.put(tail, newf);
+//			}
+//			 
+//			//If there is more than one link flowing into the node
+//			else if (back instanceof BushMerge) {
+//				for (Link bv : (BushMerge) back) {
+//					//Calculate the share of the node flow that uses each link
+//					Double share = ((BushMerge) back).getSplit(bv)*downstream;
+//					
+//					//If we've determined the share of the correct link, return it
+//					if (bv.equals(l)) return share;
+//					
+//					//Otherwise, add the node flow onto the upstream node flow
+//					Node tail = bv.getTail();
+//					Double newf = flow.getOrDefault(tail,0.0)+share.doubleValue();
+//					if (newf.isNaN()) {	//NaN check
+//						throw new RuntimeException();
+//					}
+//					flow.put(tail, flow.getOrDefault(tail,0.0) + share.doubleValue());
+//				}
+//				//If the link flows into this node but isn't in the bush, return 0
+//				if (l.getHead().equals(n)) return 0.0;
+//			}
+//			
+//			//If we've reached a dead end in the topological ordering, throw an exception
+//			else if (back == null && !n.equals(origin.getNode())) {
+//				throw new RuntimeException("Missing backvector for "+n.toString());
+//			}
+//			
+//		}
+//		//If we've examined the whole bush and didn't find the link or its head node, return 0.0;
+//		return 0.0;
+//	}
 	
 	/** Get all Bush flows
 	 * @return a Map from a Link to the amount of flow from this Bush on the Link
@@ -784,7 +780,7 @@ public class Bush implements AssignmentContainer {
 
 			//If there is more than one link flowing into the node
 			else if (back instanceof BushMerge) {
-				for (Link bv : (BushMerge) back) {
+				((BushMerge) back).getLinks().forEach(bv ->{
 					//Calculate the share of the node flow that uses each link
 					Double share = ((BushMerge) back).getSplit(bv)*downstream;
 
@@ -792,7 +788,8 @@ public class Bush implements AssignmentContainer {
 					Node tail = bv.getTail();
 					nodeFlow.put(tail, nodeFlow.getOrDefault(tail,0.0) + share.doubleValue());
 					ret.put(bv, share);
-				}
+				});
+
 			}
 
 			//If we've reached a dead end in the topological ordering, throw an exception
@@ -820,7 +817,7 @@ public class Bush implements AssignmentContainer {
 			//Update the BushMerge, if applicable
 			if (back instanceof BushMerge) ((BushMerge) back).setShortLink(l);
 			//Store this cost in the cache
-			cache[network.getOrder(head)] = Licij;
+			cache[head.getOrder()] = Licij;
 		}
 	}
 
@@ -840,7 +837,8 @@ public class Bush implements AssignmentContainer {
 			try {
 				BackVector bv = getBackVector(d);
 				if (bv instanceof Link) shortRelax((Link) bv, cache);
-				else if (bv instanceof BushMerge) for (Link l : (BushMerge) bv) {
+				else if (bv instanceof BushMerge) 
+					for (Link l : ((BushMerge) bv).getLinks().collect(Collectors.toSet())) {
 					//Try to relax all incoming links
 					shortRelax(l, cache);
 				}
@@ -872,22 +870,28 @@ public class Bush implements AssignmentContainer {
 		prune();	//Remove unused links
 
 		AtomicBoolean modified = new AtomicBoolean(false);
-		Set<Link> unusedLinks = network.getLinks().parallelStream().filter(x -> !contains(x)).collect(Collectors.toSet());
+		Set<Link> unusedLinks = new ObjectOpenHashSet<Link>(network.getLinks());
+		unusedLinks.removeAll(getLinks());
+//		Set<Link> unusedLinks = network.getLinks().parallelStream().filter(x -> !contains(x)).collect(Collectors.toCollection(ObjectOpenHashSet<Link>::new));
 
 		//Calculate the longest path costs
-		final Map<Integer,Double> cache;
+		final Double[] cache;
 		try {
 			cache = longTopoSearch(true);
-			Set<Link> tba = unusedLinks.parallelStream().filter(l -> 
-			l.allowsClass(getVehicleClass())).filter(l -> 
-			isValidLink(l)).filter(l -> 
-			checkForShortcut(l, cache))
-			.collect(Collectors.toCollection(ObjectOpenHashSet<Link>::new));
 
-			tba.parallelStream().filter(l -> add(l)).forEach(x -> {
-				modified.set(true);
-				numLinks++;
-			});
+			unusedLinks.parallelStream()
+			.filter(l -> l.allowsClass(getVehicleClass()))
+			.filter(l -> isValidLink(l))
+			.filter(l -> checkForShortcut(l, cache))
+			.collect(Collectors.collectingAndThen(Collectors.toSet(), 
+					(Set<Link> x) -> {
+						x.parallelStream().filter(l -> add(l)).forEach(y -> {
+							modified.set(true);
+							numLinks++;
+						});
+						return null;
+					}));
+
 
 			writing.release();
 			return modified.get();
@@ -902,16 +906,15 @@ public class Bush implements AssignmentContainer {
 
 	}
 
-	boolean checkForShortcut(Link l, Map<Integer, Double> cache) {
+	boolean checkForShortcut(Link l, Double[] cache) {
 		try {
 			// Else if Ui + tij < Uj
 			double tailU = getCachedU(l.getTail(), cache);
 			double headU = getCachedU(l.getHead(), cache);
 			double linkVal = l.getPrice(getVOT(), getVehicleClass());
 			
-			if (tailU + linkVal < headU) {
-				return true;
-			}
+			return tailU + linkVal < headU;
+			
 		} catch (UnreachableException e) {
 			if (e.demand > 0) {
 				q = origin.getShortestPathTree(network);
@@ -927,14 +930,22 @@ public class Bush implements AssignmentContainer {
 	 */
 	@Override
 	public Collection<Link> getLinks() {
-		Set<Link> ret = new HashSet<Link>(numLinks,1.0f);
-		for (BackVector b : q) {
-			//For every backvector, add its link(s) to the return set
-			if (b instanceof Link) ret.add((Link) b);
-			else if (b instanceof BushMerge) 
-				ret.addAll(((BushMerge) b).getLinks());
-		}
-		return ret;
+		Stream<Link> a = Stream.of(q).parallel().filter(bv -> bv instanceof Link).map(l -> (Link) l);
+		Stream<Link> b = Stream.of(q).parallel().filter(bv -> bv instanceof BushMerge).map(bv -> (BushMerge) bv).flatMap(bv -> bv.getLinks().parallel());
+		return Stream.concat(a, b).collect(Collectors.toSet());
+//		Set<Link> ret = ObjectSets.synchronize(new ObjectOpenHashSet<Link>(numLinks,1.0f));
+//		Stream.of(q).parallel().forEach(b ->{
+//			if (b instanceof Link) ret.add((Link) b);
+//			else if (b instanceof BushMerge) 
+//				ret.addAll(((BushMerge) b).getLinks().collect(Collectors.toSet()));
+//		});
+//		for (BackVector b : q) {
+//			//For every backvector, add its link(s) to the return set
+//			if (b instanceof Link) ret.add((Link) b);
+//			else if (b instanceof BushMerge) 
+//				ret.addAll(((BushMerge) b).getLinks());
+//		}
+//		return ret;
 
 	}
 
@@ -942,20 +953,27 @@ public class Bush implements AssignmentContainer {
 	 * @param flows the current Bush flows on all Links
 	 */
 	public void updateSplits(Map<Link, Double> flows) {
-		for (BackVector bv : q) {
-			if (bv instanceof BushMerge) {	//For each BushMerge in the Bush
-				BushMerge bm = (BushMerge) bv;
-				double total = 0.0;	//Calculate the total demand through this node
-				for (Link l : bm) total += flows.get(l);
-				
-				//If there is no total, leave the splits alone
-				if (total > 0) for (Link l : bm) {
-					//Otherwise, set them proportional to total demand share
-					bm.setSplit(l, (float) (flows.get(l)/total));
-				}
-			}
-		}
+		Stream.of(q).parallel().filter(bv -> bv instanceof BushMerge).map(bv -> (BushMerge) bv).forEach(bm ->{
+			double total = bm.getLinks().parallel().mapToDouble(l -> flows.get(l)).sum();
+			//Calculate the total demand through this node
+
+			//If there is no total, leave the splits alone
+			if (total > 0) bm.getLinks().parallel().forEach(l -> bm.setSplit(l, (float) (flows.get(l)/total)));
+			//Otherwise, set them proportional to total demand share
+		});;
+//		for (BackVector bv : q) {
+//			if (bv instanceof BushMerge) {	//For each BushMerge in the Bush
+//				BushMerge bm = (BushMerge) bv;
+//				double total = bm.getLinks().parallel().mapToDouble(l -> flows.get(l)).sum();
+//				//Calculate the total demand through this node
+//
+//				//If there is no total, leave the splits alone
+//				if (total > 0) bm.getLinks().parallel().forEach(l -> bm.setSplit(l, (float) (flows.get(l)/total)));
+//				//Otherwise, set them proportional to total demand share
+//			}
+//		}
 	}
+
 	
 	/**This method writes the structure of the bush to a given print stream
 	 * @param out the print stream to which the structure will be written
@@ -968,8 +986,7 @@ public class Bush implements AssignmentContainer {
 		
 		
 		//For each node
-		for (Node n : getTopologicalOrder(false)) {
-			if (n == null) continue;
+		getNodes().parallelStream().filter(n -> n != null).forEach(n ->{
 			BackVector qn = getBackVector(n);
 			//get all the links leading to the node
 			//write them to a file
@@ -979,22 +996,58 @@ public class Bush implements AssignmentContainer {
 						.putInt(((Link) qn).hashCode())
 						.putFloat(1.0F)
 						.array();
-				out.write(b);
+				try {
+					out.write(b);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			}
 			
 			else if (qn instanceof BushMerge) {
 				BushMerge qm = (BushMerge) qn;
-				for (Link l : qm) {
+				qm.getLinks().forEach(l ->{
 					byte[] b = ByteBuffer.allocate(size)
 							.putInt(n.getID())
 							.putInt(l.hashCode())
 							.putFloat(qm.getSplit(l))
 							.array();
-					out.write(b);
+					try {
+						out.write(b);
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
 					}
+				});
 			}
-			out.flush();
-		}
+		});
+//		for (Node n : getTopologicalOrder(false)) {
+//			if (n == null) continue;
+//			BackVector qn = getBackVector(n);
+//			//get all the links leading to the node
+//			//write them to a file
+//			if (qn instanceof Link) {
+//				byte[] b = ByteBuffer.allocate(size)
+//						.putInt(n.getID())
+//						.putInt(((Link) qn).hashCode())
+//						.putFloat(1.0F)
+//						.array();
+//				out.write(b);
+//			}
+//			
+//			else if (qn instanceof BushMerge) {
+//				BushMerge qm = (BushMerge) qn;
+//				for (Link l : qm) {
+//					byte[] b = ByteBuffer.allocate(size)
+//							.putInt(n.getID())
+//							.putInt(l.hashCode())
+//							.putFloat(qm.getSplit(l))
+//							.array();
+//					out.write(b);
+//					}
+//			}
+//			out.flush();
+//		}
 		writing.release();
 	}
 	
@@ -1008,9 +1061,9 @@ public class Bush implements AssignmentContainer {
 				
 				File file = new File(network.toString()+"/"+origin.getNode().getID()+"/"+getVehicleClass()+"-"+getVOT()+".bush");
 				file.getParentFile().mkdirs();
-				FileOutputStream out = null;
+				OutputStream out = null;
 				try {
-					out = new FileOutputStream(file);
+					out = Files.newOutputStream(file.toPath());
 					toFile(out);
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
@@ -1036,7 +1089,7 @@ public class Bush implements AssignmentContainer {
 	 * @param in
 	 * @throws IOException 
 	 */
-	public void fromFile(BufferedInputStream in) throws IOException {
+	public void fromFile(InputStream in) throws IOException {
 		long sz = in.available();
 		long pos = 0;
 		q = new BackVector[network.numNodes()];
@@ -1055,7 +1108,7 @@ public class Bush implements AssignmentContainer {
 
 			//Find the appropriate link instance
 //			Link bv = null;
-			Optional<Link> bvo = Stream.of(network.inLinks(n)).parallel().filter(l -> l.hashCode()==bvhc).findAny();
+			Optional<Link> bvo = Stream.of(n.reverseStar()).parallel().filter(l -> l.hashCode()==bvhc).findAny();
 
 			//If it can't be found, throw an error
 			if (!bvo.isPresent()) throw new RuntimeException("Unknown Link");
@@ -1099,7 +1152,7 @@ public class Bush implements AssignmentContainer {
 	 * "./{MD5 hash of input graph file}/{origin ID}/{Mode}-{VOT}.bush"
 	 * @throws IOException if the defined path is not found or is corrupt
 	 */
-	public void loadStructureFile() throws IOException {
+	public void fromDefaultFile() throws IOException {
 		//Convert the graph's MD5 hash to a hex string
 		StringBuilder sb = new StringBuilder();
 		for (byte b : network.getMD5()) {
@@ -1112,7 +1165,7 @@ public class Bush implements AssignmentContainer {
 				getVehicleClass()+"-"+getVOT()+".bush");
 		
 		//Read the file in
-		BufferedInputStream in = new BufferedInputStream(new FileInputStream(file));
+		BufferedInputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()));
 		fromFile(in);
 		in.close();
 	}
@@ -1138,37 +1191,37 @@ public class Bush implements AssignmentContainer {
 		writing.acquire();
 	}
 	
-	public boolean cycleCheck() {
-		Node[] visited = new Node[network.numNodes()];
-		int index = 0;
-		Set<Node> stack = new HashSet<Node>(network.numNodes(),1.0f);
-		for (Node node : network.getNodes()) {
-			if (cycleCheck(node,visited,stack,index)) return true;
-		}
-		return false;
-	}
-
-	private boolean cycleCheck(Node node, Node[] visited, Set<Node> stack, int nextIndex) {
-		// TODO explore modifying Set to Deque
-		if (stack.contains(node)) return true;
-		
-		if (Arrays.stream(visited).parallel().anyMatch(x -> x.equals(node))) return false;
-		visited[nextIndex++] = node;
-		stack.add(node);
-		
-		BackVector bv = getBackVector(node);
-		if (bv instanceof Link) {
-			if (cycleCheck(((Link) bv).getTail(),visited,stack,nextIndex)) return true;
-			stack.remove(node);
-			return false;
-		}
-		else if (bv instanceof BushMerge) {
-			for (Link l : (BushMerge) bv) {
-				if (cycleCheck(l.getTail(),visited,stack,nextIndex)) return true;
-				stack.remove(node);
-				return false;
-			}
-		}
-		throw new RuntimeException();
-	}
+//	public boolean cycleCheck() {
+//		Node[] visited = new Node[network.numNodes()];
+//		int index = 0;
+//		Set<Node> stack = new HashSet<Node>(network.numNodes(),1.0f);
+//		for (Node node : network.getNodes()) {
+//			if (cycleCheck(node,visited,stack,index)) return true;
+//		}
+//		return false;
+//	}
+//
+//	private boolean cycleCheck(Node node, Node[] visited, Set<Node> stack, int nextIndex) {
+//		// TODO explore modifying Set to Deque
+//		if (stack.contains(node)) return true;
+//		
+//		if (Arrays.stream(visited).parallel().anyMatch(x -> x.equals(node))) return false;
+//		visited[nextIndex++] = node;
+//		stack.add(node);
+//		
+//		BackVector bv = getBackVector(node);
+//		if (bv instanceof Link) {
+//			if (cycleCheck(((Link) bv).getTail(),visited,stack,nextIndex)) return true;
+//			stack.remove(node);
+//			return false;
+//		}
+//		else if (bv instanceof BushMerge) {
+//			for (Link l : (BushMerge) bv) {
+//				if (cycleCheck(l.getTail(),visited,stack,nextIndex)) return true;
+//				stack.remove(node);
+//				return false;
+//			}
+//		}
+//		throw new RuntimeException();
+//	}
 }

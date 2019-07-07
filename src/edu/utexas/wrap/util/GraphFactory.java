@@ -9,7 +9,7 @@ import java.io.InputStreamReader;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.HashMap;
+import java.util.Arrays;
 import java.util.Map;
 
 import edu.utexas.wrap.modechoice.Mode;
@@ -154,29 +154,33 @@ public class GraphFactory {
 			Float opCostA = (parse(args[25]));
 			Float opCostB = (parse(args[26]));
 
-			Map<Mode, Float> tollsA = new HashMap<Mode, Float>(4,1.0f);
-			Map<Mode, Float> tollsB = new HashMap<Mode, Float>(4,1.0f);
+			float[] tollA = new float[Mode.values().length];
+			float[] tollB = new float[Mode.values().length];
+			
+//			Map<Mode, Float> tollsA = new Object2FloatOpenHashMap<Mode>(4,1.0f);
+//			Map<Mode, Float> tollsB = new Object2FloatOpenHashMap<Mode>(4,1.0f);
 
-			tollsA.put(Mode.SINGLE_OCC, (parse(args[27])));
-			tollsB.put(Mode.SINGLE_OCC, (parse(args[28])));
-			tollsA.put(Mode.HOV_2, (parse(args[29])));
-			tollsB.put(Mode.HOV_2, (parse(args[30])));
-			tollsA.put(Mode.MED_TRUCK, (parse(args[31])));
-			tollsB.put(Mode.MED_TRUCK, (parse(args[32])));
-			tollsA.put(Mode.HVY_TRUCK, (parse(args[33])));
-			tollsB.put(Mode.HVY_TRUCK, (parse(args[34])));
+			tollA[Mode.SINGLE_OCC.ordinal()] = (parse(args[27]));
+			tollB[Mode.SINGLE_OCC.ordinal()] = (parse(args[28]));
+			tollA[Mode.HOV_2.ordinal()] = (parse(args[29]));
+			tollB[Mode.HOV_2.ordinal()] = (parse(args[30]));
+			tollA[Mode.MED_TRUCK.ordinal()] = (parse(args[31]));
+			tollB[Mode.MED_TRUCK.ordinal()] = (parse(args[32]));
+			tollA[Mode.HVY_TRUCK.ordinal()] = (parse(args[33]));
+			tollB[Mode.HVY_TRUCK.ordinal()] = (parse(args[34]));
 
-			Map<Mode, Boolean> allowed = new HashMap<Mode, Boolean>(3,1.0f);
+			boolean[] allowed = new boolean[Mode.values().length];
+			Arrays.fill(allowed, true);
 			Boolean a = !Boolean.parseBoolean(args[35].trim());
-			allowed.put(Mode.SINGLE_OCC, a);
-			allowed.put(Mode.HVY_TRUCK, a);
-			allowed.put(Mode.MED_TRUCK, a);
+			allowed[Mode.SINGLE_OCC.ordinal()] = a;
+			allowed[Mode.HVY_TRUCK.ordinal()] = a;
+			allowed[Mode.MED_TRUCK.ordinal()] = a;
 
 //			if (aCap > 0.0) {
 				Link AB = null;
 				if (aCap > 0 && satFlowA > 0) {
 					AB = new TolledEnhancedLink(nodes.get(nodeA), nodes.get(nodeB), aCap, length, ffTimeA, alpha,
-							epsilon, sParA, uParA, satFlowA, minDel, opCostA, caA, cbA, ccA, cdA, allowed, tollsA);
+							epsilon, sParA, uParA, satFlowA, minDel, opCostA, caA, cbA, ccA, cdA, tollA, allowed);
 				} else {
 					AB = new CentroidConnector(nodes.get(nodeA), nodes.get(nodeB), aCap, length, ffTimeA,
 							opCostA.floatValue());
@@ -188,7 +192,7 @@ public class GraphFactory {
 				Link BA = null;
 				if (satFlowB > 0) {
 					BA = new TolledEnhancedLink(nodes.get(nodeB), nodes.get(nodeA), bCap, length, ffTimeB, alpha,
-							epsilon, sParB, uParB, satFlowB, minDel, opCostB, caB, cbB, ccB, cdB, allowed, tollsB);
+							epsilon, sParB, uParB, satFlowB, minDel, opCostB, caB, cbB, ccB, cdB, tollB, allowed);
 				} else {
 					BA = new CentroidConnector(nodes.get(nodeB), nodes.get(nodeA), bCap, length, ffTimeB,
 							opCostB.floatValue());

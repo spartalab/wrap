@@ -3,7 +3,7 @@ package edu.utexas.wrap.demand;
 import edu.utexas.wrap.assignment.AssignmentLoader;
 import edu.utexas.wrap.balancing.TripBalancer;
 import edu.utexas.wrap.distribution.TripDistributor;
-import edu.utexas.wrap.generation.TripGenerator;
+import edu.utexas.wrap.generation.HomeBasedTripGenerator;
 import edu.utexas.wrap.modechoice.TripInterchangeSplitter;
 import edu.utexas.wrap.net.Graph;
 
@@ -31,14 +31,14 @@ public class MarketSegment implements Runnable{
 	private Graph g;
 	private Float vot;
 	private int hash;
-	private TripGenerator tg;
+	private HomeBasedTripGenerator tg;
 	private TripBalancer tb;
 	private TripDistributor td;
 	private TripInterchangeSplitter mc;
 	private AssignmentLoader rc;
 
 	public MarketSegment(Graph g, 
-			TripGenerator tripGen, 
+			HomeBasedTripGenerator tripGen, 
 			TripBalancer tb, 
 			TripDistributor tripDist, 
 			TripInterchangeSplitter modeChoice, 

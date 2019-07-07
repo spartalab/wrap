@@ -12,11 +12,11 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
-public class ModalFixedProportionPassthroughMatrix implements ModalPAMatrix {
+public class ModalFixedMultiplierPassthroughMatrix implements ModalPAMatrix {
 	private float percent;
 	private Mode mode;
 	private AggregatePAMatrix aggregate;
-	public ModalFixedProportionPassthroughMatrix(Mode m, float pct, AggregatePAMatrix agg) {
+	public ModalFixedMultiplierPassthroughMatrix(Mode m, float pct, AggregatePAMatrix agg) {
 		percent = pct;
 		mode = m;
 		aggregate = agg;
@@ -40,7 +40,7 @@ public class ModalFixedProportionPassthroughMatrix implements ModalPAMatrix {
 
 	@Override
 	public DemandMap getDemandMap(Node producer) {
-		return new FixedProportionPassthroughDemandMap(aggregate.getDemandMap(producer),percent);
+		return new FixedMultiplierPassthroughDemandMap(aggregate.getDemandMap(producer),percent);
 	}
 
 	@Override

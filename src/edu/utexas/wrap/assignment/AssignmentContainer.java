@@ -1,7 +1,7 @@
 package edu.utexas.wrap.assignment;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Collection;
 import java.util.Map;
@@ -44,8 +44,8 @@ public interface AssignmentContainer {
 	 * @param l the link whose flow should be measured
 	 * @return the flow on a given link from this container
 	 */
-	@Deprecated
-	public Double getFlow(Link l);
+//	@Deprecated
+//	public Double getFlow(Link l);
 
 	/**
 	 * @return the set of link flows from this container
@@ -56,7 +56,7 @@ public interface AssignmentContainer {
 	 * @param in the stream providing a byte-level representation of the links used by the container
 	 * @throws IOException
 	 */
-	void fromFile(BufferedInputStream in) throws IOException;
+	void fromFile(InputStream in) throws IOException;
 	
 	/**Write a byte-level representation of the container's links to an ouptut stream
 	 * @param out the stream to which the assignment container will be output
