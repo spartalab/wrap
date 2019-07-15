@@ -38,7 +38,7 @@ public interface AssignmentContainer {
 	/**
 	 * @return the set of used links in the container
 	 */
-	public Collection<Link> getLinks();
+	public Collection<Link> getUsedLinks();
 
 	/**
 	 * @param l the link whose flow should be measured
@@ -56,13 +56,13 @@ public interface AssignmentContainer {
 	 * @param in the stream providing a byte-level representation of the links used by the container
 	 * @throws IOException
 	 */
-	void fromFile(InputStream in) throws IOException;
+	void fromByteStream(InputStream in) throws IOException;
 	
 	/**Write a byte-level representation of the container's links to an ouptut stream
 	 * @param out the stream to which the assignment container will be output
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	public void toFile(OutputStream out) throws IOException, InterruptedException;
+	public void toByteStream(OutputStream out) throws IOException, InterruptedException;
 	
 }

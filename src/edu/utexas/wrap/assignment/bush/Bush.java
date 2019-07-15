@@ -235,7 +235,7 @@ public class Bush implements AssignmentContainer {
 	 */
 	private Node[] generateTopoOrder(boolean toCache) {
 		// Start with a set of all bush edges
-		Collection<Link> currentLinks = getLinks();
+		Collection<Link> currentLinks = getUsedLinks();
 
 		Node[] to = new Node[network.numNodes()];
 		LinkedList<Node> S = new LinkedList<Node>();
@@ -633,7 +633,7 @@ public class Bush implements AssignmentContainer {
 			else if (bv instanceof BushMerge) {
 				BushMerge bm = (BushMerge) bv;
 				for (Link l : bm.getLinks()
-						.filter(l -> !longestUsed || bm.getSplit(l) > 0.0)
+						.filter(l -> !longestUsed || bm.getSplit(l) > 0)
 						.collect(Collectors.toSet())) 
 					longRelax(l,cache);
 			}
@@ -871,7 +871,7 @@ public class Bush implements AssignmentContainer {
 
 		AtomicBoolean modified = new AtomicBoolean(false);
 		Set<Link> unusedLinks = new ObjectOpenHashSet<Link>(network.getLinks());
-		unusedLinks.removeAll(getLinks());
+		unusedLinks.removeAll(getUsedLinks());
 //		Set<Link> unusedLinks = network.getLinks().parallelStream().filter(x -> !contains(x)).collect(Collectors.toCollection(ObjectOpenHashSet<Link>::new));
 
 		//Calculate the longest path costs
@@ -929,24 +929,17 @@ public class Bush implements AssignmentContainer {
 	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getLinks()
 	 */
 	@Override
-	public Collection<Link> getLinks() {
+	public Collection<Link> getUsedLinks() {
 		Stream<Link> a = Stream.of(q).parallel().filter(bv -> bv instanceof Link).map(l -> (Link) l);
 		Stream<Link> b = Stream.of(q).parallel().filter(bv -> bv instanceof BushMerge).map(bv -> (BushMerge) bv).flatMap(bv -> bv.getLinks().parallel());
 		return Stream.concat(a, b).collect(Collectors.toSet());
-//		Set<Link> ret = ObjectSets.synchronize(new ObjectOpenHashSet<Link>(numLinks,1.0f));
-//		Stream.of(q).parallel().forEach(b ->{
-//			if (b instanceof Link) ret.add((Link) b);
-//			else if (b instanceof BushMerge) 
-//				ret.addAll(((BushMerge) b).getLinks().collect(Collectors.toSet()));
-//		});
-//		for (BackVector b : q) {
-//			//For every backvector, add its link(s) to the return set
-//			if (b instanceof Link) ret.add((Link) b);
-//			else if (b instanceof BushMerge) 
-//				ret.addAll(((BushMerge) b).getLinks());
-//		}
-//		return ret;
-
+	}
+	
+	public Collection<Link> getUnusedLinks(){
+		return network.getLinks().parallelStream().filter(l -> 
+			(q[l.getHead().getOrder()] instanceof Link && !q[l.getHead().getOrder()].equals(l))
+			|| (q[l.getHead().getOrder()] instanceof BushMerge && !((BushMerge) q[l.getHead().getOrder()]).contains(l))
+		).collect(Collectors.toSet());
 	}
 
 	/**Update the BushMerges' splits based on current Bush flows
@@ -961,26 +954,15 @@ public class Bush implements AssignmentContainer {
 			if (total > 0) bm.getLinks().parallel().forEach(l -> bm.setSplit(l, (float) (flows.get(l)/total)));
 			//Otherwise, set them proportional to total demand share
 		});;
-//		for (BackVector bv : q) {
-//			if (bv instanceof BushMerge) {	//For each BushMerge in the Bush
-//				BushMerge bm = (BushMerge) bv;
-//				double total = bm.getLinks().parallel().mapToDouble(l -> flows.get(l)).sum();
-//				//Calculate the total demand through this node
-//
-//				//If there is no total, leave the splits alone
-//				if (total > 0) bm.getLinks().parallel().forEach(l -> bm.setSplit(l, (float) (flows.get(l)/total)));
-//				//Otherwise, set them proportional to total demand share
-//			}
-//		}
 	}
 
 	
-	/**This method writes the structure of the bush to a given print stream
+	/**This method writes the structure of the bush to a given output stream
 	 * @param out the print stream to which the structure will be written
 	 * @throws IOException 
 	 * @throws InterruptedException 
 	 */
-	public void toFile(OutputStream out) throws IOException, InterruptedException {
+	public void toByteStream(OutputStream out) throws IOException, InterruptedException {
 		writing.acquire();
 		int size = Integer.BYTES*2+Float.BYTES; //Size of each link's data
 		
@@ -1064,7 +1046,7 @@ public class Bush implements AssignmentContainer {
 				OutputStream out = null;
 				try {
 					out = Files.newOutputStream(file.toPath());
-					toFile(out);
+					toByteStream(out);
 				} catch (FileNotFoundException e) {
 					e.printStackTrace();
 				} catch (IOException e) {
@@ -1084,12 +1066,12 @@ public class Bush implements AssignmentContainer {
 		};
 	}
 	
-	/**Attempt to read the bush structure from a file, rather than building a
+	/**Attempt to read the bush structure from an input stream, rather than building a
 	 * new structure using Dijkstra's algorithm
 	 * @param in
 	 * @throws IOException 
 	 */
-	public void fromFile(InputStream in) throws IOException {
+	public void fromByteStream(InputStream in) throws IOException {
 		long sz = in.available();
 		long pos = 0;
 		q = new BackVector[network.numNodes()];
@@ -1166,7 +1148,7 @@ public class Bush implements AssignmentContainer {
 		
 		//Read the file in
 		BufferedInputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()));
-		fromFile(in);
+		fromByteStream(in);
 		in.close();
 	}
 	
@@ -1224,4 +1206,8 @@ public class Bush implements AssignmentContainer {
 //		}
 //		throw new RuntimeException();
 //	}
+	
+	public void clearLabels() {
+		Stream.of(q).parallel().filter(x -> x instanceof BushMerge).map(x -> (BushMerge) x).forEach(bm -> bm.clearLabels());
+	}
 }

@@ -36,6 +36,7 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 			//Wait for the bush to be idle (it may be being written to a file)
 			b.acquire();
 			//Acquire the topological order of the bush and cahce for later use
+			b.clearLabels();
 			Node[] to = b.getTopologicalOrder(true);
 			Node cur;
 

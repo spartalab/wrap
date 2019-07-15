@@ -41,7 +41,7 @@ public class BushOriginLoader extends BushOriginBuilder {
 						FileOutputStream out = null;
 						try {
 							out = new FileOutputStream(file);
-							bush.toFile(out);
+							bush.toByteStream(out);
 						} catch (FileNotFoundException e) {
 							e.printStackTrace();
 						} catch (IOException e) {

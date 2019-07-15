@@ -190,7 +190,7 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getLinks()
 	 */
 	@Override
-	public Set<Link> getLinks() {
+	public Set<Link> getUsedLinks() {
 		return new HashSet<Link>(this);
 	}
 
@@ -210,13 +210,13 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	}
 
 	@Override
-	public void fromFile(InputStream in) {
+	public void fromByteStream(InputStream in) {
 		// TODO Auto-generated method stub
 		throw new RuntimeException("Not Yet Implemented");
 	}
 
 	@Override
-	public void toFile(OutputStream out) {
+	public void toByteStream(OutputStream out) {
 		// TODO Auto-generated method stub
 		throw new RuntimeException("Not Yet Implemented");
 	}

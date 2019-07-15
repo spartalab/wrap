@@ -172,5 +172,16 @@ public class BushMerge implements BackVector {
 		// TODO Auto-generated method stub
 		return (int) Stream.of(shares).filter(x -> x != null).count();
 	}
+
+	public boolean contains(Link l) {
+		int idx = head.orderOf(l);
+		if (idx < 0) return false;
+		return shares[idx] != null;
+		// TODO Auto-generated method stub
+	}
 	
+	public void clearLabels() {
+		shortLink = null;
+		longLink = null;
+	}
 }
