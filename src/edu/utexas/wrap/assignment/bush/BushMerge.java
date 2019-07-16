@@ -12,7 +12,7 @@ import edu.utexas.wrap.net.Node;
  *
  */
 public class BushMerge implements BackVector {
-	private Float[] shares;
+	private Double[] shares;
 	private Link shortLink;
 	private Link longLink;
 	private final Bush bush;
@@ -25,8 +25,8 @@ public class BushMerge implements BackVector {
 	 */
 	public BushMerge(Bush b, Link u, Link l) {
 		this(b,u == null? l.getHead() : u.getHead());
-		shares[u.getHead().orderOf(u)] = 1.0f;
-		shares[l.getHead().orderOf(l)] = 0.0f;
+		shares[u.getHead().orderOf(u)] = 1.0;
+		shares[l.getHead().orderOf(l)] = 0.0;
 	}
 	
 	/**Duplication constructor
@@ -44,7 +44,7 @@ public class BushMerge implements BackVector {
 	 * @param b
 	 */
 	protected BushMerge(Bush b, Node n) {
-		shares = new Float[n.reverseStar().length];
+		shares = new Double[n.reverseStar().length];
 		bush = b;
 		head = n;
 	}
@@ -109,9 +109,9 @@ public class BushMerge implements BackVector {
 	 * @param l the link whose split should be returned
 	 * @return the share of the demand through this node carried by the Link
 	 */
-	public Float getSplit(Link l) {
+	public Double getSplit(Link l) {
 		int idx = head.orderOf(l);
-		Float r = shares[idx] == null? 0.0f : shares[idx];
+		Double r = shares[idx] == null? 0.0 : shares[idx];
 		if (r.isNaN()) {	//NaN check
 			throw new RuntimeException("BushMerge split is NaN");
 		}
@@ -123,12 +123,13 @@ public class BushMerge implements BackVector {
 	 * @param d	the split value
 	 * @return	the previous value, or 0.0 if the link wasn't in the Merge before
 	 */
-	public Float setSplit(Link l, Float d) {
+	public Double setSplit(Link l, Double d) {
 		if (d.isNaN()) {
 			throw new RuntimeException("BushMerge split set to NaN");
 		}
-		Float val = shares[head.orderOf(l)] = d;
-		return val == null? 0.0F : val;
+		Double val = shares[head.orderOf(l)];
+		shares[head.orderOf(l)] = d;
+		return val == null? 0.0 : val;
 	}
 
 //	@Override
@@ -143,7 +144,7 @@ public class BushMerge implements BackVector {
 	public Boolean add(Link l) {
 		int idx = head.orderOf(l);
 		if (idx < 0 || idx > head.reverseStar().length) return false;
-		shares[idx] = 0.0f;
+		shares[idx] = 0.0;
 		return true;
 
 	}

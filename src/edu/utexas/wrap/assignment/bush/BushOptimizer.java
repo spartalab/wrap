@@ -1,13 +1,21 @@
 package edu.utexas.wrap.assignment.bush;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import edu.utexas.wrap.assignment.Optimizer;
 import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.net.Link;
+import edu.utexas.wrap.util.calc.AECCalculator;
 import edu.utexas.wrap.util.calc.BeckmannCalculator;
 import edu.utexas.wrap.util.calc.GapCalculator;
+import edu.utexas.wrap.util.calc.LowestCostPathCostCalculator;
 import edu.utexas.wrap.util.calc.TSGCCalculator;
 import edu.utexas.wrap.util.calc.TSTTCalculator;
 
@@ -50,7 +58,7 @@ public abstract class BushOptimizer extends Optimizer {
 			if (iteration > maxIterations) return true;
 			//Check the relative gap against a given value
 			if (gc == null) {
-				gc = new GapCalculator(graph, origins, null);
+				gc = new GapCalculator(graph, origins, null, null);
 				gc.start();
 				gc.join();
 			}
@@ -67,26 +75,33 @@ public abstract class BushOptimizer extends Optimizer {
 	@Override
 	protected String getStatLine() {
 		String out = "";
+//		checkFlows();
+		
+//		origins.parallelStream().flatMap(o -> o.getContainers().parallelStream()).forEach(b -> {
+//			b.conservationCheck();
+//			b.checkCentroidConnectors();
+//		});
 
 		tc = new TSTTCalculator(graph);
 		bc = new BeckmannCalculator(graph);
 		cc = new TSGCCalculator(graph, origins);
-//		ac = new AECCalculator(this,cc);
-		gc = new GapCalculator(graph, origins,cc);
+		lc = new LowestCostPathCostCalculator(graph, origins);
+		ac = new AECCalculator(graph,origins,cc,lc);
+		gc = new GapCalculator(graph, origins,cc,lc);
 
-		cc.start();tc.start();gc.start();bc.start();//ac.start();
+		cc.start();tc.start();lc.start();gc.start();bc.start();ac.start();
 		try {
-			tc.join();gc.join();bc.join();cc.join();//ac.join();
+			tc.join();gc.join();lc.join();bc.join();cc.join();ac.join();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-//		out += String.format("%6.10E",ac.val) + "\t";
-		out += "\t\t\t";
+		out += String.format("%6.10E",ac.val) + "\t";
+//		out += "\t\t\t";
 		
-//		out += String.format("%6.10E",tc.val) + "\t";
-//		out += String.format("%6.10E",bc.val) + "\t";
+		out += String.format("%6.10E",tc.val) + "\t";
+		out += String.format("%6.10E",bc.val) + "\t";
 		out += String.format("%6.10E",gc.val) + "\t";
-//		out += String.format("%6.10E", cc.val);
+		out += String.format("%6.10E", cc.val);
 	
 		return out;
 	}
@@ -170,6 +185,23 @@ public abstract class BushOptimizer extends Optimizer {
 	 */
 	public void setRelativeGapExp(Integer relativeGapExp) {
 		this.relativeGapExp = relativeGapExp;
+	}
+	
+	public void checkFlows() {
+		Map<Link,Double> linkFlows = graph.getLinks().parallelStream().collect(Collectors.toMap(Function.identity(), l -> l.getFlow()));
+		Map<Link,Double> bushFlows = new HashMap<Link,Double>(graph.numLinks(),1.0f);
+		
+		origins.parallelStream().flatMap(o -> o.getContainers().parallelStream()).map(b -> b.getFlows()).sequential().forEach(m ->{
+			for (Entry<Link, Double> e : m.entrySet()) {
+				bushFlows.put(e.getKey(), bushFlows.getOrDefault(e.getKey(), 0.0) + e.getValue());
+			}
+		});;
+		
+		for (Entry<Link,Double> e : linkFlows.entrySet()) {
+			double total = bushFlows.getOrDefault(e.getKey(),0.0); 
+			if (total - e.getValue() > 20*Math.max(Math.ulp(total), Math.ulp(e.getValue()))) 
+				throw new RuntimeException();
+		}
 	}
 	
 }

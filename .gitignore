@@ -7,3 +7,5 @@
 /.DS_Store
 /src/edu/utexas/wrap/distribution/dbConfig.properties
 src/edu/utexas/wrap/.DS_Store
+/.classpath
+**/*.bush

@@ -101,7 +101,8 @@ public class wrap{
 
 	public static void main(String[] args) {
 		Graph g = null; 
-		Set<BushOrigin> o = null;
+		Set<BushOrigin> origins = null;
+		int innerIters = 1;
 		try {
 			//TODO rewrite argument parsing for more flexibility
 			if (args.length < 3) {
@@ -126,12 +127,15 @@ public class wrap{
 				BushOriginFactory dl = new BushOriginFactory(g);
 				System.out.println("Reading trips...");				
 				OriginFactory.readEnhancedTrips(odMatrix, g, dl);
-				o = dl.finishAll();
+				origins = dl.finishAll();
 			} 
 			else if (!( args[0].trim().equals("-v") || args[0].trim().equals("--variable") )) {
 				File links 		= new File(args[0]);
 				File odMatrix	= new File(args[1]);
 				File votFile 	= new File(args[2]);
+//				try {
+//					innerIters = Integer.parseInt(args[3]);
+//				} catch (Exception e) {}
 				
 				System.out.print("Reading network... ");
 				g = GraphFactory.readTNTPGraph(links);
@@ -144,7 +148,7 @@ public class wrap{
 				System.out.println("Reading trips...");
 				BushOriginFactory dl = new BushOriginFactory(g);
 				OriginFactory.readTNTPUniformVOTtrips(votFile, odMatrix, g, dl);
-				o = dl.finishAll();
+				origins = dl.finishAll();
 			}
 			else {
 				//TODO handle variable VOT usage
@@ -159,7 +163,8 @@ public class wrap{
 			return;
 		}
 		
-		Optimizer opt = new AlgorithmBOptimizer(g, o);
+		BushOptimizer opt = new AlgorithmBOptimizer(g, origins);
+		opt.setInnerIters(innerIters);
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				opt.shuttingDown = true;

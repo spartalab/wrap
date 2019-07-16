@@ -12,10 +12,12 @@ import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -199,7 +201,7 @@ public class Bush implements AssignmentContainer {
 			Node node = bv.getHead();
 			Float x = demand.getOrDefault(node, 0.0F);
 			if (x <= 0.0) continue;
-			dumpFlow(node,x);	//recursively push flow onto the bush
+			dumpFlow(node,x.doubleValue());	//recursively push flow onto the bush
 		}
 	}
 	
@@ -207,7 +209,7 @@ public class Bush implements AssignmentContainer {
 	 * @param node the node on whose backvector demand should be loaded
 	 * @param x the amount of demand passing through that node
 	 */
-	private void dumpFlow(Node node, Float x) {
+	private void dumpFlow(Node node, Double x) {
 		//If we've reached the end of the bush or there's no demand, stop
 		if (node.equals(origin.getNode()) || x == 0.0) return;
 		
@@ -222,8 +224,8 @@ public class Bush implements AssignmentContainer {
 		else if (bv instanceof BushMerge) {
 			//Otherwise recursively load onto all links in the backvector
 			BushMerge bm = (BushMerge) bv;
-			bm.getLinks().filter(l->bm.getSplit(l) != 0.0f).forEach(l->{
-				Float split = bm.getSplit(l);
+			bm.getLinks().filter(l->bm.getSplit(l) != 0).forEach(l->{
+				Double split = bm.getSplit(l);
 				l.changeFlow(x.doubleValue()*split);
 				dumpFlow(l.getTail(),x*split);
 			});
@@ -925,14 +927,18 @@ public class Bush implements AssignmentContainer {
 		return false;
 	}
 	
+	public Stream<Link> getUsedLinkStream(){
+		Stream<Link> a = Stream.of(q).parallel().filter(bv -> bv instanceof Link).map(l -> (Link) l);
+		Stream<Link> b = Stream.of(q).parallel().filter(bv -> bv instanceof BushMerge).map(bv -> (BushMerge) bv).flatMap(bv -> bv.getLinks().parallel());
+		return Stream.concat(a, b);
+	}
+	
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getLinks()
 	 */
 	@Override
 	public Collection<Link> getUsedLinks() {
-		Stream<Link> a = Stream.of(q).parallel().filter(bv -> bv instanceof Link).map(l -> (Link) l);
-		Stream<Link> b = Stream.of(q).parallel().filter(bv -> bv instanceof BushMerge).map(bv -> (BushMerge) bv).flatMap(bv -> bv.getLinks().parallel());
-		return Stream.concat(a, b).collect(Collectors.toSet());
+		return getUsedLinkStream().collect(Collectors.toSet());
 	}
 	
 	public Collection<Link> getUnusedLinks(){
@@ -951,7 +957,7 @@ public class Bush implements AssignmentContainer {
 			//Calculate the total demand through this node
 
 			//If there is no total, leave the splits alone
-			if (total > 0) bm.getLinks().parallel().forEach(l -> bm.setSplit(l, (float) (flows.get(l)/total)));
+			if (total > 0) bm.getLinks().parallel().forEach(l -> bm.setSplit(l, flows.get(l)/total));
 			//Otherwise, set them proportional to total demand share
 		});;
 	}
@@ -964,7 +970,7 @@ public class Bush implements AssignmentContainer {
 	 */
 	public void toByteStream(OutputStream out) throws IOException, InterruptedException {
 		writing.acquire();
-		int size = Integer.BYTES*2+Float.BYTES; //Size of each link's data
+		int size = Integer.BYTES*2+Double.BYTES; //Size of each link's data
 		
 		
 		//For each node
@@ -976,7 +982,7 @@ public class Bush implements AssignmentContainer {
 				byte[] b = ByteBuffer.allocate(size)
 						.putInt(n.getID())
 						.putInt(((Link) qn).hashCode())
-						.putFloat(1.0F)
+						.putDouble(1.0)
 						.array();
 				try {
 					out.write(b);
@@ -992,7 +998,7 @@ public class Bush implements AssignmentContainer {
 					byte[] b = ByteBuffer.allocate(size)
 							.putInt(n.getID())
 							.putInt(l.hashCode())
-							.putFloat(qm.getSplit(l))
+							.putDouble(qm.getSplit(l))
 							.array();
 					try {
 						out.write(b);
@@ -1075,17 +1081,17 @@ public class Bush implements AssignmentContainer {
 		long sz = in.available();
 		long pos = 0;
 		q = new BackVector[network.numNodes()];
-		byte[] b = new byte[Integer.BYTES*2+Float.BYTES];
+		byte[] b = new byte[Integer.BYTES*2+Double.BYTES];
 		
 		//For each link in the bush
-		while (sz-pos >= Integer.BYTES*2+Float.BYTES) {
+		while (sz-pos >= Integer.BYTES*2+Double.BYTES) {
 			//File IO, formatting
 			in.read(b);
-			pos += Integer.BYTES*2+Float.BYTES;
+			pos += Integer.BYTES*2+Double.BYTES;
 			ByteBuffer bb = ByteBuffer.wrap(b);
 			Integer nid = bb.getInt();
 			Integer bvhc = bb.getInt();
-			Float split = bb.getFloat();
+			Double split = bb.getDouble();
 			Node n = network.getNode(nid);
 
 			//Find the appropriate link instance
@@ -1209,5 +1215,44 @@ public class Bush implements AssignmentContainer {
 	
 	public void clearLabels() {
 		Stream.of(q).parallel().filter(x -> x instanceof BushMerge).map(x -> (BushMerge) x).forEach(bm -> bm.clearLabels());
+	}
+	
+	public double getIncurredCosts() {
+		Map<Link,Double> flows = getFlows();
+		return getUsedLinkStream().mapToDouble(l -> flows.getOrDefault(l, 0.0)*l.getPrice(vot, c)).sum();
+	}
+	
+	boolean conservationCheck() {
+		Map<Link,Double> flows = getFlows();
+		for (Node n : getNodes()) {
+			if (n.equals(getOrigin().getNode())) continue;
+			float demand = getDemand(n);
+			BackVector bv = q[n.getOrder()];
+			double inFlow = bv instanceof Link? flows.get((Link) bv) :
+				bv instanceof BushMerge? ((BushMerge) bv).getLinks().mapToDouble(l -> flows.getOrDefault(l, 0.0)).sum():
+					0.0;
+			double outFlow = Stream.of(n.forwardStar()).mapToDouble(l -> flows.getOrDefault(l, 0.0)).sum();
+			if (outFlow - inFlow - demand > 20*Math.max(Math.ulp(outFlow), Math.max(Math.ulp(inFlow), Math.ulp(demand))))
+				throw new RuntimeException();
+		}
+		double outFlow = Stream.of(origin.getNode().forwardStar()).mapToDouble(l -> flows.getOrDefault(l, 0.0)).sum();
+		if (outFlow - totalDemand() > 20*Math.max(Math.ulp(outFlow), Math.ulp(totalDemand()))) throw new RuntimeException();
+		return true;
+	}
+	
+	boolean checkCentroidConnectors() {
+		Map<Link,Double> flows = getFlows();
+		for (Entry<Link, Double> e : flows.entrySet()) {
+			if (e.getKey() instanceof CentroidConnector) {
+				if (e.getKey().getTail().equals(origin.getNode())) continue;
+				else if (e.getValue() > demand.getOrDefault(e.getKey().getHead(), 0.0F)) 
+					throw new RuntimeException();
+			}
+		}
+		return true;
+	}
+	
+	public double totalDemand() {
+		return demand.doubleClone().values().parallelStream().mapToDouble(Double::doubleValue).sum();
 	}
 }

@@ -3,8 +3,10 @@ package edu.utexas.wrap.assignment;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.util.calc.BeckmannCalculator;
 import edu.utexas.wrap.util.calc.GapCalculator;
+import edu.utexas.wrap.util.calc.LowestCostPathCostCalculator;
 import edu.utexas.wrap.util.calc.TSGCCalculator;
 import edu.utexas.wrap.util.calc.TSTTCalculator;
+import edu.utexas.wrap.util.calc.AECCalculator;
 
 
 /** Abstract method for optimizing link flows using an iterative
@@ -27,7 +29,8 @@ public abstract class Optimizer {
 	protected TSGCCalculator cc;
 	protected BeckmannCalculator bc;
 	protected GapCalculator gc;
-//	protected AECCalculator ac;
+	protected AECCalculator ac;
+	protected LowestCostPathCostCalculator lc;
 	protected long ttime;
 	public Optimizer(Graph g) {
 		graph = g;

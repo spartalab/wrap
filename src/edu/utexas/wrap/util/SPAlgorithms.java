@@ -20,16 +20,16 @@ public class SPAlgorithms {
 		
 		for (Node n : g.getNodes()) {
 			if (!n.equals(origin)) {
-				Q.add(n, Float.MAX_VALUE);
+				Q.add(n, Double.MAX_VALUE);
 			}
 		}
-		Q.add(origin, 0.0F);
+		Q.add(origin, 0.0);
 		
 		while (!Q.isEmpty()) {
 			FibonacciLeaf<Node> u = Q.poll();
 			for (Link uv : u.n.forwardStar()) {
 				FibonacciLeaf<Node> v = Q.getLeaf(uv.getHead());
-				Float alt = (float) uv.getTravelTime() + u.key;
+				Double alt = uv.getTravelTime() + u.key;
 				if (alt < v.key) {
 					Q.decreaseKey(v, alt);
 					back.put(v.n, uv);

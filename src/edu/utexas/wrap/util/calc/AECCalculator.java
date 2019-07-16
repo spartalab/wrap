@@ -10,16 +10,18 @@ import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.util.UnreachableException;
 
-class AECCalculator extends Thread {
-	Double val;
+public class AECCalculator extends Thread {
+	public Double val;
 	Graph graph;
 	Set<BushOrigin> origins;
 	TSGCCalculator cc;
+	LowestCostPathCostCalculator lc;
 	
-	public AECCalculator(Graph g, Set<BushOrigin> o, TSGCCalculator tc) {
+	public AECCalculator(Graph g, Set<BushOrigin> o, TSGCCalculator tc, LowestCostPathCostCalculator lc) {
 		graph = g;
 		origins = o;
 		this.cc = tc;
+		this.lc = lc;
 	}
 	
 	@Override
@@ -29,32 +31,39 @@ class AECCalculator extends Thread {
 			cc = new TSGCCalculator(graph, origins);
 			cc.start();
 		}
-
-		Double numerator = 0.0;
-		Double denominator = 0.0;
-		
-		for (BushOrigin o : origins) {
-			for (Bush b : o.getContainers()) {
-				Map<Node,Double> od = b.getDemandMap().doubleClone();
-				for (Node d : od.keySet()) {
-					Double demand = o.getDemand(d);
-					if (demand > 0.0) {
-						Double[] cache = new Double[graph.numNodes()];
-						try {
-							numerator -= b.getCachedL(d, cache).doubleValue() * demand;
-						} catch (UnreachableException e) {
-							if (demand > 0) e.printStackTrace();
-						}
-						denominator += demand;
-					}
-				}
-			}
+		if (lc == null) {
+			lc = new LowestCostPathCostCalculator(graph,origins);
+			lc.start();
 		}
+
+//		Double numerator = 0.0;
+//		Double denominator = 0.0;
+//		
+//		for (BushOrigin o : origins) {
+//			for (Bush b : o.getContainers()) {
+//				Map<Node,Double> od = b.getDemandMap().doubleClone();
+//				for (Node d : od.keySet()) {
+//					Double demand = o.getDemand(d);
+//					if (demand > 0.0) {
+//						Double[] cache = new Double[graph.numNodes()];
+//						try {
+//							numerator -= b.getCachedL(d, cache).doubleValue() * demand;
+//						} catch (UnreachableException e) {
+//							if (demand > 0) e.printStackTrace();
+//						}
+//						denominator += demand;
+//					}
+//				}
+//			}
+//		}
+		
+		Double demand = origins.parallelStream().flatMap(o -> o.getContainers().parallelStream()).mapToDouble(b -> b.totalDemand()).sum();
+		
 		val = null;
 		try {
 			cc.join();
-			numerator += cc.val;
-			val = numerator/denominator;
+			lc.join();
+			val = (cc.val-lc.val)/demand;
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

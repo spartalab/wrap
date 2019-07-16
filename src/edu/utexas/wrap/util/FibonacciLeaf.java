@@ -6,13 +6,13 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 public class FibonacciLeaf<E>{
 	public E n;
-	public float key;
+	public double key;
 	public int degree;
 	public FibonacciLeaf<E> parent;
 	public List<FibonacciLeaf<E>> child;
 	public boolean mark;
 	
-	public FibonacciLeaf(E n, Float d) {
+	public FibonacciLeaf(E n, Double d) {
 		this.n = n;
 		this.key = d;
 		degree = 0;

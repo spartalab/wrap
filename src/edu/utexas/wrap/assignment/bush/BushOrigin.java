@@ -8,6 +8,7 @@ import java.util.List;
 import edu.utexas.wrap.assignment.Origin;
 import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.modechoice.Mode;
+import edu.utexas.wrap.net.CentroidConnector;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
@@ -55,23 +56,24 @@ public class BushOrigin extends Origin {
 		FibonacciHeap<Node> Q = new FibonacciHeap<Node>(nodes.size(),1.0f);
 		for (Node n : nodes) {
 			if (!n.equals(getNode())) {
-				Q.add(n, Float.MAX_VALUE);
+				Q.add(n, Double.MAX_VALUE);
 			}
 		}
-		Q.add(getNode(), 0.0F);
+		Q.add(getNode(), 0.0);
 
 		while (!Q.isEmpty()) {
 			FibonacciLeaf<Node> u = Q.poll();
 			
 			
 			for (Link uv : u.n.forwardStar()) {
+				if (!isValidLink(uv)) continue;
 //				if (!uv.allowsClass(c) || isInvalidConnector(uv)) continue;
 				//If this link doesn't allow this bush's class of driver on the link, don't consider it
 				//This was removed to allow flow onto all links for the initial bush, and any illegal
 				//flow will be removed on the first flow shift due to high price
 				
 				FibonacciLeaf<Node> v = Q.getLeaf(uv.getHead());
-				Float alt = uv.freeFlowTime()+u.key;
+				Double alt = uv.freeFlowTime()+u.key;
 				if (alt<v.key) {
 					Q.decreaseKey(v, alt);
 					initMap[v.n.getOrder()] = uv;
@@ -139,6 +141,19 @@ public class BushOrigin extends Origin {
 		b.fromDefaultFile();
 		b.dumpFlow();
 		containers.add(b);
+	}
+	
+	public boolean isValidLink(Link uv) {
+		//If the link is a centroid connector
+		return uv instanceof CentroidConnector? 
+				//that doesn't lead from the origin and
+				uv.getTail().equals(getNode())? true :
+					//leads from a different centroid instead
+					(uv.getHead().isCentroid() && !uv.getTail().isCentroid())? true:
+						//then we can't use the link in the bush
+						false
+				//Otherwise, we can
+				: true;
 	}
 
 }

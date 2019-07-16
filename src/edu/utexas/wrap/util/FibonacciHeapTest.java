@@ -19,7 +19,7 @@ class FibonacciHeapTest {
 		random.setSeed(90210L);
 		
 		for (Integer i = 0; i < numCases; i++) {
-			Float key = random.nextFloat();
+			Double key = random.nextDouble();
 			//System.out.println(key);
 			Node p = new Node(i,false,i);
 			map.put(i, p);

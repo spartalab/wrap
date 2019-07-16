@@ -36,9 +36,9 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 		rootList = ObjectLists.synchronize(new ObjectArrayList<FibonacciLeaf<E>>());
 	}
 	
-	public boolean add(E node, Float d) {
+	public boolean add(E node, Double d) {
 		if (map.containsKey(node)) throw new UnsupportedOperationException("Duplicate node in Fibonacci Heap. Keys must be unique.");
-		FibonacciLeaf<E> e = new FibonacciLeaf<E>(node,d.floatValue());
+		FibonacciLeaf<E> e = new FibonacciLeaf<E>(node,d);
 		map.put(node, e);
 		
 		return offer(e);
@@ -106,9 +106,9 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 		x.mark = false;
 	}
 
-	public void decreaseKey(FibonacciLeaf<E> x, Float alt) {
-		if (alt > x.key) return; //throw new Exception();
-		x.key = alt.floatValue();
+	public void decreaseKey(FibonacciLeaf<E> x, double maxValue) {
+		if (maxValue > x.key) return; //throw new Exception();
+		x.key = maxValue;
 		FibonacciLeaf<E> y = x.parent;
 		if (y != null && x.key < y.key) {
 			cut(x,y);
@@ -119,7 +119,7 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 
 	public void delete(E n) throws Exception {
 		FibonacciLeaf<E> x = map.remove(n);
-		decreaseKey(x,-Float.MAX_VALUE);
+		decreaseKey(x,-Double.MAX_VALUE);
 		poll();
 	}
 
