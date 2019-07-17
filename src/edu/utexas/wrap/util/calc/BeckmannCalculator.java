@@ -1,7 +1,6 @@
 package edu.utexas.wrap.util.calc;
 
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.Link;
 
 public class BeckmannCalculator extends Thread {
 	public Double val;

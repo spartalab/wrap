@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +18,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -33,6 +33,8 @@ import edu.utexas.wrap.net.CentroidConnector;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.util.FibonacciHeap;
+import edu.utexas.wrap.util.FibonacciLeaf;
 import edu.utexas.wrap.util.UnreachableException;
 
 /** An instance of a {@link edu.utexas.wrap.assignment.AssignmentContainer}
@@ -656,6 +658,7 @@ public class Bush implements AssignmentContainer {
 			int size = bm.size();
 			if (size > 1) {
 				bm.remove(l);
+				numLinks--;
 				if (size==2){ //If there is only one link left, replace BushMerge with Link
 					setBackVector(l.getHead(),bm.getLinks().findAny().orElseThrow(RuntimeException::new));
 					return true;
@@ -683,7 +686,7 @@ public class Bush implements AssignmentContainer {
 			.forEach(l -> {
 				//If so, try to remove the Link
 				cachedTopoOrder = null;
-				numLinks--;
+//				numLinks--;
 			});
 		});
 	}
@@ -920,7 +923,7 @@ public class Bush implements AssignmentContainer {
 		} catch (UnreachableException e) {
 			if (e.demand > 0) {
 				q = origin.getShortestPathTree(network);
-				numLinks = network.numZones()-1;
+				numLinks = network.numNodes()-1;
 			}
 			
 		}
@@ -956,9 +959,22 @@ public class Bush implements AssignmentContainer {
 			double total = bm.getLinks().parallel().mapToDouble(l -> flows.get(l)).sum();
 			//Calculate the total demand through this node
 
-			//If there is no total, leave the splits alone
+			//If there is flow through the node, set the splits proportionally
 			if (total > 0) bm.getLinks().parallel().forEach(l -> bm.setSplit(l, flows.get(l)/total));
-			//Otherwise, set them proportional to total demand share
+			//otherwise, dump all (non-existent) flow onto the shortest link
+			else {
+				Double[] cache = new Double[network.numNodes()];
+				Link min = bm.getLinks().parallel().min(Comparator.comparing( (Link x) -> {
+					try {
+						return getCachedU( x.getTail(),cache)+x.getPrice(getVOT(),getVehicleClass());
+					} catch (UnreachableException e) {
+						// TODO Auto-generated catch block
+						return Double.MAX_VALUE;
+					}
+				})).orElseThrow(RuntimeException::new);
+				bm.setSplit(min, 1.0);
+				bm.getLinks().parallel().filter(l -> l != min).forEach(l -> bm.setSplit(l, 0.0));
+			}
 		});;
 	}
 
@@ -1009,33 +1025,6 @@ public class Bush implements AssignmentContainer {
 				});
 			}
 		});
-//		for (Node n : getTopologicalOrder(false)) {
-//			if (n == null) continue;
-//			BackVector qn = getBackVector(n);
-//			//get all the links leading to the node
-//			//write them to a file
-//			if (qn instanceof Link) {
-//				byte[] b = ByteBuffer.allocate(size)
-//						.putInt(n.getID())
-//						.putInt(((Link) qn).hashCode())
-//						.putFloat(1.0F)
-//						.array();
-//				out.write(b);
-//			}
-//			
-//			else if (qn instanceof BushMerge) {
-//				BushMerge qm = (BushMerge) qn;
-//				for (Link l : qm) {
-//					byte[] b = ByteBuffer.allocate(size)
-//							.putInt(n.getID())
-//							.putInt(l.hashCode())
-//							.putFloat(qm.getSplit(l))
-//							.array();
-//					out.write(b);
-//					}
-//			}
-//			out.flush();
-//		}
 		writing.release();
 	}
 	
@@ -1254,5 +1243,53 @@ public class Bush implements AssignmentContainer {
 	
 	public double totalDemand() {
 		return demand.doubleClone().values().parallelStream().mapToDouble(Double::doubleValue).sum();
+	}
+
+	public Double[] lowestCostPathCosts() {
+		Node orig = getOrigin().getNode();
+		Collection<Node> nodes = network.getNodes();
+		FibonacciHeap<Node> Q = new FibonacciHeap<Node>(nodes.size());
+		Double[] cache = new Double[nodes.size()];
+		
+		nodes.stream().filter(n -> !n.equals(orig)).forEach(n -> Q.add(n,Double.MAX_VALUE));
+		Q.add(orig,0.0);
+//		double ret = 0.0;
+		
+		while (!Q.isEmpty()) {
+			FibonacciLeaf<Node> u = Q.poll();
+			if (u.key < Double.MAX_VALUE) {
+				cache[u.n.getOrder()] = u.key;
+//				ret += u.key*getDemand(u.n);
+			}
+			
+			for (Link uv : u.n.forwardStar()) {
+				if (!uv.allowsClass(getVehicleClass())) continue;
+				if (!isValidLink(uv)) continue;
+				FibonacciLeaf<Node> v = Q.getLeaf(uv.getHead());
+				Double alt = uv.getPrice(getVOT(),getVehicleClass())+u.key;
+				
+				if (alt < v.key) {
+					Q.decreaseKey(v, alt);
+				}
+			}
+		}
+		return cache;
+//		return ret;
+	}
+	
+	public double lowestCostPathCost() {
+		Double[] cache = lowestCostPathCosts();
+		return getNodes().parallelStream().mapToDouble(x -> cache[x.getOrder()] == null ? 0.0 : getDemand(x)*cache[x.getOrder()]).sum();
+	}
+	
+	public double AEC() {
+		return (getIncurredCosts() - lowestCostPathCost())/totalDemand();
+	}
+	
+	public Set<Node> unequilibratedNodes() throws UnreachableException{
+		Double[] lowCache = lowestCostPathCosts();
+		Double[] hiCache = longTopoSearch(false);
+
+		return getNodes().parallelStream().filter(x -> x != getOrigin().getNode() && hiCache[x.getOrder()] > 1.0001*lowCache[x.getOrder()]).collect(Collectors.toSet());
 	}
 }

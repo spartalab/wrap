@@ -75,12 +75,6 @@ public abstract class BushOptimizer extends Optimizer {
 	@Override
 	protected String getStatLine() {
 		String out = "";
-//		checkFlows();
-		
-//		origins.parallelStream().flatMap(o -> o.getContainers().parallelStream()).forEach(b -> {
-//			b.conservationCheck();
-//			b.checkCentroidConnectors();
-//		});
 
 		tc = new TSTTCalculator(graph);
 		bc = new BeckmannCalculator(graph);
@@ -96,8 +90,6 @@ public abstract class BushOptimizer extends Optimizer {
 			e.printStackTrace();
 		}
 		out += String.format("%6.10E",ac.val) + "\t";
-//		out += "\t\t\t";
-		
 		out += String.format("%6.10E",tc.val) + "\t";
 		out += String.format("%6.10E",bc.val) + "\t";
 		out += String.format("%6.10E",gc.val) + "\t";

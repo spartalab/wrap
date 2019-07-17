@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Set;
 
-import edu.utexas.wrap.assignment.Optimizer;
 import edu.utexas.wrap.assignment.bush.AlgorithmBOptimizer;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.bush.BushOptimizer;

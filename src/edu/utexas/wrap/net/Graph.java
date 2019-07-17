@@ -81,14 +81,15 @@ public class Graph {
 			nodeMap.put(link.getHead().getID(), head);
 			nodeMap.put(link.getTail().getID(), tail);
 		}
-		if (!order.contains(head)) {
-			order.add(head);
-//			nodeOrder.put(head,numNodes);
-			numNodes++;
-		}
+
 		if (!order.contains(tail)) {
 //			nodeOrder.put(tail, numNodes);
 			order.add(tail);
+			numNodes++;
+		}
+		if (!order.contains(head)) {
+			order.add(head);
+//			nodeOrder.put(head,numNodes);
 			numNodes++;
 		}
 		return altered;
@@ -110,14 +111,6 @@ public class Graph {
 
 	public Set<Link> getLinks(){
 		return links;
-//		if (links != null) return links;
-//		HashSet<Link> ret = new HashSet<Link>();
-//		outLinks.values().stream().reduce(ret, (a,b)->{
-//			a.addAll(b);
-//			return a;
-//		});
-//		links = ret;
-//		return ret;
 	}
 	
 	public Node getNode(Integer id) {
@@ -320,7 +313,7 @@ public class Graph {
 					@Override
 					public double tIntegral() {
 						// TODO Auto-generated method stub
-						return 0;
+						throw new RuntimeException("not yet implemented");
 					}
 
 					@Override

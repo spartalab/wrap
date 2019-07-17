@@ -92,12 +92,7 @@ public class BushMerge implements BackVector {
 	 */
 	public boolean remove(Link l) {
 		int idx = head.orderOf(l);
-		if (shortLink != null && shortLink.equals(l)) {
-			shortLink = null;
-		}
-		else if (longLink != null && longLink.equals(l)) {
-			longLink = null;
-		}
+
 		if (shares[idx] == null) 
 			throw new RuntimeException("A Link was removed that wasn't in the BushMerge");
 		shares[idx] = null;
