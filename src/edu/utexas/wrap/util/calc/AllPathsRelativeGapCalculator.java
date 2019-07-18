@@ -5,43 +5,37 @@ import java.util.Set;
 import edu.utexas.wrap.assignment.bush.BushOrigin;
 import edu.utexas.wrap.net.Graph;
 
-public class AECCalculator extends Thread {
+public class AllPathsRelativeGapCalculator extends Thread {
 	public Double val;
 	Graph graph;
 	Set<BushOrigin> origins;
-	TSGCCalculator cc;
 	LowestCostPathCostCalculator lc;
+	TotalSystemGeneralizedCostCalculator cc;
 	
-	public AECCalculator(Graph g, Set<BushOrigin> o, TSGCCalculator tc, LowestCostPathCostCalculator lc) {
+	public AllPathsRelativeGapCalculator(Graph g, Set<BushOrigin> o, TotalSystemGeneralizedCostCalculator tc, LowestCostPathCostCalculator lc) {
 		graph = g;
 		origins = o;
-		this.cc = tc;
-		this.lc = lc;
 	}
 	
 	@Override
 	public void run() {
-		//TODO: Modify for generalized cost
+		val = null;
+
 		if (cc == null) {
-			cc = new TSGCCalculator(graph, origins);
+			cc = new TotalSystemGeneralizedCostCalculator(graph, origins);
 			cc.start();
 		}
 		if (lc == null) {
 			lc = new LowestCostPathCostCalculator(graph,origins);
 			lc.start();
 		}
-		
-		Double demand = origins.parallelStream().flatMap(o -> o.getContainers().parallelStream()).mapToDouble(b -> b.totalDemand()).sum();
-		
-		val = null;
-		try {
+
+		try{
 			cc.join();
 			lc.join();
-			val = (cc.val-lc.val)/demand;
+			val = (cc.val/lc.val) - 1.0;
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	
 	}
 }

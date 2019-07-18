@@ -6,12 +6,12 @@ import edu.utexas.wrap.assignment.Origin;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.net.Graph;
 
-public class TSGCCalculator extends Thread {
+public class TotalSystemGeneralizedCostCalculator extends Thread {
 	public Double val;
 	Graph graph;
 	Set<? extends Origin> origins;
 	
-	public TSGCCalculator(Graph g, Set<? extends Origin> o) {
+	public TotalSystemGeneralizedCostCalculator(Graph g, Set<? extends Origin> o) {
 		graph = g;
 		origins = o;
 	}

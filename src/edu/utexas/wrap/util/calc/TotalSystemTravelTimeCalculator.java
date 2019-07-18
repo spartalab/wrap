@@ -2,11 +2,11 @@ package edu.utexas.wrap.util.calc;
 
 import edu.utexas.wrap.net.Graph;
 
-public class TSTTCalculator extends Thread {
+public class TotalSystemTravelTimeCalculator extends Thread {
 	public Double val;
 	Graph graph;
 	
-	public TSTTCalculator(Graph g) {
+	public TotalSystemTravelTimeCalculator(Graph g) {
 		graph = g;
 	}
 	

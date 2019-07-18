@@ -12,12 +12,12 @@ import java.util.stream.Collectors;
 import edu.utexas.wrap.assignment.Optimizer;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
-import edu.utexas.wrap.util.calc.AECCalculator;
+import edu.utexas.wrap.util.calc.AverageExcessCostCalculator;
 import edu.utexas.wrap.util.calc.BeckmannCalculator;
-import edu.utexas.wrap.util.calc.GapCalculator;
+import edu.utexas.wrap.util.calc.AllPathsRelativeGapCalculator;
 import edu.utexas.wrap.util.calc.LowestCostPathCostCalculator;
-import edu.utexas.wrap.util.calc.TSGCCalculator;
-import edu.utexas.wrap.util.calc.TSTTCalculator;
+import edu.utexas.wrap.util.calc.TotalSystemGeneralizedCostCalculator;
+import edu.utexas.wrap.util.calc.TotalSystemTravelTimeCalculator;
 
 /**Assignment optimizer using bush techniques. Includes a
  * method to "improve" bushes by expanding to include links that
@@ -28,7 +28,7 @@ import edu.utexas.wrap.util.calc.TSTTCalculator;
  */
 public abstract class BushOptimizer extends Optimizer {
 	public static boolean printProgress = false;
-	public static boolean printBushes = false;
+	public static boolean printBushes = true;
 
 	private int innerIters = 8;
 	
@@ -58,7 +58,7 @@ public abstract class BushOptimizer extends Optimizer {
 			if (iteration > maxIterations) return true;
 			//Check the relative gap against a given value
 			if (gc == null) {
-				gc = new GapCalculator(graph, origins, null, null);
+				gc = new AllPathsRelativeGapCalculator(graph, origins, null, null);
 				gc.start();
 				gc.join();
 			}
@@ -76,12 +76,12 @@ public abstract class BushOptimizer extends Optimizer {
 	protected String getStatLine() {
 		StringBuilder out = new StringBuilder();
 
-		tc = new TSTTCalculator(graph);
+		tc = new TotalSystemTravelTimeCalculator(graph);
 		bc = new BeckmannCalculator(graph);
-		cc = new TSGCCalculator(graph, origins);
+		cc = new TotalSystemGeneralizedCostCalculator(graph, origins);
 		lc = new LowestCostPathCostCalculator(graph, origins);
-		ac = new AECCalculator(graph,origins,cc,lc);
-		gc = new GapCalculator(graph, origins,cc,lc);
+		ac = new AverageExcessCostCalculator(graph,origins,cc,lc);
+		gc = new AllPathsRelativeGapCalculator(graph, origins,cc,lc);
 
 		cc.start();
 		tc.start();
