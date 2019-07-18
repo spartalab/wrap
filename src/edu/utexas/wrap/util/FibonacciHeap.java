@@ -63,16 +63,17 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 		rootList.parallelStream().filter(x -> !ignore.contains(x)).sequential().forEach(w->{
 			FibonacciLeaf<E> x = w;
 			Integer d = x.degree;
-			while (A.get(d) != null) {
-				FibonacciLeaf<E> y = A.get(d);
+			FibonacciLeaf<E> y = A.get(d);
+			while (y != null) {
+				
 				if (x.key > y.key) {
 					FibonacciLeaf<E> temp = x;
 					x = y;
 					y = temp;
 				}
 				link(x,y, ignore);
-				A.remove(d);
-				d++;
+				A.remove(d++);
+				y = A.get(d);
 			}
 			A.put(d, x);
 		});

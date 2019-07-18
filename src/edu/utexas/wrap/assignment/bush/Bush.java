@@ -53,7 +53,7 @@ public class Bush implements AssignmentContainer {
 
 	//Underlying problem characteristics
 	private final Graph network;
-	private final DemandMap demand;
+	private final AutoDemandMap demand;
 
 	// Back vector map (i.e. the bush structure)
 	private BackVector[] q;
@@ -1208,7 +1208,7 @@ public class Bush implements AssignmentContainer {
 	
 	public double getIncurredCosts() {
 		Map<Link,Double> flows = getFlows();
-		return getUsedLinkStream().mapToDouble(l -> flows.getOrDefault(l, 0.0)*l.getPrice(vot, c)).sum();
+		return getUsedLinkStream().parallel().mapToDouble(l -> flows.getOrDefault(l, 0.0)*l.getPrice(vot, c)).sum();
 	}
 	
 	boolean conservationCheck() {
@@ -1248,7 +1248,7 @@ public class Bush implements AssignmentContainer {
 	public Double[] lowestCostPathCosts() {
 		Node orig = getOrigin().getNode();
 		Collection<Node> nodes = network.getNodes();
-		FibonacciHeap<Node> Q = new FibonacciHeap<Node>(nodes.size());
+		FibonacciHeap<Node> Q = new FibonacciHeap<Node>(nodes.size(),1.0f);
 		Double[] cache = new Double[nodes.size()];
 		
 		nodes.stream().filter(n -> !n.equals(orig)).forEach(n -> Q.add(n,Double.MAX_VALUE));

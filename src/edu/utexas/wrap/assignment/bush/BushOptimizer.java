@@ -74,7 +74,7 @@ public abstract class BushOptimizer extends Optimizer {
 	 */
 	@Override
 	protected String getStatLine() {
-		String out = "";
+		StringBuilder out = new StringBuilder();
 
 		tc = new TSTTCalculator(graph);
 		bc = new BeckmannCalculator(graph);
@@ -83,19 +83,30 @@ public abstract class BushOptimizer extends Optimizer {
 		ac = new AECCalculator(graph,origins,cc,lc);
 		gc = new GapCalculator(graph, origins,cc,lc);
 
-		cc.start();tc.start();lc.start();gc.start();bc.start();ac.start();
+		cc.start();
+		tc.start();
+		lc.start();
+		gc.start();
+		bc.start();
+		ac.start();
 		try {
-			tc.join();gc.join();lc.join();bc.join();cc.join();ac.join();
+			tc.join();
+			gc.join();
+			lc.join();
+			bc.join();
+			cc.join();
+			ac.join();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		out += String.format("%6.10E",ac.val) + "\t";
-		out += String.format("%6.10E",tc.val) + "\t";
-		out += String.format("%6.10E",bc.val) + "\t";
-		out += String.format("%6.10E",gc.val) + "\t";
-		out += String.format("%6.10E", cc.val);
+		out.append(String.format("%6.10E",ac.val) + "\t");
+//		out.append("\t\t\t");
+		out.append(String.format("%6.10E",tc.val) + "\t");
+		out.append(String.format("%6.10E",bc.val) + "\t");
+		out.append(String.format("%6.10E",gc.val) + "\t");
+		out.append(String.format("%6.10E", cc.val));
 	
-		return out;
+		return out.toString();
 	}
 	
 	/* (non-Javadoc)

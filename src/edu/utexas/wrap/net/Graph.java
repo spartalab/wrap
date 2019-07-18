@@ -118,7 +118,7 @@ public class Graph {
 	}
 	
 	public Collection<Node> getNodes(){
-		return nodeMap.values();
+		return order;
 //		Set<Node> ret = new HashSet<Node>(inLinks.keySet());
 //		ret.addAll(outLinks.keySet());
 //		return ret;
