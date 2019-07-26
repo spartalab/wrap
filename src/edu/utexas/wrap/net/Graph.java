@@ -3,11 +3,15 @@ package edu.utexas.wrap.net;
 import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
-import edu.utexas.wrap.modechoice.Mode;
+import edu.utexas.wrap.assignment.sensitivity.DerivativeLink;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -37,7 +41,6 @@ public class Graph {
 		nodeMap = (new Int2ObjectOpenHashMap<Node>());
 		order = (new ObjectArrayList<Node>());
 		links = new ObjectOpenHashSet<Link>();
-//		nodeOrder = new Object2IntOpenHashMap<Node>();
 		numZones = 0;
 		numNodes = 0;
 		numLinks = 0;
@@ -45,23 +48,14 @@ public class Graph {
 	}
 	
 	public Graph(Graph g) {
-		outLinks = (new Object2ObjectOpenHashMap<Node, Set<Link>>());
-		for (Node n : g.outLinks.keySet()) {
-			outLinks.put(n, (new ObjectOpenHashSet<Link>(g.outLinks.get(n))));
-		}
-		outLinks = Collections.unmodifiableMap(outLinks);
-		inLinks = (new Object2ObjectOpenHashMap<Node, Set<Link>>());
-		for (Node n : g.inLinks.keySet()) {
-			inLinks.put(n, (new ObjectOpenHashSet<Link>(g.inLinks.get(n))));
-		}
-		inLinks = Collections.unmodifiableMap(inLinks);
 		nodeMap = g.nodeMap;
 		order = Collections.unmodifiableList(g.order);
 		links = g.links;
 		numZones = g.numZones;
 		numNodes = g.numNodes;
 		numLinks = g.numLinks;
-//		nodeOrder = g.nodeOrder;
+		forwardStar = g.forwardStar;
+		reverseStar = g.reverseStar;
 	}
 	
 	public Boolean add(Link link) {
@@ -217,114 +211,69 @@ public class Graph {
 	public int numLinks() {
 		return numLinks;
 	}
+	
+	public Map<Link, Link> getDerivativeLinks(Map<Link,Double> derivs, Link oldFocus, Link newFocus, Map<Node,Node> nodeMap){
+		Map<Link, Link> linkMap = new HashMap<Link,Link>(numLinks,1.0f);
 
-	public Graph getDerivativeGraph(Map<Link, Double> derivs) {
+		
+		IntStream.range(0,forwardStar.length).parallel().forEach(j ->{
+			Link[] oldLinks = forwardStar[j];
+			if (oldLinks == null) return;
+			for (int i = 0; i < oldLinks.length; i++) {
+				Link oldLink = oldLinks[i];
+				Link newLink;
+				if (oldLink.equals(oldFocus)) newLink = newFocus;
+				else  newLink = new DerivativeLink(nodeMap.get(oldLink.getTail()), nodeMap.get(oldLink.getHead()), oldLink.getCapacity(), oldLink.getLength(), oldLink.freeFlowTime(), oldLink, derivs);
+				linkMap.put(oldLink, newLink);
+			}
+		});
+		return linkMap;
+	}
+	
+	public Map<Node,Node> duplicateNodes(){
+		return order.stream().collect(Collectors.toMap(Function.identity(), x -> new Node(x)));
+	}
+
+	public Graph getDerivativeGraph(Map<Link, Link> linkMap, Map<Node,Node> mapOfNodes) {
 		// TODO Auto-generated method stub
 		Graph ret = new Graph();
-		ret.order = order;
-//		ret.outLinks = new HashMap<Node,Set<Link>>(outLinks.size(),1.0f);
-//		ret.inLinks = new HashMap<Node,Set<Link>>(inLinks.size(),1.0f);
+		
 		ret.nodeMap = nodeMap;
 		ret.numLinks = numLinks;
 		ret.numNodes = numNodes;
 		ret.numZones = numZones;
-		ret.forwardStar = forwardStar;
-		ret.reverseStar = reverseStar;
-//		ret.nodeOrder = nodeOrder;
+		ret.forwardStar = new Link[forwardStar.length][];
+		ret.reverseStar = new Link[reverseStar.length][];
 		ret.setMD5(getMD5());
+		ret.order = order.stream().map(n -> mapOfNodes.get(n)).collect(Collectors.toList());
 		
-		for (int j = 0; j<forwardStar.length;j++) {
-			Link[] ol = forwardStar[j];
-//			Set<Link> ol = outLinks.get(n);
-//			Set<Link> nl = new HashSet<Link>(ol.size(),1.0f);
-			Link[] nl = new Link[ol.length];
-			for (int i = 0; i < ol.length; i++) {
-				Link l = ol[i];
-				Link ll = new Link(l) {
-					Link parent = l;
-					Double deriv = derivs.getOrDefault(l, 0.0);
-					@Override
-					public Boolean allowsClass(Mode c) {
-						return parent.allowsClass(c);
-					}
-
-					@Override
-					public double getPrice(Float vot, Mode c) {
-						return getTravelTime();
-					}
-
-					@Override
-					public double getTravelTime() {
-						return deriv*flo;
-					}
-
-					@Override
-					public double pricePrime(Float vot) {
-						return tPrime();
-					}
-
-					@Override
-					public double tIntegral() {
-						// TODO Auto-generated method stub
-						return 0;
-					}
-
-					@Override
-					public double tPrime() {
-						return deriv;
-					}
-					
-				};
-				nl[i] = ll;
+		IntStream.range(0,forwardStar.length).parallel().forEach(j ->{
+			Link[] oldLinks = forwardStar[j];
+			if (oldLinks==null) return;
+			Link[] newLinks = new Link[oldLinks.length];
+			for (int i = 0; i < oldLinks.length; i++) {
+				Link oldLink = oldLinks[i];
+				Link newLink = linkMap.get(oldLink);
+				newLinks[i] = newLink;
 			}
-			ret.forwardStar[j] = nl;
-		}
+			ret.order.get(j).setForwardStar(newLinks);
+			ret.forwardStar[j] = newLinks;
+		});
 		
-		for (int i = 0; i < reverseStar.length; i++) {
-			Link[] ol = reverseStar[i];
-			Link[] nl = new Link[ol.length];
-//			Set<Link> ol = inLinks.get(n);
-//			Set<Link> nl = new HashSet<Link>(ol.size(),1.0f);
-			for (int j = 0; j < ol.length; j++) {
-				Link l = ol[j];
-				Link ll = new Link(l) {
-					Link parent = l;
-					Double deriv = derivs.getOrDefault(l, 0.0);
-					@Override
-					public Boolean allowsClass(Mode c) {
-						return parent.allowsClass(c);
-					}
-
-					@Override
-					public double getPrice(Float vot, Mode c) {
-						return getTravelTime();
-					}
-
-					@Override
-					public double getTravelTime() {
-						return deriv*flo;
-					}
-
-					@Override
-					public double pricePrime(Float vot) {
-						return tPrime();
-					}
-
-					@Override
-					public double tIntegral() {
-						// TODO Auto-generated method stub
-						throw new RuntimeException("not yet implemented");
-					}
-
-					@Override
-					public double tPrime() {
-						return deriv;
-					}
-				};
-				nl[j] = ll;
+		IntStream.range(0, reverseStar.length).parallel().forEach(i->{
+//		for (int i = 0; i < reverseStar.length; i++) {
+			Link[] oldLinks = reverseStar[i];
+			if (oldLinks == null) return;
+			Link[] newLinks = new Link[oldLinks.length];
+			for (int j = 0; j < oldLinks.length; j++) {
+				Link l = oldLinks[j];
+				Link ll = linkMap.get(l);
+				newLinks[j] = ll;
+				
 			}
-			ret.reverseStar[i] = nl;
-		}
+			ret.reverseStar[i] = newLinks;
+			ret.order.get(i).setReverseStar(newLinks);
+		});
 		return ret;
 	}
 	

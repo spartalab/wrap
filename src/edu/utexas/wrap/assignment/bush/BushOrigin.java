@@ -156,4 +156,9 @@ public class BushOrigin extends Origin {
 				: true;
 	}
 
+	public boolean add(Bush newBush) {
+		// TODO Auto-generated method stub
+		return containers.add(newBush);
+	}
+
 }

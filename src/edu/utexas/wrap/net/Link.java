@@ -37,21 +37,6 @@ public abstract class Link implements Priced, BackVector {
 		int a = 2017;	//	Year of inception for this project
 		hc = (((head.getID()*a + tail.getID())*b + capacity.intValue())*c + fftime.intValue());
 	}
- 
-
-	/**Duplicate constructor
-	 * @param l a duplicate of the link with zero flow
-	 */
-	public Link(Link l) {
-		this.tail = l.tail;
-		this.head = l.head;
-		this.capacity = l.capacity;
-		this.length = l.length;
-		this.fftime = l.fftime;
-		this.flo = 0.0;
-		this.hc = l.hc;
-	}
-
 
 	public abstract Boolean allowsClass(Mode c);
 
@@ -60,9 +45,9 @@ public abstract class Link implements Priced, BackVector {
 	 * @return whether the flow from this bush on the link is non-zero
 	 */
 	public synchronized Boolean changeFlow(Double delta) {
-		if (delta < 0.0 && flo+delta < 0.0 - Math.max(Math.ulp(flo), Math.ulp(delta)))
+		if (nonnegativeFlowLink() && delta < 0.0 && flo+delta < 0.0 - Math.max(Math.ulp(flo), Math.ulp(delta)))
 			throw new RuntimeException("Too much flow removed");
-		else if (delta < 0.0 && flo + delta <0.0) flo = 0.0;
+		else if (nonnegativeFlowLink() && delta < 0.0 && flo + delta <0.0) flo = 0.0;
 		else flo += delta;
 		if (flo.isNaN()) {
 			throw new RuntimeException();
@@ -87,7 +72,7 @@ public abstract class Link implements Priced, BackVector {
 	public Double getFlow() {
 //		if (cachedFlow != null) return cachedFlow;
 //		Double f = flow.values().stream().mapToDouble(Double::doubleValue).sum();
-		if (flo < 0) throw new NegativeFlowException("Negative flow on link "+this.toString());
+		if (nonnegativeFlowLink() && flo < 0) throw new NegativeFlowException("Negative flow on link "+this.toString());
 //		cachedFlow = f;
 		return flo;
 	}
@@ -129,4 +114,6 @@ public abstract class Link implements Priced, BackVector {
 	public Link getLongLink() {
 		return this;
 	}
+	
+	public boolean nonnegativeFlowLink() {return true;}
 }

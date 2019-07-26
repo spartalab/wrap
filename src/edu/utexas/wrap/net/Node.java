@@ -15,6 +15,12 @@ public class Node {
 		graphOrder = order;
 	}
 	
+	public Node(Node n) {
+		this.ID = n.ID;
+		this.graphOrder = n.graphOrder;
+		this.isCentroid = n.isCentroid;
+	}
+	
 	public boolean equals(Node n) {
 		return n.getID() == this.ID;
 	}

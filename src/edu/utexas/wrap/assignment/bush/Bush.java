@@ -44,7 +44,8 @@ import edu.utexas.wrap.util.UnreachableException;
  */
 public class Bush implements AssignmentContainer {
 
-	public static boolean cachingAllowed = true;
+	public static boolean orderCachingEnabled = true;
+	public static boolean flowCachingEnabled = false;
 	// Bush attributes
 	private final BushOrigin origin;
 	private final Float vot;
@@ -60,6 +61,7 @@ public class Bush implements AssignmentContainer {
 
 	//Topological order can be cached for expediency
 	private Node[] cachedTopoOrder;
+	private Map<Link,Double> cachedFlows;
 	
 	private Semaphore writing;
 
@@ -77,6 +79,29 @@ public class Bush implements AssignmentContainer {
 		network = g;
 		demand = destDemand;
 		writing = new Semaphore(1);
+	}
+	
+	public Bush(Bush b, Graph g, AutoDemandMap newDemand, Map<Link, Link> linkMap, Map<Node,Node> nodeMap, BushOrigin newOrigin) {
+		origin = newOrigin;
+		vot = b.vot;
+		c = b.c;
+		numLinks = b.numLinks;
+		network = g;
+		demand = newDemand;
+		cachedTopoOrder = null;
+		writing = new Semaphore(1);
+		
+		List<BackVector> nq = Stream.of(b.q).sequential().map(bv -> {
+			if (bv instanceof Link) 
+				return (BackVector) linkMap.get((Link) bv);
+			else if (bv instanceof BushMerge) {
+				return new BushMerge((BushMerge) bv, nodeMap.get(bv.getHead()));
+			}
+			else return null;
+		})
+				.collect(Collectors.toList());
+		
+		q=nq.toArray(new BackVector[b.q.length]);
 	}
 
 	/**
@@ -278,7 +303,7 @@ public class Bush implements AssignmentContainer {
 		}
 		if (!currentLinks.isEmpty())
 			throw new RuntimeException("Cyclic graph error");
-		if (Bush.cachingAllowed || toCache) cachedTopoOrder = to;
+		if (Bush.orderCachingEnabled || toCache) cachedTopoOrder = to;
 		return to;
 	}
 
@@ -460,11 +485,11 @@ public class Bush implements AssignmentContainer {
 			//Keep track of the maximum bush flow that can be removed
 			if (max == null) max = bushFlows.getOrDefault(ll,0.0);
 			else max = Math.min(max,bushFlows.getOrDefault(ll,0.0));
-			if (Math.abs(max) <= 0.0) return null;
+//			if (Math.abs(max) <= 0.0) return null;
 			cur = ll.getTail();
 			ll = getqLong(cur);
 		} while (cur != diverge);
-		if (Math.abs(max)==0) return null;
+//		if (Math.abs(max)==0) return null;
 		
 		//Trace back through the shortest path
 		cur = terminus;
@@ -760,6 +785,7 @@ public class Bush implements AssignmentContainer {
 	 */
 	@Override
 	public Map<Link, Double> getFlows(){
+		if (cachedFlows != null) return cachedFlows;
 		//Get the reverse topological ordering and a place to store node flows
 		Map<Node,Double> nodeFlow = demand.doubleClone();
 		Node[] iter = getTopologicalOrder(false);
@@ -803,6 +829,7 @@ public class Bush implements AssignmentContainer {
 			}
 			
 		}
+		if (flowCachingEnabled) cachedFlows = ret;
 		return ret;
 	}
 
@@ -884,11 +911,12 @@ public class Bush implements AssignmentContainer {
 		try {
 			cache = longTopoSearch(true);
 
-			unusedLinks.parallelStream()
-			.filter(l -> l.allowsClass(getVehicleClass()))
-			.filter(l -> isValidLink(l))
-			.filter(l -> checkForShortcut(l, cache))
+			unusedLinks.parallelStream()	//For each unused link
+			.filter(l -> l.allowsClass(getVehicleClass()))	//If the link allows this bush's vehicles
+			.filter(l -> isValidLink(l))	//and is a link that can legally be used
+			.filter(l -> checkForShortcut(l, cache))	//see if it provides a shortcut
 			.collect(Collectors.collectingAndThen(Collectors.toSet(), 
+					//Add each of these to the bush
 					(Set<Link> x) -> {
 						x.parallelStream().filter(l -> add(l)).forEach(y -> {
 							modified.set(true);
@@ -913,7 +941,7 @@ public class Bush implements AssignmentContainer {
 
 	boolean checkForShortcut(Link l, Double[] cache) {
 		try {
-			// Else if Ui + tij < Uj
+			//if Ui + tij < Uj
 			double tailU = getCachedU(l.getTail(), cache);
 			double headU = getCachedU(l.getHead(), cache);
 			double linkVal = l.getPrice(getVOT(), getVehicleClass());
@@ -930,8 +958,13 @@ public class Bush implements AssignmentContainer {
 		return false;
 	}
 	
+	/**
+	 * @return a Stream of all Links used by this bush
+	 */
 	public Stream<Link> getUsedLinkStream(){
+		//Include all standalone Links
 		Stream<Link> a = Stream.of(q).parallel().filter(bv -> bv instanceof Link).map(l -> (Link) l);
+		//and Links stored inside a BackVector
 		Stream<Link> b = Stream.of(q).parallel().filter(bv -> bv instanceof BushMerge).map(bv -> (BushMerge) bv).flatMap(bv -> bv.getLinks().parallel());
 		return Stream.concat(a, b);
 	}
@@ -944,6 +977,9 @@ public class Bush implements AssignmentContainer {
 		return getUsedLinkStream().collect(Collectors.toSet());
 	}
 	
+	/**
+	 * @return a Collection of all Links not used by the bush that could be added
+	 */
 	public Collection<Link> getUnusedLinks(){
 		return network.getLinks().parallelStream().filter(l -> 
 			(q[l.getHead().getOrder()] instanceof Link && !q[l.getHead().getOrder()].equals(l))
@@ -956,7 +992,7 @@ public class Bush implements AssignmentContainer {
 	 */
 	public void updateSplits(Map<Link, Double> flows) {
 		Stream.of(q).parallel().filter(bv -> bv instanceof BushMerge).map(bv -> (BushMerge) bv).forEach(bm ->{
-			double total = bm.getLinks().parallel().mapToDouble(l -> flows.get(l)).sum();
+			double total = bm.getLinks().parallel().mapToDouble(l -> Math.abs(flows.get(l))).sum();
 			//Calculate the total demand through this node
 
 			//If there is flow through the node, set the splits proportionally
@@ -964,9 +1000,10 @@ public class Bush implements AssignmentContainer {
 			//otherwise, dump all (non-existent) flow onto the shortest link
 			else {
 				Double[] cache = new Double[network.numNodes()];
+				//Find the minimum highest-cost-path link
 				Link min = bm.getLinks().parallel().min(Comparator.comparing( (Link x) -> {
 					try {
-						return getCachedU( x.getTail(),cache)+x.getPrice(getVOT(),getVehicleClass());
+						return getCachedL( x.getTail(),cache)+x.getPrice(getVOT(),getVehicleClass());
 					} catch (UnreachableException e) {
 						// TODO Auto-generated catch block
 						return Double.MAX_VALUE;
@@ -975,7 +1012,7 @@ public class Bush implements AssignmentContainer {
 				bm.setSplit(min, 1.0);
 				bm.getLinks().parallel().filter(l -> l != min).forEach(l -> bm.setSplit(l, 0.0));
 			}
-		});;
+		});
 	}
 
 	
@@ -1202,50 +1239,92 @@ public class Bush implements AssignmentContainer {
 //		throw new RuntimeException();
 //	}
 	
+	/**
+	 * Remove all previously-assigned longest- and shortest-path labels
+	 */
 	public void clearLabels() {
 		Stream.of(q).parallel().filter(x -> x instanceof BushMerge).map(x -> (BushMerge) x).forEach(bm -> bm.clearLabels());
 	}
 	
+	/**
+	 * @return the total generalized cost for trips in this bush
+	 */
 	public double getIncurredCosts() {
 		Map<Link,Double> flows = getFlows();
 		return getUsedLinkStream().parallel().mapToDouble(l -> flows.getOrDefault(l, 0.0)*l.getPrice(vot, c)).sum();
 	}
 	
+	/**
+	 * @return true if the flow conservation constraint holds
+	 */
 	boolean conservationCheck() {
-		Map<Link,Double> flows = getFlows();
-		for (Node n : getNodes()) {
-			if (n.equals(getOrigin().getNode())) continue;
-			float demand = getDemand(n);
+		Map<Link,Double> flows = getFlows();	//retrieve the current bush flows
+		
+		//For each node in the network
+		getNodes().parallelStream().forEach(n->{
+			if (n.equals(getOrigin().getNode())) return; //except the origin
+			float demand = getDemand(n);//determine what the demand is at this node
+			
+			//Look at the incoming link(s) and calculate the total inflow
 			BackVector bv = q[n.getOrder()];
 			double inFlow = bv instanceof Link? flows.get((Link) bv) :
 				bv instanceof BushMerge? ((BushMerge) bv).getLinks().mapToDouble(l -> flows.getOrDefault(l, 0.0)).sum():
 					0.0;
+				
+			//Look at the ougoing links and calculate the total outflow
 			double outFlow = Stream.of(n.forwardStar()).mapToDouble(l -> flows.getOrDefault(l, 0.0)).sum();
+			
+			//Check if the difference between outflow and (inflow + demand) is greater than the machine epsilon
 			if (outFlow - inFlow - demand > 20*Math.max(Math.ulp(outFlow), Math.max(Math.ulp(inFlow), Math.ulp(demand))))
-				throw new RuntimeException();
-		}
+				throw new RuntimeException("Node flow imbalance - flow conservation violated");
+		});
+		//Confirm that the total demand from the origin is leaving through an outgoing link
 		double outFlow = Stream.of(origin.getNode().forwardStar()).mapToDouble(l -> flows.getOrDefault(l, 0.0)).sum();
-		if (outFlow - totalDemand() > 20*Math.max(Math.ulp(outFlow), Math.ulp(totalDemand()))) throw new RuntimeException();
+		if (outFlow - totalDemand() > 20*Math.max(Math.ulp(outFlow), Math.ulp(totalDemand()))) 
+			throw new RuntimeException("More flow leaving origin than total demand");
+		
 		return true;
 	}
 	
+	/**
+	 * @return true if no illegal centroid connectors are in the bush
+	 */
 	boolean checkCentroidConnectors() {
 		Map<Link,Double> flows = getFlows();
-		for (Entry<Link, Double> e : flows.entrySet()) {
-			if (e.getKey() instanceof CentroidConnector) {
-				if (e.getKey().getTail().equals(origin.getNode())) continue;
-				else if (e.getValue() > demand.getOrDefault(e.getKey().getHead(), 0.0F)) 
-					throw new RuntimeException();
-			}
-		}
+		
+		//If there exists a Link in the bush
+		if (flows.entrySet().parallelStream()
+				//That is a centroid connector
+				.filter(e -> e.getKey() instanceof CentroidConnector)
+				//And which doesn't originate from this node
+				.filter(e -> !e.getKey().getTail().equals(origin.getNode()))
+				//And has more demand on it than the destination demand
+				.filter(e -> e.getValue() > demand.getOrDefault(e.getKey().getHead(), 0.0f))
+				//Then something is wrong and this connector is allowing through too much demand
+				.findAny().isPresent()) throw new RuntimeException("Invalid Centroid Connector usage in Bush");
+		
+//		for (Entry<Link, Double> e : flows.entrySet()) {
+//			if (e.getKey() instanceof CentroidConnector) {
+//				if (e.getKey().getTail().equals(origin.getNode())) continue;
+//				else if (e.getValue() > demand.getOrDefault(e.getKey().getHead(), 0.0F)) 
+//					throw new RuntimeException();
+//			}
+//		}
 		return true;
 	}
 	
+	/**
+	 * @return the total amount of trip demand from this origin
+	 */
 	public double totalDemand() {
 		return demand.doubleClone().values().parallelStream().mapToDouble(Double::doubleValue).sum();
 	}
 
+	/**
+	 * @return an array of costs for the lowest-cost path to each node in node order
+	 */
 	public Double[] lowestCostPathCosts() {
+		//Starting from the origin node, perform Dijkstra's algorithm
 		Node orig = getOrigin().getNode();
 		Collection<Node> nodes = network.getNodes();
 		FibonacciHeap<Node> Q = new FibonacciHeap<Node>(nodes.size(),1.0f);
@@ -1253,13 +1332,11 @@ public class Bush implements AssignmentContainer {
 		
 		nodes.stream().filter(n -> !n.equals(orig)).forEach(n -> Q.add(n,Double.MAX_VALUE));
 		Q.add(orig,0.0);
-//		double ret = 0.0;
 		
 		while (!Q.isEmpty()) {
 			FibonacciLeaf<Node> u = Q.poll();
 			if (u.key < Double.MAX_VALUE) {
 				cache[u.n.getOrder()] = u.key;
-//				ret += u.key*getDemand(u.n);
 			}
 			
 			for (Link uv : u.n.forwardStar()) {
@@ -1277,15 +1354,28 @@ public class Bush implements AssignmentContainer {
 //		return ret;
 	}
 	
+	/**
+	 * @return the total cost incurred by this bush's flows if all flow was on the current shortest path
+	 */
 	public double lowestCostPathCost() {
 		Double[] cache = lowestCostPathCosts();
 		return getNodes().parallelStream().mapToDouble(x -> cache[x.getOrder()] == null ? 0.0 : getDemand(x)*cache[x.getOrder()]).sum();
 	}
 	
+	/**
+	 * @return this bush's average excess cost, i.e. the average difference between the
+	 * current assignment's total incurred costs and the lowest cost option where all
+	 * trips are routed onto the current shortest path and costs held steady
+	 */
 	public double AEC() {
 		return (getIncurredCosts() - lowestCostPathCost())/totalDemand();
 	}
 	
+	/**
+	 * @return a Set of Nodes whose longest path costs are more than 0.01% higher than
+	 * the lowest cost paths to those nodes
+	 * @throws UnreachableException
+	 */
 	public Set<Node> unequilibratedNodes() throws UnreachableException{
 		Double[] lowCache = lowestCostPathCosts();
 		Double[] hiCache = longTopoSearch(false);

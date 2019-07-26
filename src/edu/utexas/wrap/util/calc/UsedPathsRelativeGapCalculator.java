@@ -14,7 +14,7 @@ public class UsedPathsRelativeGapCalculator extends Thread {
 	Set<BushOrigin> origins;
 	TotalSystemGeneralizedCostCalculator cc;
 	
-	public UsedPathsRelativeGapCalculator(Graph g, Set<BushOrigin> o, TotalSystemGeneralizedCostCalculator tc, LowestCostPathCostCalculator lc) {
+	public UsedPathsRelativeGapCalculator(Graph g, Set<BushOrigin> o, TotalSystemGeneralizedCostCalculator tc) {
 		graph = g;
 		origins = o;
 	}

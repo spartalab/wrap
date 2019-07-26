@@ -1,7 +1,5 @@
 package edu.utexas.wrap.net;
 
-import java.util.Map;
-
 import edu.utexas.wrap.modechoice.Mode;
 
 /**

@@ -15,7 +15,6 @@ public class BushMerge implements BackVector {
 	private Double[] shares;
 	private Link shortLink;
 	private Link longLink;
-	private final Bush bush;
 	private final Node head;
 	
 	/** Create a BushMerge by adding a shortcut link to a node
@@ -33,10 +32,14 @@ public class BushMerge implements BackVector {
 	 * @param bm	the BushMerge to be copied
 	 */
 	public BushMerge(BushMerge bm) {
-		bush = bm.bush;
 		longLink = bm.longLink;
 		shortLink = bm.shortLink;
 		this.head = bm.head;
+		shares = bm.shares;
+	}
+	
+	public BushMerge(BushMerge bm, Node n) {
+		head = n;
 		shares = bm.shares;
 	}
 	
@@ -45,7 +48,6 @@ public class BushMerge implements BackVector {
 	 */
 	protected BushMerge(Bush b, Node n) {
 		shares = new Double[n.reverseStar().length];
-		bush = b;
 		head = n;
 	}
 	
@@ -164,18 +166,27 @@ public class BushMerge implements BackVector {
 		return head;
 	}
 
+	/**
+	 * @return the number of active links in the merge
+	 */
 	public int size() {
 		// TODO Auto-generated method stub
 		return (int) Stream.of(shares).filter(x -> x != null).count();
 	}
 
+	/**
+	 * @param l a link to check if it is present
+	 * @return whether the link is active in the bush
+	 */
 	public boolean contains(Link l) {
 		int idx = head.orderOf(l);
 		if (idx < 0) return false;
 		return shares[idx] != null;
-		// TODO Auto-generated method stub
 	}
 	
+	/**
+	 * remove previously-assigned backvector labels
+	 */
 	public void clearLabels() {
 		shortLink = null;
 		longLink = null;
