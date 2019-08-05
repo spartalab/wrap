@@ -6,7 +6,7 @@ import java.util.Map;
 
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class FixedSizeDemandMap implements DemandMap {
 	private final Graph graph;
@@ -18,7 +18,7 @@ public class FixedSizeDemandMap implements DemandMap {
 	}
 
 	@Override
-	public Float get(Node dest) {
+	public Float get(TravelSurveyZone dest) {
 		// TODO Auto-generated method stub
 		return demand[dest.getOrder()];
 	}
@@ -30,13 +30,13 @@ public class FixedSizeDemandMap implements DemandMap {
 	}
 
 	@Override
-	public Collection<Node> getNodes() {
+	public Collection<TravelSurveyZone> getZones() {
 		// TODO Auto-generated method stub
-		return graph.getNodes();
+		return graph.getTSZs();
 	}
 
 	@Override
-	public Float getOrDefault(Node node, float f) {
+	public Float getOrDefault(TravelSurveyZone node, float f) {
 		// TODO Auto-generated method stub
 		int index = node.getOrder();
 		if (index == -1) 
@@ -45,7 +45,7 @@ public class FixedSizeDemandMap implements DemandMap {
 	}
 
 	@Override
-	public Float put(Node dest, Float put) {
+	public Float put(TravelSurveyZone dest, Float put) {
 		// TODO Auto-generated method stub
 		int idx = dest.getOrder();
 		Float d = demand[idx];
@@ -61,10 +61,10 @@ public class FixedSizeDemandMap implements DemandMap {
 	}
 
 	@Override
-	public Map<Node, Double> doubleClone() {
+	public Map<TravelSurveyZone, Double> doubleClone() {
 		// TODO Auto-generated method stub
-		Map<Node, Double> ret = new HashMap<Node, Double>();
-		for (Node n : graph.getNodes()) {
+		Map<TravelSurveyZone, Double> ret = new HashMap<TravelSurveyZone, Double>();
+		for (TravelSurveyZone n : graph.getTSZs()) {
 			ret.put(n,(double) demand[n.getOrder()]);
 		}
 		return ret;

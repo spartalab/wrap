@@ -5,6 +5,7 @@ import java.util.Map;
 
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**A simple map from a node to a demand level
  * @author William
@@ -16,7 +17,7 @@ public interface DemandMap {
 	 * @param dest the Node whose demand level is measured
 	 * @return the demand at the given Node
 	 */
-	public Float get(Node dest);
+	public Float get(TravelSurveyZone dest);
 
 	/**
 	 * @return the associated graph
@@ -26,7 +27,7 @@ public interface DemandMap {
 	/**
 	 * @return the collection of nodes for which there is demand
 	 */
-	public Collection<Node> getNodes();
+	public Collection<TravelSurveyZone> getZones();
 
 	/** Returns the demand at that Node. If there is no demand
 	 * mapping at that node, return the default value given.
@@ -35,14 +36,14 @@ public interface DemandMap {
 	 * @param f the default value returned if not mapped to a demand
 	 * @return the demand level, or the default if no mapping is available
 	 */
-	public Float getOrDefault(Node node, float f);
+	public Float getOrDefault(TravelSurveyZone node, float f);
 	
 	/**
 	 * @param dest the Node to whence there is demand
 	 * @param demand the amound of demand present at the Node
 	 * @return the previous mapping, if there was one present
 	 */
-	public Float put(Node dest, Float demand);
+	public Float put(TravelSurveyZone dest, Float demand);
 
 	/**
 	 * @return whether this Map has entries
@@ -52,5 +53,5 @@ public interface DemandMap {
 	/**
 	 * @return a copy of the DemandMap with all values as doubles
 	 */
-	public Map<Node, Double> doubleClone();
+	public Map<TravelSurveyZone, Double> doubleClone();
 }

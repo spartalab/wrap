@@ -8,6 +8,7 @@ import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
 import edu.utexas.wrap.demand.containers.DemandHashMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMaps;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 
@@ -22,8 +23,8 @@ public class GravityDistributor extends TripDistributor {
 	}
 	@Override
 	public AggregatePAMatrix distribute(PAMap pa) {
-		Map<Node, Double> a = Object2DoubleMaps.synchronize(new Object2DoubleOpenHashMap<Node>(g.numZones(),1.0f));
-		Map<Node, Double> b = Object2DoubleMaps.synchronize(new Object2DoubleOpenHashMap<Node>(g.numZones(),1.0f));
+		Map<TravelSurveyZone, Double> a = Object2DoubleMaps.synchronize(new Object2DoubleOpenHashMap<TravelSurveyZone>(g.numZones(),1.0f));
+		Map<TravelSurveyZone, Double> b = Object2DoubleMaps.synchronize(new Object2DoubleOpenHashMap<TravelSurveyZone>(g.numZones(),1.0f));
 		AggregatePAHashMatrix pam = new AggregatePAHashMatrix(g);
 
 		int iterations = 0;
@@ -56,7 +57,7 @@ public class GravityDistributor extends TripDistributor {
 			DemandHashMap d = new DemandHashMap(g);
 
 			
-			for (Node j : pa.getAttractors()) {
+			for (TravelSurveyZone j : pa.getAttractors()) {
 				Double Tij =  (a.get(i)*pa.getProductions(i)*b.get(j)*pa.getAttractions(j)*friction.get(i, j));
 				if (Tij.isNaN()) throw new RuntimeException();
 				d.put(j, Tij.floatValue());

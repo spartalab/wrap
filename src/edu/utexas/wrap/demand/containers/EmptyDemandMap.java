@@ -10,6 +10,7 @@ import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class EmptyDemandMap implements AutoDemandMap {
 	private Graph g;
@@ -19,7 +20,7 @@ public class EmptyDemandMap implements AutoDemandMap {
 	}
 
 	@Override
-	public Float get(Node dest) {
+	public Float get(TravelSurveyZone dest) {
 		// TODO Auto-generated method stub
 		return 0.0f;
 	}
@@ -31,19 +32,19 @@ public class EmptyDemandMap implements AutoDemandMap {
 	}
 
 	@Override
-	public Collection<Node> getNodes() {
+	public Collection<TravelSurveyZone> getZones() {
 		// TODO Auto-generated method stub
-		return new HashSet<Node>(0,1.0f);
+		return new HashSet<TravelSurveyZone>(0,1.0f);
 	}
 
 	@Override
-	public Float getOrDefault(Node node, float f) {
+	public Float getOrDefault(TravelSurveyZone node, float f) {
 		// TODO Auto-generated method stub
 		return 0.0f;
 	}
 
 	@Override
-	public Float put(Node dest, Float demand) {
+	public Float put(TravelSurveyZone dest, Float demand) {
 		// TODO Auto-generated method stub
 		throw new RuntimeException("Unable to add demand to an empty demand map");
 	}
@@ -55,9 +56,9 @@ public class EmptyDemandMap implements AutoDemandMap {
 	}
 
 	@Override
-	public Map<Node, Double> doubleClone() {
+	public Map<TravelSurveyZone, Double> doubleClone() {
 		// TODO Auto-generated method stub
-		return new HashMap<Node,Double>();
+		return new HashMap<TravelSurveyZone,Double>();
 	}
 
 	@Override

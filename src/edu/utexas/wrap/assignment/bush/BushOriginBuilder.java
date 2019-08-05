@@ -7,6 +7,7 @@ import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 import it.unimi.dsi.fastutil.floats.Float2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
@@ -17,7 +18,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
  */
 public class BushOriginBuilder extends Thread {
 	Map<Mode, Map<Float, AutoDemandMap>> map;
-	Node o;
+	TravelSurveyZone zone;
 	Graph g;
 	public BushOrigin orig;
 	Set<BushOrigin> origins;
@@ -26,9 +27,9 @@ public class BushOriginBuilder extends Thread {
 	 * @param g the graph on which the origin should build its bushes
 	 * @param o the origin node
 	 * @param origins 
-	 */
-	public BushOriginBuilder(Graph g, Node o, Set<BushOrigin> origins) {
-		this.o = o;
+	 */ 
+	public BushOriginBuilder(Graph g, TravelSurveyZone o, Set<BushOrigin> origins) {
+		this.zone = o;
 		this.map = new Object2ObjectOpenHashMap<Mode, Map<Float, AutoDemandMap>>();
 		this.g = g;
 		this.origins = origins;
@@ -46,7 +47,7 @@ public class BushOriginBuilder extends Thread {
 	 * @see java.lang.Thread#run()
 	 */
 	public void run() {
-		orig = new BushOrigin(o);
+		orig = new BushOrigin(zone);
 		for (Mode c : map.keySet()) {
 			for (Float vot : map.get(c).keySet()) {
 				AutoDemandMap odm = map.get(c).get(vot);

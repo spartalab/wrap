@@ -5,6 +5,7 @@ import java.util.stream.IntStream;
 public class Node {
 
 	private final int ID;
+	private TravelSurveyZone zone;
 	private final int graphOrder;
 	private final boolean isCentroid;
 	private Link[] outLinks, inLinks;
@@ -19,6 +20,7 @@ public class Node {
 		this.ID = n.ID;
 		this.graphOrder = n.graphOrder;
 		this.isCentroid = n.isCentroid;
+		this.zone = n.zone;
 	}
 	
 	public boolean equals(Node n) {
@@ -68,5 +70,13 @@ public class Node {
 	public int orderOf(Link l) {
 		// TODO Auto-generated method stub
 		return IntStream.range(0,inLinks.length).filter(x -> inLinks[x].equals(l)).findAny().orElse(-1);
+	}
+
+	public TravelSurveyZone getZone() {
+		return zone;
+	}
+	
+	public void setTravelSurveyZone(TravelSurveyZone zone) {
+		this.zone = zone;
 	}
 }

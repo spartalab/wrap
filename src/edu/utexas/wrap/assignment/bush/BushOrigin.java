@@ -12,6 +12,7 @@ import edu.utexas.wrap.net.CentroidConnector;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.FibonacciHeap;
 import edu.utexas.wrap.util.FibonacciLeaf;
 
@@ -22,7 +23,7 @@ public class BushOrigin extends Origin {
 	/**Default constructor
 	 * @param self the Node from which the Bushes will emanate
 	 */
-	public BushOrigin(Node self) {
+	public BushOrigin(TravelSurveyZone self) {
 		super(self);
 		containers = new ArrayList<Bush>();
 	}

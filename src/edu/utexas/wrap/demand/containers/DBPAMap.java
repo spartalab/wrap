@@ -3,6 +3,7 @@ package edu.utexas.wrap.demand.containers;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -43,13 +44,13 @@ public class DBPAMap implements PAMap {
     }
 
     @Override
-    public Set<Node> getProducers () {
-        Set<Node> output = new HashSet<Node>();
+    public Set<TravelSurveyZone> getProducers () {
+        Set<TravelSurveyZone> output = new HashSet<TravelSurveyZone>();
         String weightsQuery = "SELECT node FROM "+tableName+" WHERE productions > 0";
         try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                output.add(g.getNode(rs.getInt("node")));
+                output.add(g.getNode(rs.getInt("node")).getZone());
             }
         } catch (SQLException s) {
             s.printStackTrace();
@@ -59,13 +60,13 @@ public class DBPAMap implements PAMap {
     }
 
     @Override
-    public Set<Node> getAttractors () {
-        Set<Node> output = new HashSet<Node>();
+    public Set<TravelSurveyZone> getAttractors () {
+        Set<TravelSurveyZone> output = new HashSet<TravelSurveyZone>();
         String weightsQuery = "SELECT node FROM "+tableName+" WHERE attractions > 0";
         try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                output.add(g.getNode(rs.getInt("node")));
+                output.add(g.getNode(rs.getInt("node")).getZone());
             }
         } catch (SQLException s) {
             s.printStackTrace();
@@ -75,10 +76,10 @@ public class DBPAMap implements PAMap {
     }
 
     @Override
-    public Float getAttractions (Node z){
+    public Float getAttractions (TravelSurveyZone z){
         String weightsQuery = "SELECT attractions FROM "+tableName+" WHERE node=? AND attractions > 0";
         try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
-            ps.setInt(1, z.getID());
+            ps.setInt(1, z.getNode().getID());
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return rs.getFloat("attractions");
@@ -91,10 +92,10 @@ public class DBPAMap implements PAMap {
     }
 
     @Override
-    public Float getProductions (Node z){
+    public Float getProductions (TravelSurveyZone z){
         String weightsQuery = "SELECT productions FROM "+tableName+" WHERE node=? AND productions > 0";
         try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
-            ps.setInt(1, z.getID());
+            ps.setInt(1, z.getNode().getID());
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
                 return rs.getFloat("productions");
@@ -111,11 +112,11 @@ public class DBPAMap implements PAMap {
     }
 
     @Override
-    public void putAttractions(Node z, Float amt) {
+    public void putAttractions(TravelSurveyZone z, Float amt) {
         String weightsQuery = "UPDATE "+tableName+" SET attractions=? WHERE node=?";
         try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
             ps.setFloat(1, amt);
-            ps.setInt(2, z.getID());
+            ps.setInt(2, z.getNode().getID());
             ps.executeUpdate();
         } catch (SQLException s) {
             s.printStackTrace();
@@ -124,11 +125,11 @@ public class DBPAMap implements PAMap {
     }
 
     @Override
-    public void putProductions(Node z, Float amt) {
+    public void putProductions(TravelSurveyZone z, Float amt) {
         String weightsQuery = "UPDATE "+tableName+" SET productions=? WHERE node=?";
         try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
             ps.setFloat(1, amt);
-            ps.setInt(2, z.getID());
+            ps.setInt(2, z.getNode().getID());
             ps.executeUpdate();
         } catch (SQLException s) {
             s.printStackTrace();

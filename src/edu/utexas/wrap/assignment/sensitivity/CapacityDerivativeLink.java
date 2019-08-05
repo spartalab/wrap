@@ -7,27 +7,12 @@ import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TolledBPRLink;
 
-class CapacityDerivativeLink extends Link {
-	private final Link parent;
-	Double deriv;
-
-	CapacityDerivativeLink(Node tail, Node head, Float capacity, Float length, Float fftime, Link l,
-			Map<Link, Double> dtdX) {
-		super(tail, head, capacity, length, fftime);
-		parent = l;
-		deriv = dtdX.getOrDefault(l,0.0);
-	}
-
-	@Override
-	public Boolean allowsClass(Mode c) {
-		// TODO Auto-generated method stub
-		return parent.allowsClass(c);
-	}
-
-	@Override
-	public double getPrice(Float vot, Mode c) {
-		// TODO Auto-generated method stub
-		return getTravelTime();
+class CapacityDerivativeLink extends DerivativeLink {
+	
+	public CapacityDerivativeLink(Node tail, Node head, Float capacity, Float length, Float fftime, Link oldLink,
+			Map<Link, Double> derivs) {
+		super(tail, head, capacity, length, fftime, oldLink, derivs);
+		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -41,26 +26,4 @@ class CapacityDerivativeLink extends Link {
 		return deriv*flo + dtdc;
 	}
 
-	@Override
-	public double pricePrime(Float vot) {
-		// TODO Auto-generated method stub
-		return tPrime();
-	}
-
-	@Override
-	public double tIntegral() {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("Not yet implemented");
-	}
-
-	@Override
-	public double tPrime() {
-		// TODO Auto-generated method stub
-		return deriv;
-	}
-
-	@Override
-	public boolean nonnegativeFlowLink() {
-		return false;
-	}
 }

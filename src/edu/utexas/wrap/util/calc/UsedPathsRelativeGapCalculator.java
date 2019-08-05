@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.DoubleAdder;
 import edu.utexas.wrap.assignment.bush.BushOrigin;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.UnreachableException;
 
 public class UsedPathsRelativeGapCalculator extends Thread {
@@ -34,7 +35,9 @@ public class UsedPathsRelativeGapCalculator extends Thread {
 			Double[] cache = new Double[graph.numNodes()];
 			DemandMap dem = b.getDemandMap(); 
 			b.getNodes().parallelStream().forEach(d -> {
-				Float demand = dem.getOrDefault(d,0.0F);
+				TravelSurveyZone tsz = d.getZone();
+				if (tsz == null) return;
+				Float demand = dem.getOrDefault(d.getZone(),0.0F);
 				if (demand > 0.0F) try {
 					denominator.add(b.getCachedL(d,cache) * demand);
 				} catch (UnreachableException e) {

@@ -3,6 +3,7 @@ package edu.utexas.wrap.demand.containers;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 import it.unimi.dsi.fastutil.objects.Object2FloatMaps;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 
@@ -19,21 +20,21 @@ import java.util.Set;
 public class AggregatePAHashMap implements PAMap {
 
     private Graph g;
-    private Map<Node, Float> attractors;
-    private Map<Node, Float> producers;
+    private Map<TravelSurveyZone, Float> attractors;
+    private Map<TravelSurveyZone, Float> producers;
     private float vot;
 
     public AggregatePAHashMap(Graph graph) {
         this.g = graph;
-        attractors = Object2FloatMaps.synchronize(new Object2FloatOpenHashMap<Node>());
-        producers = Object2FloatMaps.synchronize(new Object2FloatOpenHashMap<Node>());
+        attractors = Object2FloatMaps.synchronize(new Object2FloatOpenHashMap<TravelSurveyZone>());
+        producers = Object2FloatMaps.synchronize(new Object2FloatOpenHashMap<TravelSurveyZone>());
     }
     
     /* (non-Javadoc)
      * @see edu.utexas.wrap.demand.PAMap#getProducers()
      */
     @Override
-    public Set<Node> getProducers() {
+    public Set<TravelSurveyZone> getProducers() {
         return attractors.keySet();
     }
 
@@ -41,7 +42,7 @@ public class AggregatePAHashMap implements PAMap {
      * @see edu.utexas.wrap.demand.PAMap#getAttractors()
      */
     @Override
-    public Set<Node> getAttractors() {
+    public Set<TravelSurveyZone> getAttractors() {
         return producers.keySet();
     }
 
@@ -49,7 +50,7 @@ public class AggregatePAHashMap implements PAMap {
      * @see edu.utexas.wrap.demand.PAMap#getAttractions(edu.utexas.wrap.net.Node)
      */
     @Override
-    public Float getAttractions(Node z) {
+    public Float getAttractions(TravelSurveyZone z) {
         return attractors.get(z);
     }
 
@@ -57,7 +58,7 @@ public class AggregatePAHashMap implements PAMap {
      * @see edu.utexas.wrap.demand.PAMap#getProductions(edu.utexas.wrap.net.Node)
      */
     @Override
-    public Float getProductions(Node z) {
+    public Float getProductions(TravelSurveyZone z) {
         return producers.get(z);
     }
 
@@ -73,7 +74,7 @@ public class AggregatePAHashMap implements PAMap {
      * @see edu.utexas.wrap.demand.PAMap#putAttractions(edu.utexas.wrap.net.Node, java.lang.Float)
      */
     @Override
-    public void putAttractions(Node z, Float amt) {
+    public void putAttractions(TravelSurveyZone z, Float amt) {
         attractors.put(z, amt);
     }
 
@@ -81,7 +82,7 @@ public class AggregatePAHashMap implements PAMap {
      * @see edu.utexas.wrap.demand.PAMap#putProductions(edu.utexas.wrap.net.Node, java.lang.Float)
      */
     @Override
-    public void putProductions(Node z, Float amt) {
+    public void putProductions(TravelSurveyZone z, Float amt) {
         producers.put(z, amt);
     }
     

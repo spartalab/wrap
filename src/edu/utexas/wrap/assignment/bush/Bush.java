@@ -33,6 +33,7 @@ import edu.utexas.wrap.net.CentroidConnector;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.FibonacciHeap;
 import edu.utexas.wrap.util.FibonacciLeaf;
 import edu.utexas.wrap.util.UnreachableException;
@@ -225,10 +226,11 @@ public class Bush implements AssignmentContainer {
 	void dumpFlow() {
 		for (BackVector bv : q) {
 			if (bv == null) continue;
-			Node node = bv.getHead();
-			Float x = demand.getOrDefault(node, 0.0F);
+			TravelSurveyZone tsz = bv.getHead().getZone();
+			if (tsz == null) continue;
+			Float x = demand.getOrDefault(tsz, 0.0F);
 			if (x <= 0.0) continue;
-			dumpFlow(node,x.doubleValue());	//recursively push flow onto the bush
+			dumpFlow(tsz.getNode(),x.doubleValue());	//recursively push flow onto the bush
 		}
 	}
 	
@@ -359,7 +361,7 @@ public class Bush implements AssignmentContainer {
 	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getDemand(edu.utexas.wrap.net.Node)
 	 */
 	public Float getDemand(Node node) {
-		return demand.get(node);
+		return demand.get(node.getZone());
 	}
 	
 	/**
@@ -787,7 +789,8 @@ public class Bush implements AssignmentContainer {
 	public Map<Link, Double> getFlows(){
 		if (cachedFlows != null) return cachedFlows;
 		//Get the reverse topological ordering and a place to store node flows
-		Map<Node,Double> nodeFlow = demand.doubleClone();
+		Map<TravelSurveyZone,Double> tszFlow = demand.doubleClone();
+		Map<Node,Double> nodeFlow = tszFlow.keySet().parallelStream().collect(Collectors.toMap(x -> x.getNode(), x -> tszFlow.get(x)));
 		Node[] iter = getTopologicalOrder(false);
 		Map<Link,Double> ret = new Object2DoubleOpenHashMap<Link>(numLinks,1.0f);
 
@@ -1299,7 +1302,7 @@ public class Bush implements AssignmentContainer {
 				//And which doesn't originate from this node
 				.filter(e -> !e.getKey().getTail().equals(origin.getNode()))
 				//And has more demand on it than the destination demand
-				.filter(e -> e.getValue() > demand.getOrDefault(e.getKey().getHead(), 0.0f))
+				.filter(e -> e.getValue() > demand.getOrDefault(e.getKey().getHead().getZone(), 0.0f))
 				//Then something is wrong and this connector is allowing through too much demand
 				.findAny().isPresent()) throw new RuntimeException("Invalid Centroid Connector usage in Bush");
 		

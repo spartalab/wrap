@@ -11,6 +11,7 @@ import edu.utexas.wrap.demand.containers.AggregatePAHashMap;
 import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class ProductionAttractionFactory {
 	public static PAMap readMap(File file, boolean header, Graph g) throws IOException {
@@ -22,12 +23,12 @@ public class ProductionAttractionFactory {
 			if (header) in.readLine();
 			in.lines().parallel().forEach(line -> {
 				String[] args = line.split(",");
-				Node n = g.getNode(Integer.parseInt(args[0]));
+				TravelSurveyZone tsz = g.getNode(Integer.parseInt(args[0])).getZone();
 				Float prods = Float.parseFloat(args[1]);
 				Float attrs = Float.parseFloat(args[2]);
 
-				ret.putProductions(n, prods);
-				ret.putAttractions(n, attrs);
+				ret.putProductions(tsz, prods);
+				ret.putAttractions(tsz, attrs);
 			});
 
 		} finally {
@@ -45,8 +46,8 @@ public class ProductionAttractionFactory {
 			if (header) in.readLine();
 			in.lines().parallel().forEach(line -> {
 				String[] args = line.split(",");
-				Node prod = g.getNode(Integer.parseInt(args[0]));
-				Node attr = g.getNode(Integer.parseInt(args[1]));
+				TravelSurveyZone prod = g.getNode(Integer.parseInt(args[0])).getZone();
+				TravelSurveyZone attr = g.getNode(Integer.parseInt(args[1])).getZone();
 				Float trips = Float.parseFloat(args[2]);
 
 				ret.put(prod, attr, trips);

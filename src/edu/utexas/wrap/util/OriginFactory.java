@@ -18,6 +18,7 @@ import edu.utexas.wrap.demand.containers.DemandHashMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 import it.unimi.dsi.fastutil.floats.Float2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
@@ -31,7 +32,7 @@ public class OriginFactory {
 		}
 	}
 	
-	private static DemandHashMap readDestinationDemand(BufferedReader of, Graph g) throws IOException {
+	private static DemandHashMap readDestinationDemand(BufferedReader of, Graph g, Integer zoneCount) throws IOException {
 		String[] cols;
 		Integer destID;
 		Float demand;
@@ -47,14 +48,22 @@ public class OriginFactory {
 				cols = entry.split(":"); // Get its values
 				destID = Integer.parseInt(cols[0].trim());
 				demand = Float.parseFloat(cols[1].trim());
-				if (demand > 0.0)
-					dests.put(g.getNode(destID), demand);
+				if (demand > 0.0) {
+					TravelSurveyZone tsz = g.getNode(destID).getZone();
+					if (tsz == null) { 
+						tsz = new TravelSurveyZone(g.getNode(destID),zoneCount++,null);
+						g.getNode(destID).setTravelSurveyZone(tsz);
+						g.addZone(tsz);
+					}
+					dests.put(tsz, demand);
+				}
 			}
 		}
 		return dests;
 	}
 	
 	public static void readEnhancedTrips(File odMatrix, Graph g, AssignmentLoader dl) throws FileNotFoundException, IOException {
+		int numZones = 0;
 		BufferedReader matrixFile = new BufferedReader(new FileReader(odMatrix));
 		String line;
 		Integer curOrig = null;
@@ -81,28 +90,39 @@ public class OriginFactory {
 			if (line == null || line.trim().equals("")) {
 				if (curOrig != null) {
 					// build previous bushes
+					TravelSurveyZone curZone = g.getNode(curOrig).getZone();
+					if (curZone == null) {
+						curZone = new TravelSurveyZone(g.getNode(curOrig),numZones++,null);
+						g.addZone(curZone);
+					}
 					
-					dl.submit(g.getNode(curOrig), solo17);
-					dl.submit(g.getNode(curOrig), solo35);
-					dl.submit(g.getNode(curOrig), solo45);
-					dl.submit(g.getNode(curOrig), solo90);
+					dl.submit(curZone, solo17);
+					dl.submit(curZone, solo35);
+					dl.submit(curZone, solo45);
+					dl.submit(curZone, solo90);
 
-					dl.submit(g.getNode(curOrig), hov17);
-					dl.submit(g.getNode(curOrig), hov35);
-					dl.submit(g.getNode(curOrig), hov45);
-					dl.submit(g.getNode(curOrig), hov90);
+					dl.submit(curZone, hov17);
+					dl.submit(curZone, hov35);
+					dl.submit(curZone, hov45);
+					dl.submit(curZone, hov90);
 					
-					dl.submit(g.getNode(curOrig), medTrucks);
-					dl.submit(g.getNode(curOrig), hvyTrucks);
+					dl.submit(curZone, medTrucks);
+					dl.submit(curZone, hvyTrucks);
 					
-					dl.start(g.getNode(curOrig));
+					dl.start(curZone);
 				}
 				break;
 			}
 			String[] args = line.split(",");
 
 			Integer orig = Integer.parseInt(args[0]);
-			Node dest = g.getNode(Integer.parseInt(args[1]));
+			Node destNode = g.getNode(Integer.parseInt(args[1]));
+			TravelSurveyZone destZone = destNode.getZone();
+			if (destZone == null) {
+				destZone = new TravelSurveyZone(destNode,numZones++,null);
+				destNode.setTravelSurveyZone(destZone);
+				g.addZone(destZone);
+			}
 
 			Float da35 = parse(args[2]);
 			Float da90 = parse(args[3]);
@@ -118,21 +138,27 @@ public class OriginFactory {
 			if (curOrig == null || !orig.equals(curOrig)) {
 				// Moving on to next origin
 				if (curOrig != null) {
+					TravelSurveyZone curZone = g.getNode(curOrig).getZone();
+					if (curZone == null) {
+						curZone = new TravelSurveyZone(g.getNode(curOrig),numZones++,null);
+						g.getNode(curOrig).setTravelSurveyZone(curZone);
+						g.addZone(curZone);
+					}
 					// build previous origin's bushes
-					dl.submit(g.getNode(curOrig), solo17);
-					dl.submit(g.getNode(curOrig), solo35);
-					dl.submit(g.getNode(curOrig), solo45);
-					dl.submit(g.getNode(curOrig), solo90);
+					dl.submit(curZone, solo17);
+					dl.submit(curZone, solo35);
+					dl.submit(curZone, solo45);
+					dl.submit(curZone, solo90);
 
-					dl.submit(g.getNode(curOrig), hov17);
-					dl.submit(g.getNode(curOrig), hov35);
-					dl.submit(g.getNode(curOrig), hov45);
-					dl.submit(g.getNode(curOrig), hov90);
+					dl.submit(curZone, hov17);
+					dl.submit(curZone, hov35);
+					dl.submit(curZone, hov45);
+					dl.submit(curZone, hov90);
 					
-					dl.submit(g.getNode(curOrig), medTrucks);
-					dl.submit(g.getNode(curOrig), hvyTrucks);
+					dl.submit(curZone, medTrucks);
+					dl.submit(curZone, hvyTrucks);
 					
-					dl.start(g.getNode(curOrig));
+					dl.start(curZone);
 
 				}
 
@@ -154,27 +180,27 @@ public class OriginFactory {
 			}
 
 			if (da17 > 0.0F)
-				solo17.put(dest, da17);
+				solo17.put(destZone, da17);
 			if (da35 > 0.0F)
-				solo35.put(dest, da35);
+				solo35.put(destZone, da35);
 			if (da45 > 0.0F)
-				solo45.put(dest, da45);
+				solo45.put(destZone, da45);
 			if (da90 > 0.0F)
-				solo90.put(dest, da90);
+				solo90.put(destZone, da90);
 
 			if (sr17 > 0.0F)
-				hov17.put(dest, sr17);
+				hov17.put(destZone, sr17);
 			if (sr35 > 0.0F)
-				hov35.put(dest, sr35);
+				hov35.put(destZone, sr35);
 			if (sr45 > 0.0F)
-				hov45.put(dest, sr45);
+				hov45.put(destZone, sr45);
 			if (sr90 > 0.0F)
-				hov90.put(dest, sr90);
+				hov90.put(destZone, sr90);
 
 			if (mdtk > 0.0F)
-				medTrucks.put(dest, mdtk);
+				medTrucks.put(destZone, mdtk);
 			if (hvtk > 0.0F)
-				hvyTrucks.put(dest, hvtk);
+				hvyTrucks.put(destZone, hvtk);
 		}
 		
 		matrixFile.close();
@@ -213,21 +239,28 @@ public class OriginFactory {
 
 			Integer origID = Integer.parseInt(line.trim().split("\\s+")[1]);
 			Node root = g.getNode(origID); // Retrieve the existing node with that ID
+			
+			TravelSurveyZone zone = root.getZone();
+			
+			if (zone == null) {
+				zone = new TravelSurveyZone(root,numZones++,null);
+				root.setTravelSurveyZone(zone);
+				g.addZone(zone);
+			}
 			System.out.print("\rReading demand for origin " + origID);
-			DemandHashMap unified = readDestinationDemand(of, g);
-			numZones++;
+			DemandHashMap unified = readDestinationDemand(of, g, numZones);
 			
 			for (Float[] entry : VOTs.get(root)) {
 				ods.putIfAbsent(entry[0], new AutoODMatrix(g, entry[0], null)); //Ensure a parent OD matrix exists
 				AutoDemandMap split = new AutoFixedSizeDemandMap(g, ods.get(entry[0]));	//Attach the parent OD
 				
-				for (Node dest : unified.getNodes()) { //Split each destination proportionally
+				for (TravelSurveyZone dest : unified.getZones()) { //Split each destination proportionally
 					split.put(dest, entry[1] * unified.get(dest));
 				}
-				dl.submit(root,split);
+				dl.submit(zone,split);
 			}
 			
-			dl.start(root);
+			dl.start(zone);
 			
 			line = of.readLine();
 

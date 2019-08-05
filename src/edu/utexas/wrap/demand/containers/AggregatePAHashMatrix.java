@@ -18,19 +18,19 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 public class AggregatePAHashMatrix implements AggregatePAMatrix {
 
 	private Graph g;
-	private Map<Node,DemandMap> matrix;
+	private Map<TravelSurveyZone,DemandMap> matrix;
 
 	public AggregatePAHashMatrix(Graph g) {
 		this.g = g;
-		matrix = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<Node,DemandMap>(g.numZones(),1.0f));
+		matrix = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<TravelSurveyZone,DemandMap>(g.numZones(),1.0f));
 	}
 
 	public AggregatePAHashMatrix(PAMatrix hbwSum, Map<TravelSurveyZone, Float> map) {
 		// TODO Auto-generated constructor stub
 		g = hbwSum.getGraph();
-		matrix = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<Node,DemandMap>(g.numZones(),1.0f));
+		matrix = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<TravelSurveyZone,DemandMap>(g.numZones(),1.0f));
 		hbwSum.getProducers().parallelStream().forEach(prod ->{
-			matrix.put(prod, new FixedMultiplierPassthroughDemandMap(hbwSum.getDemandMap(prod),map.get(prod)));
+			matrix.put(prod, new FixedMultiplierPassthroughDemandMap(hbwSum.getDemandMap(prod),map.getOrDefault(prod,0.0f)));
 		});
 	}
 
@@ -39,7 +39,7 @@ public class AggregatePAHashMatrix implements AggregatePAMatrix {
 	 * @param i the Node from which there is demand
 	 * @param d the map of demand from the given Node to other Nodes
 	 */
-	public void putDemandMap(Node i, DemandMap d) {
+	public void putDemandMap(TravelSurveyZone i, DemandMap d) {
 		matrix.put(i, d);
 	}
 
@@ -47,9 +47,9 @@ public class AggregatePAHashMatrix implements AggregatePAMatrix {
 	 * @see edu.utexas.wrap.demand.PAMatrix#getDemand(edu.utexas.wrap.net.Node, edu.utexas.wrap.net.Node)
 	 */
 	@Override
-	public Float getDemand(Node origin, Node destination) {
+	public Float getDemand(TravelSurveyZone producer, TravelSurveyZone attractor) {
 		// TODO Auto-generated method stub
-		return matrix.get(origin) == null ? 0.0F : matrix.get(origin).getOrDefault(destination, 0.0F);
+		return matrix.get(producer) == null ? 0.0F : matrix.get(producer).getOrDefault(attractor, 0.0F);
 	}
 
 	/* (non-Javadoc)
@@ -72,9 +72,9 @@ public class AggregatePAHashMatrix implements AggregatePAMatrix {
 	 * @see edu.utexas.wrap.demand.PAMatrix#put(edu.utexas.wrap.net.Node, edu.utexas.wrap.net.Node, java.lang.Float)
 	 */
 	@Override
-	public void put(Node origin, Node destination, Float demand) {
-		matrix.putIfAbsent(origin,new DemandHashMap(g));
-		((DemandMap) matrix.get(origin)).put(destination,demand);
+	public void put(TravelSurveyZone producer, TravelSurveyZone attractor, Float demand) {
+		matrix.putIfAbsent(producer,new DemandHashMap(g));
+		((DemandMap) matrix.get(producer)).put(attractor,demand);
 		
 	}
 
@@ -84,10 +84,10 @@ public class AggregatePAHashMatrix implements AggregatePAMatrix {
 		try{
 			o = new FileWriter(out);
 
-			for (Node orig : matrix.keySet()) {
-				DemandMap demand = matrix.get(orig);
-				for (Node dest : demand.getNodes()) {
-					o.write(""+orig.getID()+","+dest.getID()+","+demand.get(dest)+"\n");
+			for (TravelSurveyZone prod : matrix.keySet()) {
+				DemandMap demand = matrix.get(prod);
+				for (TravelSurveyZone attr : demand.getZones()) {
+					o.write(""+prod.getNode().getID()+","+attr.getNode().getID()+","+demand.get(attr)+"\n");
 				}
 			}
 		} finally {
@@ -96,13 +96,13 @@ public class AggregatePAHashMatrix implements AggregatePAMatrix {
 	}
 
 	@Override
-	public DemandMap getDemandMap(Node producer) {
+	public DemandMap getDemandMap(TravelSurveyZone producer) {
 		// TODO Auto-generated method stub
 		return matrix.get(producer);
 	}
 
 	@Override
-	public Collection<Node> getProducers() {
+	public Collection<TravelSurveyZone> getProducers() {
 		// TODO Auto-generated method stub
 		return matrix.keySet();
 	}

@@ -13,6 +13,7 @@ import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 
 public class DBAutoDemandMap implements AutoDemandMap {
@@ -37,14 +38,14 @@ public class DBAutoDemandMap implements AutoDemandMap {
 	}
 
 	@Override
-	public Float get(Node dest) {
+	public Float get(TravelSurveyZone dest) {
 		PreparedStatement ps = null; ResultSet rs = null; Float r = 0.0F; Connection conn = null;
 		String query = "Select "+columnName+" from "+tableName+" where orig=? and dest=?";
 		try {
 			conn = DriverManager.getConnection(url, props);
 			ps = conn.prepareStatement(query);
 			ps.setInt(1, origID);
-			ps.setInt(2, dest.getID());
+			ps.setInt(2, dest.getNode().getID());
 			rs = ps.executeQuery();
 			r = rs.next()? rs.getFloat(columnName) : 0.0F;
 			
@@ -70,8 +71,8 @@ public class DBAutoDemandMap implements AutoDemandMap {
 	}
 
 	@Override
-	public Collection<Node> getNodes() {
-		return g.getNodes(); //FIXME this is a kludge to speed things up - assumes all nodes have demand
+	public Collection<TravelSurveyZone> getZones() {
+		return g.getTSZs(); //FIXME this is a kludge to speed things up - assumes all nodes have demand
 //		Connection conn = null;
 //		PreparedStatement ps = null;
 //		ResultSet rs = null;
@@ -101,14 +102,14 @@ public class DBAutoDemandMap implements AutoDemandMap {
 	}
 
 	@Override
-	public Float getOrDefault(Node node, float f) {
+	public Float getOrDefault(TravelSurveyZone node, float f) {
 		PreparedStatement ps = null; ResultSet rs = null; Connection conn = null; Float r;
 		String query = "Select "+columnName+" from "+tableName+" where orig=? and dest=?";
 		try {
 			conn = DriverManager.getConnection(url, props);
 			ps = conn.prepareStatement(query);
 			ps.setInt(1, origID);
-			ps.setInt(2, node.getID());
+			ps.setInt(2, node.getNode().getID());
 			rs = ps.executeQuery();
 			r = rs.next()? rs.getFloat(columnName) : f;
 			
@@ -129,7 +130,7 @@ public class DBAutoDemandMap implements AutoDemandMap {
 	}
 
 	@Override
-	public Float put(Node dest, Float demand) {
+	public Float put(TravelSurveyZone dest, Float demand) {
 		throw new RuntimeException("Not yet implemented");
 	}
 
@@ -167,9 +168,9 @@ public class DBAutoDemandMap implements AutoDemandMap {
 	}
 
 	@Override
-	public Map<Node, Double> doubleClone() {
+	public Map<TravelSurveyZone, Double> doubleClone() {
 		PreparedStatement ps = null; ResultSet rs = null; Connection conn = null;
-		Map<Node, Double> ret = new Object2DoubleOpenHashMap<Node>();
+		Map<TravelSurveyZone, Double> ret = new Object2DoubleOpenHashMap<TravelSurveyZone>();
 		String query = "select dest, "+columnName+" from "+tableName+" where orig=?";
 		
 		try {
@@ -180,7 +181,7 @@ public class DBAutoDemandMap implements AutoDemandMap {
 			while (rs.next()) {
 				Node dest = g.getNode(rs.getInt("dest"));
 				Double demand = rs.getDouble(columnName);
-				ret.put(dest, demand);
+				ret.put(dest.getZone(), demand);
 			}
 		
 		} catch (SQLException e) {

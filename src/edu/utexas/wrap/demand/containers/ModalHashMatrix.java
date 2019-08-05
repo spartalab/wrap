@@ -12,6 +12,7 @@ import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
@@ -19,12 +20,12 @@ public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 	
 	private final Mode m;
 	private Graph g;
-	protected Map<Node,DemandMap> map;
+	protected Map<TravelSurveyZone,DemandMap> map;
 	
 	public ModalHashMatrix(Graph g, Mode mode) {
 		this.g = g;
 		this.m = mode;
-		map = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<Node, DemandMap>());
+		map = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<TravelSurveyZone, DemandMap>());
 	}
 
  	/* (non-Javadoc)
@@ -37,7 +38,7 @@ public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.demand.ODMatrix#getDemand(edu.utexas.wrap.net.Node, edu.utexas.wrap.net.Node)
 	 */
-	public Float getDemand(Node origin, Node destination) {
+	public Float getDemand(TravelSurveyZone origin, TravelSurveyZone destination) {
 		return map.get(origin) == null? 0.0F : map.get(origin).getOrDefault(destination,0.0F);
 	}
 
@@ -45,9 +46,9 @@ public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 	 * @see edu.utexas.wrap.demand.ODMatrix#put(edu.utexas.wrap.net.Node, edu.utexas.wrap.net.Node, java.lang.Float)
 	 */
 	@Override
-	public void put(Node origin, Node destination, Float demand) {
-		map.putIfAbsent(origin, new DemandHashMap(getGraph()));
-		map.get(origin).put(destination, demand);
+	public void put(TravelSurveyZone prod, TravelSurveyZone attr, Float demand) {
+		map.putIfAbsent(prod, new DemandHashMap(getGraph()));
+		map.get(prod).put(attr, demand);
 		
 	}
 
@@ -55,7 +56,7 @@ public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 	 * @param i the Node from which trips originate
 	 * @param d the map of demand from the given Node to other Nodes
 	 */
-	public void putDemand(Node i, DemandHashMap d) {
+	public void putDemand(TravelSurveyZone i, DemandHashMap d) {
 		map.put(i, d);
 	}
 
@@ -81,10 +82,10 @@ public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 		try{
 			o = new FileWriter(out);
 
-			for (Node orig : map.keySet()) {
+			for (TravelSurveyZone orig : map.keySet()) {
 				DemandMap demand = map.get(orig);
-				for (Node dest : demand.getNodes()) {
-					o.write(""+orig.getID()+","+dest.getID()+","+demand.get(dest)+"\n");
+				for (TravelSurveyZone dest : demand.getZones()) {
+					o.write(""+orig.getNode().getID()+","+dest.getNode().getID()+","+demand.get(dest)+"\n");
 				}
 			}
 		} finally {
@@ -93,12 +94,12 @@ public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 	}
 
 	@Override
-	public DemandMap getDemandMap(Node producer) {
+	public DemandMap getDemandMap(TravelSurveyZone producer) {
 		return map.get(producer);
 	}
 
 	@Override
-	public Collection<Node> getProducers() {
+	public Collection<TravelSurveyZone> getProducers() {
 		return map.keySet();
 	}
 

@@ -4,6 +4,7 @@ import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 
 import java.io.File;
 import java.sql.Connection;
@@ -43,7 +44,7 @@ public class DBPAMatrix implements AggregatePAMatrix {
 	}
 
 	@Override
-	public void put(Node origin, Node destination, Float demand) {
+	public void put(TravelSurveyZone prod, TravelSurveyZone attr, Float demand) {
 		String weightsQuery = "INSERT INTO "+tableName+" (origin, destination, demand) " +
 				"VALUES (?,?,?) " +
 				"ON CONFLICT (origin, destination) " +
@@ -53,12 +54,12 @@ public class DBPAMatrix implements AggregatePAMatrix {
 				tableName+".producer = ? " +
 				"AND "+tableName+".attractor = ?";
 		try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
-			ps.setInt(1, origin.getID());
-			ps.setInt(2, destination.getID());
+			ps.setInt(1, prod.getNode().getID());
+			ps.setInt(2, attr.getNode().getID());
 			ps.setFloat(3, demand);
 			ps.setFloat(4,demand);
-			ps.setInt(5, origin.getID());
-			ps.setInt(6, destination.getID());
+			ps.setInt(5, prod.getNode().getID());
+			ps.setInt(6, attr.getNode().getID());
 			ps.executeUpdate();
 		} catch (SQLException s) {
 			s.printStackTrace();
@@ -67,12 +68,12 @@ public class DBPAMatrix implements AggregatePAMatrix {
 	}
 
 	@Override
-	public Float getDemand(Node origin, Node destination) {
+	public Float getDemand(TravelSurveyZone prod, TravelSurveyZone attr) {
 		Float output = 0.0f;
 		String weightsQuery = "SELECT demand FROM "+tableName+" WHERE origin=? AND destination=?";
 		try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
-			ps.setInt(1, origin.getID());
-			ps.setInt(2, destination.getID());
+			ps.setInt(1, prod.getNode().getID());
+			ps.setInt(2, attr.getNode().getID());
 			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
 				output = rs.getFloat("demand");
@@ -92,9 +93,9 @@ public class DBPAMatrix implements AggregatePAMatrix {
 	}
 
 	public void writeToDB(AggregatePAHashMatrix aggPAMtx) {
-		for(Node p : aggPAMtx.getProducers()) {
+		for(TravelSurveyZone p : aggPAMtx.getProducers()) {
 			DemandMap dem = aggPAMtx.getDemandMap(p);
-			for(Node a: dem.getNodes()) {
+			for(TravelSurveyZone a: dem.getZones()) {
 				this.put(p, a, dem.get(p));
 			}
 		}
@@ -107,13 +108,13 @@ public class DBPAMatrix implements AggregatePAMatrix {
 	}
 
 	@Override
-	public DemandMap getDemandMap(Node producer) {
+	public DemandMap getDemandMap(TravelSurveyZone producer) {
 		// TODO Auto-generated method stub
 		throw new RuntimeException("No getDemandMap implementation");
 	}
 
 	@Override
-	public Collection<Node> getProducers() {
+	public Collection<TravelSurveyZone> getProducers() {
 		// TODO Auto-generated method stub
 		throw new RuntimeException("No getProducers implementation");
 	}

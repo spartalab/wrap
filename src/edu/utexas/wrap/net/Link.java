@@ -45,9 +45,9 @@ public abstract class Link implements Priced, BackVector {
 	 * @return whether the flow from this bush on the link is non-zero
 	 */
 	public synchronized Boolean changeFlow(Double delta) {
-		if (nonnegativeFlowLink() && delta < 0.0 && flo+delta < 0.0 - Math.max(Math.ulp(flo), Math.ulp(delta)))
+		if (delta < 0.0 && flo+delta < 0.0 - Math.max(Math.ulp(flo), Math.ulp(delta)))
 			throw new RuntimeException("Too much flow removed");
-		else if (nonnegativeFlowLink() && delta < 0.0 && flo + delta <0.0) flo = 0.0;
+		else if (delta < 0.0 && flo + delta <0.0) flo = 0.0;
 		else flo += delta;
 		if (flo.isNaN()) {
 			throw new RuntimeException();
@@ -72,7 +72,7 @@ public abstract class Link implements Priced, BackVector {
 	public Double getFlow() {
 //		if (cachedFlow != null) return cachedFlow;
 //		Double f = flow.values().stream().mapToDouble(Double::doubleValue).sum();
-		if (nonnegativeFlowLink() && flo < 0) throw new NegativeFlowException("Negative flow on link "+this.toString());
+		if (flo < 0) throw new NegativeFlowException("Negative flow on link "+this.toString());
 //		cachedFlow = f;
 		return flo;
 	}
@@ -115,5 +115,4 @@ public abstract class Link implements Priced, BackVector {
 		return this;
 	}
 	
-	public boolean nonnegativeFlowLink() {return true;}
 }

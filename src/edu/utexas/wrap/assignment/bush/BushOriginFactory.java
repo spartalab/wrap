@@ -12,6 +12,7 @@ import edu.utexas.wrap.demand.containers.AutoODMatrix;
 import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 /**An instance of a {@link edu.utexas.wrap.assignment.AssignmentLoader}
@@ -23,8 +24,8 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
  *
  */
 public class BushOriginFactory extends AssignmentLoader {
-	Map<Node, BushOriginBuilder> pool;
-	ExecutorService p;
+	Map<TravelSurveyZone, BushOriginBuilder> pool;
+	ExecutorService p; 
 	Set<BushOrigin> origins;
 	
 	/**Default constructor
@@ -32,7 +33,7 @@ public class BushOriginFactory extends AssignmentLoader {
 	 */
 	public BushOriginFactory(Graph g) {
 		super(g);
-		pool = new Object2ObjectOpenHashMap<Node, BushOriginBuilder>(g.numZones());
+		pool = new Object2ObjectOpenHashMap<TravelSurveyZone, BushOriginBuilder>(g.numZones());
 		p = Executors.newWorkStealingPool();
 		origins = new HashSet<BushOrigin>();
 	}
@@ -40,16 +41,16 @@ public class BushOriginFactory extends AssignmentLoader {
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.assignment.AssignmentLoader#add(edu.utexas.wrap.net.Node, edu.utexas.wrap.demand.containers.AutoDemandHashMap)
 	 */
-	public void submit(Node o, AutoDemandMap map) {
-		pool.putIfAbsent(o, new BushOriginLoader(graph,o,origins));
-		pool.get(o).addMap(map);
+	public void submit(TravelSurveyZone zone, AutoDemandMap map) {
+		pool.putIfAbsent(zone, new BushOriginLoader(graph,zone,origins));
+		pool.get(zone).addMap(map);
 	} 
 	
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.assignment.AssignmentLoader#addAll(edu.utexas.wrap.demand.containers.AutoODHashMatrix)
 	 */
 	public void submitAll(AutoODMatrix matrix) {
-		for (Node o : matrix.getProducers()) {
+		for (TravelSurveyZone o : matrix.getProducers()) {
 			submit(o, matrix.get(o));
 		}
 	}
@@ -57,7 +58,7 @@ public class BushOriginFactory extends AssignmentLoader {
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.assignment.AssignmentLoader#load(edu.utexas.wrap.net.Node)
 	 */
-	public void start(Node o) {
+	public void start(TravelSurveyZone o) {
 		p.execute(pool.get(o));
 	}
 	

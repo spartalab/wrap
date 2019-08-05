@@ -4,6 +4,7 @@ import edu.utexas.wrap.demand.containers.AutoODMatrix;
 import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 
 /** A method of loading an origin-destination matrix or individual
  * origin's demand  onto a roadway network for use in route choice.
@@ -30,11 +31,11 @@ public abstract class AssignmentLoader {
 	 * @param root the Node from which the demand should emanate
 	 * @param split the demand from the given node to any other Node in the network
 	 */
-	public abstract void submit(Node root, AutoDemandMap split);
+	public abstract void submit(TravelSurveyZone root, AutoDemandMap split);
 	
 	/**
 	 * @param root begin the process of loading this Node's demand onto the network 
 	 */
-	public abstract void start(Node root);
+	public abstract void start(TravelSurveyZone root);
 	
 }

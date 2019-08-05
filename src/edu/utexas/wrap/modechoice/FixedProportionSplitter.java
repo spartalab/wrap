@@ -41,18 +41,6 @@ public class FixedProportionSplitter extends TripInterchangeSplitter {
 			if (pct <= 0.0) continue;
 			
 			ModalPAMatrix pa = new ModalFixedMultiplierPassthroughMatrix(m,pct,aggregate);
-//			// Everything between here and the line marked !!!!! can (and should) be parallelized, I think. -Wm
-//			ModalPAMatrix pa = new ModalHashMatrix(aggregate.getGraph(), m);
-//			
-//			for (Node orig : aggregate.getProducers()) {
-//			// TODO Consider replacing with Strassen's algorithm
-//				DemandMap origProds = aggregate.getDemandMap(orig);
-//				for (Node dest : origProds.getNodes()) {
-//					float demand = aggregate.getDemand(orig, dest);
-//					pa.put(orig, dest, demand*pct);
-//				}
-//			}
-//			// !!!!!
 			
 			fixedProp.add(pa);
 		}

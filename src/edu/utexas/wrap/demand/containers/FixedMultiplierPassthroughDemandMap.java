@@ -6,6 +6,7 @@ import java.util.Map;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class FixedMultiplierPassthroughDemandMap implements DemandMap {
 	private DemandMap parent;
@@ -17,7 +18,7 @@ public class FixedMultiplierPassthroughDemandMap implements DemandMap {
 	}
 
 	@Override
-	public Float get(Node dest) {
+	public Float get(TravelSurveyZone dest) {
 		return multiplier*parent.get(dest);
 	}
 
@@ -27,18 +28,18 @@ public class FixedMultiplierPassthroughDemandMap implements DemandMap {
 	}
 
 	@Override
-	public Collection<Node> getNodes() {
-		return parent.getNodes();
+	public Collection<TravelSurveyZone> getZones() {
+		return parent.getZones();
 	}
 
 	@Override
-	public Float getOrDefault(Node node, float f) {
-		Float d = parent.get(node);
+	public Float getOrDefault(TravelSurveyZone zone, float f) {
+		Float d = parent.get(zone);
 		return d == null? f : d*multiplier;
 	}
 
 	@Override
-	public Float put(Node dest, Float demand) {
+	public Float put(TravelSurveyZone dest, Float demand) {
 		return parent.put(dest, demand/multiplier);
 	}
 
@@ -48,7 +49,7 @@ public class FixedMultiplierPassthroughDemandMap implements DemandMap {
 	}
 
 	@Override
-	public Map<Node, Double> doubleClone() {
+	public Map<TravelSurveyZone, Double> doubleClone() {
 		// TODO Auto-generated method stub
 		throw new RuntimeException();
 	}

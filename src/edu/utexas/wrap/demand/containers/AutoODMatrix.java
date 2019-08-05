@@ -4,6 +4,7 @@ import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 /** A mode-specific OD matrix for autos/trucks only.
  * Instances of this class are expected by a 
  * @author William
@@ -35,7 +36,7 @@ public class AutoODMatrix extends ModalHashMatrix {
 	 * @param origin the Node whose associated demand map should be returned
 	 * @return a copy of the stored demand map
 	 */
-	public AutoDemandMap get(Node origin) {
+	public AutoDemandMap get(TravelSurveyZone origin) {
 		return (AutoDemandMap) map.get(origin);
 	}
 	
@@ -43,7 +44,7 @@ public class AutoODMatrix extends ModalHashMatrix {
 	 * @see edu.utexas.wrap.demand.containers.ModalHashMatrix#put(edu.utexas.wrap.net.Node, edu.utexas.wrap.net.Node, java.lang.Float)
 	 */
 	@Override
-	public void put(Node origin, Node destination, Float demand) {
+	public void put(TravelSurveyZone origin, TravelSurveyZone destination, Float demand) {
 		map.putIfAbsent(origin, new AutoDemandHashMap(getGraph(), this));
 		get(origin).put(destination, demand);
 	}

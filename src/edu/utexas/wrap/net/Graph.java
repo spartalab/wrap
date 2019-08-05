@@ -4,6 +4,7 @@ import java.io.PrintStream;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -44,7 +45,7 @@ public class Graph {
 		numZones = 0;
 		numNodes = 0;
 		numLinks = 0;
-		
+		zones = new HashSet<TravelSurveyZone>();
 	}
 	
 	public Graph(Graph g) {
@@ -56,6 +57,7 @@ public class Graph {
 		numLinks = g.numLinks;
 		forwardStar = g.forwardStar;
 		reverseStar = g.reverseStar;
+		//TODO: duplicate zones
 	}
 	
 	public Boolean add(Link link) {
@@ -77,13 +79,11 @@ public class Graph {
 		}
 
 		if (!order.contains(tail)) {
-//			nodeOrder.put(tail, numNodes);
 			order.add(tail);
 			numNodes++;
 		}
 		if (!order.contains(head)) {
 			order.add(head);
-//			nodeOrder.put(head,numNodes);
 			numNodes++;
 		}
 		return altered;
@@ -298,5 +298,9 @@ public class Graph {
 	public Collection<TravelSurveyZone> getTSZs() {
 		// TODO Auto-generated method stub
 		return zones;
+	}
+	
+	public boolean addZone(TravelSurveyZone zone) {
+		return zones.add(zone);
 	}
 }

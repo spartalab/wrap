@@ -6,6 +6,7 @@ import java.util.Map;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2FloatMaps;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
@@ -13,16 +14,16 @@ import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 public class DemandHashMap implements DemandMap {
 
 	Graph g;
-	private Map<Node,Float> map; 
+	private Map<TravelSurveyZone,Float> map; 
 
 	public DemandHashMap(Graph g) {
 		this.g = g;
-		map = Object2FloatMaps.synchronize(new Object2FloatOpenHashMap<Node>(g.numZones()),1.0f);
+		map = Object2FloatMaps.synchronize(new Object2FloatOpenHashMap<TravelSurveyZone>(g.numZones()),1.0f);
 	}
 	
 	protected DemandHashMap(DemandHashMap d) {
 		this.g = d.getGraph();
-		map = Object2FloatMaps.synchronize(new Object2FloatOpenHashMap<Node>(d.map));
+		map = Object2FloatMaps.synchronize(new Object2FloatOpenHashMap<TravelSurveyZone>(d.map));
 	}
 	
 	/* (non-Javadoc)
@@ -37,7 +38,7 @@ public class DemandHashMap implements DemandMap {
 	 * @see edu.utexas.wrap.demand.DemandMap#get(edu.utexas.wrap.net.Node)
 	 */
 	@Override
-	public Float get(Node dest) {
+	public Float get(TravelSurveyZone dest) {
 		return this.getOrDefault(dest, 0.0F);
 	}
 
@@ -53,7 +54,7 @@ public class DemandHashMap implements DemandMap {
 	 * @see edu.utexas.wrap.demand.DemandMap#getNodes()
 	 */
 	@Override
-	public Collection<Node> getNodes() {
+	public Collection<TravelSurveyZone> getZones() {
 		return map.keySet();
 	}
 
@@ -61,20 +62,20 @@ public class DemandHashMap implements DemandMap {
 	 * @see edu.utexas.wrap.demand.DemandMap#getOrDefault(edu.utexas.wrap.net.Node, float)
 	 */
 	@Override
-	public Float getOrDefault(Node node, float f) {
-		return map.getOrDefault(node, f);
+	public Float getOrDefault(TravelSurveyZone attrZone, float f) {
+		return map.getOrDefault(attrZone, f);
 	}
 
 	@Override
-	public Map<Node, Double> doubleClone() {
-		Map<Node,Double> ret = new Object2DoubleOpenHashMap<Node>(map.size());
-		for (Node key : map.keySet()) ret.put(key, get(key).doubleValue());
+	public Map<TravelSurveyZone, Double> doubleClone() {
+		Map<TravelSurveyZone,Double> ret = new Object2DoubleOpenHashMap<TravelSurveyZone>(map.size());
+		for (TravelSurveyZone key : map.keySet()) ret.put(key, get(key).doubleValue());
 		return ret;
 	}
 
 	@Override
-	public Float put(Node dest, Float demand) {
-		return map.put(dest, demand);
+	public Float put(TravelSurveyZone attr, Float demand) {
+		return map.put(attr, demand);
 	}
 
 	@Override

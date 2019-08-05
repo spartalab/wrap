@@ -3,6 +3,7 @@ package edu.utexas.wrap.demand;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**A map from an origin-destination pair to the number
  * of <b>vehicle</b>-trips made. This is different from the PA
@@ -25,14 +26,14 @@ public interface ODMatrix {
 	 * @param destination the Node to which trips travel
 	 * @return the demand from the origin to the destination
 	 */
-	public Float getDemand(Node origin, Node destination);
+	public Float getDemand(TravelSurveyZone origin, TravelSurveyZone destination);
 	
 	/**
 	 * @param origin the Node from which trips originate
 	 * @param destination the Node to which trips travel
 	 * @param demand the amount of trips from the origin to the destination
 	 */
-	public void put(Node origin, Node destination, Float demand);
+	public void put(TravelSurveyZone origin, TravelSurveyZone destination, Float demand);
 
 	/**
 	 * @return the graph to which this OD matrix is associated

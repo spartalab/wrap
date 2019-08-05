@@ -4,6 +4,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class CostBasedFrictionFactorMap implements FrictionFactorMap {
 
@@ -17,8 +18,8 @@ public class CostBasedFrictionFactorMap implements FrictionFactorMap {
 	}
 	
 	@Override
-	public Float get(Node producer, Node attractor) {
-		Float cost = travelCosts.get(producer).get(attractor);
+	public Float get(TravelSurveyZone producer, TravelSurveyZone attractor) {
+		Float cost = travelCosts.get(producer.getNode()).get(attractor.getNode());
 		if (cost < 0) throw new RuntimeException("Negative travel cost");
 		
 		Integer lowerBd = costFactors.floorKey((int) Math.floor(cost));

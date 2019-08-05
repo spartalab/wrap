@@ -22,8 +22,9 @@ public abstract class Origin {
 	/**
 	 * @param self the Node from whence a set of assignment containers originate
 	 */
-	public Origin(Node self) {
-		this.self = self;
+	public Origin(TravelSurveyZone self) {
+		this.self = self.getNode();
+		parent = self;
 	}
 	
 	/**
@@ -39,7 +40,4 @@ public abstract class Origin {
 		return self;
 	}
 	
-	public void setParent(TravelSurveyZone tsz) {
-		parent = tsz;
-	}
 }

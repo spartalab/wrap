@@ -210,11 +210,11 @@ public class DBMarketSegmentTests {
         float[] attrVals = new float[9];
         float[] attrValsExp = new float[9];
 
-        for(Node p: hbwPA.getProducers()) {
-            prodVals[p.getID()] = hbwPA.getProductions(p);
-            prodValsExp[p.getID()] = hbwPAExp.getProductions(p);
-            attrVals[p.getID()] = hbwPA.getAttractions(p);
-            attrValsExp[p.getID()] = hbwPAExp.getAttractions(p);
+        for(TravelSurveyZone p: hbwPA.getProducers()) {
+            prodVals[p.getNode().getID()] = hbwPA.getProductions(p);
+            prodValsExp[p.getNode().getID()] = hbwPAExp.getProductions(p);
+            attrVals[p.getNode().getID()] = hbwPA.getAttractions(p);
+            attrValsExp[p.getNode().getID()] = hbwPAExp.getAttractions(p);
         }
         Assert.assertArrayEquals(prodValsExp, prodVals, 0.01f);
         Assert.assertArrayEquals(attrValsExp, attrVals, 0.01f);
@@ -229,11 +229,11 @@ public class DBMarketSegmentTests {
         float[] attrVals = new float[9];
         float[] attrValsExp = new float[9];
 
-        for(Node p: hbnwPA.getProducers()) {
-            prodVals[p.getID()] = hbnwPA.getProductions(p);
-            prodValsExp[p.getID()] = hbnwPAExp.getProductions(p);
-            attrVals[p.getID()] = hbnwPA.getAttractions(p);
-            attrValsExp[p.getID()] = hbnwPAExp.getAttractions(p);
+        for(TravelSurveyZone p: hbnwPA.getProducers()) {
+            prodVals[p.getNode().getID()] = hbnwPA.getProductions(p);
+            prodValsExp[p.getNode().getID()] = hbnwPAExp.getProductions(p);
+            attrVals[p.getNode().getID()] = hbnwPA.getAttractions(p);
+            attrValsExp[p.getNode().getID()] = hbnwPAExp.getAttractions(p);
         }
         Assert.assertArrayEquals(prodValsExp, prodVals, 0.01f);
         Assert.assertArrayEquals(attrValsExp,attrVals, 0.01f);
@@ -248,11 +248,11 @@ public class DBMarketSegmentTests {
         float[] attrVals = new float[9];
         float[] attrValsExp = new float[9];
 
-        for(Node p: nhbnwPA.getProducers()) {
-            prodVals[p.getID()] = nhbnwPA.getProductions(p);
-            prodValsExp[p.getID()] = nhbnwPAExp.getProductions(p);
-            attrVals[p.getID()] = nhbnwPA.getAttractions(p);
-            attrValsExp[p.getID()] = nhbnwPAExp.getAttractions(p);
+        for(TravelSurveyZone p: nhbnwPA.getProducers()) {
+            prodVals[p.getNode().getID()] = nhbnwPA.getProductions(p);
+            prodValsExp[p.getNode().getID()] = nhbnwPAExp.getProductions(p);
+            attrVals[p.getNode().getID()] = nhbnwPA.getAttractions(p);
+            attrValsExp[p.getNode().getID()] = nhbnwPAExp.getAttractions(p);
         }
         Assert.assertArrayEquals(prodValsExp, prodVals, 0.01f);
         Assert.assertArrayEquals(attrValsExp,attrVals, 0.01f);
@@ -276,11 +276,11 @@ public class DBMarketSegmentTests {
         float[] attrVals = new float[9];
         float[] attrValsExp = new float[9];
 
-        for(Node p: balancedHBWPA.getProducers()) {
-            prodVals[p.getID()] = balancedHBWPA.getProductions(p);
-            prodValsExp[p.getID()] = hbwPAExp.getProductions(p);
-            attrVals[p.getID()] = balancedHBWPA.getAttractions(p);
-            attrValsExp[p.getID()] = hbwPAExp.getAttractions(p);
+        for(TravelSurveyZone p: balancedHBWPA.getProducers()) {
+            prodVals[p.getNode().getID()] = balancedHBWPA.getProductions(p);
+            prodValsExp[p.getNode().getID()] = hbwPAExp.getProductions(p);
+            attrVals[p.getNode().getID()] = balancedHBWPA.getAttractions(p);
+            attrValsExp[p.getNode().getID()] = hbwPAExp.getAttractions(p);
         }
         Assert.assertArrayEquals(prodValsExp, prodVals, 0.01f);
         Assert.assertArrayEquals(attrValsExp,attrVals, 0.01f);
@@ -304,11 +304,11 @@ public class DBMarketSegmentTests {
         float[] attrVals = new float[9];
         float[] attrValsExp = new float[9];
 
-        for(Node p: balancedHBNWPA.getProducers()) {
-            prodVals[p.getID()] = balancedHBNWPA.getProductions(p);
-            prodValsExp[p.getID()] = hbnwPAExp.getProductions(p);
-            attrVals[p.getID()] = balancedHBNWPA.getAttractions(p);
-            attrValsExp[p.getID()] = hbnwPAExp.getAttractions(p);
+        for(TravelSurveyZone p: balancedHBNWPA.getProducers()) {
+            prodVals[p.getNode().getID()] = balancedHBNWPA.getProductions(p);
+            prodValsExp[p.getNode().getID()] = hbnwPAExp.getProductions(p);
+            attrVals[p.getNode().getID()] = balancedHBNWPA.getAttractions(p);
+            attrValsExp[p.getNode().getID()] = hbnwPAExp.getAttractions(p);
         }
         Assert.assertArrayEquals(prodValsExp, prodVals, 0.01f);
         Assert.assertArrayEquals(attrValsExp,attrVals, 0.01f);
@@ -332,11 +332,11 @@ public class DBMarketSegmentTests {
         float[] attrVals = new float[9];
         float[] attrValsExp = new float[9];
 
-        for(Node p: balancedNHBNWPA.getProducers()) {
-            prodVals[p.getID()] = balancedNHBNWPA.getProductions(p);
-            prodValsExp[p.getID()] = nhbnwPAExp.getProductions(p);
-            attrVals[p.getID()] = balancedNHBNWPA.getAttractions(p);
-            attrValsExp[p.getID()] = nhbnwPAExp.getAttractions(p);
+        for(TravelSurveyZone p: balancedNHBNWPA.getProducers()) {
+            prodVals[p.getNode().getID()] = balancedNHBNWPA.getProductions(p);
+            prodValsExp[p.getNode().getID()] = nhbnwPAExp.getProductions(p);
+            attrVals[p.getNode().getID()] = balancedNHBNWPA.getAttractions(p);
+            attrValsExp[p.getNode().getID()] = nhbnwPAExp.getAttractions(p);
         }
         Assert.assertArrayEquals(prodValsExp, prodVals, 0.01f);
         Assert.assertArrayEquals(attrValsExp,attrVals, 0.01f);

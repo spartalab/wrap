@@ -4,6 +4,7 @@ import java.util.Set;
 
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**A mapping from a zone to the number of productions
  * and attractions that begin and end, respectively,
@@ -16,29 +17,29 @@ import edu.utexas.wrap.net.Node;
  * @author William
  *
  */
-public interface  PAMap {
+public interface PAMap {
 
 	/**
 	 * @return the Nodes from which trips originate
 	 */
-	public Set<Node> getProducers();
+	public Set<TravelSurveyZone> getProducers();
 
 	/**
 	 * @return the Nodes to which trips are attracted
 	 */
-	public Set<Node> getAttractors();
+	public Set<TravelSurveyZone> getAttractors();
 
 	/**
 	 * @param z the Node to which trips are attracted
 	 * @return the number of trips attracted to the Node
 	 */
-	public Float getAttractions(Node z);
+	public Float getAttractions(TravelSurveyZone z);
 
 	/**
 	 * @param z the Node from which trips are produced
 	 * @return the number of trips produced at the Node
 	 */
-	public Float getProductions(Node z);
+	public Float getProductions(TravelSurveyZone z);
 
 	/**
 	 * @return the Graph to which the PA map is tied
@@ -49,13 +50,13 @@ public interface  PAMap {
 	 * @param z the Node to which trips are attracted
 	 * @param amt the amount of trips attracted to the Node
 	 */
-	public void putAttractions(Node z, Float amt);
+	public void putAttractions(TravelSurveyZone z, Float amt);
 
 	/**
 	 * @param z the Node from which trips are produced
 	 * @param amt the amount of trips produced at the Node
 	 */
-	public void putProductions(Node z, Float amt);
+	public void putProductions(TravelSurveyZone z, Float amt);
 
 	/**
 	 * @return the value of time of trips associated with this matrix

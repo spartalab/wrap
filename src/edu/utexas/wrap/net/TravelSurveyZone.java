@@ -4,12 +4,12 @@ import java.util.Map;
 
 public class TravelSurveyZone {
 	private final Node origin;
+	private final int order;
 	private RegionalAreaAnalysisZone parent;
-	private Map<String,Float> attributes;
 	
-	public TravelSurveyZone(Node origin, Map<String,Float> attrs) {
+	public TravelSurveyZone(Node origin, int order, Map<String,Float> attrs) {
 		this.origin = origin;
-		attributes = attrs;
+		this.order = order;
 	}
 	
 	public Node getNode() {
@@ -24,8 +24,12 @@ public class TravelSurveyZone {
 		return parent;
 	}
 
-	public float valueOf(String attribute) {
+	public Float valueOf(String attribute) {
 		// TODO Auto-generated method stub
-		return attributes.getOrDefault(attribute, 0.0f);
+		return null;
+	}
+
+	public int getOrder() {
+		return order;
 	}
 }

@@ -7,7 +7,7 @@ import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 
 public class DerivativeLink extends Link {
-	private final Link parent;
+	protected final Link parent;
 	Double deriv;
 
 	public DerivativeLink(Node tail, Node head, Float capacity, Float length, Float fftime, Link oldLink,
@@ -49,7 +49,20 @@ public class DerivativeLink extends Link {
 	}
 
 	@Override
-	public boolean nonnegativeFlowLink() {
-		return false;
+	public Boolean changeFlow(Double delta) {
+		flo += delta;
+		if (flo.isNaN()) {
+			throw new RuntimeException();
+		}
+		if (delta != 0.0) {
+			cachedTT = null;
+			cachedTP = null;
+		}
+		return flo > 0.0;
+	}
+	
+	@Override
+	public Double getFlow() {
+		return flo;
 	}
 }

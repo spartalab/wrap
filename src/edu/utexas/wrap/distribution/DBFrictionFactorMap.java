@@ -2,6 +2,7 @@ package edu.utexas.wrap.distribution;
 
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 
 import java.sql.*;
 import java.util.HashMap;
@@ -17,7 +18,7 @@ public class DBFrictionFactorMap implements FrictionFactorMap {
 
 	private Connection databaseCon;
 	private String tableName;
-	private Map<Node, Map<Node, Double>> ffmap;
+	private Map<TravelSurveyZone, Map<TravelSurveyZone, Double>> ffmap;
 	private double aConst, bConst, cConst;
 	private Graph g;
 
@@ -38,15 +39,15 @@ public class DBFrictionFactorMap implements FrictionFactorMap {
 				int dest = rs.getInt("destination");
 				double time = rs.getDouble("pktime");
 				double ff = aConst * Math.pow(time, bConst)* Math.exp(-1 * cConst * time);
-				Map<Node,Double> ffDest;
-				if(ffmap.containsKey(g.getNode(or))) {
-					ffDest = ffmap.get(g.getNode(or));
-					ffDest.put(g.getNode(dest), ff);
+				Map<TravelSurveyZone,Double> ffDest;
+				if(ffmap.containsKey(g.getNode(or).getZone())) {
+					ffDest = ffmap.get(g.getNode(or).getZone());
+					ffDest.put(g.getNode(dest).getZone(), ff);
 				} else {
-					ffDest = new HashMap<Node, Double>();
-					ffDest.put(g.getNode(dest), ff);
+					ffDest = new HashMap<TravelSurveyZone, Double>();
+					ffDest.put(g.getNode(dest).getZone(), ff);
 
-					ffmap.put(g.getNode(or), ffDest);
+					ffmap.put(g.getNode(or).getZone(), ffDest);
 				}
 			}
 			databaseCon.setAutoCommit(true);
@@ -81,7 +82,7 @@ public class DBFrictionFactorMap implements FrictionFactorMap {
 		this.bConst = b;
 		this.cConst = c;
 		this.g = g;
-		ffmap = new HashMap<Node, Map<Node, Double>>();
+		ffmap = new HashMap<TravelSurveyZone, Map<TravelSurveyZone, Double>>();
 		developFFMap();
 	}
 
@@ -91,7 +92,7 @@ public class DBFrictionFactorMap implements FrictionFactorMap {
 	 * @param z Destination Node
 	 * @return computed friction factor
 	 */
-	public Float get(Node i, Node z) {
+	public Float get(TravelSurveyZone i, TravelSurveyZone z) {
 		// TODO Auto-generated method stub
 		return ffmap.get(i).get(z).floatValue();
 	}
