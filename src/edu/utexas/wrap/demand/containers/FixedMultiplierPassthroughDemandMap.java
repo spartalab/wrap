@@ -5,7 +5,6 @@ import java.util.Map;
 
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class FixedMultiplierPassthroughDemandMap implements DemandMap {

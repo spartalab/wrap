@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.Collection;
 
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**A map from an origin and destination zone to the

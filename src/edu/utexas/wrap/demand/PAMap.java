@@ -3,7 +3,6 @@ package edu.utexas.wrap.demand;
 import java.util.Set;
 
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**A mapping from a zone to the number of productions

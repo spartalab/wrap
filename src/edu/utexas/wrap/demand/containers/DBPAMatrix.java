@@ -3,7 +3,6 @@ package edu.utexas.wrap.demand.containers;
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 import java.io.File;

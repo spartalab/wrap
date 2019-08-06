@@ -10,10 +10,6 @@ import edu.utexas.wrap.net.Graph;
  */
 public class AutoDemandHashMap extends DemandHashMap implements AutoDemandMap {
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 2176027918628424731L;
 	private final AutoODMatrix parent;
 	
 	public AutoDemandHashMap(Graph g, AutoODMatrix parent) {

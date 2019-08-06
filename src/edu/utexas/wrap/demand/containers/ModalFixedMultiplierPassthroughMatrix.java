@@ -6,13 +6,11 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 
-import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.PAMatrix;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class ModalFixedMultiplierPassthroughMatrix implements ModalPAMatrix {

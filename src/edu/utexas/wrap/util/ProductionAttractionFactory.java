@@ -10,7 +10,6 @@ import edu.utexas.wrap.demand.PAMatrix;
 import edu.utexas.wrap.demand.containers.AggregatePAHashMap;
 import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class ProductionAttractionFactory {

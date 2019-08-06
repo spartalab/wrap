@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Map;
 
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**A simple map from a node to a demand level

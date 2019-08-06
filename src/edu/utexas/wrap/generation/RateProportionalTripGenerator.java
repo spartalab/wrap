@@ -13,7 +13,24 @@ import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-public class RateProportionalTripGenerator extends NonHomeBasedTripGenerator {
+/**A secondary trip generator which calculates, for several
+ * market segments, a per-zone rate to multiply a given
+ * primary trip matrix by to get secondary trips. This is
+ * done by calculating the total trips in each zone, then
+ * getting each segment's share of the total trips. A factor
+ * is calculated as the ratio between a given secondary rate
+ * for this market segment and its given primary rate. This
+ * factor is then multiplied by the trip share to get the 
+ * rate which the primary trip matrix is multiplied by.
+ * 
+ * Calls to the generate method then return a pass-through
+ * matrix dependent on the initial matrix.
+ * 
+ * 
+ * @author William
+ *
+ */
+public class RateProportionalTripGenerator extends SecondaryTripGenerator {
 	
 	private Map<MarketSegment,Map<TravelSurveyZone,Float>> rates;
 	

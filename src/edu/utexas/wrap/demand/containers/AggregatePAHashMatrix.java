@@ -10,7 +10,6 @@ import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.PAMatrix;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;

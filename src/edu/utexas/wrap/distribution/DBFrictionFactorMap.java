@@ -1,7 +1,6 @@
 package edu.utexas.wrap.distribution;
 
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 import java.sql.*;

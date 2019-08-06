@@ -9,7 +9,7 @@ import edu.utexas.wrap.distribution.DBFrictionFactorMap;
 import edu.utexas.wrap.distribution.GravityDistributor;
 import edu.utexas.wrap.distribution.TripDistributor;
 import edu.utexas.wrap.generation.DBTripGenerator;
-import edu.utexas.wrap.generation.HomeBasedTripGenerator;
+import edu.utexas.wrap.generation.PrimaryTripGenerator;
 import edu.utexas.wrap.net.*;
 import org.junit.*;
 import org.junit.jupiter.api.AfterEach;
@@ -36,7 +36,7 @@ public class DBMarketSegmentTests {
 
 
         //Create 3 market Segment objects
-        HomeBasedTripGenerator tg = new DBTripGenerator(g, db, "demdata", "prodrates", "attrrates");
+        PrimaryTripGenerator tg = new DBTripGenerator(g, db, "demdata", "prodrates", "attrrates");
         TripBalancer tb = new DBTripBalancer(db);
         TripDistributor td = new DBGravityDistributor(g, db);
 

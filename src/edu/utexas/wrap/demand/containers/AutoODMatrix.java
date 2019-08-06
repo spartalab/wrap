@@ -3,7 +3,6 @@ package edu.utexas.wrap.demand.containers;
 import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
 /** A mode-specific OD matrix for autos/trucks only.
  * Instances of this class are expected by a 

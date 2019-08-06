@@ -2,7 +2,6 @@ package edu.utexas.wrap.demand.containers;
 
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
 import it.unimi.dsi.fastutil.objects.Object2FloatMaps;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;

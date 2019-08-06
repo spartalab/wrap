@@ -2,7 +2,6 @@ package edu.utexas.wrap.demand;
 
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**A map from an origin-destination pair to the number
