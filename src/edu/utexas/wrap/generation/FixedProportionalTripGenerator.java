@@ -1,9 +1,9 @@
 package edu.utexas.wrap.generation;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
-import edu.utexas.wrap.demand.MarketSegment;
 import edu.utexas.wrap.demand.PAMatrix;
 import edu.utexas.wrap.demand.containers.AggregateFixedMultiplierPassthroughMatrix;
+import edu.utexas.wrap.marketsegmentation.MarketSegment;
 
 /**A secondary trip generator which uses a fixed rate
  * to generate trips across all TravelSurveyZones by
@@ -20,7 +20,7 @@ import edu.utexas.wrap.demand.containers.AggregateFixedMultiplierPassthroughMatr
  * @author William
  *
  */
-public class FixedProportionalTripGenerator extends SecondaryTripGenerator {
+public class FixedProportionalTripGenerator {
 
 	private final float rate;
 	
@@ -28,7 +28,6 @@ public class FixedProportionalTripGenerator extends SecondaryTripGenerator {
 		rate = proportion;
 	}
 	
-	@Override
 	public PAMatrix generate(MarketSegment segment, AggregatePAMatrix homeBasedMatrix) {
 		return new AggregateFixedMultiplierPassthroughMatrix(homeBasedMatrix,rate);
 	}

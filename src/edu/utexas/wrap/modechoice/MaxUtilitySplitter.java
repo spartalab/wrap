@@ -6,9 +6,9 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
-import edu.utexas.wrap.demand.MarketSegment;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.containers.ModalHashMatrix;
+import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.net.Node;
 
 public class MaxUtilitySplitter extends TripInterchangeSplitter {

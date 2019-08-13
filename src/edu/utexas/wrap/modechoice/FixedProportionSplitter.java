@@ -4,8 +4,8 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
 import edu.utexas.wrap.demand.containers.ModalFixedMultiplierPassthroughMatrix;
+import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.demand.AggregatePAMatrix;
-import edu.utexas.wrap.demand.MarketSegment;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 
 /**The purpose of this class is to return

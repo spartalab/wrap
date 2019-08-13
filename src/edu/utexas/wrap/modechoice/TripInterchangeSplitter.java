@@ -3,8 +3,8 @@ package edu.utexas.wrap.modechoice;
 import java.util.Set;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
-import edu.utexas.wrap.demand.MarketSegment;
 import edu.utexas.wrap.demand.ModalPAMatrix;
+import edu.utexas.wrap.marketsegmentation.MarketSegment;
 
 /**The default method of performing mode choice,
  * this method calculates mode shares as a function

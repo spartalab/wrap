@@ -7,8 +7,8 @@ import java.util.Map;
 import java.util.Set;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
-import edu.utexas.wrap.demand.MarketSegment;
 import edu.utexas.wrap.demand.ModalPAMatrix;
+import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.modechoice.FixedProportionSplitter;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
