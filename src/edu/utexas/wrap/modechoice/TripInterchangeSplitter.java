@@ -1,6 +1,6 @@
 package edu.utexas.wrap.modechoice;
 
-import java.util.Set;
+import java.util.stream.Stream;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.ModalPAMatrix;
@@ -18,6 +18,6 @@ import edu.utexas.wrap.marketsegmentation.MarketSegment;
  */
 public abstract class TripInterchangeSplitter {
 	
-	public abstract Set<ModalPAMatrix> split(AggregatePAMatrix aggregate, MarketSegment segment);
+	public abstract Stream<ModalPAMatrix> split(AggregatePAMatrix aggregate, MarketSegment segment);
 	
 }

@@ -11,20 +11,22 @@ import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class BasicTripGenerator {
-	Graph g;
+	protected Graph g;
+	private Map<MarketSegment, Double> rates;
 	
-	public BasicTripGenerator(Graph graph) {
+	public BasicTripGenerator(Graph graph, Map<MarketSegment,Double> rateMap) {
 		g = graph;
+		rates = rateMap;
 	}
 	
 	public Map<TravelSurveyZone,Double> generate(MarketSegment segment){
 		return g.getTSZs().parallelStream().collect(	//For each TSZ in parallel,
 				Collectors.toMap(Function.identity(), tsz ->	//the TSZ maps to a value:
 					//The data rate for this market segment times the market segment's value for this TSZ
-						segment.getRate()*segment.getAttributeData().applyAsDouble(tsz)));
+						rates.get(segment)*segment.attributeDataGetter().applyAsDouble(tsz)));
 	}
 	
-	public Map<TravelSurveyZone,Double> scale(Map<TravelSurveyZone,Double> input, Map<AreaClass,Double> areaData){
+	private Map<TravelSurveyZone,Double> scale(Map<TravelSurveyZone,Double> input, Map<AreaClass,Double> areaData){
 		return input.entrySet().parallelStream().collect(	//For each input key-value mapping in parallel,
 				Collectors.toMap(Entry::getKey, //Key maps to key,
 						entry -> entry.getValue()*areaData.get( //Multiply the original value by the area factor

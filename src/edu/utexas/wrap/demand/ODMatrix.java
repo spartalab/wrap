@@ -1,5 +1,7 @@
 package edu.utexas.wrap.demand;
 
+import java.nio.file.Path;
+
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
@@ -38,5 +40,7 @@ public interface ODMatrix {
 	 * @return the graph to which this OD matrix is associated
 	 */
 	public Graph getGraph();
+
+	public void write(Path outputOD);
 	
 }

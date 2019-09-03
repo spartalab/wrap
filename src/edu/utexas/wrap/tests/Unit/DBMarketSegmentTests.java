@@ -2,7 +2,7 @@ package edu.utexas.wrap.tests.Unit;
 import edu.utexas.wrap.balancing.DBTripBalancer;
 import edu.utexas.wrap.balancing.TripBalancer;
 import edu.utexas.wrap.demand.PAMap;
-import edu.utexas.wrap.demand.containers.DBPAMap;
+import edu.utexas.wrap.demand.containers.database.DBPAMap;
 import edu.utexas.wrap.distribution.DBGravityDistributor;
 import edu.utexas.wrap.distribution.DBFrictionFactorMap;
 import edu.utexas.wrap.distribution.GravityDistributor;

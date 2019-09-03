@@ -17,10 +17,16 @@ public class ModalFixedMultiplierPassthroughMatrix implements ModalPAMatrix {
 	private float percent;
 	private Mode mode;
 	private PAMatrix aggregate;
-	public ModalFixedMultiplierPassthroughMatrix(Mode m, float pct, PAMatrix agg) {
-		percent = pct;
+	public ModalFixedMultiplierPassthroughMatrix(Mode m, double pct, PAMatrix agg) {
+		percent = (float) pct;
 		mode = m;
 		aggregate = agg;
+	}
+	
+	public ModalFixedMultiplierPassthroughMatrix(double pct, ModalPAMatrix modalMatrix) {
+		percent = (float) pct;
+		mode = modalMatrix.getMode();
+		aggregate = modalMatrix;
 	}
 	
 	@Override

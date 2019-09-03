@@ -4,18 +4,21 @@ import java.util.function.ToDoubleFunction;
 
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-public class ChildSegment extends MarketSegment {
+public class ChildSegment implements ChildSegmenter {
 	int numChildren;
 
-	public ChildSegment(int children, Double segmentRate) {
-		// TODO Auto-generated constructor stub
-		super(segmentRate);
+	public ChildSegment(int children) {
 		numChildren = children;
 	}
 
 	@Override
-	public ToDoubleFunction<TravelSurveyZone> getAttributeData() {
+	public ToDoubleFunction<TravelSurveyZone> attributeDataGetter() {
 		return tsz -> tsz.getHouseholdsByChildren(numChildren);
+	}
+
+	@Override
+	public int numberOfChildren() {
+		return numChildren;
 	}
 
 }

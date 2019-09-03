@@ -2,23 +2,30 @@ package edu.utexas.wrap.marketsegmentation;
 
 import java.util.function.ToDoubleFunction;
 
-import edu.utexas.wrap.generation.IndustryClass;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-public class IncomeGroupIndustrySegment extends MarketSegment {
+public class IncomeGroupIndustrySegment implements IncomeGroupSegmenter, IndustrySegmenter {
 
 	int incomeGroup;
 	IndustryClass industry;
 	
-	public IncomeGroupIndustrySegment(Integer incomeGrp, IndustryClass industry, Double segmentRate) {
-		super(segmentRate);
+	public IncomeGroupIndustrySegment(Integer incomeGrp, IndustryClass industry) {
 		incomeGroup = incomeGrp;
 		this.industry = industry;
-		// TODO Auto-generated constructor stub
 	}
 	
 	@Override
-	public ToDoubleFunction<TravelSurveyZone> getAttributeData() {
+	public ToDoubleFunction<TravelSurveyZone> attributeDataGetter() {
 		return tsz -> tsz.getEmploymentByIncomeGroupAndIndustry(incomeGroup,industry);
+	}
+
+	@Override
+	public IndustryClass getIndustryClass() {
+		return industry;
+	}
+
+	@Override
+	public int getIncomeGroup() {
+		return incomeGroup;
 	}
 }

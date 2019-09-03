@@ -1,7 +1,8 @@
-package edu.utexas.wrap.demand.containers;
+package edu.utexas.wrap.demand.containers.database;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
+import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 

@@ -296,11 +296,14 @@ public class Graph {
 	}
 
 	public Collection<TravelSurveyZone> getTSZs() {
-		// TODO Auto-generated method stub
 		return zones;
 	}
 	
 	public boolean addZone(TravelSurveyZone zone) {
 		return zones.add(zone);
+	}
+
+	public Set<RegionalAreaAnalysisZone> getRAAs() {
+		return zones.parallelStream().map(TravelSurveyZone::getRAA).collect(Collectors.toSet());
 	}
 }

@@ -1,4 +1,4 @@
-package edu.utexas.wrap.demand.containers;
+package edu.utexas.wrap.demand.containers.database;
 
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.modechoice.Mode;

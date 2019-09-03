@@ -1,4 +1,4 @@
-package edu.utexas.wrap.generation;
+package edu.utexas.wrap.marketsegmentation;
 
 public enum EducationClass {
 	ELEMENTARY,

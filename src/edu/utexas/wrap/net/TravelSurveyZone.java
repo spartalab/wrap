@@ -3,8 +3,8 @@ package edu.utexas.wrap.net;
 import java.util.Collections;
 import java.util.Map;
 
-import edu.utexas.wrap.generation.EducationClass;
-import edu.utexas.wrap.generation.IndustryClass;
+import edu.utexas.wrap.marketsegmentation.EducationClass;
+import edu.utexas.wrap.marketsegmentation.IndustryClass;
 
 public class TravelSurveyZone {
 	private final Node origin;

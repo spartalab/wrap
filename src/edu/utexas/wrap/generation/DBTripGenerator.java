@@ -1,7 +1,7 @@
 package edu.utexas.wrap.generation;
 
 import edu.utexas.wrap.demand.PAMap;
-import edu.utexas.wrap.demand.containers.DBPAMap;
+import edu.utexas.wrap.demand.containers.database.DBPAMap;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.net.Graph;
 import java.sql.*;

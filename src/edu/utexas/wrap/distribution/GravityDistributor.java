@@ -1,6 +1,7 @@
 package edu.utexas.wrap.distribution;
 
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
@@ -26,7 +27,6 @@ import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 public class GravityDistributor extends TripDistributor {
 	private FrictionFactorMap friction;
 	private Graph g;
-	Boolean converged = false;
 
 	public GravityDistributor(Graph g, FrictionFactorMap fm) {
 		this.g = g;
@@ -39,10 +39,11 @@ public class GravityDistributor extends TripDistributor {
 		Map<TravelSurveyZone, Double> a = Object2DoubleMaps.synchronize(new Object2DoubleOpenHashMap<TravelSurveyZone>(g.numZones(),1.0f));
 		Map<TravelSurveyZone, Double> b = Object2DoubleMaps.synchronize(new Object2DoubleOpenHashMap<TravelSurveyZone>(g.numZones(),1.0f));
 
+		AtomicBoolean converged = new AtomicBoolean(false);
 		//While the previous iteration made changes
 		int iterations = 0;
-		while (!converged && iterations < 100) {
-			converged = true;
+		while (!converged.get() && iterations < 100) {
+			converged.set(true);
 			iterations++;
 //			System.out.println("Iteration "+iterations);
 			
@@ -56,7 +57,7 @@ public class GravityDistributor extends TripDistributor {
 				//If no A value exists yet or this is not within the numerical tolerance of the previous value
 				if (!a.containsKey(i) || !converged(a.getOrDefault(i,1.0), 1.0/denom)) {
 					//Write a new A value for this producer
-					converged = false;
+					converged.set(false);
 					a.put(i, 1.0/denom);
 				}
 			});
@@ -71,7 +72,7 @@ public class GravityDistributor extends TripDistributor {
 				//If no B value exists yet or this is not within the numerical tolerance of the previous value
 				if (!b.containsKey(j) || !converged(b.getOrDefault(j,1.0), 1.0/denom)) {
 					//Write a new B value for this attractor
-					converged = false;
+					converged.set(false);
 					b.put(j, 1.0/denom);
 				}	
 			});
