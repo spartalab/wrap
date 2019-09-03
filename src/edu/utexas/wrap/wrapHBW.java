@@ -61,13 +61,13 @@ public class wrapHBW {
 
 			
 			Graph g = GraphFactory.readEnhancedGraph(graphFile, 50000);
-			
+			//TODO read RAAs
 			//TODO add demographic data to zones
 			
 			//Perform trip generation
 			Map<MarketSegment, PAMap> maps = tripGenerator(g, prodSegs, attrSegs, vots, prodRates, attrRates);
 			
-			Map<MarketSegment,Map<TimePeriod,PAMap>> timeMaps = todSplit(maps,pkRates);
+			Map<MarketSegment,Map<TimePeriod,PAMap>> timeMaps = pkOpSplitting(maps,pkRates);
 			
 			//Perform trip balancing
 			balance(g, timeMaps);
@@ -78,13 +78,7 @@ public class wrapHBW {
 			
 			Map<MarketSegment,AggregatePAMatrix> aggCombinedMtxs = aggMtxs.entrySet().parallelStream()
 					.collect(Collectors.toMap(Entry::getKey, entry -> Combiner.combineAggregateMatrices(g, entry.getValue().values())));
-			
-			/*FIXME we're skipping the "HBOD4ModeChoice" step for now
-			 * since it's not really relevant to the demo of the model
-			 * and it's kinda difficult to understand what's actually
-			 * happening here
-			 * */ 
-			
+						
 			//Perform mode choice splitting
 			Map<MarketSegment, ModalPAMatrix> modalMtxs = modeChoice(modeShares, aggCombinedMtxs);
 
@@ -118,7 +112,7 @@ public class wrapHBW {
 		}
 	}
 
-	private static Map<MarketSegment, Map<TimePeriod, PAMap>> todSplit(Map<MarketSegment, PAMap> maps,
+	private static Map<MarketSegment, Map<TimePeriod, PAMap>> pkOpSplitting(Map<MarketSegment, PAMap> maps,
 			Map<MarketSegment, Double> pkRates) {
 		// TODO Auto-generated method stub
 		return maps.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, 
