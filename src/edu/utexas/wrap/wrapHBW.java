@@ -55,6 +55,7 @@ public class wrapHBW {
 			Map<MarketSegment,Map<Mode,Double>> modeShares = null; // ModeChoiceSplits.xlsx
 			Map<Mode,Double> occRates = null; // modalOccRates.csv
 
+			//TODO need to add command line argument for the prodRates
 			Map<MarketSegment,Double> vots = VOTFactory.readVOTFile(), //TODO Don't have file yet
 					 				  prodRates = ProductionAttractionFactory.readProductionRates(), //TripAttRates.csv
 									  pkRates = PeakFactory.readPkOPkSplitRates(); // pkOffPkSplits.csv

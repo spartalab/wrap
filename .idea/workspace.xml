@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="35b67530-44cd-447b-b333-46a019cdabd5" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/src/edu/utexas/wrap/util/ProductionAttractionFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/edu/utexas/wrap/util/ProductionAttractionFactory.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/edu/utexas/wrap/wrapHBW.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/edu/utexas/wrap/wrapHBW.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/bin/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -13,11 +14,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/wrapHBW.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="216">
-              <caret line="58" column="97" selection-start-line="58" selection-start-column="78" selection-end-line="58" selection-end-column="97" />
+            <state relative-caret-position="332">
+              <caret line="57" column="70" selection-start-line="57" selection-start-column="70" selection-end-line="57" selection-end-column="70" />
             </state>
           </provider>
         </entry>
@@ -35,11 +36,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/util/ProductionAttractionFactory.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="333">
-              <caret line="79" column="96" selection-start-line="79" selection-start-column="96" selection-end-line="79" selection-end-column="96" />
+            <state relative-caret-position="401">
+              <caret line="78" column="59" lean-forward="true" selection-start-line="78" selection-start-column="59" selection-end-line="78" selection-end-column="59" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -86,8 +87,8 @@
         <option value="$PROJECT_DIR$/src/edu/utexas/wrap/distribution/FrictionFactorMap.java" />
         <option value="$PROJECT_DIR$/src/edu/utexas/wrap/distribution/GravityDistributor.java" />
         <option value="$PROJECT_DIR$/src/edu/utexas/wrap/util/TripAttFactory.java" />
-        <option value="$PROJECT_DIR$/src/edu/utexas/wrap/wrapHBW.java" />
         <option value="$PROJECT_DIR$/src/edu/utexas/wrap/util/ProductionAttractionFactory.java" />
+        <option value="$PROJECT_DIR$/src/edu/utexas/wrap/wrapHBW.java" />
       </list>
     </option>
   </component>
@@ -152,7 +153,7 @@
     <property name="Repository.Attach.Annotations" value="false" />
     <property name="Repository.Attach.JavaDocs" value="false" />
     <property name="Repository.Attach.Sources" value="false" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1567701995059" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1567703247983" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="project.structure.last.edited" value="Libraries" />
     <property name="project.structure.proportion" value="0.0" />
@@ -582,13 +583,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/wrapHBW.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="216">
-          <caret line="58" column="97" selection-start-line="58" selection-start-column="78" selection-end-line="58" selection-end-column="97" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/util/FrictionFactorFactory.java">
       <provider selected="true" editor-type-id="text-editor">
         <state>
@@ -602,11 +596,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/util/ProductionAttractionFactory.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="333">
-          <caret line="79" column="96" selection-start-line="79" selection-start-column="96" selection-end-line="79" selection-end-column="96" />
+        <state relative-caret-position="401">
+          <caret line="78" column="59" lean-forward="true" selection-start-line="78" selection-start-column="59" selection-end-line="78" selection-end-column="59" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/wrapHBW.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="332">
+          <caret line="57" column="70" selection-start-line="57" selection-start-column="70" selection-end-line="57" selection-end-column="70" />
         </state>
       </provider>
     </entry>
