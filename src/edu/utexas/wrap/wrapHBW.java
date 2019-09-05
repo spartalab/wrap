@@ -63,7 +63,7 @@ public class wrapHBW {
 			Map<MarketSegment,Map<AreaClass,Double>> attrRates = ProductionAttractionFactory.readAttractionRates(); //TripProdRates.csv
 
 			//TODO find skim file
-			FrictionFactorMap ffm = FrictionFactorFactory.readFactorFile(new File("../../nctcogFiles/FFactorHBW_INC1 OP.csv",true,null)); //Have file but don't know which income groups to use
+			FrictionFactorMap ffm = FrictionFactorFactory.readFactorFile(new File("../../nctcogFiles/FFactorHBW_INC1 OP.csv"),true,null); //Have file but don't know which income groups to use
 			
 			Map<TimePeriod,Path> outputODPaths = null;
 
@@ -75,10 +75,10 @@ public class wrapHBW {
 			//Perform trip generation
 			Map<MarketSegment, PAMap> maps = tripGenerator(g, prodSegs, attrSegs, vots, prodRates, attrRates);
 			
-			Map<MarketSegment,Map<TimePeriod,PAMap>> timeMaps = pkOpSplitting(maps,pkRates);
-			
 			//Perform trip balancing
-			balance(g, timeMaps);
+			balance(g, maps);
+						
+			Map<MarketSegment,Map<TimePeriod,PAMap>> timeMaps = pkOpSplitting(maps,pkRates);
 			
 			//Perform trip distribution
 			Map<MarketSegment, Map<TimePeriod, AggregatePAMatrix>> aggMtxs = tripDistribution(ffm, g, timeMaps);
@@ -120,20 +120,7 @@ public class wrapHBW {
 		}
 	}
 
-	private static Map<MarketSegment, Map<TimePeriod, PAMap>> pkOpSplitting(Map<MarketSegment, PAMap> maps,
-			Map<MarketSegment, Double> pkRates) {
-		// TODO Auto-generated method stub
-		return maps.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, 
-				entry -> {
-					double pkRate = pkRates.get(entry.getKey());
-					PAMap pkMap = new FixedMultiplierPassthroughPAMap(entry.getValue(),pkRate);
-					PAMap opMap = new FixedMultiplierPassthroughPAMap(entry.getValue(),1-pkRate);
-					Map<TimePeriod,PAMap> ret = new HashMap<TimePeriod,PAMap>(3,1.0f);
-					ret.put(TimePeriod.MORN_PK, pkMap);
-					ret.put(TimePeriod.EARLY_OFFPK, opMap);
-					return ret;
-				}));
-	}
+
 
 	private static Map<MarketSegment, PAMap> tripGenerator(Graph g, 
 			Collection<MarketSegment> prodSegs, Collection<MarketSegment> attrSegs,
@@ -150,11 +137,25 @@ public class wrapHBW {
 				seg -> new PAPassthroughMap(g, vots.get(seg), prods.get(seg),attrs.get(seg))));
 	}
 
-	private static void balance(Graph g, Map<MarketSegment, Map<TimePeriod, PAMap>> timeMaps) {
+	private static void balance(Graph g, Map<MarketSegment, PAMap> timeMaps) {
 		Prod2AttrProportionalBalancer balancer = new Prod2AttrProportionalBalancer(g.getRAAs());
-		timeMaps.values().parallelStream().flatMap(map -> map.values().parallelStream()).forEach(map -> balancer.balance(map));
+		timeMaps.values().parallelStream().forEach(map -> balancer.balance(map));
 	}
-
+	
+	private static Map<MarketSegment, Map<TimePeriod, PAMap>> pkOpSplitting(Map<MarketSegment, PAMap> maps,
+			Map<MarketSegment, Double> pkRates) {
+		// TODO Auto-generated method stub
+		return maps.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, 
+				entry -> {
+					double pkRate = pkRates.get(entry.getKey());
+					PAMap pkMap = new FixedMultiplierPassthroughPAMap(entry.getValue(),pkRate);
+					PAMap opMap = new FixedMultiplierPassthroughPAMap(entry.getValue(),1-pkRate);
+					Map<TimePeriod,PAMap> ret = new HashMap<TimePeriod,PAMap>(3,1.0f);
+					ret.put(TimePeriod.MORN_PK, pkMap);
+					ret.put(TimePeriod.EARLY_OFFPK, opMap);
+					return ret;
+				}));
+	}
 	private static Map<MarketSegment, Map<TimePeriod,AggregatePAMatrix>> tripDistribution(FrictionFactorMap ffm, Graph g,
 			Map<MarketSegment, Map<TimePeriod, PAMap>> timeMaps) {
 		TripDistributor distributor = new GravityDistributor(g,ffm);
