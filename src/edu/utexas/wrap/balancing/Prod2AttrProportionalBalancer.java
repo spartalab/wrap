@@ -15,13 +15,20 @@ public class Prod2AttrProportionalBalancer implements TripBalancer {
 	
 	@Override
 	public void balance(PAMap paMap) {
-		raas.parallelStream().forEach(raa -> {
+		if (raas != null) raas.parallelStream().forEach(raa -> {
 			float prods = (float) raa.getTSZs().parallelStream().mapToDouble(tsz ->paMap.getProductions(tsz)).sum();
 			float attrs = (float) raa.getTSZs().parallelStream().mapToDouble(tsz -> paMap.getAttractions(tsz)).sum();
 
 			float prop = attrs/prods;
 			raa.getTSZs().parallelStream().forEach(tsz -> paMap.putProductions(tsz, paMap.getProductions(tsz)*prop));
 		});
+		else {
+			double prods = paMap.getProducers().parallelStream().mapToDouble(prod -> paMap.getProductions(prod)).sum();
+			double attrs = paMap.getAttractors().parallelStream().mapToDouble(attr -> paMap.getAttractions(attr)).sum();
+			
+			double scale = attrs/prods;
+			paMap.getProducers().parallelStream().forEach(prod -> paMap.putProductions(prod, (float) (paMap.getProductions(prod)*scale)));
+		}
 	}
 
 }
