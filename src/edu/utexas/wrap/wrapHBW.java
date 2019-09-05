@@ -50,16 +50,17 @@ public class wrapHBW {
 					).collect(Collectors.toSet());
 			
 			Map<TimePeriod,Double>
-					depRates = null, //Dont have file yet
-					arrRates = null; //dont have yet
-			Map<MarketSegment,Map<Mode,Double>> modeShares = null; //DOnt have file yet
-			Map<Mode,Double> occRates = null; //Dont Have file yet
+					depRates = null, //TODFactors.csv
+					arrRates = null; //TODFactors.csv
+			Map<MarketSegment,Map<Mode,Double>> modeShares = null; // ModeChoiceSplits.xlsx
+			Map<Mode,Double> occRates = null; // modalOccRates.csv
 			Map<MarketSegment,Double>
-					vots = VOTFactory.readVOTFile(), //Don't have file yet
-					prodRates = ProductionAttractionFactory.readProductionRates(), //Have file
-					pkRates = PeakFactory.readPkOPkSplitRates(); //Have file
-			Map<MarketSegment,Map<AreaClass,Double>> attrRates = ProductionAttractionFactory.readAttractionRates(); //Have file
-			FrictionFactorMap ffm = FrictionFactorFactory.readFactorFile(new File("../../nctcogFiles/FFactorHBW_INC1 OP.csv",true,null)); //Have file but don't know which income groups to use
+					vots = VOTFactory.readVOTFile(), //TODO Don't have file yet
+					prodRates = ProductionAttractionFactory.readProductionRates(), //TripAttRates.csv
+					pkRates = PeakFactory.readPkOPkSplitRates(); // pkOffPkSplits.csv
+			Map<MarketSegment,Map<AreaClass,Double>> attrRates = ProductionAttractionFactory.readAttractionRates(); //TripProdRates.csv
+			FrictionFactorMap ffm = // TODO find skim file
+					FrictionFactorFactory.readFactorFile(new File("../../nctcogFiles/FFactorHBW_INC1 OP.csv",true,null)); //Have file but don't know which income groups to use
 			
 			Map<TimePeriod,Path> outputODPaths = null;
 
