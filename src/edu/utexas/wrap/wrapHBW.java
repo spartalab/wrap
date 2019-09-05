@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import com.sun.org.apache.xpath.internal.operations.Mod;
 import edu.utexas.wrap.balancing.Prod2AttrProportionalBalancer;
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.Combiner;
@@ -35,6 +36,7 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.modechoice.TripInterchangeSplitter;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.*;
 
@@ -49,11 +51,10 @@ public class wrapHBW {
 						IntStream.range(1, 4).parallel().mapToObj(ig -> new IncomeGroupIndustrySegment(ig, ic))
 					).collect(Collectors.toSet());
 			
-			Map<TimePeriod,Double> depRates = null, //TODFactors.csv
-								   arrRates = null; //TODFactors.csv
-
-			Map<MarketSegment,Map<Mode,Double>> modeShares = null; // ModeChoiceSplits.xlsx
-			Map<Mode,Double> occRates = null; // modalOccRates.csv
+			Map<MarketSegment, Map<TimePeriod,Double>> depRates = TimePeriodRatesFactory.readDepartureFile(new File("../../nctcogFiles/TODfactors.csv"), prodSegs), //TODFactors.csv
+								   arrRates = TimePeriodRatesFactory.readArrivalFile(new File("../../nctcogFiles/TODfactors.csv"), prodSegs); //TODFactors.csv
+			Map<MarketSegment,Map<Mode,Double>> modeShares = ModeFactory.readModeShares(new File("../../nctcogFiles/modeChoiceSplits.csv"), prodSegs); // ModeChoiceSplits.csv
+			Map<Mode,Double> occRates = ModeFactory.readOccRates(new File("../../nctcogFiles/modalOccRates.csv"), true); // modalOccRates.csv
 
 			//TODO need to add command line argument for the prodRates
 			Map<MarketSegment,Double> vots = VOTFactory.readVOTFile(), //TODO Don't have file yet
@@ -63,8 +64,9 @@ public class wrapHBW {
 			Map<MarketSegment,Map<AreaClass,Double>> attrRates = ProductionAttractionFactory.readAttractionRates(); //TripProdRates.csv
 
 			//TODO find skim file
-			FrictionFactorMap ffm = FrictionFactorFactory.readFactorFile(new File("../../nctcogFiles/FFactorHBW_INC1 OP.csv"),true,null); //Have file but don't know which income groups to use
-			
+			Map<Node, Map<Node, Float>> skim = SkimFactory.readSkimFile();
+			FrictionFactorMap ffm = FrictionFactorFactory.readFactorFile(new File("../../nctcogFiles/FFactorHBW_INC1 OP.csv"),true,skim); //Have file but don't know which income groups to use
+
 			Map<TimePeriod,Path> outputODPaths = null;
 
 			
@@ -74,10 +76,10 @@ public class wrapHBW {
 			
 			//Perform trip generation
 			Map<MarketSegment, PAMap> maps = tripGenerator(g, prodSegs, attrSegs, vots, prodRates, attrRates);
-			
+
 			//Perform trip balancing
 			balance(g, maps);
-						
+
 			Map<MarketSegment,Map<TimePeriod,PAMap>> timeMaps = pkOpSplitting(maps,pkRates);
 			
 			//Perform trip distribution
@@ -122,18 +124,18 @@ public class wrapHBW {
 
 
 
-	private static Map<MarketSegment, PAMap> tripGenerator(Graph g, 
+	private static Map<MarketSegment, PAMap> tripGenerator(Graph g,
 			Collection<MarketSegment> prodSegs, Collection<MarketSegment> attrSegs,
 			Map<MarketSegment, Double> vots, Map<MarketSegment, Double> prodRates,
 			Map<MarketSegment, Map<AreaClass, Double>> attrRates) {
-		
+
 		BasicTripGenerator prodGenerator = new BasicTripGenerator(g,prodRates);
 		AreaSpecificTripGenerator attrGenerator = new AreaSpecificTripGenerator(g,attrRates);
 
 		Map<MarketSegment,Map<TravelSurveyZone,Double>> prods = prodSegs.parallelStream().collect(Collectors.toMap(Function.identity(), seg -> prodGenerator.generate(seg)));
 		Map<MarketSegment,Map<TravelSurveyZone,Double>> attrs = attrSegs.parallelStream().collect(Collectors.toMap(Function.identity(), seg -> attrGenerator.generate(seg)));
-		
-		return prodSegs.parallelStream().collect(Collectors.toMap(Function.identity(), 
+
+		return prodSegs.parallelStream().collect(Collectors.toMap(Function.identity(),
 				seg -> new PAPassthroughMap(g, vots.get(seg), prods.get(seg),attrs.get(seg))));
 	}
 
@@ -141,7 +143,7 @@ public class wrapHBW {
 		Prod2AttrProportionalBalancer balancer = new Prod2AttrProportionalBalancer(g.getRAAs());
 		timeMaps.values().parallelStream().forEach(map -> balancer.balance(map));
 	}
-	
+
 	private static Map<MarketSegment, Map<TimePeriod, PAMap>> pkOpSplitting(Map<MarketSegment, PAMap> maps,
 			Map<MarketSegment, Double> pkRates) {
 		// TODO Auto-generated method stub
