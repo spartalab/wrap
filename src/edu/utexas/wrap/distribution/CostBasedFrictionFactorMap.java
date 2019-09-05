@@ -17,18 +17,18 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  */
 public class CostBasedFrictionFactorMap implements FrictionFactorMap {
 
-	private Map<Node, Map<Node, Float>> travelCosts;
+	private Map<TravelSurveyZone, Map<TravelSurveyZone, Float>> travelCosts;
 	private TreeMap<Integer, Float> costFactors;
 
 
-	public CostBasedFrictionFactorMap(Map<Node,Map<Node,Float>> costSkim, TreeMap<Integer, Float> factors) {
+	public CostBasedFrictionFactorMap(Map<TravelSurveyZone,Map<TravelSurveyZone,Float>> costSkim, TreeMap<Integer, Float> factors) {
 		travelCosts = costSkim;
 		costFactors = factors;
 	}
 	
 	@Override
 	public Float get(TravelSurveyZone producer, TravelSurveyZone attractor) {
-		Float cost = travelCosts.get(producer.getNode()).get(attractor.getNode());
+		Float cost = travelCosts.get(producer).get(attractor);
 		if (cost < 0) throw new RuntimeException("Negative travel cost");
 		
 		//Get the nearest costFactors to this cost

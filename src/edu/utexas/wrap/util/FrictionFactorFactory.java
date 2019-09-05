@@ -10,9 +10,10 @@ import java.util.TreeMap;
 import edu.utexas.wrap.distribution.CostBasedFrictionFactorMap;
 import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class FrictionFactorFactory {
-	public static FrictionFactorMap readFactorFile(File file, boolean header, Map<Node, Map<Node, Float>> skim) throws IOException {
+	public static FrictionFactorMap readFactorFile(File file, boolean header, Map<TravelSurveyZone, Map<TravelSurveyZone, Float>> skim) throws IOException {
 		TreeMap<Integer, Float> tree = new TreeMap<Integer, Float>();
 		BufferedReader in = null;
 
