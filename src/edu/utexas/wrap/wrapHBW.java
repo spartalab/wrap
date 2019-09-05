@@ -36,8 +36,7 @@ import edu.utexas.wrap.modechoice.TripInterchangeSplitter;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
-import edu.utexas.wrap.util.DepartureArrivalConverter;
-import edu.utexas.wrap.util.GraphFactory;
+import edu.utexas.wrap.util.*;
 
 public class wrapHBW {
 
@@ -50,12 +49,17 @@ public class wrapHBW {
 						IntStream.range(1, 4).parallel().mapToObj(ig -> new IncomeGroupIndustrySegment(ig, ic))
 					).collect(Collectors.toSet());
 			
-			Map<TimePeriod,Double> depRates = null, arrRates = null;
-			Map<MarketSegment,Map<Mode,Double>> modeShares = null;
-			Map<Mode,Double> occRates = null;
-			Map<MarketSegment,Double> vots = null, prodRates = null, pkRates = null;
-			Map<MarketSegment,Map<AreaClass,Double>> attrRates = null;
-			FrictionFactorMap ffm = null;
+			Map<TimePeriod,Double>
+					depRates = null, //Dont have file yet
+					arrRates = null; //dont have yet
+			Map<MarketSegment,Map<Mode,Double>> modeShares = null; //DOnt have file yet
+			Map<Mode,Double> occRates = null; //Dont Have file yet
+			Map<MarketSegment,Double>
+					vots = VOTFactory.readVOTFile(), //Don't have file yet
+					prodRates = ProductionAttractionFactory.readProductionRates(), //Have file
+					pkRates = PeakFactory.readPkOPkSplitRates(); //Have file
+			Map<MarketSegment,Map<AreaClass,Double>> attrRates = ProductionAttractionFactory.readAttractionRates(); //Have file
+			FrictionFactorMap ffm = FrictionFactorFactory.readFactorFile(new File("../../nctcogFiles/FFactorHBW_INC1 OP.csv",true,null)); //Have file but don't know which income groups to use
 			
 			Map<TimePeriod,Path> outputODPaths = null;
 

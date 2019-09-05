@@ -4,11 +4,14 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Map;
 
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.PAMatrix;
 import edu.utexas.wrap.demand.containers.AggregatePAHashMap;
 import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
+import edu.utexas.wrap.marketsegmentation.MarketSegment;
+import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
@@ -56,5 +59,11 @@ public class ProductionAttractionFactory {
 			if (in != null) in.close();
 		}
 		return ret;
+	}
+
+	public static Map<MarketSegment, Map<AreaClass,Double>> readProductionRates(File file, boolean header, Graph g) throws IOException {
+	}
+
+	public static Map<MarketSegment,Double> readAttractionRates(File file, boolean header, Graph g) throws IOException {
 	}
 }
