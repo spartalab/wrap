@@ -49,18 +49,20 @@ public class wrapHBW {
 						IntStream.range(1, 4).parallel().mapToObj(ig -> new IncomeGroupIndustrySegment(ig, ic))
 					).collect(Collectors.toSet());
 			
-			Map<TimePeriod,Double>
-					depRates = null, //TODFactors.csv
-					arrRates = null; //TODFactors.csv
+			Map<TimePeriod,Double> depRates = null, //TODFactors.csv
+								   arrRates = null; //TODFactors.csv
+
 			Map<MarketSegment,Map<Mode,Double>> modeShares = null; // ModeChoiceSplits.xlsx
 			Map<Mode,Double> occRates = null; // modalOccRates.csv
-			Map<MarketSegment,Double>
-					vots = VOTFactory.readVOTFile(), //TODO Don't have file yet
-					prodRates = ProductionAttractionFactory.readProductionRates(), //TripAttRates.csv
-					pkRates = PeakFactory.readPkOPkSplitRates(); // pkOffPkSplits.csv
+
+			Map<MarketSegment,Double> vots = VOTFactory.readVOTFile(), //TODO Don't have file yet
+					 				  prodRates = ProductionAttractionFactory.readProductionRates(), //TripAttRates.csv
+									  pkRates = PeakFactory.readPkOPkSplitRates(); // pkOffPkSplits.csv
+
 			Map<MarketSegment,Map<AreaClass,Double>> attrRates = ProductionAttractionFactory.readAttractionRates(); //TripProdRates.csv
-			FrictionFactorMap ffm = // TODO find skim file
-					FrictionFactorFactory.readFactorFile(new File("../../nctcogFiles/FFactorHBW_INC1 OP.csv",true,null)); //Have file but don't know which income groups to use
+
+			//TODO find skim file
+			FrictionFactorMap ffm = FrictionFactorFactory.readFactorFile(new File("../../nctcogFiles/FFactorHBW_INC1 OP.csv",true,null)); //Have file but don't know which income groups to use
 			
 			Map<TimePeriod,Path> outputODPaths = null;
 
