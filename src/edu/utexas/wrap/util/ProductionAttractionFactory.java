@@ -15,6 +15,7 @@ import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
 import edu.utexas.wrap.marketsegmentation.IndustryClass;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.marketsegmentation.IncomeGroupIndustrySegment;
+import edu.utexas.wrap.marketsegmentation.WorkerVehicleSegment;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
@@ -65,7 +66,27 @@ public class ProductionAttractionFactory {
 		return ret;
 	}
 
-	public static Map<MarketSegment, Map<AreaClass,Double>> readProductionRates(File file, boolean header, Graph g) throws IOException {
+	public static Map<MarketSegment,Double>  readProductionRates(File file, boolean header, boolean v1) throws IOException {
+		BufferedReader in = null;
+		Map<MarketSegment,Double> map = new HashMap<>();
+
+		try {
+			in = new BufferedReader(new FileReader(file));
+			if (header) in.readLine();
+			in.lines().parallel().forEach(line -> {
+				String[] args = line.split(",");
+				int workers = Integer.parseInt((args[0]));
+				int vehicles = Integer.parseInt((args[1]));
+				Double hbwPro = v1 ? Double.parseDouble((args[3])) : Double.parseDouble(args[2]);
+
+				MarketSegment workerVehicle = new WorkerVehicleSegment(workers, vehicles);
+				map.put(workerVehicle, hbwPro);
+			});
+
+		} finally {
+			if (in != null) in.close();
+		}
+		return map;
 	}
 
 	public static Map<MarketSegment, Map<AreaClass,Double>> readAttractionRates(File file, boolean header, Graph g) throws IOException {
