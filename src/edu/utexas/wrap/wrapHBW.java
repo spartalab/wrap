@@ -180,17 +180,19 @@ public class wrapHBW {
 	
 	private static Map<TimePeriod, ODMatrix> paToODConversion(
 			Map<MarketSegment, ModalPAMatrix> modalMtxs,
-			Map<TimePeriod, Double> departureRates, 
-			Map<TimePeriod, Double> arrivalRates, 
+			Map<MarketSegment,Map<TimePeriod, Double>> departureRates, 
+			Map<MarketSegment,Map<TimePeriod, Double>> arrivalRates, 
 			Map<Mode, Double> occupancyRates) {
 		
 		return Stream.of(TimePeriod.values()).parallel()			
 		.collect(Collectors.toMap(Function.identity(), tp -> {
 			
 			//Convert using TOD splitting
-			DepartureArrivalConverter converter = new DepartureArrivalConverter(departureRates.get(tp),arrivalRates.get(tp));
-			Stream<ODMatrix> tpODs = modalMtxs.values().parallelStream()
-					.map(entry -> converter.convert(entry, occupancyRates.get(entry.getMode())));
+			Stream<ODMatrix> tpODs = modalMtxs.entrySet().parallelStream()
+					.map(entry -> {
+						DepartureArrivalConverter converter = new DepartureArrivalConverter(departureRates.get(entry.getKey()).get(tp),arrivalRates.get(entry.getKey()).get(tp));
+						return converter.convert(entry.getValue(), occupancyRates.get(entry.getValue().getMode()));
+					});
 			
 			//Combine across income groups 1,2,3 and vehicle ownership
 			return Combiner.combineODMatrices(tpODs);
