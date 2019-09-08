@@ -8,14 +8,15 @@ import java.util.Map;
 
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 import it.unimi.dsi.fastutil.objects.Object2FloatMaps;
 import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 public class SkimFactory {
-	public static Map<Node, Map<Node, Float>> readSkimFile(File file, boolean header, Graph graph) throws IOException {
-		Map<Node,Map<Node,Float>> ret = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<Node, Map<Node,Float>>());
+	public static Map<TravelSurveyZone, Map<TravelSurveyZone, Float>> readSkimFile(File file, boolean header, Graph graph) throws IOException {
+		Map<TravelSurveyZone,Map<TravelSurveyZone,Float>> ret = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<TravelSurveyZone, Map<TravelSurveyZone,Float>>());
 		BufferedReader in = null;
 
 		try {
@@ -29,12 +30,12 @@ public class SkimFactory {
 		return ret;
 	}
 
-	static void processLine(Graph graph, Map<Node, Map<Node, Float>> ret, String line) {
+	static void processLine(Graph graph, Map<TravelSurveyZone, Map<TravelSurveyZone, Float>> ret, String line) {
 		String[] args = line.split(",");
-		Node orig = graph.getNode(Integer.parseInt(args[0]));
-		Node dest = graph.getNode(Integer.parseInt(args[1]));
+		TravelSurveyZone orig = graph.getNode(Integer.parseInt(args[0])).getZone();
+		TravelSurveyZone dest = graph.getNode(Integer.parseInt(args[1])).getZone();
 		Float cost = Float.parseFloat(args[5]);
-		ret.putIfAbsent(orig, Object2FloatMaps.synchronize(new Object2FloatOpenHashMap<Node>()));
+		ret.putIfAbsent(orig, Object2FloatMaps.synchronize(new Object2FloatOpenHashMap<TravelSurveyZone>()));
 		ret.get(orig).put(dest, cost);
 	}
 }

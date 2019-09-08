@@ -46,6 +46,7 @@ public class wrapHBW {
 		try{
 			//Model inputs
 			File graphFile = new File(args[1]);
+			Graph graph = GraphFactory.readTNTPGraph(graphFile);
 			Collection<MarketSegment> prodSegs = IntStream.range(1,4).parallel().mapToObj(ig -> new IncomeGroupSegment(ig)).collect(Collectors.toSet()),
 					attrSegs = Stream.of(IndustryClass.values()).parallel().flatMap(ic ->
 						IntStream.range(1, 4).parallel().mapToObj(ig -> new IncomeGroupIndustrySegment(ig, ic))
@@ -63,10 +64,23 @@ public class wrapHBW {
 
 			Map<MarketSegment,Map<AreaClass,Double>> attrRates = ProductionAttractionFactory.readAttractionRates(); //TripProdRates.csv
 
-			//TODO find skim file
-			Map<Node, Map<Node, Float>> skim = SkimFactory.readSkimFile();
-			FrictionFactorMap ffm = FrictionFactorFactory.readFactorFile(new File("../../nctcogFiles/FFactorHBW_INC1 OP.csv"),true,skim); //Have file but don't know which income groups to use
-
+			//Read Skim file
+			Map<TravelSurveyZone, Map<TravelSurveyZone, Float>> skim = SkimFactory.readSkimFile(new File("../../nctcogFiles/PKNOHOV.csv"), false, graph);
+			//Create FF Maps for each segment
+			Map<MarketSegment, FrictionFactorMap> ffmaps = new HashMap<MarketSegment, FrictionFactorMap>();
+			String[] ff_files = {"../../FFactorHBW_INC1 PK.csv","../../FFactorHBW_INC2 PK.csv", "../../FFactorHBW_INC3 PK.csv"};
+			prodSegs.parallelStream().forEach(seg -> {
+						int idx = 0;
+						while(idx < ff_files.length && !ff_files[idx].contains(((IncomeGroupSegment) seg).getIncomeGroup() + "")){
+							idx++;
+						}
+						try {
+							ffmaps.put(seg, FrictionFactorFactory.readFactorFile(new File(ff_files[idx]), true, skim));
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+					}
+			);
 			Map<TimePeriod,Path> outputODPaths = null;
 
 			
