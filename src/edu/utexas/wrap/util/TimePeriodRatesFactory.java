@@ -37,6 +37,7 @@ public class TimePeriodRatesFactory {
                             }
                         }
                     }
+                    i++;
                 }
                 String line = in.readLine();
 
@@ -75,6 +76,7 @@ public class TimePeriodRatesFactory {
                         }
                     }
                 }
+                i++;
             }
             String line = in.readLine();
 
