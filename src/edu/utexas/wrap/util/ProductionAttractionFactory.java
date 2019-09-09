@@ -89,10 +89,9 @@ public class ProductionAttractionFactory {
 		return map;
 	}
 
-	public static Map<MarketSegment, Map<AreaClass,Double>> readAttractionRates(File file, boolean header, Graph g) throws IOException {
+	public static Map<MarketSegment, Map<AreaClass,Double>> readAttractionRates(File file, boolean header) throws IOException {
 		BufferedReader in = null;
 		Map<MarketSegment,Map<AreaClass,Double>> map = new HashMap<>();
-
 
 		try {
 			in = new BufferedReader(new FileReader(file));
