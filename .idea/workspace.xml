@@ -3,8 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="35b67530-44cd-447b-b333-46a019cdabd5" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/edu/utexas/wrap/util/PeakFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/edu/utexas/wrap/util/PeakFactory.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/edu/utexas/wrap/util/ProductionAttractionFactory.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/edu/utexas/wrap/util/ProductionAttractionFactory.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/edu/utexas/wrap/wrapHBW.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/edu/utexas/wrap/wrapHBW.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/bin/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -15,11 +15,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/wrapHBW.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="408">
-              <caret line="62" column="60" lean-forward="true" selection-start-line="62" selection-start-column="60" selection-end-line="62" selection-end-column="60" />
+            <state relative-caret-position="394">
+              <caret line="64" column="166" selection-start-line="64" selection-start-column="166" selection-end-line="64" selection-end-column="166" />
               <folding>
                 <element signature="e#3575#3609#0" expanded="true" />
                 <element signature="e#7176#7194#0" expanded="true" />
@@ -28,11 +28,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/util/PeakFactory.java">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="324">
-              <caret line="27" column="43" selection-start-line="27" selection-start-column="43" selection-end-line="27" selection-end-column="43" />
+              <caret line="27" column="45" lean-forward="true" selection-start-line="27" selection-start-column="45" selection-end-line="27" selection-end-column="45" />
             </state>
           </provider>
         </entry>
@@ -62,8 +62,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/util/ProductionAttractionFactory.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="704">
-              <caret line="88" column="19" lean-forward="true" selection-start-line="69" selection-start-column="8" selection-end-line="88" selection-end-column="19" />
+            <state relative-caret-position="610">
+              <caret line="113" column="28" lean-forward="true" selection-start-line="113" selection-start-column="28" selection-end-line="113" selection-end-column="28" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -110,9 +110,9 @@
         <option value="$PROJECT_DIR$/src/edu/utexas/wrap/distribution/FrictionFactorMap.java" />
         <option value="$PROJECT_DIR$/src/edu/utexas/wrap/distribution/GravityDistributor.java" />
         <option value="$PROJECT_DIR$/src/edu/utexas/wrap/util/TripAttFactory.java" />
-        <option value="$PROJECT_DIR$/src/edu/utexas/wrap/wrapHBW.java" />
-        <option value="$PROJECT_DIR$/src/edu/utexas/wrap/util/ProductionAttractionFactory.java" />
         <option value="$PROJECT_DIR$/src/edu/utexas/wrap/util/PeakFactory.java" />
+        <option value="$PROJECT_DIR$/src/edu/utexas/wrap/util/ProductionAttractionFactory.java" />
+        <option value="$PROJECT_DIR$/src/edu/utexas/wrap/wrapHBW.java" />
       </list>
     </option>
   </component>
@@ -177,7 +177,7 @@
     <property name="Repository.Attach.Annotations" value="false" />
     <property name="Repository.Attach.JavaDocs" value="false" />
     <property name="Repository.Attach.Sources" value="false" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1568045973619" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1568055727724" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="project.structure.last.edited" value="Libraries" />
     <property name="project.structure.proportion" value="0.0" />
@@ -599,24 +599,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/wrapHBW.java">
+    <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/marketsegmentation/IncomeGroupSegment.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="408">
-          <caret line="62" column="60" lean-forward="true" selection-start-line="62" selection-start-column="60" selection-end-line="62" selection-end-column="60" />
-          <folding>
-            <element signature="e#3575#3609#0" expanded="true" />
-            <element signature="e#7176#7194#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/util/ProductionAttractionFactory.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="704">
-          <caret line="88" column="19" lean-forward="true" selection-start-line="69" selection-start-column="8" selection-end-line="88" selection-end-column="19" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
+        <state relative-caret-position="72">
+          <caret line="6" column="13" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
         </state>
       </provider>
     </entry>
@@ -631,17 +617,31 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/marketsegmentation/IncomeGroupSegment.java">
+    <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/util/ProductionAttractionFactory.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="72">
-          <caret line="6" column="13" selection-start-line="6" selection-start-column="13" selection-end-line="6" selection-end-column="13" />
+        <state relative-caret-position="610">
+          <caret line="113" column="28" lean-forward="true" selection-start-line="113" selection-start-column="28" selection-end-line="113" selection-end-column="28" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/util/PeakFactory.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="324">
-          <caret line="27" column="43" selection-start-line="27" selection-start-column="43" selection-end-line="27" selection-end-column="43" />
+          <caret line="27" column="45" lean-forward="true" selection-start-line="27" selection-start-column="45" selection-end-line="27" selection-end-column="45" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/wrapHBW.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="394">
+          <caret line="64" column="166" selection-start-line="64" selection-start-column="166" selection-end-line="64" selection-end-column="166" />
+          <folding>
+            <element signature="e#3575#3609#0" expanded="true" />
+            <element signature="e#7176#7194#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

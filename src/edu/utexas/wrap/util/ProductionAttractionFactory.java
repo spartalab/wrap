@@ -66,6 +66,7 @@ public class ProductionAttractionFactory {
 		return ret;
 	}
 
+	//TODO don't make assumption about the header orders, make a quick check for that
 	public static Map<MarketSegment,Double>  readProductionRates(File file, boolean header, boolean v1) throws IOException {
 		BufferedReader in = null;
 		Map<MarketSegment,Double> map = new HashMap<>();
@@ -89,6 +90,7 @@ public class ProductionAttractionFactory {
 		return map;
 	}
 
+	//TODO don't make assumption about the header orders, make a quick check for that
 	public static Map<MarketSegment, Map<AreaClass,Double>> readAttractionRates(File file, boolean header) throws IOException {
 		BufferedReader in = null;
 		Map<MarketSegment,Map<AreaClass,Double>> map = new HashMap<>();

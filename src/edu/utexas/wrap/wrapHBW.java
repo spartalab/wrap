@@ -58,11 +58,11 @@ public class wrapHBW {
 			Map<Mode,Double> occRates = ModeFactory.readOccRates(new File("../../nctcogFiles/modalOccRates.csv"), true); // modalOccRates.csv
 
 			//TODO need to add command line argument for the prodRates
-			Map<MarketSegment,Double> vots = VOTFactory.readVOTFile(), //TODO Don't have file yet
-					 				  prodRates = ProductionAttractionFactory.readProductionRates(), //TripAttRates.csv
-									  pkRates = PeakFactory.readPkOPkSplitRates(); // pkOffPkSplits.csv
+			Map<MarketSegment,Double> vots = null, //TODO Don't have file yet
+					 				  prodRates = ProductionAttractionFactory.readProductionRates(new File("../../nctcogFiles/TripAttRates.csv"), true, true), //TripAttRates.csv
+									  pkRates = PeakFactory.readPkOPkSplitRates(new File("../../nctcogFiles/pkOffPkSplits.csv"), true); // pkOffPkSplits.csv
 
-			Map<MarketSegment,Map<AreaClass,Double>> attrRates = ProductionAttractionFactory.readAttractionRates(); //TripProdRates.csv
+			Map<MarketSegment,Map<AreaClass,Double>> attrRates = ProductionAttractionFactory.readAttractionRates(new File("../../nctcogFiles/TripProdRates.csv"), true); //TripProdRates.csv
 
 			//Read Skim file
 			Map<TravelSurveyZone, Map<TravelSurveyZone, Float>> skim = SkimFactory.readSkimFile(new File("../../nctcogFiles/PKNOHOV.csv"), false, graph);
