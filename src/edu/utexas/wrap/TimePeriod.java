@@ -1,9 +1,9 @@
 package edu.utexas.wrap;
 
 public enum TimePeriod {
-	EARLY_OFFPK,
-	MORN_PK,
-	MIDDAY_OFFPK,
-	AFTERNOON_PK,
-	LATE_OFFPK
+	EARLY_OP,
+	AM_PK,
+	MID_OP,
+	PM_PK,
+	LATE_OP
 }

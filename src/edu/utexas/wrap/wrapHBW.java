@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
-import com.sun.org.apache.xpath.internal.operations.Mod;
 import edu.utexas.wrap.balancing.Prod2AttrProportionalBalancer;
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.Combiner;
@@ -36,7 +35,6 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.modechoice.TripInterchangeSplitter;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.*;
 
@@ -45,8 +43,8 @@ public class wrapHBW {
 	public static void main(String[] args) {
 		try{
 			//Model inputs
-			File graphFile = new File(args[1]);
-			Graph graph = GraphFactory.readTNTPGraph(graphFile);
+			File graphFile = new File(args[0]);
+			Graph graph = GraphFactory.readEnhancedGraph(graphFile,Integer.parseInt(args[1]));
 			Collection<MarketSegment> prodSegs = IntStream.range(1,4).parallel().mapToObj(ig -> new IncomeGroupSegment(ig)).collect(Collectors.toSet()),
 					attrSegs = Stream.of(IndustryClass.values()).parallel().flatMap(ic ->
 						IntStream.range(1, 4).parallel().mapToObj(ig -> new IncomeGroupIndustrySegment(ig, ic))
@@ -97,7 +95,7 @@ public class wrapHBW {
 			Map<MarketSegment,Map<TimePeriod,PAMap>> timeMaps = pkOpSplitting(maps,pkRates);
 			
 			//Perform trip distribution
-			Map<MarketSegment, Map<TimePeriod, AggregatePAMatrix>> aggMtxs = tripDistribution(ffm, g, timeMaps);
+			Map<MarketSegment, Map<TimePeriod, AggregatePAMatrix>> aggMtxs = tripDistribution(ffmaps, g, timeMaps);
 			
 			
 			Map<MarketSegment,AggregatePAMatrix> aggCombinedMtxs = aggMtxs.entrySet().parallelStream()
@@ -113,8 +111,8 @@ public class wrapHBW {
 			//Write to file AM and PM peak OD matrices
 			ods.entrySet().parallelStream()
 			.filter(entry -> 
-				entry.getKey().equals(TimePeriod.MORN_PK) || 
-				entry.getKey().equals(TimePeriod.AFTERNOON_PK))
+				entry.getKey().equals(TimePeriod.AM_PK) || 
+				entry.getKey().equals(TimePeriod.PM_PK))
 			.forEach(entry -> entry.getValue().write(outputODPaths.get(entry.getKey())));
 			
 			//Combine off-peak matrices and output to file
@@ -167,17 +165,20 @@ public class wrapHBW {
 					PAMap pkMap = new FixedMultiplierPassthroughPAMap(entry.getValue(),pkRate);
 					PAMap opMap = new FixedMultiplierPassthroughPAMap(entry.getValue(),1-pkRate);
 					Map<TimePeriod,PAMap> ret = new HashMap<TimePeriod,PAMap>(3,1.0f);
-					ret.put(TimePeriod.MORN_PK, pkMap);
-					ret.put(TimePeriod.EARLY_OFFPK, opMap);
+					ret.put(TimePeriod.AM_PK, pkMap);
+					ret.put(TimePeriod.EARLY_OP, opMap);
 					return ret;
 				}));
 	}
-	private static Map<MarketSegment, Map<TimePeriod,AggregatePAMatrix>> tripDistribution(FrictionFactorMap ffm, Graph g,
+	private static Map<MarketSegment, Map<TimePeriod,AggregatePAMatrix>> tripDistribution(Map<MarketSegment,FrictionFactorMap> ffm, Graph g,
 			Map<MarketSegment, Map<TimePeriod, PAMap>> timeMaps) {
-		TripDistributor distributor = new GravityDistributor(g,ffm);
+		
 		timeMaps.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, entry -> 
 			entry.getValue().entrySet().parallelStream()
-			.collect(Collectors.toMap(Function.identity(), inner -> distributor.distribute(inner.getValue())))
+			.collect(Collectors.toMap(Function.identity(), inner -> {
+				TripDistributor distributor = new GravityDistributor(g,ffm.get(entry.getKey()));
+				return distributor.distribute(inner.getValue());
+			}))
 		));
 		return null;
 	}
