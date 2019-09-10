@@ -26,4 +26,8 @@ public class WorkerVehicleSegment implements WorkerSegmenter, VehicleSegmenter {
 	public int getNumberOfVehicles() {
 		return numVehicles;
 	}
+	
+	public String toString() {
+		return "Households with "+numWorkers+" workers and "+numVehicles+" vehicles";
+	}
 }

@@ -20,4 +20,8 @@ public class IncomeGroupSegment implements IncomeGroupSegmenter {
 	public int getIncomeGroup() {
 		return incomeGroup;
 	}
+	
+	public String toString() {
+		return "MS: Households in income group "+incomeGroup;
+	}
 }

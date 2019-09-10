@@ -28,4 +28,8 @@ public class IncomeGroupIndustrySegment implements IncomeGroupSegmenter, Industr
 	public int getIncomeGroup() {
 		return incomeGroup;
 	}
+	
+	public String toString() {
+		return "MS:"+industry.name()+" employment in income groupd "+incomeGroup;
+	}
 }

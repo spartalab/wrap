@@ -21,4 +21,8 @@ public class WorkerSegment implements WorkerSegmenter{
 		// TODO Auto-generated method stub
 		return numWorkers;
 	}
+	
+	public String toString() {
+		return "Households with "+numWorkers+" workers";
+	}
 }

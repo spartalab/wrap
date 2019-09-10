@@ -21,4 +21,7 @@ public class ChildSegment implements ChildSegmenter {
 		return numChildren;
 	}
 
+	public String toString() {
+		return "MS: Households with "+numChildren+" children";
+	}
 }

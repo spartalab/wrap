@@ -26,4 +26,8 @@ public class WorkerHouseholdSizeSegment implements WorkerSegmenter, HouseholdSiz
 	public int getHouseholdSize() {
 		return householdSize;
 	}
+	
+	public String toString() {
+		return "MS: Households of size "+householdSize+" with "+numWorkers+" workers";
+	}
 }

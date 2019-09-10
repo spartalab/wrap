@@ -14,4 +14,9 @@ public class CombinedMarketSegment<T extends MarketSegment> implements MarketSeg
 		return tsz -> segments.parallelStream().mapToDouble(seg -> seg.attributeDataGetter().applyAsDouble(tsz)).sum();
 	}
 
+	public String toString() {
+		StringBuilder sb = new StringBuilder("Combined segment: ");
+		segments.parallelStream().forEach(seg -> sb.append(seg.toString()+","));
+		return sb.toString();
+	}
 }

@@ -20,4 +20,8 @@ public class StudentSegment implements StudentSegmenter {
 	public EducationClass getEducationClass() {
 		return schoolType;
 	}
+	
+	public String toString() {
+		return "Students in education level "+schoolType.name();
+	}
 }
