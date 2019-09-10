@@ -24,10 +24,10 @@ public class TimePeriodRatesFactory {
 			HashMap<MarketSegment, Integer> positions = new HashMap<MarketSegment, Integer>();
 			int i = 0;
 			while(positions.size() < 3 && i < headersL.length) { //TODO Handle more than HWB Segments
-				if(headersL[i].contains("DEP")) {
+				if(headersL[i].contains("RET")) {
 					for(MarketSegment m: segs) {
 						IncomeGroupSegment seg = (IncomeGroupSegment) m;
-						if(headersL[i].contains(seg.getIncomeGroup() +"")) {
+						if(headersL[i].endsWith("IN"+seg.getIncomeGroup())) {
 							positions.put(m, i);
 						}
 					}
@@ -63,10 +63,10 @@ public class TimePeriodRatesFactory {
 			HashMap<MarketSegment, Integer> positions = new HashMap<MarketSegment, Integer>();
 			int i = 0;
 			while(positions.size() < 3 && i < headersL.length) { //TODO Handle more than HWB Segments
-				if(headersL[i].contains("RET")) {
+				if(headersL[i].contains("DEP")) {
 					for(MarketSegment m: segs) {
 						IncomeGroupSegment seg = (IncomeGroupSegment) m;
-						if(headersL[i].contains(seg.getIncomeGroup() +"")) {
+						if(headersL[i].endsWith("IN"+seg.getIncomeGroup())) {
 							positions.put(m, i);
 						}
 					}

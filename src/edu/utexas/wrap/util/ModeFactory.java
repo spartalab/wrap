@@ -34,11 +34,12 @@ public class ModeFactory {
                         }
                     }
                 }
+                i++;
             }
             String line = in.readLine();
 
             while (line != null) {
-                String[] args = headers.split(",");
+                String[] args = line.split(",");
                 Mode mod = Mode.valueOf(args[0]);
                 for(MarketSegment m: segs) {
                     Map<Mode, Double> segInfo = modeShares.getOrDefault(m, new HashMap<>());
