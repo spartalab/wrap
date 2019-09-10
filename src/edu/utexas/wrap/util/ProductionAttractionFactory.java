@@ -6,6 +6,9 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Stream;
+import java.util.Collection;
 import java.util.HashMap;
 
 import edu.utexas.wrap.demand.PAMap;
@@ -13,8 +16,10 @@ import edu.utexas.wrap.demand.PAMatrix;
 import edu.utexas.wrap.demand.containers.AggregatePAHashMap;
 import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
 import edu.utexas.wrap.marketsegmentation.IndustryClass;
+import edu.utexas.wrap.marketsegmentation.IndustrySegmenter;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.marketsegmentation.IncomeGroupIndustrySegment;
+import edu.utexas.wrap.marketsegmentation.IncomeGroupSegmenter;
 import edu.utexas.wrap.marketsegmentation.WorkerVehicleSegment;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
@@ -91,7 +96,7 @@ public class ProductionAttractionFactory {
 	}
 
 	//TODO don't make assumption about the header orders, make a quick check for that
-	public static Map<MarketSegment, Map<AreaClass,Double>> readAttractionRates(File file, boolean header) throws IOException {
+	public static Map<MarketSegment, Map<AreaClass,Double>> readAttractionRates(File file, boolean header, Collection<MarketSegment> segments) throws IOException {
 		BufferedReader in = null;
 		Map<MarketSegment,Map<AreaClass,Double>> map = new HashMap<>();
 
@@ -102,23 +107,46 @@ public class ProductionAttractionFactory {
 				String[] args = line.split(",");
 				int income = Integer.parseInt(args[0]);
 
-				IndustryClass industryClass = null;
-				String industry = args[1];
-				if (industry.equals('B')) {
+				if (income > 3) return; //FIXME temporary for demo
+				
+				final IndustryClass industryClass;
+				switch (args[1].charAt(1)) {
+				case 'B':
 					industryClass = IndustryClass.BASIC;
-				} else if (industry.equals('R')) {
+					break;
+				case 'R':
 					industryClass = IndustryClass.RETAIL;
-				} else if (industry.equals('S')) {
+					break;
+				case 'S':
 					industryClass = IndustryClass.SERVICE;
-				} else {
-					// Error
+					break;
+				default:
+					throw new RuntimeException("Unrecognized industry class");
 				}
+//				if (industry.equals('B')) {
+//					industryClass = IndustryClass.BASIC;
+//				} else if (industry.equals('R')) {
+//					industryClass = IndustryClass.RETAIL;
+//				} else if (industry.equals('S')) {
+//					industryClass = IndustryClass.SERVICE;
+//				} else {
+//					// Error
+//				}
 
-				MarketSegment market = new IncomeGroupIndustrySegment(income, industryClass);
+				Optional<MarketSegment> segs = segments.parallelStream()
+						.filter(seg -> seg instanceof IncomeGroupSegmenter)
+						.filter(seg -> seg instanceof IndustrySegmenter)
+						.filter(seg -> ((IncomeGroupSegmenter) seg).getIncomeGroup() == income)
+						.filter(seg -> ((IndustrySegmenter) seg).getIndustryClass().equals(industryClass)).findAny();
+				System.out.println(segs.isPresent());
+				MarketSegment market = segs
+						.orElseThrow(
+								() -> 
+								new RuntimeException("Unregcognized industry class"));
 
 				AreaClass areaClass = null;
 				int areaType = Integer.parseInt(args[2]);
-				switch(areaType) {
+				switch (areaType) {
 					case 1:
 						areaClass = AreaClass.CBD;
 						break;
@@ -135,21 +163,13 @@ public class ProductionAttractionFactory {
 						areaClass = AreaClass.RURAL;
 						break;
 					default:
-						System.out.println("error");
-						break;
+						throw new RuntimeException("Unrecognized area class");
 				}
 
 
 				Double hbwAttr = Double.parseDouble(args[3]);
 				// If we don't have the market segment we add it
-				if (!map.containsKey(market)) {
-					Map<AreaClass, Double> temp = new HashMap<>();
-					temp.put(areaClass, hbwAttr);
-					map.put(market, temp);
-				} else {
-					Map<AreaClass, Double> temp = map.get(market);
-					temp.put(areaClass, hbwAttr);
-				}
+				map.computeIfAbsent(market, k -> new HashMap<AreaClass,Double>()).put(areaClass, hbwAttr);
 
 			});
 
