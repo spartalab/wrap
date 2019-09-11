@@ -303,7 +303,7 @@ public class Graph {
 		return zones.add(zone);
 	}
 
-	public Set<RegionalAreaAnalysisZone> getRAAs() {
-		return zones.parallelStream().map(TravelSurveyZone::getRAA).collect(Collectors.toSet());
-	}
+//	public Set<RegionalAreaAnalysisZone> getRAAs() {
+//		return zones.parallelStream().map(TravelSurveyZone::getRAA).collect(Collectors.toSet());
+//	}
 }

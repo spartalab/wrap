@@ -19,6 +19,7 @@ import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TolledBPRLink;
 import edu.utexas.wrap.net.TolledEnhancedLink;
+import edu.utexas.wrap.net.TravelSurveyZone;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 public class GraphFactory {
@@ -97,7 +98,8 @@ public class GraphFactory {
 		BufferedReader lf = new BufferedReader(new InputStreamReader(dis));
 		Map<Integer, Node> nodes = new Int2ObjectOpenHashMap<Node>();
 		lf.readLine(); // skip header
-
+		int zoneCount = 0;
+		
 		while (true) {
 			line = lf.readLine();
 			if (line == null || line.equals(""))
@@ -110,20 +112,28 @@ public class GraphFactory {
 
 			if (!nodes.containsKey(nodeA)) {
 				if (nodeA < thruNode) {
-					nodes.put(nodeA, new Node(nodeA, true, nodes.size()));
-					numZones++;
+					Node a = new Node(nodeA, true, nodes.size());
+					TravelSurveyZone tszA = new TravelSurveyZone(a,numZones++,null);
+					a.setTravelSurveyZone(tszA);
+					g.addZone(tszA);
+					nodes.put(nodeA, a);
 				} else
 					nodes.put(nodeA, new Node(nodeA, false, nodes.size()));
 			}
 
 			if (!nodes.containsKey(nodeB)) {
 				if (nodeB < thruNode) {
-					nodes.put(nodeB, new Node(nodeB, true, nodes.size()));
+					Node b = new Node(nodeB, true, nodes.size());
+					TravelSurveyZone tszB = new TravelSurveyZone(b,numZones++,null);
+					b.setTravelSurveyZone(tszB);
+					g.addZone(tszB);
+					nodes.put(nodeB, b);
 					numZones++;
 				} else
 					nodes.put(nodeB, new Node(nodeB, false, nodes.size()));
 
 			}
+			
 
 			Float aCap = parse(args[3]);
 			Float bCap = parse(args[4]);

@@ -22,7 +22,7 @@ public class SkimFactory {
 		try {
 			in = new BufferedReader(new FileReader(file));
 			if (header) in.readLine();
-			in.lines().forEach(line -> processLine(graph,ret,line));
+			in.lines().parallel().forEach(line -> processLine(graph,ret,line));
 		}
 		finally {
 			if (in != null) in.close();

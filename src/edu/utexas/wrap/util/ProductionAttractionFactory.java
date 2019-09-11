@@ -1,13 +1,11 @@
 package edu.utexas.wrap.util;
 
-import java.awt.geom.Area;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -18,9 +16,9 @@ import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
 import edu.utexas.wrap.marketsegmentation.IndustryClass;
 import edu.utexas.wrap.marketsegmentation.IndustrySegmenter;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
-import edu.utexas.wrap.marketsegmentation.IncomeGroupIndustrySegment;
+import edu.utexas.wrap.marketsegmentation.VehicleSegmenter;
+import edu.utexas.wrap.marketsegmentation.WorkerSegmenter;
 import edu.utexas.wrap.marketsegmentation.IncomeGroupSegmenter;
-import edu.utexas.wrap.marketsegmentation.WorkerVehicleSegment;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
@@ -72,9 +70,9 @@ public class ProductionAttractionFactory {
 	}
 
 	//TODO don't make assumption about the header orders, make a quick check for that
-	public static Map<MarketSegment,Double>  readProductionRates(File file, boolean header, boolean v1) throws IOException {
+	public static Map<MarketSegment,Double>  readProductionRates(File file, boolean header, boolean v1, Collection<MarketSegment> microProdSegs) throws IOException {
 		BufferedReader in = null;
-		Map<MarketSegment,Double> map = new HashMap<>();
+		Map<MarketSegment,Double> map = new HashMap<MarketSegment,Double>();
 
 		try {
 			in = new BufferedReader(new FileReader(file));
@@ -85,8 +83,10 @@ public class ProductionAttractionFactory {
 				int vehicles = Integer.parseInt((args[1]));
 				Double hbwPro = v1 ? Double.parseDouble((args[3])) : Double.parseDouble(args[2]);
 
-				MarketSegment workerVehicle = new WorkerVehicleSegment(workers, vehicles);
-				map.put(workerVehicle, hbwPro);
+				microProdSegs.parallelStream()
+				.filter(seg -> seg instanceof VehicleSegmenter && ((VehicleSegmenter) seg).getNumberOfVehicles() == vehicles)
+				.filter(seg -> seg instanceof WorkerSegmenter && ((WorkerSegmenter) seg).getNumberOfWorkers() == workers)
+				.forEach(seg -> map.put(seg, hbwPro));
 			});
 
 		} finally {
@@ -138,7 +138,7 @@ public class ProductionAttractionFactory {
 						.filter(seg -> seg instanceof IndustrySegmenter)
 						.filter(seg -> ((IncomeGroupSegmenter) seg).getIncomeGroup() == income)
 						.filter(seg -> ((IndustrySegmenter) seg).getIndustryClass().equals(industryClass)).findAny();
-				System.out.println(segs.isPresent());
+
 				MarketSegment market = segs
 						.orElseThrow(
 								() -> 

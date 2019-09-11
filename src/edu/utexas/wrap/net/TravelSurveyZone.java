@@ -1,6 +1,7 @@
 package edu.utexas.wrap.net;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 
 import edu.utexas.wrap.marketsegmentation.EducationClass;
@@ -9,12 +10,14 @@ import edu.utexas.wrap.marketsegmentation.IndustryClass;
 public class TravelSurveyZone {
 	private final Node origin;
 	private final int order;
-	private RegionalAreaAnalysisZone parent;
+//	private RegionalAreaAnalysisZone parent;
+	private AreaClass ac;
 	
 	//Demographic data
 	private Map<Integer,Double> householdsWithXChildren, householdsWithXWorkers;
 	private Map<Integer,Double> householdsByIncomeGroup;
 	private Map<Integer,Map<Integer,Double>> householdsByWorkersThenSize, householdsByWorkersThenVehicles;
+	private Map<Integer, Map<Integer, Map<Integer, Double>>> householdsByIncomeGroupThenWorkersThenVehicles;
 	private Map<Integer,Map<IndustryClass,Double>> employmentByIncomeGroupThenIndustry;
 	private Map<EducationClass,Double> studentsByEducationLevel;
 	
@@ -28,20 +31,24 @@ public class TravelSurveyZone {
 		return origin;
 	}
 	
-	public void setRAA(RegionalAreaAnalysisZone parent) {
-		this.parent = parent;
-	}
-	
-	public RegionalAreaAnalysisZone getRAA() {
-		return parent;
-	}
+//	public void setRAA(RegionalAreaAnalysisZone parent) {
+//		this.parent = parent;
+//	}
+//	
+//	public RegionalAreaAnalysisZone getRAA() {
+//		return parent;
+//	}
 
 	public int getOrder() {
 		return order;
 	}
 	
 	public AreaClass getAreaClass() {
-		return parent.getAreaType();
+		return ac;
+	}
+	
+	public void setAreaClass(AreaClass klass) {
+		ac = klass;
 	}
 
 	public Double getHouseholdsByChildren(int numChildren) {
@@ -72,5 +79,28 @@ public class TravelSurveyZone {
 	
 	public Double getStudentsByEducationLevel(EducationClass level) {
 		return studentsByEducationLevel.getOrDefault(level,0.0);
+	}
+	
+	public void setHouseholdsByIncomeGroup(Map<Integer,Double> hhByIG) {
+		householdsByIncomeGroup = hhByIG;
+	}
+	public void setEmploymentByIncomeGroupThenIndustry(Map<Integer,Map<IndustryClass,Double>> empByIGthenIC) {
+		employmentByIncomeGroupThenIndustry = empByIGthenIC;
+	}
+	
+	public Double getHouseholdsByIncomeGroupThenWorkersThenVehicles(int incomeGroup, int numWorkers, int numVehicles) {
+		return householdsByIncomeGroupThenWorkersThenVehicles.get(incomeGroup).get(numWorkers).get(numVehicles);
+	}
+
+	public void setHouseholdsByIncomeGroupThenWorkersThenVehicles(int ig, int wkr, int veh, double val) {
+		synchronized(this) {
+			if (householdsByIncomeGroupThenWorkersThenVehicles == null) {
+				householdsByIncomeGroupThenWorkersThenVehicles = new HashMap<Integer, Map<Integer,Map<Integer,Double>>>();
+			}
+			householdsByIncomeGroupThenWorkersThenVehicles
+			.computeIfAbsent(ig, k -> new HashMap<Integer,Map<Integer,Double>>())
+			.computeIfAbsent(wkr, k -> new HashMap<Integer,Double>())
+			.put(veh, val);
+		}
 	}
 }
