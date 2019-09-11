@@ -8,6 +8,7 @@ import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
 import edu.utexas.wrap.demand.containers.DemandHashMap;
+import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 import it.unimi.dsi.fastutil.objects.Object2DoubleMaps;
@@ -84,7 +85,7 @@ public class GravityDistributor extends TripDistributor {
 		//For each producer
 		pa.getProducers().parallelStream().forEach(producer -> {
 			//Construct a new DemandMap
-			DemandMap d = new DemandHashMap(g);
+			DemandMap d = new FixedSizeDemandMap(g);
 			//For each attractor
 			for (TravelSurveyZone attractor : pa.getAttractors()) {
 				//Calculate the number of trips between these two as a*productions*b*attractions*impedance

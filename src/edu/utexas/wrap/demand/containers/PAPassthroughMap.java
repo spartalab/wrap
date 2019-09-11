@@ -46,12 +46,12 @@ public class PAPassthroughMap implements PAMap {
 
 	@Override
 	public void putAttractions(TravelSurveyZone z, Float amt) {
-		throw new RuntimeException("Writing to a read-only map");
+		attrs.put(z, amt.doubleValue());
 	}
 
 	@Override
 	public void putProductions(TravelSurveyZone z, Float amt) {
-		throw new RuntimeException("Writing to a read-only map");
+		prods.put(z, amt.doubleValue());
 	}
 
 	@Override

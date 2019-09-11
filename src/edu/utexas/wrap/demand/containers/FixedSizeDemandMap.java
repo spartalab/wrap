@@ -14,7 +14,7 @@ public class FixedSizeDemandMap implements DemandMap {
 	
 	public FixedSizeDemandMap(Graph g) {
 		graph = g;
-		demand = new float[g.numNodes()];
+		demand = new float[g.numZones()];
 	}
 
 	@Override

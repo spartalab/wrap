@@ -1,18 +1,18 @@
 package edu.utexas.wrap.util;
 
-import edu.utexas.wrap.marketsegmentation.IncomeGroupSegment;
+import edu.utexas.wrap.marketsegmentation.IncomeGroupSegmenter;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
-import edu.utexas.wrap.marketsegmentation.WorkerVehicleSegment;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 public class PeakFactory {
-    public static Map<MarketSegment, Double> readPkOPkSplitRates(File file, boolean header) throws IOException {
+    public static Map<MarketSegment, Double> readPkOPkSplitRates(File file, boolean header,Collection<MarketSegment> segs) throws IOException {
         BufferedReader in = null;
         Map<MarketSegment,Double> map = new HashMap<>();
 
@@ -24,8 +24,9 @@ public class PeakFactory {
                 int income = Integer.parseInt((args[0]));
                 double factor = Double.parseDouble((args[1]));
 
-                MarketSegment incomeGroup = new IncomeGroupSegment(income);
-                map.put(incomeGroup, factor);
+                
+                segs.parallelStream().filter(seg -> seg instanceof IncomeGroupSegmenter && ((IncomeGroupSegmenter) seg).getIncomeGroup() == income)
+                .forEach(seg -> map.put(seg, factor));
             });
 
         } finally {

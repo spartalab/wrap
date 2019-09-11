@@ -16,7 +16,7 @@ import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 public class SkimFactory {
 	public static Map<TravelSurveyZone, Map<TravelSurveyZone, Float>> readSkimFile(File file, boolean header, Graph graph) throws IOException {
-		Map<TravelSurveyZone,Map<TravelSurveyZone,Float>> ret = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<TravelSurveyZone, Map<TravelSurveyZone,Float>>());
+		Map<TravelSurveyZone,Map<TravelSurveyZone,Float>> ret = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<TravelSurveyZone, Map<TravelSurveyZone,Float>>(graph.numZones(),1.0f));
 		BufferedReader in = null;
 
 		try {
@@ -35,7 +35,7 @@ public class SkimFactory {
 		TravelSurveyZone orig = graph.getNode(Integer.parseInt(args[0])).getZone();
 		TravelSurveyZone dest = graph.getNode(Integer.parseInt(args[1])).getZone();
 		Float cost = Float.parseFloat(args[5]);
-		ret.putIfAbsent(orig, Object2FloatMaps.synchronize(new Object2FloatOpenHashMap<TravelSurveyZone>()));
+		ret.putIfAbsent(orig, Object2FloatMaps.synchronize(new Object2FloatOpenHashMap<TravelSurveyZone>(graph.numZones(),1.0f)));
 		ret.get(orig).put(dest, cost);
 	}
 }

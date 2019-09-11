@@ -11,6 +11,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -47,6 +48,7 @@ public class wrapHBW {
 
 	public static void main(String[] args) {
 		try{
+			System.out.println("Reading network");
 			//Model inputs
 			File graphFile = new File(args[0]);
 			Graph graph = GraphFactory.readEnhancedGraph(graphFile,Integer.parseInt(args[1]));
@@ -65,26 +67,27 @@ public class wrapHBW {
 					)
 				).collect(Collectors.toSet()); 
 			
+			
+			
+			System.out.println("Reading production/attraction rates");
 			//Trip generation inputs
 			//TODO need to add command line argument for the prodRates
 			Map<MarketSegment,Double> vots = null, //TODO Don't have file yet
 					 				  prodRates = ProductionAttractionFactory.readProductionRates(new File("../../nctcogFiles/TripProdRates.csv"), true, true,productionSegments), //TripAttRates.csv
-									  pkRates = PeakFactory.readPkOPkSplitRates(new File("../../nctcogFiles/pkOffPkSplits.csv"), true); // pkOffPkSplits.csv
+									  pkRates = PeakFactory.readPkOPkSplitRates(new File("../../nctcogFiles/pkOffPkSplits.csv"), true, afterPASegments); // pkOffPkSplits.csv
 			Map<MarketSegment,Map<AreaClass,Double>> attrRates = ProductionAttractionFactory.readAttractionRates(new File("../../nctcogFiles/TripAttRates.csv"), true, attractionSegments); //TripProdRates.csv
-
-			//Mode choice inputs
-			Map<MarketSegment,Map<Mode,Double>> modeShares = ModeFactory.readModeShares(new File("../../nctcogFiles/modeChoiceSplits.csv"), afterPASegments); // ModeChoiceSplits.csv
-			Map<Mode,Double> occRates = ModeFactory.readOccRates(new File("../../nctcogFiles/modalOccRates.csv"), true); // modalOccRates.csv
-
-			//TOD splitting inputs
-			Map<MarketSegment, Map<TimePeriod,Double>> depRates = TimePeriodRatesFactory.readDepartureFile(new File("../../nctcogFiles/TODfactors.csv"), afterPASegments), //TODFactors.csv
-					   arrRates = TimePeriodRatesFactory.readArrivalFile(new File("../../nctcogFiles/TODfactors.csv"), afterPASegments); //TODFactors.csv
 			
+			
+			
+			System.out.println("Reading travel cost skim");
 			//Read Skim file
 			Map<TravelSurveyZone, Map<TravelSurveyZone, Float>> skim = SkimFactory.readSkimFile(new File("../../nctcogFiles/PKNOHOV.csv"), false, graph);
 			
+			
+			
+			System.out.println("Reading friction factor maps");
 			//Create FF Maps for each segment
-			Map<MarketSegment, FrictionFactorMap> ffmaps = new HashMap<MarketSegment, FrictionFactorMap>();
+			Map<MarketSegment, FrictionFactorMap> ffmaps = new ConcurrentHashMap<MarketSegment, FrictionFactorMap>();
 			String[] ff_files = {
 					"../../nctcogFiles/FFactorHBW_INC1 PK.csv",
 					"../../nctcogFiles/FFactorHBW_INC2 PK.csv",
@@ -102,36 +105,81 @@ public class wrapHBW {
 						}
 					}
 			);
+			
+			
+			
+			System.out.println("Reading modal shares and occupancy rates");
+			//Mode choice inputs
+			Map<MarketSegment,Map<Mode,Double>> modeShares = ModeFactory.readModeShares(new File("../../nctcogFiles/modeChoiceSplits.csv"), afterPASegments); // ModeChoiceSplits.csv
+			Map<Mode,Double> occRates = ModeFactory.readOccRates(new File("../../nctcogFiles/modalOccRates.csv"), true); // modalOccRates.csv
+
+			
+			
+			System.out.println("Reading time-of-day rates");
+			//TOD splitting inputs
+			Map<MarketSegment, Map<TimePeriod,Double>> depRates = TimePeriodRatesFactory.readDepartureFile(new File("../../nctcogFiles/TODfactors.csv"), afterPASegments), //TODFactors.csv
+					   arrRates = TimePeriodRatesFactory.readArrivalFile(new File("../../nctcogFiles/TODfactors.csv"), afterPASegments); //TODFactors.csv
+			
+			
+			//TODO determine output files
 			Map<TimePeriod,Path> outputODPaths = null;
 
 			
+			
 			//TODO read RAAs
-			//TODO add demographic data to zones
+			// add demographic data to zones
+			System.out.println("Reading household demographic data");
 			readHouseholdData(graph, Paths.get("../../nctcogFiles/hhByIG.csv"), Paths.get("../../nctcogFiles/hhByIGthenWkrthenVeh.csv"));
+			
+			
+			
+			System.out.println("Reading employment demographic data");
 			readEmploymentData(graph, Paths.get("../../nctcogFiles/empByIGthenIC.csv"));
 			
+			
+			
+			System.out.println("Performing trip generation");
 			//Perform trip generation
 			Map<MarketSegment, PAMap> maps = tripGenerator(graph, productionSegments, attractionSegments, vots, prodRates, attrRates, afterPASegments);
 
+			
+			
+			System.out.println("Performing trip balancing");
 			//Perform trip balancing
 			balance(graph, maps);
 
+			
+			
+			System.out.println("Performing peak-offpeak splitting");
 			Map<MarketSegment,Map<TimePeriod,PAMap>> timeMaps = pkOpSplitting(maps,pkRates);
 			
+			
+			
+			System.out.println("Performing trip distribution");
 			//Perform trip distribution
 			Map<MarketSegment, Map<TimePeriod, AggregatePAMatrix>> aggMtxs = tripDistribution(ffmaps, graph, timeMaps);
 			
 			
+			
+			System.out.println("Performing matrix aggregation");
 			Map<MarketSegment,AggregatePAMatrix> aggCombinedMtxs = aggMtxs.entrySet().parallelStream()
 					.collect(Collectors.toMap(Entry::getKey, entry -> Combiner.combineAggregateMatrices(graph, entry.getValue().values())));
 						
+			
+			
+			System.out.println("Performing mode choice splitting");
 			//Perform mode choice splitting
 			Map<MarketSegment, ModalPAMatrix> modalMtxs = modeChoice(modeShares, aggCombinedMtxs);
 
+			
+			
+			System.out.println("Performing PA-to-OD matrix conversion");
 			//PA to OD splitting by time of day
 			Map<TimePeriod, ODMatrix> ods = paToODConversion(modalMtxs, depRates, arrRates, occRates);
 			
 			
+			
+			System.out.println("Writing OD matrices");
 			//Write to file AM and PM peak OD matrices
 			ods.entrySet().parallelStream()
 			.filter(entry -> 
@@ -303,14 +351,13 @@ public class wrapHBW {
 	private static Map<MarketSegment, Map<TimePeriod,AggregatePAMatrix>> tripDistribution(Map<MarketSegment,FrictionFactorMap> ffm, Graph g,
 			Map<MarketSegment, Map<TimePeriod, PAMap>> timeMaps) {
 		
-		timeMaps.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, entry -> 
+		return timeMaps.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, entry -> 
 			entry.getValue().entrySet().parallelStream()
-			.collect(Collectors.toMap(Function.identity(), inner -> {
+			.collect(Collectors.toMap(Entry::getKey, inner -> {
 				TripDistributor distributor = new GravityDistributor(g,ffm.get(entry.getKey()));
 				return distributor.distribute(inner.getValue());
 			}))
 		));
-		return null;
 	}
 
 	private static Map<MarketSegment, ModalPAMatrix> modeChoice(Map<MarketSegment, Map<Mode, Double>> modeShares,

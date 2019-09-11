@@ -20,10 +20,12 @@ public class BasicTripGenerator {
 	}
 	
 	public Map<TravelSurveyZone,Double> generate(MarketSegment segment){
+		double rate = rates.get(segment);
 		return g.getTSZs().parallelStream().collect(	//For each TSZ in parallel,
 				Collectors.toMap(Function.identity(), tsz ->	//the TSZ maps to a value:
 					//The data rate for this market segment times the market segment's value for this TSZ
-						rates.get(segment)*segment.attributeDataGetter().applyAsDouble(tsz)));
+						rate
+						*segment.attributeDataGetter().applyAsDouble(tsz)));
 	}
 	
 	private Map<TravelSurveyZone,Double> scale(Map<TravelSurveyZone,Double> input, Map<AreaClass,Double> areaData){
