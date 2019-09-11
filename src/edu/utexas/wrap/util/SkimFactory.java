@@ -10,9 +10,11 @@ import java.util.Map;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 import java.util.concurrent.ConcurrentSkipListMap;
+
 public class SkimFactory {
-	public static Map<TravelSurveyZone, Map<TravelSurveyZone, Float>> readSkimFile(File file, boolean header, Graph graph) throws IOException {
-		Map<TravelSurveyZone,Map<TravelSurveyZone,Float>> ret = new ConcurrentSkipListMap<TravelSurveyZone, Map<TravelSurveyZone,Float>>(new ZoneComparator());
+	public static float[][] readSkimFile(File file, boolean header, Graph graph) throws IOException {
+		float[][] ret = new float[graph.numZones()][graph.numZones()];
+//		Map<TravelSurveyZone,Map<TravelSurveyZone,Float>> ret = new ConcurrentSkipListMap<TravelSurveyZone, Map<TravelSurveyZone,Float>>(new ZoneComparator());
 		BufferedReader in = null;
 
 		try {
@@ -26,13 +28,14 @@ public class SkimFactory {
 		return ret;
 	}
 
-	static void processLine(Graph graph, Map<TravelSurveyZone, Map<TravelSurveyZone, Float>> ret, String line) {
+	static void processLine(Graph graph, float[][] ret, String line) {
 		String[] args = line.split(",");
 		TravelSurveyZone orig = graph.getNode(Integer.parseInt(args[0])).getZone();
 		TravelSurveyZone dest = graph.getNode(Integer.parseInt(args[1])).getZone();
 		Float cost = Float.parseFloat(args[5]);
-		ret.putIfAbsent(orig, new ConcurrentSkipListMap<TravelSurveyZone, Float>(new ZoneComparator()));
-		ret.get(orig).put(dest, cost);
+//		ret.putIfAbsent(orig, new ConcurrentSkipListMap<TravelSurveyZone, Float>(new ZoneComparator()));
+		ret[orig.getOrder()][dest.getOrder()] = cost;
+//		ret.get(orig).put(dest, cost);
 	}
 
 	public static class ZoneComparator implements Comparator<TravelSurveyZone> {

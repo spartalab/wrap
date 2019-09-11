@@ -13,7 +13,7 @@ import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class FrictionFactorFactory {
-	public static FrictionFactorMap readFactorFile(File file, boolean header, Map<TravelSurveyZone, Map<TravelSurveyZone, Float>> skim) throws IOException {
+	public static FrictionFactorMap readFactorFile(File file, boolean header, float[][] skim) throws IOException {
 		TreeMap<Integer, Float> tree = new TreeMap<Integer, Float>();
 		BufferedReader in = null;
 

@@ -6,6 +6,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.Collection;
 import java.util.HashMap;
 
@@ -72,7 +73,7 @@ public class ProductionAttractionFactory {
 	//TODO don't make assumption about the header orders, make a quick check for that
 	public static Map<MarketSegment,Double>  readProductionRates(File file, boolean header, boolean v1, Collection<MarketSegment> microProdSegs) throws IOException {
 		BufferedReader in = null;
-		Map<MarketSegment,Double> map = new HashMap<MarketSegment,Double>();
+		Map<MarketSegment,Double> map = new ConcurrentHashMap<MarketSegment,Double>();
 
 		try {
 			in = new BufferedReader(new FileReader(file));
@@ -98,7 +99,7 @@ public class ProductionAttractionFactory {
 	//TODO don't make assumption about the header orders, make a quick check for that
 	public static Map<MarketSegment, Map<AreaClass,Double>> readAttractionRates(File file, boolean header, Collection<MarketSegment> segments) throws IOException {
 		BufferedReader in = null;
-		Map<MarketSegment,Map<AreaClass,Double>> map = new HashMap<>();
+		Map<MarketSegment,Map<AreaClass,Double>> map = new ConcurrentHashMap<MarketSegment,Map<AreaClass,Double>>();
 
 		try {
 			in = new BufferedReader(new FileReader(file));

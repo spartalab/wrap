@@ -135,15 +135,15 @@ public class Combiner {
 
 	public static ODMatrix combineODMatrices(Stream<ODMatrix> ods) {
 		return new ODMatrix() {
-			private Stream<ODMatrix> children = ods.parallel();
+			private Collection<ODMatrix> children = ods.collect(Collectors.toSet());
 			@Override
 			public Mode getMode() {
-				return children.map(ODMatrix::getMode).distinct().findAny().orElse(null);
+				return children.parallelStream().map(ODMatrix::getMode).distinct().findAny().orElse(null);
 			}
 
 			@Override
 			public Float getDemand(TravelSurveyZone origin, TravelSurveyZone destination) {
-				return (float) children.mapToDouble(mtx -> mtx.getDemand(origin, destination)).sum();
+				return (float) children.parallelStream().mapToDouble(mtx -> mtx.getDemand(origin, destination)).sum();
 			}
 
 			@Override
@@ -153,20 +153,30 @@ public class Combiner {
 
 			@Override
 			public Graph getGraph() {
-				return children.map(ODMatrix::getGraph).findAny().get();
+				return children.parallelStream().map(ODMatrix::getGraph).findAny().get();
 			}
 
 			@Override
 			public void write(Path outputOD) {
-				StringBuilder sb = new StringBuilder();
 				try (BufferedWriter out = Files.newBufferedWriter(outputOD, StandardOpenOption.CREATE)){
 					getGraph().getTSZs().parallelStream().forEach( orig -> {
 								getGraph().getTSZs().parallelStream().filter(dest -> getDemand(orig,dest) > 0)
 								.forEach(dest ->{
-									sb.append(orig.getNode().getID()+","+dest.getNode().getID()+","+getDemand(orig,dest));
+									try {
+										StringBuilder sb = new StringBuilder();
+										sb.append(orig.getNode().getID());
+										sb.append(",");
+										sb.append(dest.getNode().getID());
+										sb.append(",");
+										sb.append(getDemand(orig,dest));
+										sb.append("\r\n");
+										out.write(sb.toString());
+									} catch (IOException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									}
 								});
 							});
-				out.write(sb.toString());
 				} catch (IOException e) {
 					e.printStackTrace();
 				}

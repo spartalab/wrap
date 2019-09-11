@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -81,7 +80,7 @@ public class wrapHBW {
 			
 			System.out.println("Reading travel cost skim");
 			//Read Skim file
-			Map<TravelSurveyZone, Map<TravelSurveyZone, Float>> skim = SkimFactory.readSkimFile(new File("../../nctcogFiles/PKNOHOV.csv"), false, graph);
+			float[][] skim = SkimFactory.readSkimFile(new File("../../nctcogFiles/PKNOHOV.csv"), false, graph);
 			
 			
 			
@@ -122,7 +121,9 @@ public class wrapHBW {
 			
 			
 			//TODO determine output files
-			Map<TimePeriod,Path> outputODPaths = null;
+			Map<TimePeriod,Path> outputODPaths = new HashMap<TimePeriod,Path>();
+			outputODPaths.put(TimePeriod.AM_PK, Paths.get("morningPeak.csv"));
+			outputODPaths.put(TimePeriod.PM_PK, Paths.get("eveningPeak.csv"));
 
 			
 			
@@ -197,6 +198,7 @@ public class wrapHBW {
 //					.map(entry -> entry.getValue()));
 //			offPeak.write(outputFile);
 			
+			System.out.println("Completed successfully");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			System.exit(1);

@@ -37,9 +37,12 @@ public class GravityDistributor extends TripDistributor {
 	@Override
 	public AggregatePAMatrix distribute(PAMap pa) {
 		//Begin by iteratively calculating each zone's A and B values
-		Map<TravelSurveyZone, Double> a = Object2DoubleMaps.synchronize(new Object2DoubleOpenHashMap<TravelSurveyZone>(g.numZones(),1.0f));
-		Map<TravelSurveyZone, Double> b = Object2DoubleMaps.synchronize(new Object2DoubleOpenHashMap<TravelSurveyZone>(g.numZones(),1.0f));
+//		Map<TravelSurveyZone, Double> a = Object2DoubleMaps.synchronize(new Object2DoubleOpenHashMap<TravelSurveyZone>(g.numZones(),1.0f));
+//		Map<TravelSurveyZone, Double> b = Object2DoubleMaps.synchronize(new Object2DoubleOpenHashMap<TravelSurveyZone>(g.numZones(),1.0f));
 
+		Double[] a1 = new Double[g.numZones()];
+		Double[] b1 = new Double[g.numZones()];
+		
 		AtomicBoolean converged = new AtomicBoolean(false);
 		//While the previous iteration made changes
 		int iterations = 0;
@@ -52,14 +55,18 @@ public class GravityDistributor extends TripDistributor {
 			pa.getProducers().parallelStream().forEach(i -> {
 				//Calculate a new denominator as sum_attractors(attractions*impedance*b)
 				Double denom = pa.getAttractors().parallelStream()
-						.mapToDouble(x -> b.getOrDefault(x, 1.0)*pa.getAttractions(x)*friction.get(i,x)).sum();
+						.mapToDouble(x -> 
+//						b.getOrDefault(x, 1.0)
+						b1[x.getOrder()] == null? 1.0 : b1[x.getOrder()]
+						*pa.getAttractions(x)*friction.get(i,x)).sum();
 				//Check for errors
 				if (denom == 0.0 || denom.isNaN()) throw new RuntimeException();
 				//If no A value exists yet or this is not within the numerical tolerance of the previous value
-				if (!a.containsKey(i) || !converged(a.getOrDefault(i,1.0), 1.0/denom)) {
+				if (a1[i.getOrder()] == null || !converged(a1[i.getOrder()] == null? 1.0 : a1[i.getOrder()], 1.0/denom)) {
 					//Write a new A value for this producer
 					converged.set(false);
-					a.put(i, 1.0/denom);
+					a1[i.getOrder()] = 1.0/denom;
+//					a.put(i, 1.0/denom);
 				}
 			});
 
@@ -67,14 +74,18 @@ public class GravityDistributor extends TripDistributor {
 			pa.getAttractors().forEach(j->{
 				//Calculate a new denominator as sum_producers(productions*impedance*a)
 				Double denom = pa.getProducers().parallelStream()
-						.mapToDouble(x-> a.getOrDefault(x, 1.0)*pa.getProductions(x)*friction.get(x,j)).sum();
+						.mapToDouble(x-> 
+//						a.getOrDefault(x, 1.0)
+						a1[x.getOrder()] == null? 1.0 : a1[x.getOrder()]
+						*pa.getProductions(x)*friction.get(x,j)).sum();
 				//Check for errors
 				if (denom == 0.0 || denom.isNaN()) throw new RuntimeException();
 				//If no B value exists yet or this is not within the numerical tolerance of the previous value
-				if (!b.containsKey(j) || !converged(b.getOrDefault(j,1.0), 1.0/denom)) {
+				if (b1[j.getOrder()] == null || !converged(b1[j.getOrder()] == null? 1.0 : b1[j.getOrder()], 1.0/denom)) {
 					//Write a new B value for this attractor
 					converged.set(false);
-					b.put(j, 1.0/denom);
+					b1[j.getOrder()] = 1.0/denom;
+//					b.put(j, 1.0/denom);
 				}	
 			});
 
@@ -89,8 +100,13 @@ public class GravityDistributor extends TripDistributor {
 			//For each attractor
 			for (TravelSurveyZone attractor : pa.getAttractors()) {
 				//Calculate the number of trips between these two as a*productions*b*attractions*impedance
-				Double Tij = a.get(producer)*pa.getProductions(producer)
-						*b.get(attractor)*pa.getAttractions(attractor)
+				Double Tij = 
+//						a.get(producer)
+						a1[producer.getOrder()]
+						*pa.getProductions(producer)
+//						*b.get(attractor)
+						*b1[attractor.getOrder()]
+						*pa.getAttractions(attractor)
 						*friction.get(producer, attractor);
 				//Check for errors
 				if (Tij.isNaN()) throw new RuntimeException();
