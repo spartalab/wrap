@@ -15,5 +15,6 @@ import java.util.TreeMap;
 
 public class VOTFactory {
     public static Map<MarketSegment, Double> readVOTFile(File file, boolean header) throws IOException {
+        return null;
     }
 }

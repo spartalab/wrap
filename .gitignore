@@ -9,3 +9,4 @@
 src/edu/utexas/wrap/.DS_Store
 /.classpath
 **/*.bush
+*.DS_Store
