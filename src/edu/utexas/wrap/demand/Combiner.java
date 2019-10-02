@@ -1,17 +1,12 @@
 package edu.utexas.wrap.demand;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
@@ -133,57 +128,6 @@ public class Combiner {
 		};
 	}
 
-	public static ODMatrix combineODMatrices(Stream<ODMatrix> ods) {
-		return new ODMatrix() {
-			private Collection<ODMatrix> children = ods.collect(Collectors.toSet());
-			@Override
-			public Mode getMode() {
-				return children.parallelStream().map(ODMatrix::getMode).distinct().findAny().orElse(null);
-			}
-
-			@Override
-			public Float getDemand(TravelSurveyZone origin, TravelSurveyZone destination) {
-				return (float) children.parallelStream().mapToDouble(mtx -> mtx.getDemand(origin, destination)).sum();
-			}
-
-			@Override
-			public void put(TravelSurveyZone origin, TravelSurveyZone destination, Float demand) {
-				throw new RuntimeException("Writing to a read-only matrix");
-			}
-
-			@Override
-			public Graph getGraph() {
-				return children.parallelStream().map(ODMatrix::getGraph).findAny().get();
-			}
-
-			@Override
-			public void write(Path outputOD) {
-				try (BufferedWriter out = Files.newBufferedWriter(outputOD, StandardOpenOption.CREATE)){
-					getGraph().getTSZs().parallelStream().forEach( orig -> {
-								getGraph().getTSZs().parallelStream().filter(dest -> getDemand(orig,dest) > 0)
-								.forEach(dest ->{
-									try {
-										StringBuilder sb = new StringBuilder();
-										sb.append(orig.getNode().getID());
-										sb.append(",");
-										sb.append(dest.getNode().getID());
-										sb.append(",");
-										sb.append(getDemand(orig,dest));
-										sb.append("\r\n");
-										out.write(sb.toString());
-									} catch (IOException e) {
-										// TODO Auto-generated catch block
-										e.printStackTrace();
-									}
-								});
-							});
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
-			
-		};
-	}
 
 	public static AggregatePAMatrix combineAggregateMatrices(Graph g, Collection<AggregatePAMatrix> values) {
 		return new AggregatePAMatrix() {
@@ -272,4 +216,8 @@ public class Combiner {
 			
 		};
 	}
+	
+
+
+
 }

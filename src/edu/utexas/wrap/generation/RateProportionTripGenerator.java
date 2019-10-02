@@ -34,6 +34,7 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 public class RateProportionTripGenerator {
 	
 	private Map<TravelSurveyZone,Float> totalProds;
+	Map<MarketSegment,Map<TravelSurveyZone,Float>> shares;
 	
 	public RateProportionTripGenerator(Graph g, 
 			Map<MarketSegment,Float> primaryProductionRates, 
@@ -42,7 +43,7 @@ public class RateProportionTripGenerator {
 		
 		totalProds = Combiner.totalAttractions(g, primaryTrips.values());
 		
-		Map<MarketSegment, Map<TravelSurveyZone, Float>> shares = getTripShares(g, primaryTrips);
+		shares = getTripShares(g, primaryTrips);
 		
 		calculateRelativeRates(g, primaryProductionRates, secondaryProductionRates, shares);
 		
@@ -96,8 +97,9 @@ public class RateProportionTripGenerator {
 				);
 	}
 
-	public PAMatrix generate(Graph g, float factor, AggregatePAMatrix primaryTripMatrix) {
-		Map<TravelSurveyZone, Float> rate = getRates(g, factor, share);
+	public PAMatrix generate(Graph g, float factor, AggregatePAMatrix primaryTripMatrix, MarketSegment segment) {
+		
+		Map<TravelSurveyZone, Float> rate = getRates(g, factor, shares.get(segment));
 
 		return new AggregatePAHashMatrix(primaryTripMatrix,rate);
 	}

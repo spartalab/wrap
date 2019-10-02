@@ -42,18 +42,26 @@ public class ODPassthroughMatrix implements ODMatrix {
 	@Override
 	public void write(Path outputOD) {
 		
-		try (BufferedWriter out = Files.newBufferedWriter(outputOD, StandardOpenOption.CREATE)){
+		try (BufferedWriter out = Files.newBufferedWriter(outputOD, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)){
 			base.getProducers().parallelStream().forEach( orig -> {
-						DemandMap map = base.getDemandMap(orig);
-						map.getZones().parallelStream().forEach(dest ->{
-							try {
-								out.write(orig.getNode().getID()+","+dest.getNode().getID()+","+map.get(dest));
-							} catch (IOException e) {
-								// TODO Auto-generated catch block
-								e.printStackTrace();
-							}
-						});
-					});
+				DemandMap map = base.getDemandMap(orig);
+				map.getZones().parallelStream().forEach(dest ->{
+					try {
+						StringBuilder sb = new StringBuilder();
+						sb.append(orig.getNode().getID());
+						sb.append(",");
+						sb.append(dest.getNode().getID());
+						sb.append(",");
+						sb.append(getDemand(orig,dest));
+						sb.append("\r\n");
+						out.write(sb.toString());
+						out.flush();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				});
+			});
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

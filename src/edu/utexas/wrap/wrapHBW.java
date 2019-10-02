@@ -47,10 +47,13 @@ public class wrapHBW {
 
 	public static void main(String[] args) {
 		try{
-			System.out.println("Reading network");
+			System.out.print("Reading network... ");
+			long ms = System.currentTimeMillis();
 			//Model inputs
 			File graphFile = new File(args[0]);
 			Graph graph = GraphFactory.readEnhancedGraph(graphFile,Integer.parseInt(args[1]));
+			long nms = System.currentTimeMillis();
+			System.out.println(""+(nms-ms)/1000.0+" s");
 			
 			//Market segmentation
 			Collection<MarketSegment> 
@@ -68,57 +71,50 @@ public class wrapHBW {
 			
 			
 			
-			System.out.println("Reading production/attraction rates");
+			System.out.print("Reading production/attraction rates... ");
+			ms = System.currentTimeMillis();
 			//Trip generation inputs
 			//TODO need to add command line argument for the prodRates
 			Map<MarketSegment,Double> vots = null, //TODO Don't have file yet
-					 				  prodRates = ProductionAttractionFactory.readProductionRates(new File("../../nctcogFiles/TripProdRates.csv"), true, true,productionSegments), //TripAttRates.csv
+					 				  prodRates = ProductionAttractionFactory.readProductionRates(new File("../../nctcogFiles/TripProdRates.csv"), true, false,productionSegments), //TripAttRates.csv
 									  pkRates = PeakFactory.readPkOPkSplitRates(new File("../../nctcogFiles/pkOffPkSplits.csv"), true, afterPASegments); // pkOffPkSplits.csv
 			Map<MarketSegment,Map<AreaClass,Double>> attrRates = ProductionAttractionFactory.readAttractionRates(new File("../../nctcogFiles/TripAttRates.csv"), true, attractionSegments); //TripProdRates.csv
+			nms = System.currentTimeMillis();
+			System.out.println(""+(nms-ms)/1000.0+" s");
 			
 			
-			
-			System.out.println("Reading travel cost skim");
+			System.out.print("Reading travel cost skim... ");
 			//Read Skim file
+			ms = System.currentTimeMillis();
 			float[][] skim = SkimFactory.readSkimFile(new File("../../nctcogFiles/PKNOHOV.csv"), false, graph);
+			nms = System.currentTimeMillis();
+			System.out.println(""+(nms-ms)/1000.0+" s");
 			
 			
-			
-			System.out.println("Reading friction factor maps");
+			System.out.print("Reading friction factor maps... ");
 			//Create FF Maps for each segment
-			Map<MarketSegment, FrictionFactorMap> ffmaps = new ConcurrentHashMap<MarketSegment, FrictionFactorMap>();
-			String[] ff_files = {
-					"../../nctcogFiles/FFactorHBW_INC1 PK.csv",
-					"../../nctcogFiles/FFactorHBW_INC2 PK.csv",
-					"../../nctcogFiles/FFactorHBW_INC3 PK.csv"};
-			
-			afterPASegments.parallelStream().forEach(seg -> { // This could be made a lot cleaner...
-						int idx = 0;
-						while(idx < ff_files.length && !ff_files[idx].contains(((IncomeGroupSegment) seg).getIncomeGroup() + "")){
-							idx++;
-						}
-						try {
-							ffmaps.put(seg, FrictionFactorFactory.readFactorFile(new File(ff_files[idx]), true, skim));
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
-			);
+			ms = System.currentTimeMillis();
+			Map<MarketSegment, FrictionFactorMap> ffmaps = readFrictionFactorMaps(afterPASegments, skim);
+			nms = System.currentTimeMillis();
+			System.out.println(""+(nms-ms)/1000.0+" s");
 			
 			
-			
-			System.out.println("Reading modal shares and occupancy rates");
+			System.out.print("Reading modal shares and occupancy rates... ");
 			//Mode choice inputs
+			ms = System.currentTimeMillis();
 			Map<MarketSegment,Map<Mode,Double>> modeShares = ModeFactory.readModeShares(new File("../../nctcogFiles/modeChoiceSplits.csv"), afterPASegments); // ModeChoiceSplits.csv
 			Map<Mode,Double> occRates = ModeFactory.readOccRates(new File("../../nctcogFiles/modalOccRates.csv"), true); // modalOccRates.csv
-
+			nms = System.currentTimeMillis();
+			System.out.println(""+(nms-ms)/1000.0+" s");
 			
 			
-			System.out.println("Reading time-of-day rates");
+			System.out.print("Reading time-of-day rates... ");
 			//TOD splitting inputs
+			ms = System.currentTimeMillis();
 			Map<MarketSegment, Map<TimePeriod,Double>> depRates = TimePeriodRatesFactory.readDepartureFile(new File("../../nctcogFiles/TODfactors.csv"), afterPASegments), //TODFactors.csv
 					   arrRates = TimePeriodRatesFactory.readArrivalFile(new File("../../nctcogFiles/TODfactors.csv"), afterPASegments); //TODFactors.csv
-			
+			nms = System.currentTimeMillis();
+			System.out.println(""+(nms-ms)/1000.0+" s");
 			
 			//TODO determine output files
 			Map<TimePeriod,Path> outputODPaths = new HashMap<TimePeriod,Path>();
@@ -129,64 +125,89 @@ public class wrapHBW {
 			
 			//TODO read RAAs
 			// add demographic data to zones
-			System.out.println("Reading household demographic data");
+			System.out.print("Reading household demographic data... ");
+			ms = System.currentTimeMillis();
 			readHouseholdData(graph, Paths.get("../../nctcogFiles/hhByIG.csv"), Paths.get("../../nctcogFiles/hhByIGthenWkrthenVeh.csv"));
+			nms = System.currentTimeMillis();
+			System.out.println(""+(nms-ms)/1000.0+" s");
 			
 			
-			
-			System.out.println("Reading employment demographic data");
+			System.out.print("Reading employment demographic data... ");
+			ms = System.currentTimeMillis();
 			readEmploymentData(graph, Paths.get("../../nctcogFiles/empByIGthenIC.csv"));
+			nms = System.currentTimeMillis();
+			System.out.println(""+(nms-ms)/1000.0+" s");
 			
 			
+			//Here's where the actual model starts
 			
-			System.out.println("Performing trip generation");
+			
+			System.out.print("Performing trip generation... ");
 			//Perform trip generation
+			ms = System.currentTimeMillis();
 			Map<MarketSegment, PAMap> maps = tripGenerator(graph, productionSegments, attractionSegments, vots, prodRates, attrRates, afterPASegments);
-
+			nms = System.currentTimeMillis();
+			System.out.println(""+(nms-ms)/1000.0+" s");
 			
 			
-			System.out.println("Performing trip balancing");
+			System.out.print("Performing trip balancing... ");
 			//Perform trip balancing
+			ms = System.currentTimeMillis();
 			balance(graph, maps);
-
+			nms = System.currentTimeMillis();
+			System.out.println(""+(nms-ms)/1000.0+" s");
 			
 			
-			System.out.println("Performing peak-offpeak splitting");
+			System.out.print("Performing peak-offpeak splitting... ");
+			ms = System.currentTimeMillis();
 			Map<MarketSegment,Map<TimePeriod,PAMap>> timeMaps = pkOpSplitting(maps,pkRates);
+			nms = System.currentTimeMillis();
+			System.out.println(""+(nms-ms)/1000.0+" s");
 			
 			
-			
-			System.out.println("Performing trip distribution");
+			System.out.print("Performing trip distribution... ");
 			//Perform trip distribution
+			ms = System.currentTimeMillis();
 			Map<MarketSegment, Map<TimePeriod, AggregatePAMatrix>> aggMtxs = tripDistribution(ffmaps, graph, timeMaps);
+			nms = System.currentTimeMillis();
+			System.out.println(""+(nms-ms)/1000.0+" s");
 			
 			
-			
-			System.out.println("Performing matrix aggregation");
+			System.out.print("Performing matrix aggregation... ");
+			//FIXME study how this should actually behave - PK and OP splitting doesn't just get combined back together
+			ms = System.currentTimeMillis();
 			Map<MarketSegment,AggregatePAMatrix> aggCombinedMtxs = aggMtxs.entrySet().parallelStream()
 					.collect(Collectors.toMap(Entry::getKey, entry -> Combiner.combineAggregateMatrices(graph, entry.getValue().values())));
-						
+			nms = System.currentTimeMillis();
+			System.out.println(""+(nms-ms)/1000.0+" s");
 			
 			
-			System.out.println("Performing mode choice splitting");
+			System.out.print("Performing mode choice splitting... ");
 			//Perform mode choice splitting
-			Map<MarketSegment, ModalPAMatrix> modalMtxs = modeChoice(modeShares, aggCombinedMtxs);
-
+			ms = System.currentTimeMillis();
+			Map<MarketSegment, Collection<ModalPAMatrix>> modalMtxs = modeChoice(modeShares, aggCombinedMtxs);
+			nms = System.currentTimeMillis();
+			System.out.println(""+(nms-ms)/1000.0+" s");
 			
 			
-			System.out.println("Performing PA-to-OD matrix conversion");
+			System.out.print("Performing PA-to-OD matrix conversion... ");
 			//PA to OD splitting by time of day
-			Map<TimePeriod, ODMatrix> ods = paToODConversion(modalMtxs, depRates, arrRates, occRates);
+			ms = System.currentTimeMillis();
+			Map<TimePeriod, Map<Mode, ODMatrix>> ods = paToODConversion(modalMtxs, depRates, arrRates, occRates);
+			nms = System.currentTimeMillis();
+			System.out.println(""+(nms-ms)/1000.0+" s");
 			
 			
-			
-			System.out.println("Writing OD matrices");
+			System.out.print("Writing OD matrices... ");
 			//Write to file AM and PM peak OD matrices
+			ms = System.currentTimeMillis();
 			ods.entrySet().parallelStream()
 			.filter(entry -> 
-				entry.getKey().equals(TimePeriod.AM_PK) || 
+//				entry.getKey().equals(TimePeriod.AM_PK) || 
 				entry.getKey().equals(TimePeriod.PM_PK))
 			.forEach(entry -> entry.getValue().write(outputODPaths.get(entry.getKey())));
+			nms = System.currentTimeMillis();
+			System.out.println(""+(nms-ms)/1000.0+" s");
 			
 			//Combine off-peak matrices and output to file
 //			Path outputFile = null;
@@ -209,6 +230,29 @@ public class wrapHBW {
 	}
 
 
+
+	private static Map<MarketSegment, FrictionFactorMap> readFrictionFactorMaps(
+			Collection<MarketSegment> afterPASegments, float[][] skim) {
+		Map<MarketSegment, FrictionFactorMap> ffmaps = new ConcurrentHashMap<MarketSegment, FrictionFactorMap>();
+		String[] ff_files = {
+				"../../nctcogFiles/FFactorHBW_INC1 PK.csv",
+				"../../nctcogFiles/FFactorHBW_INC2 PK.csv",
+				"../../nctcogFiles/FFactorHBW_INC3 PK.csv"};
+		
+		afterPASegments.parallelStream().forEach(seg -> { // This could be made a lot cleaner...
+					int idx = 0;
+					while(idx < ff_files.length && !ff_files[idx].contains(((IncomeGroupSegment) seg).getIncomeGroup() + "")){
+						idx++;
+					}
+					try {
+						ffmaps.put(seg, FrictionFactorFactory.readFactorFile(new File(ff_files[idx]), true, skim));
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+		);
+		return ffmaps;
+	}
 
 	private static void readHouseholdData(Graph graph, Path igFile, Path igWkrVehFile) throws IOException {
 		// TODO Auto-generated method stub
@@ -343,7 +387,7 @@ public class wrapHBW {
 				entry -> {
 					double pkRate = pkRates.get(entry.getKey());
 					PAMap pkMap = new FixedMultiplierPassthroughPAMap(entry.getValue(),pkRate);
-					PAMap opMap = new FixedMultiplierPassthroughPAMap(entry.getValue(),1-pkRate);
+					PAMap opMap = new FixedMultiplierPassthroughPAMap(entry.getValue(),1.0-pkRate);
 					Map<TimePeriod,PAMap> ret = new HashMap<TimePeriod,PAMap>(3,1.0f);
 					ret.put(TimePeriod.AM_PK, pkMap);
 					ret.put(TimePeriod.EARLY_OP, opMap);
@@ -362,35 +406,38 @@ public class wrapHBW {
 		));
 	}
 
-	private static Map<MarketSegment, ModalPAMatrix> modeChoice(Map<MarketSegment, Map<Mode, Double>> modeShares,
+	private static Map<MarketSegment, Collection<ModalPAMatrix>> modeChoice(Map<MarketSegment, Map<Mode, Double>> modeShares,
 			Map<MarketSegment, AggregatePAMatrix> aggMtxs) {
 		TripInterchangeSplitter mc = new FixedProportionSplitter(modeShares);
 		return aggMtxs.entrySet().parallelStream()
 				.collect(Collectors.toMap(Entry::getKey, 
 						entry -> mc.split(entry.getValue(),entry.getKey())
-						//FIXME This next line filters out all modes but driving alone
-						.filter(mtx -> mtx.getMode().equals(Mode.SINGLE_OCC)).findFirst().get()));
+						.collect(Collectors.toSet())));
 	}
 	
-	private static Map<TimePeriod, ODMatrix> paToODConversion(
-			Map<MarketSegment, ModalPAMatrix> modalMtxs,
+	private static Map<TimePeriod, Map<Mode,ODMatrix>> paToODConversion(
+			Map<MarketSegment, Collection<ModalPAMatrix>> modalMtxs,
 			Map<MarketSegment,Map<TimePeriod, Double>> departureRates, 
 			Map<MarketSegment,Map<TimePeriod, Double>> arrivalRates, 
 			Map<Mode, Double> occupancyRates) {
+		
+
 		
 		return Stream.of(TimePeriod.values()).parallel()			
 		.collect(Collectors.toMap(Function.identity(), tp -> {
 			
 			//Convert using TOD splitting
 			Stream<ODMatrix> tpODs = modalMtxs.entrySet().parallelStream()
-					.map(entry -> {
+					.flatMap(entry -> {
 						DepartureArrivalConverter converter = new DepartureArrivalConverter(departureRates.get(entry.getKey()).get(tp),arrivalRates.get(entry.getKey()).get(tp));
-						return converter.convert(entry.getValue(), occupancyRates.get(entry.getValue().getMode()));
+						return entry.getValue().parallelStream().map(mtx -> converter.convert(mtx, occupancyRates.get(mtx.getMode())));
 					});
 			
 			//Combine across income groups 1,2,3 and vehicle ownership
-			return Combiner.combineODMatrices(tpODs);
-
+			//FIXME this loses market segmentation
+//			return tpODs.collect(Collectors.partitioningBy(od -> od.getMode().equals(Mode.SINGLE_OCC), od -> Combiner.combineODMatrices(od));
+			return tpODs.collect(Collectors.groupingBy(ODMatrix::getMode, new ODMatrixCollector<ODMatrix>()));
 		}));
+//		return null;
 	}
 }
