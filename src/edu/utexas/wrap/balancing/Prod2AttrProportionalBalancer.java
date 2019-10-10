@@ -5,6 +5,18 @@ import java.util.Set;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.net.RegionalAreaAnalysisZone;
 
+/**This class balances PAMaps by calculating the total productions and
+ * attractions, dividing the latter by the former, and multiplying each
+ * TSZ's productions by that ratio. In this way, the total productions
+ * are scaled up to match the total productions. 
+ * 
+ * If RegionalAreaAnalysisZones are provided, this is balanced on a
+ * per-RAA basis; otherwise, the balancing is performed on a network-
+ * wide basis
+ * 
+ * @author William
+ *
+ */
 public class Prod2AttrProportionalBalancer implements TripBalancer {
 
 	private Set<RegionalAreaAnalysisZone> raas;

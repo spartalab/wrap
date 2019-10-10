@@ -5,6 +5,12 @@ import java.util.Set;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
+/** This class balances PAMaps by replacing all zones' productions
+ * with the number of attractions from the same zone.
+ * 
+ * @author William
+ *
+ */
 public class Prod2AttrCopyBalancer implements TripBalancer {
 
 	@Override

@@ -48,7 +48,6 @@ public class ODMatrixCollector<T extends ODMatrix> implements Collector<ODMatrix
 
 	@Override
 	public Set<Characteristics> characteristics() {
-		// TODO Auto-generated method stub
 		return characteristics;
 	}
 
