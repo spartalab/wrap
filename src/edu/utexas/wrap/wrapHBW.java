@@ -29,6 +29,7 @@ import edu.utexas.wrap.distribution.GravityDistributor;
 import edu.utexas.wrap.distribution.TripDistributor;
 import edu.utexas.wrap.generation.AreaSpecificTripGenerator;
 import edu.utexas.wrap.generation.BasicTripGenerator;
+import edu.utexas.wrap.generation.RateProportionTripGenerator;
 import edu.utexas.wrap.marketsegmentation.IncomeGroupSegment;
 import edu.utexas.wrap.marketsegmentation.IncomeGroupSegmenter;
 import edu.utexas.wrap.marketsegmentation.IncomeGroupIndustrySegment;
@@ -145,22 +146,24 @@ public class wrapHBW {
 			System.out.print("Performing trip generation... ");
 			//Perform trip generation
 			ms = System.currentTimeMillis();
-			Map<MarketSegment, PAMap> maps = tripGenerator(graph, productionSegments, attractionSegments, vots, prodRates, attrRates, afterPASegments);
+			Map<MarketSegment, PAMap> hbMaps = tripGenerator(graph, productionSegments, attractionSegments, vots, prodRates, attrRates, afterPASegments);
 			nms = System.currentTimeMillis();
 			System.out.println(""+(nms-ms)/1000.0+" s");
+			
+			
 			
 			
 			System.out.print("Performing trip balancing... ");
 			//Perform trip balancing
 			ms = System.currentTimeMillis();
-			balance(graph, maps);
+			balance(graph, hbMaps);
 			nms = System.currentTimeMillis();
 			System.out.println(""+(nms-ms)/1000.0+" s");
 			
 			
 			System.out.print("Performing peak-offpeak splitting... ");
 			ms = System.currentTimeMillis();
-			Map<MarketSegment,Map<TimePeriod,PAMap>> timeMaps = pkOpSplitting(maps,pkRates);
+			Map<MarketSegment,Map<TimePeriod,PAMap>> timeMaps = pkOpSplitting(hbMaps,pkRates);
 			nms = System.currentTimeMillis();
 			System.out.println(""+(nms-ms)/1000.0+" s");
 			
@@ -201,11 +204,11 @@ public class wrapHBW {
 			System.out.print("Writing OD matrices... ");
 			//Write to file AM and PM peak OD matrices
 			ms = System.currentTimeMillis();
-			ods.entrySet().parallelStream()
-			.filter(entry -> 
-//				entry.getKey().equals(TimePeriod.AM_PK) || 
-				entry.getKey().equals(TimePeriod.PM_PK))
-			.forEach(entry -> entry.getValue().write(outputODPaths.get(entry.getKey())));
+//			ods.entrySet().parallelStream()
+//			.filter(entry -> 
+////				entry.getKey().equals(TimePeriod.AM_PK) || 
+//				entry.getKey().equals(TimePeriod.PM_PK))
+//			.forEach(entry -> entry.getValue().write(outputODPaths.get(entry.getKey())));
 			nms = System.currentTimeMillis();
 			System.out.println(""+(nms-ms)/1000.0+" s");
 			
@@ -346,30 +349,40 @@ public class wrapHBW {
 
 	private static Map<MarketSegment, PAMap> tripGenerator(Graph g,
 			Collection<MarketSegment> prodSegs, Collection<MarketSegment> attrSegs,
-			Map<MarketSegment, Double> vots, Map<MarketSegment, Double> prodRates,
-			Map<MarketSegment, Map<AreaClass, Double>> attrRates,
+			Map<MarketSegment, Double> vots, 
+			Map<MarketSegment, Double> primaryProdRates,
+			Map<MarketSegment, Map<AreaClass, Double>> primaryAttrRates,
+			Map<MarketSegment,Double> secondaryProdRates,
 			Collection<MarketSegment> afterProdSegs) {
 
-		BasicTripGenerator prodGenerator = new BasicTripGenerator(g,prodRates);
-		AreaSpecificTripGenerator attrGenerator = new AreaSpecificTripGenerator(g,attrRates);
+		BasicTripGenerator primaryProdGenerator = new BasicTripGenerator(g,primaryProdRates);
+		AreaSpecificTripGenerator primaryAttrGenerator = new AreaSpecificTripGenerator(g,primaryAttrRates);
+		Map<MarketSegment,Map<TravelSurveyZone,Double>> primaryProds = prodSegs.parallelStream().collect(Collectors.toMap(Function.identity(), seg ->  primaryProdGenerator.generate(seg)));
+		Map<MarketSegment,Map<TravelSurveyZone,Double>> primaryAttrs = attrSegs.parallelStream().collect(Collectors.toMap(Function.identity(), seg -> primaryAttrGenerator.generate(seg)));
 
-		Map<MarketSegment,Map<TravelSurveyZone,Double>> prods = prodSegs.parallelStream().collect(Collectors.toMap(Function.identity(), seg ->  prodGenerator.generate(seg)));
-		Map<MarketSegment,Map<TravelSurveyZone,Double>> attrs = attrSegs.parallelStream().collect(Collectors.toMap(Function.identity(), seg -> attrGenerator.generate(seg)));
-
+		RateProportionTripGenerator secondaryProdGenerator = new RateProportionTripGenerator(g, primaryProdRates, secondaryProdRates, primaryProds);
 		
+		Map<MarketSegment,Map<TravelSurveyZone,Double>> secondaryProds = primaryProds.entrySet().parallelStream().collect(Collectors.toMap(
+				Entry::getKey, entry -> secondaryProdGenerator.generate(primaryProds.get(entry.getKey()), entry.getKey())));
 		
 		Map<MarketSegment,Map<TravelSurveyZone,Double>> combinedProds = afterProdSegs.parallelStream().collect(Collectors.toMap(Function.identity(), newSeg ->
-		prods.entrySet().parallelStream()
+		primaryProds.entrySet().parallelStream()
 		.filter(entry -> entry.getKey() instanceof IncomeGroupSegmenter && ((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup() == ((IncomeGroupSegmenter) newSeg).getIncomeGroup())
 		.flatMap(entry -> entry.getValue().entrySet().parallelStream())
 		.collect(Collectors.toConcurrentMap(Entry::getKey, Entry::getValue, Double::sum))));
 		
 		
 		Map<MarketSegment,Map<TravelSurveyZone,Double>> combinedAttrs = afterProdSegs.parallelStream().collect(Collectors.toMap(Function.identity(), newSeg ->
-		attrs.entrySet().parallelStream()
+		primaryAttrs.entrySet().parallelStream()
 		.filter(entry -> entry.getKey() instanceof IncomeGroupSegmenter &&((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup() == ((IncomeGroupSegmenter) newSeg).getIncomeGroup())
 		.flatMap(entry -> entry.getValue().entrySet().parallelStream())
 		.collect(Collectors.toConcurrentMap(Entry::getKey, Entry::getValue,Double::sum))));
+		
+		
+		
+		
+		
+		
 		
 		return afterProdSegs.parallelStream().collect(Collectors.toMap(Function.identity(),
 				seg -> new PAPassthroughMap(g, null, combinedProds.get(seg), combinedAttrs.get(seg))));

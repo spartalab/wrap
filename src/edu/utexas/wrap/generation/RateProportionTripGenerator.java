@@ -2,6 +2,7 @@ package edu.utexas.wrap.generation;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -33,79 +34,68 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  */
 public class RateProportionTripGenerator {
 	
-	private Map<TravelSurveyZone,Float> totalProds;
-	Map<MarketSegment,Map<TravelSurveyZone,Float>> shares;
+	private Map<TravelSurveyZone, Double> totalProds;
+	Map<MarketSegment,Map<TravelSurveyZone,Double>> shares;
+	Map<MarketSegment,Map<TravelSurveyZone,Double>> rates;
 	
 	public RateProportionTripGenerator(Graph g, 
-			Map<MarketSegment,Float> primaryProductionRates, 
-			Map<MarketSegment,Float> secondaryProductionRates, 
-			Map<MarketSegment,PAMap> primaryTrips) {
+			Map<MarketSegment,Double> primaryProductionRates, 
+			Map<MarketSegment,Double> secondaryProductionRates, 
+			Map<MarketSegment,Map<TravelSurveyZone,Double>> primaryProds) {
 		
-		totalProds = Combiner.totalAttractions(g, primaryTrips.values());
+		totalProds = g.getTSZs().parallelStream().collect(Collectors.toMap(Function.identity(), 
+				tsz -> primaryProds.values().parallelStream().mapToDouble(map -> map.getOrDefault(tsz,0.0)).sum()
+				));
 		
-		shares = getTripShares(g, primaryTrips);
+		shares = getTripShares(g, primaryProds);
 		
 		calculateRelativeRates(g, primaryProductionRates, secondaryProductionRates, shares);
 		
 	}
 
 	private void calculateRelativeRates(Graph g, 
-			Map<MarketSegment, Float> primaryProductionRates,
-			Map<MarketSegment, Float> secondaryProductionRates,
-			Map<MarketSegment, Map<TravelSurveyZone, Float>> shares) {
+			Map<MarketSegment, Double> primaryProductionRates,
+			Map<MarketSegment, Double> secondaryProductionRates,
+			Map<MarketSegment, Map<TravelSurveyZone, Double>> shares) {
 		
 		//Calculate relative production rates
-		primaryProductionRates.keySet().parallelStream().forEach(sgmt -> {
+		rates = primaryProductionRates.keySet().parallelStream().collect( Collectors.toMap(Function.identity(), sgmt -> {
 			//Determine the ratio of NHB to HB trips
-			if (primaryProductionRates.get(sgmt) <= 0)  return;
+			if (primaryProductionRates.get(sgmt) <= 0)  return null;
 			
-			float factor = secondaryProductionRates.get(sgmt)/primaryProductionRates.get(sgmt);
-			Map<TravelSurveyZone,Float> share = shares.get(sgmt);
-			
-			
-		});
+			double factor = secondaryProductionRates.get(sgmt)/primaryProductionRates.get(sgmt);
+			return shares.get(sgmt).entrySet().parallelStream().collect(Collectors.toMap(
+					Entry::getKey,
+					entry -> entry.getValue()*factor
+					));			
+		}));
 	}
 
-	private Map<TravelSurveyZone, Float> getRates(Graph g, float factor, Map<TravelSurveyZone, Float> share) {
-		Map<TravelSurveyZone, Float> rate = new HashMap<TravelSurveyZone,Float>(g.numZones(),1.0f);
-		
-		share.keySet().parallelStream().forEach(zone -> {
-			rate.put(zone, share.get(zone)*factor);
-		});
-		return rate;
-	}
-
-	private Map<MarketSegment, Map<TravelSurveyZone, Float>> getTripShares(Graph g,
-			Map<MarketSegment, PAMap> primaryTrips) {
-		
+	private Map<MarketSegment, Map<TravelSurveyZone,Double>> getTripShares(Graph g,
+			Map<MarketSegment, Map<TravelSurveyZone,Double>> primaryProds) {
 				
-//		getTotalTrips(g, primaryTrips); 
-		
 		//Calculate each segment's household share of the total trips
 
-		return primaryTrips.keySet().parallelStream().collect(
+		return primaryProds.keySet().parallelStream().collect(
 				//Map each segment to:
 				Collectors.toMap(Function.identity(), 
 					sgmt-> g.getTSZs().parallelStream().filter(tsz -> totalProds.get(tsz) > 0).collect(
 						//A Map from each zone with trips to
 						Collectors.toMap(Function.identity(), 
 							//A rate based on the segment's share of the total trips from that zone
-							tsz -> primaryTrips.get(sgmt).getProductions(tsz)/totalProds.get(tsz)
+							tsz -> primaryProds.get(sgmt).get(tsz)/totalProds.get(tsz)
 							)
 						)
 					)
 				);
 	}
 
-	public PAMatrix generate(Graph g, float factor, AggregatePAMatrix primaryTripMatrix, MarketSegment segment) {
+	public Map<TravelSurveyZone,Double> generate(Map<TravelSurveyZone,Double> primaryTripProds, MarketSegment segment) {
 		
-		Map<TravelSurveyZone, Float> rate = getRates(g, factor, shares.get(segment));
+		Map<TravelSurveyZone, Double> rate = rates.get(segment);
 
-		return new AggregatePAHashMatrix(primaryTripMatrix,rate);
+		return primaryTripProds.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, 
+				entry -> entry.getValue()*rate.get(entry.getKey())
+		));
 	}
-	
-	public PAMatrix generate(Map<TravelSurveyZone, Float> perZoneRate, AggregatePAMatrix primaryMatrix) {
-		return new AggregatePAHashMatrix(primaryMatrix, perZoneRate);
-	}
-
 }
