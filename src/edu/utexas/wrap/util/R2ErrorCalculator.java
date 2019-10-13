@@ -69,7 +69,7 @@ public class R2ErrorCalculator {
         if(numProds == 0)
             throw new RuntimeException("Unable to read production/attraction files");
 
-        return (1-(exp_err/productionError));
+        return (1-(productionError/exp_err));
 
     }
 
@@ -143,7 +143,7 @@ public class R2ErrorCalculator {
         if(numProds == 0)
             throw new RuntimeException("Unable to read production/attraction files");
 
-        return 1-(y_bar/productionError);
+        return 1-(productionError/exp_err);
 
     }
 
@@ -200,7 +200,7 @@ public class R2ErrorCalculator {
         if(numAttrs == 0)
             throw new RuntimeException("Unable to read production/attraction files");
 
-        return (1-(exp_err/attractionError));
+        return (1-(attractionError/exp_err));
 
     }
 
