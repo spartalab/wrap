@@ -1,8 +1,6 @@
 package edu.utexas.wrap;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -68,17 +66,17 @@ public class wrapHBW {
 					new IncomeGroupWorkerVehicleSegment(ig, wkr, veh)
 						)
 					)
-				).collect(Collectors.toSet()); 
-			
-			
-			
+				).collect(Collectors.toSet());
+
+
+
 			System.out.print("Reading production/attraction rates... ");
 			ms = System.currentTimeMillis();
 			//Trip generation inputs
 			//TODO need to add command line argument for the prodRates
 			Map<MarketSegment,Double> vots = null, //TODO Don't have file yet
-					 				  prodRates = ProductionAttractionFactory.readProductionRates(new File("../../nctcogFiles/TripProdRates.csv"), true, false,productionSegments), //TripAttRates.csv
-									  pkRates = PeakFactory.readPkOPkSplitRates(new File("../../nctcogFiles/pkOffPkSplits.csv"), true, afterPASegments); // pkOffPkSplits.csv
+		    prodRates = ProductionAttractionFactory.readProductionRates(new File("../../nctcogFiles/TripProdRates.csv"), true, false,productionSegments), //TripAttRates.csv
+		  	pkRates = PeakFactory.readPkOPkSplitRates(new File("../../nctcogFiles/pkOffPkSplits.csv"), true, afterPASegments); // pkOffPkSplits.csv
 			Map<MarketSegment,Map<AreaClass,Double>> attrRates = ProductionAttractionFactory.readAttractionRates(new File("../../nctcogFiles/TripAttRates.csv"), true, attractionSegments); //TripProdRates.csv
 			nms = System.currentTimeMillis();
 			System.out.println(""+(nms-ms)/1000.0+" s");
@@ -149,7 +147,10 @@ public class wrapHBW {
 			Map<MarketSegment, PAMap> hbMaps = tripGenerator(graph, productionSegments, attractionSegments, vots, prodRates, attrRates, afterPASegments);
 			nms = System.currentTimeMillis();
 			System.out.println(""+(nms-ms)/1000.0+" s");
-			
+			System.out.println("MSE Production Error " + MSEErrorCalculator.measureTripGenSegmentedProdError(graph, hbMaps,"../../nctcogFiles/gen-dist/TSZtrips_pro_hbw.csv", productionSegments, afterPASegments));
+			System.out.println("MSE Attraction Error " + MSEErrorCalculator.measureTripGenAttrError(graph, hbMaps,"../../nctcogFiles/gen-dist/TSZtrips_att_hbw.csv", afterPASegments, false));
+			System.out.println("R^2 Production Error " + R2ErrorCalculator.measureTripGenSegmentedProdError(graph, hbMaps,"../../nctcogFiles/gen-dist/TSZtrips_pro_hbw.csv", productionSegments, afterPASegments));
+			System.out.println("R^2 Attraction Error " + R2ErrorCalculator.measureTripGenAttrError(graph, hbMaps,"../../nctcogFiles/gen-dist/TSZtrips_att_hbw.csv", afterPASegments, false));
 			
 			
 			
@@ -159,7 +160,10 @@ public class wrapHBW {
 			balance(graph, hbMaps);
 			nms = System.currentTimeMillis();
 			System.out.println(""+(nms-ms)/1000.0+" s");
-			
+			System.out.println("MSE Balanced Production Error " + MSEErrorCalculator.measureTripGenProdError(graph, hbMaps,"../../nctcogFiles/gen-dist/tripsgen_balanced_HBW.csv", afterPASegments, true));
+			System.out.println("MSE Balanced Attraction Error " + MSEErrorCalculator.measureTripGenAttrError(graph, hbMaps,"../../nctcogFiles/gen-dist/tripsgen_balanced_HBW.csv", afterPASegments, true));
+			System.out.println("R^2 Balanced Production Error " + R2ErrorCalculator.measureTripGenProdError(graph, hbMaps,"../../nctcogFiles/gen-dist/tripsgen_balanced_HBW.csv", afterPASegments, true));
+			System.out.println("R^2 Balanced Attraction Error " + R2ErrorCalculator.measureTripGenAttrError(graph, hbMaps,"../../nctcogFiles/gen-dist/tripsgen_balanced_HBW.csv", afterPASegments, true));
 			
 			System.out.print("Performing peak-offpeak splitting... ");
 			ms = System.currentTimeMillis();
@@ -352,7 +356,7 @@ public class wrapHBW {
 			Map<MarketSegment, Double> vots, 
 			Map<MarketSegment, Double> primaryProdRates,
 			Map<MarketSegment, Map<AreaClass, Double>> primaryAttrRates,
-			Map<MarketSegment,Double> secondaryProdRates,
+//			Map<MarketSegment,Double> secondaryProdRates,
 			Collection<MarketSegment> afterProdSegs) {
 
 		BasicTripGenerator primaryProdGenerator = new BasicTripGenerator(g,primaryProdRates);
@@ -360,10 +364,10 @@ public class wrapHBW {
 		Map<MarketSegment,Map<TravelSurveyZone,Double>> primaryProds = prodSegs.parallelStream().collect(Collectors.toMap(Function.identity(), seg ->  primaryProdGenerator.generate(seg)));
 		Map<MarketSegment,Map<TravelSurveyZone,Double>> primaryAttrs = attrSegs.parallelStream().collect(Collectors.toMap(Function.identity(), seg -> primaryAttrGenerator.generate(seg)));
 
-		RateProportionTripGenerator secondaryProdGenerator = new RateProportionTripGenerator(g, primaryProdRates, secondaryProdRates, primaryProds);
-		
-		Map<MarketSegment,Map<TravelSurveyZone,Double>> secondaryProds = primaryProds.entrySet().parallelStream().collect(Collectors.toMap(
-				Entry::getKey, entry -> secondaryProdGenerator.generate(primaryProds.get(entry.getKey()), entry.getKey())));
+//		RateProportionTripGenerator secondaryProdGenerator = new RateProportionTripGenerator(g, primaryProdRates, secondaryProdRates, primaryProds);
+//
+//		Map<MarketSegment,Map<TravelSurveyZone,Double>> secondaryProds = primaryProds.entrySet().parallelStream().collect(Collectors.toMap(
+//				Entry::getKey, entry -> secondaryProdGenerator.generate(primaryProds.get(entry.getKey()), entry.getKey())));
 		
 		Map<MarketSegment,Map<TravelSurveyZone,Double>> combinedProds = afterProdSegs.parallelStream().collect(Collectors.toMap(Function.identity(), newSeg ->
 		primaryProds.entrySet().parallelStream()

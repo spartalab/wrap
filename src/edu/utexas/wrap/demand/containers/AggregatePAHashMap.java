@@ -50,7 +50,7 @@ public class AggregatePAHashMap implements PAMap {
      */
     @Override
     public Float getAttractions(TravelSurveyZone z) {
-        return attractors.get(z);
+        return attractors.getOrDefault(z, 0.0f);
     }
 
     /* (non-Javadoc)
@@ -58,7 +58,7 @@ public class AggregatePAHashMap implements PAMap {
      */
     @Override
     public Float getProductions(TravelSurveyZone z) {
-        return producers.get(z);
+        return producers.getOrDefault(z, 0.0f);
     }
 
     /* (non-Javadoc)
