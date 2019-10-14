@@ -37,7 +37,7 @@ public class UsedPathsRelativeGapCalculator extends Thread {
 			b.getNodes().parallelStream().forEach(d -> {
 				TravelSurveyZone tsz = d.getZone();
 				if (tsz == null) return;
-				Float demand = dem.getOrDefault(d.getZone(),0.0F);
+				Double demand = dem.getOrDefault(d.getZone(),0.0);
 				if (demand > 0.0F) try {
 					denominator.add(b.getCachedL(d,cache) * demand);
 				} catch (UnreachableException e) {

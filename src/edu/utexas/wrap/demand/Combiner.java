@@ -155,9 +155,9 @@ public class Combiner {
 				return new DemandMap() {
 
 					@Override
-					public Float get(TravelSurveyZone dest) {
+					public Double get(TravelSurveyZone dest) {
 						// TODO Auto-generated method stub
-						return (float) maps.parallelStream().mapToDouble(map -> map.get(dest)).sum();
+						return maps.parallelStream().mapToDouble(map -> map.get(dest)).sum();
 					}
 
 					@Override
@@ -173,13 +173,13 @@ public class Combiner {
 					}
 
 					@Override
-					public Float getOrDefault(TravelSurveyZone node, float f) {
+					public Double getOrDefault(TravelSurveyZone node, Double f) {
 						//FIXME this doesn't handle the default case correctly
-						return (float) maps.parallelStream().mapToDouble(map -> map.get(node)).sum();
+						return maps.parallelStream().mapToDouble(map -> map.get(node)).sum();
 					}
 
 					@Override
-					public Float put(TravelSurveyZone dest, Float demand) {
+					public Double put(TravelSurveyZone dest, Double demand) {
 						// TODO Auto-generated method stub
 						throw new RuntimeException("Writing to read-only map");
 					}

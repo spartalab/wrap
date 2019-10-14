@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -57,7 +58,7 @@ class CombinedAggregatePAMatrix implements AggregatePAMatrix {
 	private Collection<AggregatePAMatrix> children;
 	
 	public CombinedAggregatePAMatrix() {
-		children = new HashSet<AggregatePAMatrix>();
+		children = Collections.synchronizedSet(new HashSet<AggregatePAMatrix>());
 	}
 	
 	@Override
@@ -89,44 +90,8 @@ class CombinedAggregatePAMatrix implements AggregatePAMatrix {
 
 		Collection<DemandMap> maps = children.parallelStream().map(mtx -> mtx.getDemandMap(producer)).collect(Collectors.toSet());
 		
-		return new DemandMap() {
+		return new CombinedDemandMap(maps);
 
-			@Override
-			public Float get(TravelSurveyZone dest) {
-				return (float) maps.parallelStream().mapToDouble(map -> map.get(dest)).sum();
-			}
-
-			@Override
-			public Graph getGraph() {
-				return children.parallelStream().map(AggregatePAMatrix::getGraph).findAny().get();
-			}
-
-			@Override
-			public Collection<TravelSurveyZone> getZones() {
-				return maps.parallelStream().flatMap(map -> map.getZones().parallelStream()).collect(Collectors.toSet());
-			}
-
-			@Override
-			public Float getOrDefault(TravelSurveyZone node, float f) {
-				//FIXME this doesn't handle the default case correctly
-				return (float) maps.parallelStream().mapToDouble(map -> map.get(node)).sum();
-			}
-
-			@Override
-			public Float put(TravelSurveyZone dest, Float demand) {
-				throw new RuntimeException("Writing to read-only map");
-			}
-
-			@Override
-			public boolean isEmpty() {
-				return !maps.parallelStream().filter(map -> !map.isEmpty()).findAny().isPresent();
-			}
-
-			@Override
-			public Map<TravelSurveyZone, Double> doubleClone() {
-				return getZones().parallelStream().collect(Collectors.toMap(Function.identity(), zone -> get(zone).doubleValue()));
-			}
-		};
 	}
 
 	@Override

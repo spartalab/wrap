@@ -45,7 +45,7 @@ public class AutoODMatrix extends ModalHashMatrix {
 	@Override
 	public void put(TravelSurveyZone origin, TravelSurveyZone destination, Float demand) {
 		map.putIfAbsent(origin, new AutoDemandHashMap(getGraph(), this));
-		get(origin).put(destination, demand);
+		get(origin).put(destination, demand.doubleValue());
 	}
 
 }

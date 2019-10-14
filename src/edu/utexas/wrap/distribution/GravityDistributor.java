@@ -111,7 +111,7 @@ public class GravityDistributor extends TripDistributor {
 				//Check for errors
 				if (Tij.isNaN()) throw new RuntimeException();
 				//Store this value as the number of trips in the DemandMap
-				d.put(attractor, Tij.floatValue());
+				d.put(attractor, Tij);
 			}
 
 			//Store the DemandMap in the new matrix

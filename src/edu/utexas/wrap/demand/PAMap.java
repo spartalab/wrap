@@ -1,6 +1,6 @@
 package edu.utexas.wrap.demand;
 
-import java.util.Set;
+import java.util.Collection;
 
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
@@ -21,12 +21,12 @@ public interface PAMap {
 	/**
 	 * @return the Nodes from which trips originate
 	 */
-	public Set<TravelSurveyZone> getProducers();
+	public Collection<TravelSurveyZone> getProducers();
 
 	/**
 	 * @return the Nodes to which trips are attracted
 	 */
-	public Set<TravelSurveyZone> getAttractors();
+	public Collection<TravelSurveyZone> getAttractors();
 
 	/**
 	 * @param z the Node to which trips are attracted

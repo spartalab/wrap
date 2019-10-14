@@ -6,23 +6,22 @@ import java.util.Map;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
+import it.unimi.dsi.fastutil.objects.Object2DoubleMaps;
 import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2FloatMaps;
-import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 
 public class DemandHashMap implements DemandMap {
 
 	Graph g;
-	private Map<TravelSurveyZone,Float> map; 
+	private Map<TravelSurveyZone,Double> map; 
 
 	public DemandHashMap(Graph g) {
 		this.g = g;
-		map = Object2FloatMaps.synchronize(new Object2FloatOpenHashMap<TravelSurveyZone>(g.numZones()),1.0f);
+		map = Object2DoubleMaps.synchronize(new Object2DoubleOpenHashMap<TravelSurveyZone>(g.numZones()),1.0f);
 	}
 	
 	protected DemandHashMap(DemandHashMap d) {
 		this.g = d.getGraph();
-		map = Object2FloatMaps.synchronize(new Object2FloatOpenHashMap<TravelSurveyZone>(d.map));
+		map = Object2DoubleMaps.synchronize(new Object2DoubleOpenHashMap<TravelSurveyZone>(d.map));
 	}
 	
 	/* (non-Javadoc)
@@ -37,8 +36,8 @@ public class DemandHashMap implements DemandMap {
 	 * @see edu.utexas.wrap.demand.DemandMap#get(edu.utexas.wrap.net.Node)
 	 */
 	@Override
-	public Float get(TravelSurveyZone dest) {
-		return this.getOrDefault(dest, 0.0F);
+	public Double get(TravelSurveyZone dest) {
+		return this.getOrDefault(dest, 0.0);
 	}
 
 	/* (non-Javadoc)
@@ -61,7 +60,7 @@ public class DemandHashMap implements DemandMap {
 	 * @see edu.utexas.wrap.demand.DemandMap#getOrDefault(edu.utexas.wrap.net.Node, float)
 	 */
 	@Override
-	public Float getOrDefault(TravelSurveyZone attrZone, float f) {
+	public Double getOrDefault(TravelSurveyZone attrZone, Double f) {
 		return map.getOrDefault(attrZone, f);
 	}
 
@@ -73,7 +72,7 @@ public class DemandHashMap implements DemandMap {
 	}
 
 	@Override
-	public Float put(TravelSurveyZone attr, Float demand) {
+	public Double put(TravelSurveyZone attr, Double demand) {
 		return map.put(attr, demand);
 	}
 

@@ -16,7 +16,7 @@ public interface DemandMap {
 	 * @param dest the Node whose demand level is measured
 	 * @return the demand at the given Node
 	 */
-	public Float get(TravelSurveyZone dest);
+	public Double get(TravelSurveyZone dest);
 
 	/**
 	 * @return the associated graph
@@ -35,14 +35,14 @@ public interface DemandMap {
 	 * @param f the default value returned if not mapped to a demand
 	 * @return the demand level, or the default if no mapping is available
 	 */
-	public Float getOrDefault(TravelSurveyZone node, float f);
+	public Double getOrDefault(TravelSurveyZone node, Double f);
 	
 	/**
 	 * @param dest the Node to whence there is demand
 	 * @param demand the amound of demand present at the Node
 	 * @return the previous mapping, if there was one present
 	 */
-	public Float put(TravelSurveyZone dest, Float demand);
+	public Double put(TravelSurveyZone dest, Double demand);
 
 	/**
 	 * @return whether this Map has entries

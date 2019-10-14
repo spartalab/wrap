@@ -10,15 +10,15 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class FixedSizeDemandMap implements DemandMap {
 	private final Graph graph;
-	private float[] demand;
+	private double[] demand;
 	
 	public FixedSizeDemandMap(Graph g) {
 		graph = g;
-		demand = new float[g.numZones()];
+		demand = new double[g.numZones()];
 	}
 
 	@Override
-	public Float get(TravelSurveyZone dest) {
+	public Double get(TravelSurveyZone dest) {
 		// TODO Auto-generated method stub
 		return demand[dest.getOrder()];
 	}
@@ -36,7 +36,7 @@ public class FixedSizeDemandMap implements DemandMap {
 	}
 
 	@Override
-	public Float getOrDefault(TravelSurveyZone node, float f) {
+	public Double getOrDefault(TravelSurveyZone node, Double f) {
 		// TODO Auto-generated method stub
 		int index = node.getOrder();
 		if (index == -1) 
@@ -45,10 +45,10 @@ public class FixedSizeDemandMap implements DemandMap {
 	}
 
 	@Override
-	public Float put(TravelSurveyZone dest, Float put) {
+	public Double put(TravelSurveyZone dest, Double put) {
 		// TODO Auto-generated method stub
 		int idx = dest.getOrder();
-		Float d = demand[idx];
+		Double d = demand[idx];
 		demand[idx] = put;
 		return d;
 	}
@@ -56,7 +56,7 @@ public class FixedSizeDemandMap implements DemandMap {
 	@Override
 	public boolean isEmpty() {
 		// TODO Auto-generated method stub
-		for (Float d : demand) if (d > 0) return false;
+		for (Double d : demand) if (d > 0) return false;
 		return true;
 	}
 

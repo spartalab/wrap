@@ -4,6 +4,8 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import edu.utexas.wrap.demand.DemandMap;
+import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
@@ -19,11 +21,11 @@ public class AreaSpecificTripGenerator extends BasicTripGenerator {
 	}
 	
 	@Override
-	public Map<TravelSurveyZone, Double> generate(MarketSegment segment){
-		return g.getTSZs().parallelStream().collect(
-				Collectors.toMap(Function.identity(), tsz ->
-				areaRates.get(segment).get(tsz.getAreaClass())*segment.attributeDataGetter().applyAsDouble(tsz)));
-		
+	public DemandMap generate(MarketSegment segment){
+		DemandMap ret = new FixedSizeDemandMap(g);
+		g.getTSZs().parallelStream().forEach( tsz->
+				ret.put(tsz, areaRates.get(segment).get(tsz.getAreaClass())*segment.attributeDataGetter().applyAsDouble(tsz)));
+		return ret;
 	}
 
 }

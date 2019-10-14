@@ -3,6 +3,7 @@ package edu.utexas.wrap.demand.containers;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
 
@@ -38,7 +39,7 @@ public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 	 * @see edu.utexas.wrap.demand.ODMatrix#getDemand(edu.utexas.wrap.net.Node, edu.utexas.wrap.net.Node)
 	 */
 	public Float getDemand(TravelSurveyZone origin, TravelSurveyZone destination) {
-		return map.get(origin) == null? 0.0F : map.get(origin).getOrDefault(destination,0.0F);
+		return map.get(origin) == null? 0.0F : map.get(origin).getOrDefault(destination,0.0).floatValue();
 	}
 
 	/* (non-Javadoc)
@@ -47,7 +48,7 @@ public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 	@Override
 	public void put(TravelSurveyZone prod, TravelSurveyZone attr, Float demand) {
 		map.putIfAbsent(prod, new DemandHashMap(getGraph()));
-		map.get(prod).put(attr, demand);
+		map.get(prod).put(attr, demand.doubleValue());
 		
 	}
 
@@ -100,6 +101,12 @@ public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 	@Override
 	public Collection<TravelSurveyZone> getProducers() {
 		return map.keySet();
+	}
+
+	@Override
+	public void write(Path outputOD) {
+		// TODO Auto-generated method stub
+		throw new RuntimeException();
 	}
 
 

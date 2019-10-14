@@ -1,18 +1,18 @@
 package edu.utexas.wrap.demand.containers;
 
-import java.util.Map;
-import java.util.Set;
+import java.util.Collection;
 
+import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class PAPassthroughMap implements PAMap {
 	private Graph g;
-	private Map<TravelSurveyZone,Double> prods, attrs;
+	private DemandMap prods, attrs;
 	private Double vot;
 	
-	public PAPassthroughMap(Graph g, Double valueOfTime, Map<TravelSurveyZone,Double> productions, Map<TravelSurveyZone,Double> attractions) {
+	public PAPassthroughMap(Graph g, Double valueOfTime, DemandMap productions, DemandMap attractions) {
 		this.g = g;
 		vot = valueOfTime;
 		prods = productions;
@@ -20,13 +20,13 @@ public class PAPassthroughMap implements PAMap {
 	}
 
 	@Override
-	public Set<TravelSurveyZone> getProducers() {
-		return prods.keySet();
+	public Collection<TravelSurveyZone> getProducers() {
+		return prods.getZones();
 	}
 
 	@Override
-	public Set<TravelSurveyZone> getAttractors() {
-		return attrs.keySet();
+	public Collection<TravelSurveyZone> getAttractors() {
+		return attrs.getZones();
 	}
 
 	@Override

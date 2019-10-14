@@ -48,7 +48,7 @@ public class AggregatePAHashMatrix implements AggregatePAMatrix {
 	@Override
 	public Float getDemand(TravelSurveyZone producer, TravelSurveyZone attractor) {
 		// TODO Auto-generated method stub
-		return matrix.get(producer) == null ? 0.0F : matrix.get(producer).getOrDefault(attractor, 0.0F);
+		return matrix.get(producer) == null ? 0.0F : matrix.get(producer).getOrDefault(attractor, 0.0).floatValue();
 	}
 
 	/* (non-Javadoc)
@@ -73,7 +73,7 @@ public class AggregatePAHashMatrix implements AggregatePAMatrix {
 	@Override
 	public void put(TravelSurveyZone producer, TravelSurveyZone attractor, Float demand) {
 		matrix.putIfAbsent(producer,new DemandHashMap(g));
-		((DemandMap) matrix.get(producer)).put(attractor,demand);
+		((DemandMap) matrix.get(producer)).put(attractor,demand.doubleValue());
 		
 	}
 

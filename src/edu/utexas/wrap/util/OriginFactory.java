@@ -19,16 +19,16 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
-import it.unimi.dsi.fastutil.floats.Float2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.doubles.Double2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 public class OriginFactory {
 	
-	private static Float parse(String s) {
+	private static Double parse(String s) {
 		try {
-			return Float.parseFloat(s);
+			return Double.parseDouble(s);
 		} catch (NumberFormatException e) {
-			return 0.0F;
+			return 0.0;
 		}
 	}
 	
@@ -55,7 +55,7 @@ public class OriginFactory {
 						g.getNode(destID).setTravelSurveyZone(tsz);
 						g.addZone(tsz);
 					}
-					dests.put(tsz, demand);
+					dests.put(tsz, demand.doubleValue());
 				}
 			}
 		}
@@ -124,16 +124,16 @@ public class OriginFactory {
 				g.addZone(destZone);
 			}
 
-			Float da35 = parse(args[2]);
-			Float da90 = parse(args[3]);
-			Float sr35 = parse(args[4]);
-			Float sr90 = parse(args[5]);
-			Float da17 = parse(args[6]);
-			Float da45 = parse(args[7]);
-			Float sr17 = parse(args[8]);
-			Float sr45 = parse(args[9]);
-			Float mdtk = parse(args[10]);
-			Float hvtk = parse(args[11]);
+			Double da35 = parse(args[2]),
+			 da90 = parse(args[3]),
+			sr35 = parse(args[4]),
+			sr90 = parse(args[5]),
+			da17 = parse(args[6]),
+			da45 = parse(args[7]),
+			sr17 = parse(args[8]),
+			sr45 = parse(args[9]),
+			mdtk = parse(args[10]),
+			hvtk = parse(args[11]);
 
 			if (curOrig == null || !orig.equals(curOrig)) {
 				// Moving on to next origin
@@ -211,12 +211,12 @@ public class OriginFactory {
 	 * class
 	 * 
 	 * @param odMatrix
-	 * @param VOTs
+	 * @param map
 	 * @return
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public static void readTNTPOriginSpecificProportionalVOTDemand(File odMatrix, Map<Node, List<Float[]>> VOTs, Graph g, AssignmentLoader dl)
+	public static void readTNTPOriginSpecificProportionalVOTDemand(File odMatrix, Map<Node, List<Double[]>> map, Graph g, AssignmentLoader dl)
 			throws FileNotFoundException, IOException {
 		/////////////////////////////////////
 		// Read OD Matrix and assign flows
@@ -224,7 +224,7 @@ public class OriginFactory {
 		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
 		String line;
 		
-		Map<Float, AutoODMatrix> ods = new Float2ObjectOpenHashMap<AutoODMatrix>();
+		Map<Double, AutoODMatrix> ods = new Double2ObjectOpenHashMap<AutoODMatrix>();
 		int numZones = 0;
 		
 		do { // Move past headers in the file
@@ -250,8 +250,8 @@ public class OriginFactory {
 			System.out.print("\rReading demand for origin " + origID);
 			DemandHashMap unified = readDestinationDemand(of, g, numZones);
 			
-			for (Float[] entry : VOTs.get(root)) {
-				ods.putIfAbsent(entry[0], new AutoODMatrix(g, entry[0], null)); //Ensure a parent OD matrix exists
+			for (Double[] entry : map.get(root)) {
+				ods.putIfAbsent(entry[0], new AutoODMatrix(g, entry[0].floatValue(), null)); //Ensure a parent OD matrix exists
 				AutoDemandMap split = new AutoFixedSizeDemandMap(g, ods.get(entry[0]));	//Attach the parent OD
 				
 				for (TravelSurveyZone dest : unified.getZones()) { //Split each destination proportionally
@@ -287,10 +287,10 @@ public class OriginFactory {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	private static Map<Node, List<Float[]>> readUniformVOTDistrib(File VOTfile, Graph g) throws FileNotFoundException, IOException {
+	private static Map<Node, List<Double[]>> readUniformVOTDistrib(File VOTfile, Graph g) throws FileNotFoundException, IOException {
 
 		BufferedReader vf = new BufferedReader(new FileReader(VOTfile));
-		LinkedList<Float[]> VOTs = new LinkedList<Float[]>();
+		LinkedList<Double[]> VOTs = new LinkedList<Double[]>();
 
 		String line;
 		vf.readLine(); // Ignore header line
@@ -299,14 +299,14 @@ public class OriginFactory {
 			if (line == null)
 				break;
 			String[] args = line.split("\t");
-			Float vot = parse(args[0]);
-			Float vProp = parse(args[1]);
-			Float[] entry = { vot, vProp };
+			Double vot = parse(args[0]);
+			Double vProp = parse(args[1]);
+			Double[] entry = { vot, vProp };
 			VOTs.add(entry);
 		} while (!line.equals(""));
 		vf.close();
 
-		Map<Node, List<Float[]>> votMap = new Object2ObjectOpenHashMap<Node, List<Float[]>>();
+		Map<Node, List<Double[]>> votMap = new Object2ObjectOpenHashMap<Node, List<Double[]>>();
 		for (Node n : g.getNodes()) {
 			votMap.put(n, VOTs);
 		}

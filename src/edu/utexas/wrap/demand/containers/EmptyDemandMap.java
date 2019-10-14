@@ -18,9 +18,9 @@ public class EmptyDemandMap implements AutoDemandMap {
 	}
 
 	@Override
-	public Float get(TravelSurveyZone dest) {
+	public Double get(TravelSurveyZone dest) {
 		// TODO Auto-generated method stub
-		return 0.0f;
+		return 0.0;
 	}
 
 	@Override
@@ -36,13 +36,13 @@ public class EmptyDemandMap implements AutoDemandMap {
 	}
 
 	@Override
-	public Float getOrDefault(TravelSurveyZone node, float f) {
+	public Double getOrDefault(TravelSurveyZone node, Double f) {
 		// TODO Auto-generated method stub
-		return 0.0f;
+		return 0.0;
 	}
 
 	@Override
-	public Float put(TravelSurveyZone dest, Float demand) {
+	public Double put(TravelSurveyZone dest, Double demand) {
 		// TODO Auto-generated method stub
 		throw new RuntimeException("Unable to add demand to an empty demand map");
 	}
