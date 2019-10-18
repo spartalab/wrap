@@ -103,4 +103,8 @@ public class TravelSurveyZone {
 			.put(veh, val);
 		}
 	}
+
+	public double getEmploymentByIndustry(IndustryClass industry) {
+		return employmentByIncomeGroupThenIndustry.values().parallelStream().mapToDouble(map -> map.get(industry)).sum();
+	}
 }

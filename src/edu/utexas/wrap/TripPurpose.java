@@ -1,0 +1,19 @@
+package edu.utexas.wrap;
+
+public enum TripPurpose {
+HOME_WORK,
+HOME_COLL_UNIV,
+HOME_K12,
+HOME_SRE,
+HOME_SHOP,
+HOME_PBO,
+WORK_WORK,
+WORK_ESH,
+WORK_OTH,
+NONHOME_WORK,
+NONHOME_EDU,
+SHOP_SHOP,
+SHOP_OTH,
+OTH_OTH,
+DEFAULT
+}

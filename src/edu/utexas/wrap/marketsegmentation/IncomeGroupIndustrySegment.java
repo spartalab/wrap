@@ -6,8 +6,8 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class IncomeGroupIndustrySegment implements IncomeGroupSegmenter, IndustrySegmenter {
 
-	int incomeGroup;
-	IndustryClass industry;
+	private int incomeGroup;
+	private IndustryClass industry;
 	
 	public IncomeGroupIndustrySegment(Integer incomeGrp, IndustryClass industry) {
 		incomeGroup = incomeGrp;

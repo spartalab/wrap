@@ -66,7 +66,7 @@ class CombinedAggregatePAMatrix implements AggregatePAMatrix {
 		return children.parallelStream().map(AggregatePAMatrix::getGraph).findAny().get();
 	}
 
-	public Object add(AggregatePAMatrix child) {
+	public boolean add(AggregatePAMatrix child) {
 		return children.add(child);
 	}
 	

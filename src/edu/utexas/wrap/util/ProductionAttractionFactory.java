@@ -71,7 +71,7 @@ public class ProductionAttractionFactory {
 	}
 
 	//TODO don't make assumption about the header orders, make a quick check for that
-	public static Map<MarketSegment,Double>  readProductionRates(File file, boolean header, boolean v1, Collection<MarketSegment> microProdSegs) throws IOException {
+	public static Map<MarketSegment,Double>  readSegmentRates(File file, boolean header, boolean v1, Collection<MarketSegment> microProdSegs) throws IOException {
 		BufferedReader in = null;
 		Map<MarketSegment,Double> map = new ConcurrentHashMap<MarketSegment,Double>();
 
@@ -97,7 +97,7 @@ public class ProductionAttractionFactory {
 	}
 
 	//TODO don't make assumption about the header orders, make a quick check for that
-	public static Map<MarketSegment, Map<AreaClass,Double>> readAttractionRates(File file, boolean header, Collection<MarketSegment> segments) throws IOException {
+	public static Map<MarketSegment, Map<AreaClass,Double>> readSegmentAreaRates(File file, boolean header, Collection<MarketSegment> segments) throws IOException {
 		BufferedReader in = null;
 		Map<MarketSegment,Map<AreaClass,Double>> map = new ConcurrentHashMap<MarketSegment,Map<AreaClass,Double>>();
 
