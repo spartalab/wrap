@@ -17,7 +17,7 @@ import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-public class PAMapCollector<T extends PAMap> implements Collector<T, CombinedPAMap, PAMap>{
+public class PAMapCollector implements Collector<PAMap, CombinedPAMap, PAMap>{
 	private final Set<Characteristics> characteristics = new HashSet<Characteristics>(Arrays.asList(Collector.Characteristics.values()));
 
 	@Override
@@ -26,7 +26,7 @@ public class PAMapCollector<T extends PAMap> implements Collector<T, CombinedPAM
 	}
 
 	@Override
-	public BiConsumer<CombinedPAMap, T> accumulator() {
+	public BiConsumer<CombinedPAMap, PAMap> accumulator() {
 		return (parent, child) -> parent.add(child);
 	}
 

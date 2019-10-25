@@ -88,11 +88,11 @@ public class NCTCOGTripGen {
 		Map<MarketSegment,DemandMap> secondaryAttrs = combineMapsByTripPurpose(secondarySegs, secondaryAttrMap);
 
 		PAMap hbwIG123 = igSegs.parallelStream().filter(seg -> ((IncomeGroupSegment) seg).getIncomeGroup() < 4).map(
-				seg -> new PAPassthroughMap(g,null, combinedPrimaryProds.get(seg), combinedPrimaryAttrs.get(seg))).collect(new PAMapCollector<PAPassthroughMap>());
+				seg -> new PAPassthroughMap(g,null, combinedPrimaryProds.get(seg), combinedPrimaryAttrs.get(seg))).collect(new PAMapCollector());
 		
 		PAMap hbwIG4 = igSegs.parallelStream().filter(seg -> ((IncomeGroupSegment) seg).getIncomeGroup() == 4).map(seg -> new PAPassthroughMap(g,null,combinedPrimaryProds.get(seg),combinedPrimaryAttrs.get(seg))).findAny().get(),
 		nhbw = new PAPassthroughMap(g,null,secondaryProds.values().parallelStream().collect(new DemandMapCollector()), secondaryAttrs.values().parallelStream().collect(new DemandMapCollector())),
-		hbwIG4_nhbw = Stream.of(hbwIG4,nhbw).collect(new PAMapCollector<PAMap>());
+		hbwIG4_nhbw = Stream.of(hbwIG4,nhbw).collect(new PAMapCollector());
 		
 		long nms = System.currentTimeMillis();
 		System.out.println(""+(nms-ms)/1000.0+" s");
