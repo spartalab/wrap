@@ -22,7 +22,19 @@ import edu.utexas.wrap.net.TolledEnhancedLink;
 import edu.utexas.wrap.net.TravelSurveyZone;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
+/**
+ * This class provides static methods to read Graph information
+ */
 public class GraphFactory {
+	/**
+	 * This method produces a Graph object after reading it in from the TNTP Format
+	 * More information about the TNTP Format can be found here:
+	 * https://github.com/bstabler/TransportationNetworks
+	 * @param linkFile File with the network information
+	 * @return Graph object representation of input network
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
 	public static Graph readTNTPGraph(File linkFile) throws FileNotFoundException, IOException {
 
 		try {
@@ -87,7 +99,16 @@ public class GraphFactory {
 
 	}
 
-
+	/**
+	 * This method produces a Graph object after reading it from a CSV file
+	 * The file contains information about the CONAC paramters and uses EnhancedLinks
+	 * to build the graph
+	 * @param f File with the network information
+	 * @param thruNode Integer value of the first node id that is not a centroid
+	 * @return Graph object representation of input network
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
 	public static Graph readEnhancedGraph(File f, Integer thruNode) throws FileNotFoundException, IOException {
 		try {
 		MessageDigest md = MessageDigest.getInstance("MD5");

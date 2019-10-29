@@ -9,7 +9,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Collection;
 import java.util.HashMap;
-
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.PAMatrix;
 import edu.utexas.wrap.demand.containers.AggregatePAHashMap;
@@ -24,7 +23,20 @@ import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
+/**
+ * This class provides static methods to read various files relating to productions, attractions, and their respective rates
+ */
 public class ProductionAttractionFactory {
+	/**
+	 * This method takes an input file and produces a PA Map
+	 * It expects a .csv file with the values in the following order:
+	 * |ZoneID, Productions, Attractions|
+	 * @param file File object to be parsed
+	 * @param header Boolean whether the file has a header
+	 * @param g Graph for associated with this PA Map
+	 * @return PA Map from the file
+	 * @throws IOException
+	 */
 	public static PAMap readMap(File file, boolean header, Graph g) throws IOException {
 		PAMap ret = new AggregatePAHashMap(g);
 		BufferedReader in = null;
@@ -47,7 +59,17 @@ public class ProductionAttractionFactory {
 		}
 		return ret;
 	}
-	
+
+	/**
+	 * This method takes an input file and produces a PA Matrix
+	 * It expects a .csv file with the values in the following order:
+	 * |ZoneID (Production zone), ZoneID (Attraction zone), Demand|
+	 * @param file File object to be parsed
+	 * @param header Boolean whether the file has a header
+	 * @param g Graph associated with this PA Matrix
+	 * @return PA Matrix from the file
+	 * @throws IOException
+	 */
 	public static PAMatrix readMatrix(File file, boolean header, Graph g) throws IOException {
 		PAMatrix ret = new AggregatePAHashMatrix(g);
 		BufferedReader in = null;
@@ -70,8 +92,20 @@ public class ProductionAttractionFactory {
 		return ret;
 	}
 
-	//TODO don't make assumption about the header orders, make a quick check for that
+
+	/**
+	 * This method takes an input file and creates a map of market segment to their respective rates based on Vehicle and worker segments
+	 * It expects a .csv file with the values in the following order:
+	 * |WorkersInSegment, VehiclesInSegment, rate, rate_v1|
+	 * @param file object to read prodcution/attraction market segment rates
+	 * @param header boolean whether the file has a header
+	 * @param v1 boolean whether to read segment rates v1 or normal
+	 * @param microProdSegs Collection of segments
+	 * @return
+	 * @throws IOException
+	 */
 	public static Map<MarketSegment,Double>  readSegmentRates(File file, boolean header, boolean v1, Collection<MarketSegment> microProdSegs) throws IOException {
+		//TODO don't make assumption about the header orders, make a quick check for that
 		BufferedReader in = null;
 		Map<MarketSegment,Double> map = new ConcurrentHashMap<MarketSegment,Double>();
 
@@ -96,8 +130,20 @@ public class ProductionAttractionFactory {
 		return map;
 	}
 
-	//TODO don't make assumption about the header orders, make a quick check for that
+	/**
+	 * This method takes an input file and creates a mapping between market segments to a map between area class and attraction rates
+	 * It expects .ccsv file with the values in the following order:
+	 * |IncomeGroup, Industry, AreaType, HBW_Attr,....|
+	 * The function currently ONLY looks at the HBW_attr, which is assumed to be the column right after the segmenting paramters
+	 * TODO specify which attraction rate to use ^^^
+	 * @param file
+	 * @param header
+	 * @param segments
+	 * @return
+	 * @throws IOException
+	 */
 	public static Map<MarketSegment, Map<AreaClass,Double>> readSegmentAreaRates(File file, boolean header, Collection<MarketSegment> segments) throws IOException {
+		//TODO don't make assumption about the header orders, make a quick check for that
 		BufferedReader in = null;
 		Map<MarketSegment,Map<AreaClass,Double>> map = new ConcurrentHashMap<MarketSegment,Map<AreaClass,Double>>();
 

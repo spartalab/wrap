@@ -12,7 +12,20 @@ import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
+/**
+ * This class provides static methods to read FrictionFactor information.
+ */
 public class FrictionFactorFactory {
+	/**
+	 * This method takes an input file and produces a FrictionFactorMap
+	 * It expects a .csv file with the values in the following order:
+	 * |Time, Factor|
+	 * @param file Input file
+	 * @param header boolean whether the file has a header
+	 * @param skim array of skim values
+	 * @return A FrictionFactorMap
+	 * @throws IOException
+	 */
 	public static FrictionFactorMap readFactorFile(File file, boolean header, float[][] skim) throws IOException {
 		TreeMap<Integer, Float> tree = new TreeMap<Integer, Float>();
 		BufferedReader in = null;

@@ -22,6 +22,9 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 import it.unimi.dsi.fastutil.doubles.Double2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
+/**
+ * This class provides static methods to read infomration relating to demand in a network
+ */
 public class OriginFactory {
 	
 	private static Double parse(String s) {
@@ -31,7 +34,15 @@ public class OriginFactory {
 			return 0.0;
 		}
 	}
-	
+
+	/**
+	 * This method reads a file containing information about the destination demand
+	 * @param of BufferedReader object of the file
+	 * @param g The Graph object of the relevant network
+	 * @param zoneCount Count of zones in the network
+	 * @return A Demand hashmap indicating the demand between an origin and a destination
+	 * @throws IOException
+	 */
 	private static DemandHashMap readDestinationDemand(BufferedReader of, Graph g, Integer zoneCount) throws IOException {
 		String[] cols;
 		Integer destID;
@@ -61,7 +72,15 @@ public class OriginFactory {
 		}
 		return dests;
 	}
-	
+
+	/**
+	 * This method reads origin and desitnation demand information relating to the CONAC graph representation
+	 * @param odMatrix File containing information about the origin and destination matrix
+	 * @param g Graph object representation of the network
+	 * @param dl AssigmentLoader object storing the demand that is read from the file to be loaded onto the network
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
 	public static void readEnhancedTrips(File odMatrix, Graph g, AssignmentLoader dl) throws FileNotFoundException, IOException {
 		int numZones = 0;
 		BufferedReader matrixFile = new BufferedReader(new FileReader(odMatrix));
@@ -282,7 +301,7 @@ public class OriginFactory {
 
 	/**
 	 * @param VOTfile
-	 * @param graph
+	 * @param g
 	 * @return
 	 * @throws FileNotFoundException
 	 * @throws IOException

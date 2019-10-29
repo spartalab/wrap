@@ -11,7 +11,20 @@ import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 import java.util.concurrent.ConcurrentSkipListMap;
 
+/**
+ * This class provides static methods to read information about Skim rates
+ */
 public class SkimFactory {
+	/**
+	 * This method reads a skim file and produces a 2d array mapping between two zones and the skim factor
+	 * It expects a csv file with information in the following order:
+	 * |origin zone id, destination zone id, ..,..,..,.., skim  factor| //!notice the skim factor is the 6th column!!!
+	 * @param file File with skim rates
+	 * @param header boolean indicating if the file has a header row
+	 * @param graph Graph representation of the network
+	 * @return 2d array of floats that can be indexed by the pair of zones storing the skim rates between the zones
+	 * @throws IOException
+	 */
 	public static float[][] readSkimFile(File file, boolean header, Graph graph) throws IOException {
 		float[][] ret = new float[graph.numZones()][graph.numZones()];
 //		Map<TravelSurveyZone,Map<TravelSurveyZone,Float>> ret = new ConcurrentSkipListMap<TravelSurveyZone, Map<TravelSurveyZone,Float>>(new ZoneComparator());
@@ -28,7 +41,7 @@ public class SkimFactory {
 		return ret;
 	}
 
-	static void processLine(Graph graph, float[][] ret, String line) {
+	private static void processLine(Graph graph, float[][] ret, String line) {
 		String[] args = line.split(",");
 		TravelSurveyZone orig = graph.getNode(Integer.parseInt(args[0])).getZone();
 		TravelSurveyZone dest = graph.getNode(Integer.parseInt(args[1])).getZone();
@@ -38,6 +51,9 @@ public class SkimFactory {
 //		ret.get(orig).put(dest, cost);
 	}
 
+	/**
+	 * This metord returns a comparator between two zones based on their order value
+	 */
 	public static class ZoneComparator implements Comparator<TravelSurveyZone> {
 
 		@Override

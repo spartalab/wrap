@@ -1,6 +1,5 @@
 package edu.utexas.wrap.util;
 
-import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.marketsegmentation.IncomeGroupSegment;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.modechoice.Mode;
@@ -13,8 +12,20 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * This class provides static methods to read information relevant to Mode Choice information and rates
+ */
 public class ModeFactory {
 
+    /**
+     * This method produces a map from market segments to a mapping of modes to their proprtions
+     * It expects a .csv with the data in the following order:
+     * |Mode, Rate for MarketSegment1, Rate for MarketSegment2, ....|
+     * @param file File object with the information
+     * @param segs Market segments of interest
+     * @return A Mapping between market segments to modes to their proportions
+     * @throws IOException
+     */
     public static Map<MarketSegment, Map<Mode, Double>> readModeShares(File file, Collection<MarketSegment> segs) throws IOException {
         Map<MarketSegment, Map<Mode, Double>> modeShares = new HashMap<MarketSegment, Map<Mode, Double>>();
         BufferedReader in = null;
@@ -54,6 +65,15 @@ public class ModeFactory {
         return modeShares;
     }
 
+    /**
+     * This method produces a map between a mode and the occupancy rate of the mode
+     * It expects a .csv file to contain information in the following order:
+     * |Mode, Occupancy rate|
+     * @param file File with occupancy rates
+     * @param header boolean indicating whether the file has a header row
+     * @return A Map between the mode and the occupancy rate
+     * @throws IOException
+     */
     public static Map<Mode,Double> readOccRates(File file, boolean header) throws IOException {
         Map<Mode, Double> occRates = new HashMap<Mode, Double>();
         BufferedReader in = null;
