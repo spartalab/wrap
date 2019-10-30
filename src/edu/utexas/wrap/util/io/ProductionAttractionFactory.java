@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Collection;
@@ -135,21 +137,27 @@ public class ProductionAttractionFactory {
 	 * It expects .ccsv file with the values in the following order:
 	 * |IncomeGroup, Industry, AreaType, HBW_Attr,....|
 	 * The function currently ONLY looks at the HBW_attr, which is assumed to be the column right after the segmenting paramters
-	 * TODO specify which attraction rate to use ^^^
+	 * Requires a header
 	 * @param file
-	 * @param header
 	 * @param segments
 	 * @return
 	 * @throws IOException
 	 */
-	public static Map<MarketSegment, Map<AreaClass,Double>> readSegmentAreaRates(File file, boolean header, Collection<MarketSegment> segments) throws IOException {
-		//TODO don't make assumption about the header orders, make a quick check for that
+	public static Map<MarketSegment, Map<AreaClass,Double>> readSegmentAreaRates(File file, Collection<MarketSegment> segments, Set<String> types) throws IOException {
 		BufferedReader in = null;
 		Map<MarketSegment,Map<AreaClass,Double>> map = new ConcurrentHashMap<MarketSegment,Map<AreaClass,Double>>();
+		Set<Integer> indices = new HashSet<Integer>();
 
 		try {
 			in = new BufferedReader(new FileReader(file));
-			if (header) in.readLine();
+
+			// Header preprocessing, assume header
+			String[] headers = in.readLine().split(",");
+			for (int i = 0; i < headers.length; i++) {
+				if (types.contains(headers[i])) {
+					indices.add(i);
+				}
+			}
 			in.lines().parallel().forEach(line -> {
 				String[] args = line.split(",");
 				int income = Integer.parseInt(args[0]);
@@ -214,7 +222,10 @@ public class ProductionAttractionFactory {
 				}
 
 
-				Double hbwAttr = Double.parseDouble(args[3]);
+				Double hbwAttr = 0.0;
+				for (Integer index : indices) {
+					hbwAttr += Double.parseDouble(args[index]);
+				}
 				// If we don't have the market segment we add it
 				map.computeIfAbsent(market, k -> new HashMap<AreaClass,Double>()).put(areaClass, hbwAttr);
 
