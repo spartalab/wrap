@@ -28,7 +28,7 @@ import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.util.DemandMapCollector;
 import edu.utexas.wrap.util.PAMapCollector;
-import edu.utexas.wrap.util.ProductionAttractionFactory;
+import edu.utexas.wrap.util.io.ProductionAttractionFactory;
 
 public class NCTCOGTripGen {
 

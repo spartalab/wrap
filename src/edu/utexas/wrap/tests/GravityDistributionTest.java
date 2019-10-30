@@ -11,10 +11,10 @@ import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.distribution.GravityDistributor;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
-import edu.utexas.wrap.util.FrictionFactorFactory;
-import edu.utexas.wrap.util.GraphFactory;
-import edu.utexas.wrap.util.ProductionAttractionFactory;
-import edu.utexas.wrap.util.SkimFactory;
+import edu.utexas.wrap.util.io.FrictionFactorFactory;
+import edu.utexas.wrap.util.io.GraphFactory;
+import edu.utexas.wrap.util.io.ProductionAttractionFactory;
+import edu.utexas.wrap.util.io.SkimFactory;
 
 public class GravityDistributionTest {
 

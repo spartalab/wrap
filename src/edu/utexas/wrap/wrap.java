@@ -12,8 +12,8 @@ import edu.utexas.wrap.assignment.bush.BushOptimizer;
 import edu.utexas.wrap.assignment.bush.BushOriginFactory;
 import edu.utexas.wrap.assignment.bush.BushOrigin;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.util.GraphFactory;
-import edu.utexas.wrap.util.OriginFactory;
+import edu.utexas.wrap.util.io.GraphFactory;
+import edu.utexas.wrap.util.io.OriginFactory;
 
 /** wrap: an Algorithm B implementation
  * @author William E. Alexander

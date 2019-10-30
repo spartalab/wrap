@@ -12,8 +12,8 @@ import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.modechoice.FixedProportionSplitter;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.util.GraphFactory;
-import edu.utexas.wrap.util.ProductionAttractionFactory;
+import edu.utexas.wrap.util.io.GraphFactory;
+import edu.utexas.wrap.util.io.ProductionAttractionFactory;
 
 public class FixedProportionSplitTest {
 	public static void main(String[] args) {

@@ -1,4 +1,4 @@
-package edu.utexas.wrap.util;
+package edu.utexas.wrap.util.calc;
 
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.marketsegmentation.IncomeGroupSegment;

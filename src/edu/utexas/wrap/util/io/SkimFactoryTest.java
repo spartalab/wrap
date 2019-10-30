@@ -1,12 +1,10 @@
-package edu.utexas.wrap.util;
+package edu.utexas.wrap.util.io;
 
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.TravelSurveyZone;
 import org.junit.Test;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
 
 public class SkimFactoryTest {
 

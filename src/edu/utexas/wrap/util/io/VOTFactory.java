@@ -1,4 +1,4 @@
-package edu.utexas.wrap.util;
+package edu.utexas.wrap.util.io;
 
 import edu.utexas.wrap.distribution.CostBasedFrictionFactorMap;
 import edu.utexas.wrap.distribution.FrictionFactorMap;

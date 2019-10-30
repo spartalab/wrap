@@ -1,4 +1,4 @@
-package edu.utexas.wrap.util;
+package edu.utexas.wrap.util.io;
 
 import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.marketsegmentation.IncomeGroupSegment;
