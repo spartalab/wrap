@@ -2,9 +2,7 @@ package edu.utexas.wrap;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -17,13 +15,7 @@ import edu.utexas.wrap.demand.containers.PAPassthroughMap;
 import edu.utexas.wrap.generation.AreaSpecificTripGenerator;
 import edu.utexas.wrap.generation.BasicTripGenerator;
 import edu.utexas.wrap.generation.RateProportionTripGenerator;
-import edu.utexas.wrap.marketsegmentation.IncomeGroupIndustrySegment;
-import edu.utexas.wrap.marketsegmentation.IncomeGroupSegment;
-import edu.utexas.wrap.marketsegmentation.IncomeGroupSegmenter;
-import edu.utexas.wrap.marketsegmentation.IncomeGroupWorkerVehicleSegment;
-import edu.utexas.wrap.marketsegmentation.IndustryClass;
-import edu.utexas.wrap.marketsegmentation.IndustrySegment;
-import edu.utexas.wrap.marketsegmentation.MarketSegment;
+import edu.utexas.wrap.marketsegmentation.*;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.util.DemandMapCollector;
@@ -32,7 +24,7 @@ import edu.utexas.wrap.util.io.ProductionAttractionFactory;
 
 public class NCTCOGTripGen {
 
-	static Map<MarketSegment, PAMap> tripGenerator(Graph g) throws IOException {
+	static Map<MarketSegment, PAMap> tripGeneratorHBW(Graph g) throws IOException {
 		System.out.print("Performing trip generation... ");
 		long ms = System.currentTimeMillis();
 
@@ -56,13 +48,15 @@ public class NCTCOGTripGen {
 		igSegs = IntStream.range(1, 5).parallel().boxed().map(ig -> new IncomeGroupSegment(ig)).collect(Collectors.toSet());
 		
 		//Read segments' production rates
-		Map<MarketSegment,Double> primaryProdRates = ProductionAttractionFactory.readSegmentRates(new File("../../nctcogFiles/TripProdRates.csv"), true, false,primaryProdSegs); //TripAttRates.csv
-		Map<MarketSegment,Double> secondaryProdRates = ProductionAttractionFactory.readSegmentRates(null,true,false,secondarySegs),	//FIXME no file yet	
+		Map<MarketSegment,Double> primaryProdRates = ProductionAttractionFactory.readVehWrkSegmentRates(new File("../../nctcogFiles/TripProdRates.csv"), true, false,primaryProdSegs); //TripProdRates.csv
+		Map<MarketSegment,Double> secondaryProdRates = ProductionAttractionFactory.readSegmentRates(null,true,false,secondarySegs),	//FIXME no file yet
 		//Read segments' attraction rates
 		secondaryWrkAttrRates = ProductionAttractionFactory.readSegmentRates(null, true, false, secondarySegs), //FIXME
 		secondaryESHAttrRates = ProductionAttractionFactory.readSegmentRates(null, true, false, secondarySegs),
 		secondaryOthAttrRates = ProductionAttractionFactory.readSegmentRates(null, true, false, secondarySegs);
-		Map<MarketSegment,Map<AreaClass,Double>> primaryAttrRates = ProductionAttractionFactory.readSegmentAreaRates(new File("../../nctcogFiles/TripAttRates.csv"), true, primaryAttrSegs); //TripProdRates.csv
+		Set<String> desiredRates = new HashSet<String>();
+		desiredRates.add("\"HBW_att\"");
+		Map<MarketSegment,Map<AreaClass,Double>> primaryAttrRates = ProductionAttractionFactory.readSegmentAreaRates(new File("../../nctcogFiles/TripAttRates.csv"), primaryAttrSegs, desiredRates); //TripAttRates.csv
 
 		
 		//Generate primary productions
@@ -76,11 +70,11 @@ public class NCTCOGTripGen {
 		
 		//Generate secondary productions
 
-		Map<MarketSegment, DemandMap> secondaryProds = generateSecondaryProductions(g, primaryProdRates, combinedPrimaryProds, secondaryProdRates);		
+		Map<MarketSegment, DemandMap> secondaryProds = generateSecondaryProductions(g, primaryProdRates, combinedPrimaryProds, secondaryProdRates);
 
 		//Generate secondary attractions
 		Map<TripPurpose,Map<MarketSegment,DemandMap>> secondaryAttrMap = new HashMap<TripPurpose,Map<MarketSegment,DemandMap>>();
-		secondaryAttrMap.put(TripPurpose.WORK_WORK, generateSecondaryAttractions(g, secondarySegs, secondaryWrkAttrRates)); 
+		secondaryAttrMap.put(TripPurpose.WORK_WORK, generateSecondaryAttractions(g, secondarySegs, secondaryWrkAttrRates));
 		secondaryAttrMap.put(TripPurpose.WORK_ESH, generateSecondaryAttractions(g, secondarySegs, secondaryESHAttrRates));
 		secondaryAttrMap.put(TripPurpose.WORK_OTH, generateSecondaryAttractions(g, secondarySegs, secondaryOthAttrRates));
 		
@@ -97,6 +91,80 @@ public class NCTCOGTripGen {
 		long nms = System.currentTimeMillis();
 		System.out.println(""+(nms-ms)/1000.0+" s");
 		
+		return null;
+	}
+
+	static Map<MarketSegment, PAMap> tripGeneratorHNW(Graph g) throws IOException {
+		System.out.print("Performing trip generation... ");
+		long ms = System.currentTimeMillis();
+
+		//Production segmentation
+		Collection<MarketSegment>
+				primaryProdSegs = IntStream.range(1, 5).parallel().boxed().flatMap(hhsize ->
+				IntStream.range(0, 4).parallel().boxed().map(numberOfWorkers ->
+								new WorkerHouseholdSizeSegment(numberOfWorkers, hhsize)
+
+				)
+		).collect(Collectors.toSet()),
+
+				//Attraction segmentation
+				primaryAttrSegs = Stream.of(IndustryClass.values()).parallel().flatMap(ic ->
+						IntStream.range(1, 5).parallel().mapToObj(ig -> new IncomeGroupIndustrySegment(ig, ic))
+				).collect(Collectors.toSet()),
+		secondarySegs = Stream.of(IndustryClass.values()).parallel().map(ic -> new IndustrySegment(ic)).collect(Collectors.toSet()),
+		
+		//Income group segmentation
+		igSegs = IntStream.range(1, 5).parallel().boxed().map(ig -> new IncomeGroupSegment(ig)).collect(Collectors.toSet()),
+		//Children Segmentation
+		childSegs = IntStream.range(0, 3).parallel().boxed().map(children -> new ChildSegment(children)).collect(Collectors.toSet());
+		
+		//Read segments' production rates
+		Set<String> desiredProRates = new HashSet<String>(Arrays.asList("\"HBShop_pro\"","\"HBEduK12_pro\"","\"HBSRE_pro\"","\"HBPBO_pro\"","\"HBOTH_pro\""));
+		Map<MarketSegment,Double> primaryProdRates = ProductionAttractionFactory.readHHWrkRates(new File("../../nctcogFiles/hnwData/HBShoprate_pro.csv"),primaryProdSegs, desiredProRates); //HBShoprate_pro.csv.csv
+
+
+
+		Map<MarketSegment,Double> otherProdRates = ProductionAttractionFactory.readChildRates(new File("../../nctcogFiles/hnwData/HBK12SRPBrate_pro.csv"),childSegs, desiredProRates); //HBShoprate_pro.csv.csv
+		Map<MarketSegment,Double> secondaryProdRates = ProductionAttractionFactory.readSegmentRates(null,true,false,secondarySegs),	//FIXME no file yet
+				//Read segments' attraction rates
+				secondaryWrkAttrRates = ProductionAttractionFactory.readSegmentRates(null, true, false, secondarySegs), //FIXME
+				secondaryESHAttrRates = ProductionAttractionFactory.readSegmentRates(null, true, false, secondarySegs),
+				secondaryOthAttrRates = ProductionAttractionFactory.readSegmentRates(null, true, false, secondarySegs);
+		Set<String> desiredAttRates = new HashSet<String>(Arrays.asList("\"HBS_att\"","\"HBAcc_att\"","\"HBSRE_att\"","\"HBPBO_att\"","\"HBCOL_att\""));
+		Map<MarketSegment,Map<AreaClass,Double>> primaryAttrRates = ProductionAttractionFactory.readSegmentAreaRates(new File("../../nctcogFiles/TripAttRates.csv"), primaryAttrSegs, desiredAttRates); //TripProdRates.csv
+
+		//Generate primary productions
+		Map<MarketSegment, DemandMap> primaryProds = generatePrimaryProductions(g, primaryProdSegs, primaryProdRates);
+		//Generate primary attractions
+		Map<MarketSegment, DemandMap> primaryAttrs = generatePrimaryAttractions(g, primaryAttrSegs, primaryAttrRates);
+
+		//Combine primary maps across non-income-group segments
+		Map<MarketSegment,DemandMap> combinedPrimaryProds = combineMapsByIncomeGroupSegment(igSegs, primaryProds);
+		Map<MarketSegment,DemandMap> combinedPrimaryAttrs = combineMapsByIncomeGroupSegment(igSegs, primaryAttrs);
+
+		//Generate secondary productions
+
+		Map<MarketSegment, DemandMap> secondaryProds = generateSecondaryProductions(g, primaryProdRates, combinedPrimaryProds, secondaryProdRates);
+
+		//Generate secondary attractions
+		Map<TripPurpose,Map<MarketSegment,DemandMap>> secondaryAttrMap = new HashMap<TripPurpose,Map<MarketSegment,DemandMap>>();
+		secondaryAttrMap.put(TripPurpose.WORK_WORK, generateSecondaryAttractions(g, secondarySegs, secondaryWrkAttrRates));
+		secondaryAttrMap.put(TripPurpose.WORK_ESH, generateSecondaryAttractions(g, secondarySegs, secondaryESHAttrRates));
+		secondaryAttrMap.put(TripPurpose.WORK_OTH, generateSecondaryAttractions(g, secondarySegs, secondaryOthAttrRates));
+
+		//Combine secondary maps across trip purposes
+		Map<MarketSegment,DemandMap> secondaryAttrs = combineMapsByTripPurpose(secondarySegs, secondaryAttrMap);
+
+		PAMap hbwIG123 = igSegs.parallelStream().filter(seg -> ((IncomeGroupSegment) seg).getIncomeGroup() < 4).map(
+				seg -> new PAPassthroughMap(g,null, combinedPrimaryProds.get(seg), combinedPrimaryAttrs.get(seg))).collect(new PAMapCollector());
+
+		PAMap hbwIG4 = igSegs.parallelStream().filter(seg -> ((IncomeGroupSegment) seg).getIncomeGroup() == 4).map(seg -> new PAPassthroughMap(g,null,combinedPrimaryProds.get(seg),combinedPrimaryAttrs.get(seg))).findAny().get(),
+				nhbw = new PAPassthroughMap(g,null,secondaryProds.values().parallelStream().collect(new DemandMapCollector()), secondaryAttrs.values().parallelStream().collect(new DemandMapCollector())),
+				hbwIG4_nhbw = Stream.of(hbwIG4,nhbw).collect(new PAMapCollector());
+
+		long nms = System.currentTimeMillis();
+		System.out.println(""+(nms-ms)/1000.0+" s");
+
 		return null;
 	}
 

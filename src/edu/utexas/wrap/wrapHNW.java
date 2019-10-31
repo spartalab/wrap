@@ -50,7 +50,7 @@ public class wrapHNW {
             //TODO need to add command line argument for the prodRates
 
             //Perform trip generation
-            Map<MarketSegment, PAMap> hbMaps = NCTCOGTripGen.tripGenerator(graph);
+            Map<MarketSegment, PAMap> hbMaps = NCTCOGTripGen.tripGeneratorHNW(graph);
 
             //Perform trip balancing
 

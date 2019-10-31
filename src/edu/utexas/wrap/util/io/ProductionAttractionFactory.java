@@ -15,12 +15,7 @@ import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.PAMatrix;
 import edu.utexas.wrap.demand.containers.AggregatePAHashMap;
 import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
-import edu.utexas.wrap.marketsegmentation.IndustryClass;
-import edu.utexas.wrap.marketsegmentation.IndustrySegmenter;
-import edu.utexas.wrap.marketsegmentation.MarketSegment;
-import edu.utexas.wrap.marketsegmentation.VehicleSegmenter;
-import edu.utexas.wrap.marketsegmentation.WorkerSegmenter;
-import edu.utexas.wrap.marketsegmentation.IncomeGroupSegmenter;
+import edu.utexas.wrap.marketsegmentation.*;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
@@ -94,9 +89,8 @@ public class ProductionAttractionFactory {
 		return ret;
 	}
 
-
 	/**
-	 * This method takes an input file and creates a map of market segment to their respective rates based on Vehicle and worker segments
+	 * This method takes an input file and creates a map of vehicle worker market segment to their respective rates based on Vehicle and worker segments
 	 * It expects a .csv file with the values in the following order:
 	 * |WorkersInSegment, VehiclesInSegment, rate, rate_v1|
 	 * @param file object to read prodcution/attraction market segment rates
@@ -107,6 +101,43 @@ public class ProductionAttractionFactory {
 	 * @throws IOException
 	 */
 	public static Map<MarketSegment,Double>  readSegmentRates(File file, boolean header, boolean v1, Collection<MarketSegment> microProdSegs) throws IOException {
+		//TODO don't make assumption about the header orders, make a quick check for that
+		BufferedReader in = null;
+		Map<MarketSegment,Double> map = new ConcurrentHashMap<MarketSegment,Double>();
+
+		try {
+			in = new BufferedReader(new FileReader(file));
+			if (header) in.readLine();
+			in.lines().parallel().forEach(line -> {
+				String[] args = line.split(",");
+				int workers = Integer.parseInt((args[0]));
+				int vehicles = Integer.parseInt((args[1]));
+				Double hbwPro = v1 ? Double.parseDouble((args[3])) : Double.parseDouble(args[2]);
+
+				microProdSegs.parallelStream()
+						.filter(seg -> seg instanceof VehicleSegmenter && ((VehicleSegmenter) seg).getNumberOfVehicles() == vehicles)
+						.filter(seg -> seg instanceof WorkerSegmenter && ((WorkerSegmenter) seg).getNumberOfWorkers() == workers)
+						.forEach(seg -> map.put(seg, hbwPro));
+			});
+
+		} finally {
+			if (in != null) in.close();
+		}
+		return map;
+	}
+
+	/**
+	 * This method takes an input file and creates a map of vehicle worker market segment to their respective rates based on Vehicle and worker segments
+	 * It expects a .csv file with the values in the following order:
+	 * |WorkersInSegment, VehiclesInSegment, rate, rate_v1|
+	 * @param file object to read prodcution/attraction market segment rates
+	 * @param header boolean whether the file has a header
+	 * @param v1 boolean whether to read segment rates v1 or normal
+	 * @param microProdSegs Collection of segments
+	 * @return Mapping between a market segment and its production rate
+	 * @throws IOException
+	 */
+	public static Map<MarketSegment,Double>  readVehWrkSegmentRates(File file, boolean header, boolean v1, Collection<MarketSegment> microProdSegs) throws IOException {
 		//TODO don't make assumption about the header orders, make a quick check for that
 		BufferedReader in = null;
 		Map<MarketSegment,Double> map = new ConcurrentHashMap<MarketSegment,Double>();
@@ -132,18 +163,113 @@ public class ProductionAttractionFactory {
 		return map;
 	}
 
+
+	/** This method takes an input file and creates a map of worker household market segment to their respective rates based on Vehicle and worker segments
+	 * 	It expects a .csv file with the values in the following order:
+	 * |WorkersInSegment, HouseholdSizeofSegment, rate1, rate2, ....|
+	 * @param file input file
+	 * @param microProdSegs desired segments
+	 * @param desiredRates the names of columns the csv header row to save
+	 * @return mapping between a market segment and its rates
+	 * @throws IOException
+	 */
+	public static Map<MarketSegment,Double>  readHHWrkRates(File file, Collection<MarketSegment> microProdSegs, Set<String> desiredRates) throws IOException {
+		//TODO don't make assumption about the header orders, make a quick check for that
+		BufferedReader in = null;
+		Map<MarketSegment,Double> map = new ConcurrentHashMap<MarketSegment,Double>();
+
+		Set<Integer> indices = new HashSet<Integer>();
+
+		try {
+			in = new BufferedReader(new FileReader(file));
+
+			// Header preprocessing, assume header
+			String[] headers = in.readLine().split(",");
+			for (int i = 0; i < headers.length; i++) {
+				if (desiredRates.contains(headers[i])) {
+					indices.add(i);
+				}
+			}
+			in.lines().parallel().forEach(line -> {
+				String[] args = line.split(",");
+				int workers = Integer.parseInt((args[0]));
+				int householdSize = Integer.parseInt((args[1]));
+				Double prods = 0.0;
+				for (Integer index : indices) {
+					prods += Double.parseDouble(args[index]);
+				}
+				final double computed  = prods;
+				microProdSegs.parallelStream()
+						.filter(seg -> seg instanceof HouseholdSizeSegmenter && ((HouseholdSizeSegmenter) seg).getHouseholdSize() == householdSize)
+						.filter(seg -> seg instanceof WorkerSegmenter && ((WorkerSegmenter) seg).getNumberOfWorkers() == workers)
+						.forEach(seg -> map.put(seg, computed));
+			});
+
+		} finally {
+			if (in != null) in.close();
+		}
+		return map;
+	}
+
+	/** This method takes an input file and creates a map of number of children market segment to their respective rates based on Vehicle and worker segments
+	 * 	It expects a .csv file with the values in the following order:
+	 * |NumberofChildren, rate1, rate2, ....|
+	 * @param file input file
+	 * @param microProdSegs desired segments
+	 * @param desiredRates the names of columns the csv header row to save
+	 * @return mapping between a market segment and its rates
+	 * @throws IOException
+	 */
+	public static Map<MarketSegment,Double>  readChildRates(File file, Collection<MarketSegment> microProdSegs, Set<String> desiredRates) throws IOException {
+		//TODO don't make assumption about the header orders, make a quick check for that
+		BufferedReader in = null;
+		Map<MarketSegment,Double> map = new ConcurrentHashMap<MarketSegment,Double>();
+
+		Set<Integer> indices = new HashSet<Integer>();
+
+		try {
+			in = new BufferedReader(new FileReader(file));
+
+			// Header preprocessing, assume header
+			String[] headers = in.readLine().split(",");
+			for (int i = 0; i < headers.length; i++) {
+				if (desiredRates.contains(headers[i])) {
+					indices.add(i);
+				}
+			}
+			in.lines().parallel().forEach(line -> {
+				String[] args = line.split(",");
+				int workers = Integer.parseInt((args[0]));
+				int householdSize = Integer.parseInt((args[1]));
+				Double prods = 0.0;
+				for (Integer index : indices) {
+					prods += Double.parseDouble(args[index]);
+				}
+				final double computed  = prods;
+				microProdSegs.parallelStream()
+						.filter(seg -> seg instanceof ChildSegmenter && ((ChildSegmenter) seg).numberOfChildren() == householdSize)
+						.forEach(seg -> map.put(seg, computed));
+			});
+
+		} finally {
+			if (in != null) in.close();
+		}
+		return map;
+	}
+
 	/**
 	 * This method takes an input file and creates a mapping between market segments to a map between area class and attraction rates
 	 * It expects .ccsv file with the values in the following order:
 	 * |IncomeGroup, Industry, AreaType, HBW_Attr,....|
 	 * The function currently ONLY looks at the HBW_attr, which is assumed to be the column right after the segmenting paramters
 	 * Requires a header
-	 * @param file
-	 * @param segments
+	 * @param file Input file
+	 * @param segments Market Segments to be mapped
+	 * @param desiredRates the names of the columns to be explored in the input file
 	 * @return
 	 * @throws IOException
 	 */
-	public static Map<MarketSegment, Map<AreaClass,Double>> readSegmentAreaRates(File file, Collection<MarketSegment> segments, Set<String> types) throws IOException {
+	public static Map<MarketSegment, Map<AreaClass,Double>> readSegmentAreaRates(File file, Collection<MarketSegment> segments, Set<String> desiredRates) throws IOException {
 		BufferedReader in = null;
 		Map<MarketSegment,Map<AreaClass,Double>> map = new ConcurrentHashMap<MarketSegment,Map<AreaClass,Double>>();
 		Set<Integer> indices = new HashSet<Integer>();
@@ -154,7 +280,7 @@ public class ProductionAttractionFactory {
 			// Header preprocessing, assume header
 			String[] headers = in.readLine().split(",");
 			for (int i = 0; i < headers.length; i++) {
-				if (types.contains(headers[i])) {
+				if (desiredRates.contains(headers[i])) {
 					indices.add(i);
 				}
 			}
