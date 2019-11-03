@@ -40,62 +40,53 @@ public class wrapHBW {
 
 	public static void main(String[] args) {
 		try{
-			//Market segmentation
-			Collection<MarketSegment> segmentsAfterGeneration = IntStream.range(1,5).parallel().mapToObj(ig -> new IncomeGroupSegment(ig)).collect(Collectors.toSet());
 
-			long ms;
-			long nms;
 			Graph graph = readNetworkData(args);
 			
-			//TODO need to add command line argument for the prodRates
-
 			//Perform trip generation
-			Map<MarketSegment, PAMap> hbMaps = NCTCOGTripGen.tripGeneratorHBW(graph);
+			Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps = NCTCOGTripGen.tripGeneratorHNW(graph);
+			hbMaps.put(TripPurpose.HOME_WORK, NCTCOGTripGen.tripGeneratorHBW(graph));
 			
 			//Perform trip balancing
-
 			balance(graph, hbMaps);
+			
+			//NHB thread starts here
+			//TODO New thread should start here for non-home-based trips
+			Map<TripPurpose,PAMap> nhbMaps = NCTCOGTripGen.tripGeneratorNHB(graph,hbMaps);
+			nhbBalance(graph, nhbMaps);
+			Map<TripPurpose,AggregatePAMatrix> nhbMatrices = nhbTripDist(nhbMaps);
+			combineNHBPurposes(nhbMatrices);
+			Map<TripPurpose,Collection<ModalPAMatrix>> nhbModalMtxs = nhbModeChoice(nhbMatrices);
+			Map<TripPurpose,Collection<ODMatrix>> nhbODs = nhbPA2OD(nhbModalMtxs);
+			//NHB thread ends here
 
-
+			
 			//Peak/off-peak splitting
-			Map<MarketSegment,Map<TimePeriod,PAMap>> timeMaps = pkOpSplitting(hbMaps,segmentsAfterGeneration);
-
+			Map<MarketSegment,PAMap> pkMaps = splitHBW(hbMaps); //TODO this method should both reduce the hbMaps' HBW entries by a half and return a duplicate with the same reduction
 			//Perform trip distribution
-			Map<MarketSegment, Map<TimePeriod, AggregatePAMatrix>> aggMtxs = tripDistribution(segmentsAfterGeneration, graph, timeMaps);
-			
-			
+			Map<MarketSegment,AggregatePAMatrix> aggPKMtxs = null;	//TODO separate threading for distributing pkMaps
+			Map<TripPurpose,Map<MarketSegment,AggregatePAMatrix>> aggOPMtxs = tripDistribution(graph, hbMaps);
 			System.out.print("Performing matrix aggregation... ");
-			//FIXME study how this should actually behave - PK and OP splitting doesn't just get combined back together
-			Map<MarketSegment,AggregatePAMatrix> aggCombinedMtxs = aggMtxs.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, entry -> Combiner.combineAggregateMatrices(graph, entry.getValue().values())));
-			
+			//After distributing over different friction factor maps, the HBW trips are stuck back together and SRE & PBO matrices are combined
+			Map<TripPurpose,Map<MarketSegment,AggregatePAMatrix>> aggCombinedMtxs = combineAggregateMatrices(aggPKMtxs,aggOPMtxs); //TODO combine SRE/PBO and HBWPK/OP matrices
+			//TODO divide market segments further by vehicles per worker
+			divideSegments(aggCombinedMtxs);
+			//TODO combine HNW trip purposes into single HNW trip purpose for all market segments
+			combineHNWPurposes(aggCombinedMtxs);
 			
 			System.out.print("Performing mode choice splitting... ");
 			//Perform mode choice splitting
-			ms = System.currentTimeMillis();
-			Map<MarketSegment, Collection<ModalPAMatrix>> modalMtxs = modeChoice(segmentsAfterGeneration, aggCombinedMtxs);
-			nms = System.currentTimeMillis();
-			System.out.println(""+(nms-ms)/1000.0+" s");
-			
+			Map<TripPurpose,Map<MarketSegment, Collection<ModalPAMatrix>>> hbModalMtxs = modeChoice(aggCombinedMtxs);
 			
 			System.out.print("Performing PA-to-OD matrix conversion... ");
 			//PA to OD splitting by time of day
-			ms = System.currentTimeMillis();
-			Map<TimePeriod, Map<Mode, ODMatrix>> ods = paToODConversion(modalMtxs);
-			nms = System.currentTimeMillis();
-			System.out.println(""+(nms-ms)/1000.0+" s");
+			Map<TripPurpose,Map<TimePeriod, Map<Mode, ODMatrix>>> hbODs = paToODConversion(hbModalMtxs);
 			
+			//Reduce the number of OD matrices by combining those of similar VOT
+			Map<TimePeriod,Collection<ODMatrix>> reducedODs = reduceODMatrices(hbODs, nhbODs);
 			
-			writeODs(ods);
-			
-			//Combine off-peak matrices and output to file
-//			Path outputFile = null;
-//			ODMatrix offPeak = Combiner.combineODMatrices(
-//					ods.entrySet().parallelStream()
-//					.filter(entry -> 
-//						!entry.getKey().equals(TimePeriod.MORN_PK) && 
-//						!entry.getKey().equals(TimePeriod.AFTERNOON_PK))
-//					.map(entry -> entry.getValue()));
-//			offPeak.write(outputFile);
+			writeODs(reducedODs);
+			//TODO eventually, we'll do multiple instances of traffic assignment here instead of just writing to files
 			
 			System.out.println("Completed successfully");
 		} catch (FileNotFoundException e) {
@@ -159,7 +150,7 @@ public class wrapHBW {
 		System.out.println(""+(nms-ms)/1000.0+" s");
 	}
 
-	private static Map<MarketSegment, FrictionFactorMap> readFrictionFactorMaps(
+	private static Map<MarketSegment, Map<TimePeriod,FrictionFactorMap>> readFrictionFactorMaps(
 			Collection<MarketSegment> afterPASegments, Graph graph) throws IOException {
 		float[][] skim = SkimFactory.readSkimFile(new File("../../nctcogFiles/PKNOHOV.csv"), false, graph);
 		Map<MarketSegment, FrictionFactorMap> ffmaps = new ConcurrentHashMap<MarketSegment, FrictionFactorMap>();
@@ -275,12 +266,12 @@ public class wrapHBW {
 	}
 
 
-	private static void balance(Graph g, Map<MarketSegment, PAMap> timeMaps) {
+	private static void balance(Graph g, Map<TripPurpose, Map<MarketSegment, PAMap>> hbMaps) {
 		System.out.print("Performing trip balancing... ");
 		long ms = System.currentTimeMillis();
 	
 		Prod2AttrProportionalBalancer balancer = new Prod2AttrProportionalBalancer(null);
-		timeMaps.values().parallelStream().forEach(map -> balancer.balance(map));
+		hbMaps.values().parallelStream().forEach(map -> balancer.balance(map));
 		
 		long nms = System.currentTimeMillis();
 		System.out.println(""+(nms-ms)/1000.0+" s");
@@ -307,7 +298,7 @@ public class wrapHBW {
 		System.out.print("Reading friction factor maps... ");
 		//Create FF Maps for each segment
 		long ms = System.currentTimeMillis();
-		Map<MarketSegment, FrictionFactorMap> ffm = readFrictionFactorMaps(segments, g);
+		Map<MarketSegment, Map<TimePeriod, FrictionFactorMap>> ffm = readFrictionFactorMaps(segments, g);
 		long nms = System.currentTimeMillis();
 		
 		System.out.println(""+(nms-ms)/1000.0+" s");

@@ -1,18 +1,14 @@
 package edu.utexas.wrap.distribution;
 
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
-import edu.utexas.wrap.demand.containers.DemandHashMap;
 import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
-import it.unimi.dsi.fastutil.objects.Object2DoubleMaps;
-import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 
 /**A trip distribution class that uses the traditional gravity
  * model to calculate trips. Given a friction factor map, this
