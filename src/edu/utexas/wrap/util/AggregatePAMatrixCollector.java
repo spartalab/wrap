@@ -20,7 +20,7 @@ import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-public class AggregatePAMatrixCollector<T extends AggregatePAMatrix> implements Collector<AggregatePAMatrix, CombinedAggregatePAMatrix, AggregatePAMatrix> {
+public class AggregatePAMatrixCollector implements Collector<AggregatePAMatrix, CombinedAggregatePAMatrix, AggregatePAMatrix> {
 	private final Set<Characteristics> characteristics = new HashSet<Characteristics>(Arrays.asList(Collector.Characteristics.values()));
 	
 	@Override

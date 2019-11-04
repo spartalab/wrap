@@ -42,6 +42,9 @@ public class wrapHBW {
 		try{
 
 			Graph graph = readNetworkData(args);
+			Map<TripPurpose,Map<MarketSegment,FrictionFactorMap>> opFFMaps = null; //TODO
+			Map<MarketSegment,FrictionFactorMap> pkFFMaps = null; //TODO
+			Map<TravelSurveyZone,Double> workerVehicleRates = null;
 			
 			//Perform trip generation
 			Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps = NCTCOGTripGen.tripGeneratorHNW(graph);
@@ -62,23 +65,20 @@ public class wrapHBW {
 
 			
 			//Peak/off-peak splitting
-			Map<MarketSegment,PAMap> pkMaps = splitHBW(hbMaps); //TODO this method should both reduce the hbMaps' HBW entries by a half and return a duplicate with the same reduction
+			Map<MarketSegment,PAMap> pkMaps = splitHBW(hbMaps, 0.5); //TODO this method should both reduce the hbMaps' HBW entries by a half and return a duplicate with the same reduction
 			//Perform trip distribution
-			Map<MarketSegment,AggregatePAMatrix> aggPKMtxs = null;	//TODO separate threading for distributing pkMaps
-			Map<TripPurpose,Map<MarketSegment,AggregatePAMatrix>> aggOPMtxs = tripDistribution(graph, hbMaps);
-			System.out.print("Performing matrix aggregation... ");
+			Map<MarketSegment,AggregatePAMatrix> aggPKMtxs = peakDistribution(graph, pkMaps, pkFFMaps);	//TODO separate threading for distributing pkMaps
+			Map<TripPurpose,Map<MarketSegment,AggregatePAMatrix>> aggOPMtxs = offPeakDistribution(graph, hbMaps, opFFMaps);
 			//After distributing over different friction factor maps, the HBW trips are stuck back together and SRE & PBO matrices are combined
 			Map<TripPurpose,Map<MarketSegment,AggregatePAMatrix>> aggCombinedMtxs = combineAggregateMatrices(aggPKMtxs,aggOPMtxs); //TODO combine SRE/PBO and HBWPK/OP matrices
 			//TODO divide market segments further by vehicles per worker
-			divideSegments(aggCombinedMtxs);
+			divideSegments(aggCombinedMtxs,workerVehicleRates);
 			//TODO combine HNW trip purposes into single HNW trip purpose for all market segments
-			combineHNWPurposes(aggCombinedMtxs);
+			Map<TripPurpose,Map<MarketSegment,AggregatePAMatrix>> combinedMtxs = combineHNWPurposes(aggCombinedMtxs);
 			
-			System.out.print("Performing mode choice splitting... ");
 			//Perform mode choice splitting
-			Map<TripPurpose,Map<MarketSegment, Collection<ModalPAMatrix>>> hbModalMtxs = modeChoice(aggCombinedMtxs);
+			Map<TripPurpose,Map<MarketSegment, Collection<ModalPAMatrix>>> hbModalMtxs = modeChoice(combinedMtxs);
 			
-			System.out.print("Performing PA-to-OD matrix conversion... ");
 			//PA to OD splitting by time of day
 			Map<TripPurpose,Map<TimePeriod, Map<Mode, ODMatrix>>> hbODs = paToODConversion(hbModalMtxs);
 			
@@ -88,7 +88,6 @@ public class wrapHBW {
 			writeODs(reducedODs);
 			//TODO eventually, we'll do multiple instances of traffic assignment here instead of just writing to files
 			
-			System.out.println("Completed successfully");
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -98,7 +97,58 @@ public class wrapHBW {
 		}
 	}
 
+	private static Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> combineHNWPurposes(Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs) {
+		Map<TripPurpose,Map<MarketSegment,AggregatePAMatrix>> ret = new HashMap<TripPurpose,Map<MarketSegment,AggregatePAMatrix>>();
+		ret.put(TripPurpose.HOME_WORK, aggCombinedMtxs.get(TripPurpose.HOME_WORK));
+		ret.put(TripPurpose.HOME_NONWORK, 
+			aggCombinedMtxs.entrySet().parallelStream()							//For every trip purpose
+				.filter(entry -> entry.getKey() != TripPurpose.HOME_WORK)		//Except home-based work
+				.flatMap(entry -> entry.getValue().entrySet().parallelStream())	//Get a stream of its MarketSegment-Matrix pairings
+				.collect(Collectors.groupingBy(									//Group them by their market segments
+						Entry::getKey,Collectors.mapping(						//then map to the values
+								Entry::getValue, new AggregatePAMatrixCollector()))));	//and combine together using a collector
+		
+		return ret;
+	}
 
+	private static Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> combineAggregateMatrices(
+			Map<MarketSegment, AggregatePAMatrix> aggPKMtxs,
+			Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggMtxs) {
+
+		Map<MarketSegment,AggregatePAMatrix> hbwOPMtxs = aggMtxs.get(TripPurpose.HOME_WORK);
+		Map<MarketSegment,AggregatePAMatrix> hbwMtxs = new HashMap<MarketSegment,AggregatePAMatrix>();
+		
+		hbwOPMtxs.keySet().parallelStream().forEach(seg -> {
+			AggregatePAMatrix pk = aggPKMtxs.get(seg);
+			AggregatePAMatrix op = hbwOPMtxs.get(seg);
+
+			AggregatePAMatrix combined = Stream.of(pk,op).collect(new AggregatePAMatrixCollector());
+			hbwMtxs.put(seg, combined);
+		});
+		
+		aggMtxs.put(TripPurpose.HOME_WORK, hbwMtxs);
+		return aggMtxs;
+	}
+
+	private static Map<MarketSegment,PAMap> splitHBW(Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps, double pkShare) {
+		Map<MarketSegment,PAMap> hbwMaps = hbMaps.get(TripPurpose.HOME_WORK);
+		
+		Map<MarketSegment,PAMap> pkMaps = new HashMap<MarketSegment,PAMap>();
+		Map<MarketSegment,PAMap> opMaps = new HashMap<MarketSegment,PAMap>();
+		
+		hbwMaps.keySet().parallelStream().forEach(seg -> {
+			PAMap whole = hbwMaps.get(seg);
+			
+			PAMap peak = new FixedMultiplierPassthroughPAMap(whole, pkShare);
+			PAMap offpeak = new FixedMultiplierPassthroughPAMap(whole, 1-pkShare);
+			
+			opMaps.put(seg, offpeak);
+			pkMaps.put(seg, peak);
+		});
+		
+		hbMaps.put(TripPurpose.HOME_WORK, opMaps);
+		return pkMaps;
+	}
 
 	private static Graph readNetworkData(String[] args) throws FileNotFoundException, IOException {
 		System.out.print("Reading network... ");
@@ -174,7 +224,6 @@ public class wrapHBW {
 		return ffmaps;
 	}
 	
-
 	private static void readHouseholdData(Graph graph, Path igFile, Path igWkrVehFile) throws IOException {
 		// TODO Auto-generated method stub
 		Files.lines(igFile).parallel().filter(line -> !line.startsWith("TSZ")).forEach(line ->{
@@ -265,7 +314,6 @@ public class wrapHBW {
 		});
 	}
 
-
 	private static void balance(Graph g, Map<TripPurpose, Map<MarketSegment, PAMap>> hbMaps) {
 		System.out.print("Performing trip balancing... ");
 		long ms = System.currentTimeMillis();
@@ -292,23 +340,30 @@ public class wrapHBW {
 					return ret;
 				}));
 	}
-	private static Map<MarketSegment, Map<TimePeriod,AggregatePAMatrix>> tripDistribution(Collection<MarketSegment> segments, Graph g,
-			Map<MarketSegment, Map<TimePeriod, PAMap>> timeMaps) throws IOException {
 		
-		System.out.print("Reading friction factor maps... ");
-		//Create FF Maps for each segment
-		long ms = System.currentTimeMillis();
-		Map<MarketSegment, Map<TimePeriod, FrictionFactorMap>> ffm = readFrictionFactorMaps(segments, g);
-		long nms = System.currentTimeMillis();
+	private static Map<MarketSegment, AggregatePAMatrix> peakDistribution(
+			Graph graph, 
+			Map<MarketSegment, PAMap> pkMaps,
+			Map<MarketSegment, FrictionFactorMap> pkFFMaps) {
+		return pkMaps.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, entry->{
+			TripDistributor distributor = new GravityDistributor(graph, pkFFMaps.get(entry.getKey()));
+			return distributor.distribute(entry.getValue());
+		}));
+	}
+	
+	private static Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> offPeakDistribution(
+			Graph g,
+			Map<TripPurpose, Map<MarketSegment, PAMap>> hbMaps,
+			Map<TripPurpose, Map<MarketSegment, FrictionFactorMap>> ffm 
+			// TODO: consider if this (and pk distribution) should take in a mapping directly to the distributor 
+			// (maybe some purpose-segment pairs have the same friction factor map? So this would be unnecessary) 
+			) throws IOException {
 		
-		System.out.println(""+(nms-ms)/1000.0+" s");
-		System.out.print("Performing trip distribution... ");
-
-		return timeMaps.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, entry -> 
-			entry.getValue().entrySet().parallelStream()
-			.collect(Collectors.toMap(Entry::getKey, inner -> {
-				TripDistributor distributor = new GravityDistributor(g,ffm.get(entry.getKey()));
-				return distributor.distribute(inner.getValue());
+		return hbMaps.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, purposeEntry -> 
+			purposeEntry.getValue().entrySet().parallelStream()
+			.collect(Collectors.toMap(Entry::getKey, segmentEntry -> {
+				TripDistributor distributor = new GravityDistributor(g, ffm.get(purposeEntry.getKey()).get(segmentEntry.getKey()));
+				return distributor.distribute(segmentEntry.getValue());
 			}))
 		));
 	}
