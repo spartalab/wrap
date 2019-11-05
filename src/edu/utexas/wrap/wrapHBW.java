@@ -21,6 +21,7 @@ import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.containers.FixedMultiplierPassthroughPAMap;
+import edu.utexas.wrap.demand.containers.PerProductionZoneMultiplierPassthroughMatrix;
 import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.distribution.GravityDistributor;
 import edu.utexas.wrap.distribution.TripDistributor;
@@ -42,9 +43,7 @@ public class wrapHBW {
 		try{
 
 			Graph graph = readNetworkData(args);
-			Map<TripPurpose,Map<MarketSegment,FrictionFactorMap>> opFFMaps = null; //TODO
-			Map<MarketSegment,FrictionFactorMap> pkFFMaps = null; //TODO
-			Map<TravelSurveyZone,Double> workerVehicleRates = null;
+			
 			
 			//Perform trip generation
 			Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps = NCTCOGTripGen.tripGeneratorHNW(graph);
@@ -57,7 +56,7 @@ public class wrapHBW {
 			//TODO New thread should start here for non-home-based trips
 			Map<TripPurpose,PAMap> nhbMaps = NCTCOGTripGen.tripGeneratorNHB(graph,hbMaps);
 			nhbBalance(graph, nhbMaps);
-			Map<TripPurpose,AggregatePAMatrix> nhbMatrices = nhbTripDist(nhbMaps);
+			Map<TripPurpose,AggregatePAMatrix> nhbMatrices = nhbTripDist(nhbMaps, nhbFFMaps);
 			combineNHBPurposes(nhbMatrices);
 			Map<TripPurpose,Collection<ModalPAMatrix>> nhbModalMtxs = nhbModeChoice(nhbMatrices);
 			Map<TripPurpose,Collection<ODMatrix>> nhbODs = nhbPA2OD(nhbModalMtxs);
@@ -66,21 +65,29 @@ public class wrapHBW {
 			
 			//Peak/off-peak splitting
 			Map<MarketSegment,PAMap> pkMaps = splitHBW(hbMaps, 0.5); //TODO this method should both reduce the hbMaps' HBW entries by a half and return a duplicate with the same reduction
+			
 			//Perform trip distribution
+			Map<MarketSegment,FrictionFactorMap> pkFFMaps = null; //TODO
 			Map<MarketSegment,AggregatePAMatrix> aggPKMtxs = peakDistribution(graph, pkMaps, pkFFMaps);	//TODO separate threading for distributing pkMaps
+			
+			Map<TripPurpose,Map<MarketSegment,FrictionFactorMap>> opFFMaps = null; //TODO
 			Map<TripPurpose,Map<MarketSegment,AggregatePAMatrix>> aggOPMtxs = offPeakDistribution(graph, hbMaps, opFFMaps);
+			
 			//After distributing over different friction factor maps, the HBW trips are stuck back together and SRE & PBO matrices are combined
 			Map<TripPurpose,Map<MarketSegment,AggregatePAMatrix>> aggCombinedMtxs = combineAggregateMatrices(aggPKMtxs,aggOPMtxs); //TODO combine SRE/PBO and HBWPK/OP matrices
+			
 			//TODO divide market segments further by vehicles per worker
-			divideSegments(aggCombinedMtxs,workerVehicleRates);
+			Map<MarketSegment,Map<MarketSegment,Map<TravelSurveyZone,Double>>> workerVehicleRates = null;
+			Map<TripPurpose,Map<MarketSegment,AggregatePAMatrix>> dividedCombinedMtxs = divideSegments(aggCombinedMtxs,workerVehicleRates);
+			
 			//TODO combine HNW trip purposes into single HNW trip purpose for all market segments
-			Map<TripPurpose,Map<MarketSegment,AggregatePAMatrix>> combinedMtxs = combineHNWPurposes(aggCombinedMtxs);
+			Map<TripPurpose,Map<MarketSegment,AggregatePAMatrix>> combinedMtxs = combineHNWPurposes(dividedCombinedMtxs);
 			
 			//Perform mode choice splitting
 			Map<TripPurpose,Map<MarketSegment, Collection<ModalPAMatrix>>> hbModalMtxs = modeChoice(combinedMtxs);
 			
 			//PA to OD splitting by time of day
-			Map<TripPurpose,Map<TimePeriod, Map<Mode, ODMatrix>>> hbODs = paToODConversion(hbModalMtxs);
+			Map<TimePeriod,Map<TripPurpose, Map<Mode, ODMatrix>>> hbODs = paToODConversion(hbModalMtxs);
 			
 			//Reduce the number of OD matrices by combining those of similar VOT
 			Map<TimePeriod,Collection<ODMatrix>> reducedODs = reduceODMatrices(hbODs, nhbODs);
@@ -95,6 +102,23 @@ public class wrapHBW {
 			e.printStackTrace();
 			System.exit(2);
 		}
+	}
+
+	private static Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> divideSegments(Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs,
+			Map<MarketSegment, Map<MarketSegment, Map<TravelSurveyZone, Double>>> workerVehicleRates) {
+		return aggCombinedMtxs.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, purposeMapEntry-> //for each trip purpose
+			 purposeMapEntry.getValue().entrySet().parallelStream() //Stream of MarketSegment-Matrix entries
+			.map(oldSegmentMap ->	//Take each segment-matrix pair
+					workerVehicleRates.get(oldSegmentMap.getKey()).entrySet().parallelStream()		//get a stream of all related segment-rateMap pairs
+					.collect(Collectors.toMap(Entry::getKey, 										//map each related (more bespoke) segment to 
+							rateMap ->  new PerProductionZoneMultiplierPassthroughMatrix(oldSegmentMap.getValue(),rateMap.getValue())))	//a rate multiplier map
+			).flatMap(map -> map.entrySet().parallelStream()) 			//unpackage the map to a set of entries
+			.collect(Collectors.toMap(Entry::getKey, Entry::getValue))	//collect all the entries together in a single map
+			//This assumes no duplicates exist in the more bespoke (resulting) market segments
+			
+		));
+		
+		
 	}
 
 	private static Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> combineHNWPurposes(Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs) {
