@@ -37,7 +37,7 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.*;
 import edu.utexas.wrap.util.io.*;
 
-public class wrapHBW {
+public class wrapNCTCOG {
 
 	public static void main(String[] args) {
 		try{
@@ -78,7 +78,7 @@ public class wrapHBW {
 			
 			//TODO divide market segments further by vehicles per worker
 			Map<MarketSegment,Map<MarketSegment,Map<TravelSurveyZone,Double>>> workerVehicleRates = null;
-			Map<TripPurpose,Map<MarketSegment,AggregatePAMatrix>> dividedCombinedMtxs = divideSegments(aggCombinedMtxs,workerVehicleRates);
+			Map<TripPurpose,Map<MarketSegment,AggregatePAMatrix>> dividedCombinedMtxs = subdivideSegments(aggCombinedMtxs,workerVehicleRates);
 			
 			//TODO combine HNW trip purposes into single HNW trip purpose for all market segments
 			Map<TripPurpose,Map<MarketSegment,AggregatePAMatrix>> combinedMtxs = combineHNWPurposes(dividedCombinedMtxs);
@@ -104,7 +104,7 @@ public class wrapHBW {
 		}
 	}
 
-	private static Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> divideSegments(Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs,
+	private static Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> subdivideSegments(Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs,
 			Map<MarketSegment, Map<MarketSegment, Map<TravelSurveyZone, Double>>> workerVehicleRates) {
 		return aggCombinedMtxs.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, purposeMapEntry-> //for each trip purpose
 			 purposeMapEntry.getValue().entrySet().parallelStream() //Stream of MarketSegment-Matrix entries
