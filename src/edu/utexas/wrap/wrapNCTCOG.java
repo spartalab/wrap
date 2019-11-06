@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,6 +27,7 @@ import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.distribution.GravityDistributor;
 import edu.utexas.wrap.distribution.TripDistributor;
 import edu.utexas.wrap.marketsegmentation.IncomeGroupSegment;
+import edu.utexas.wrap.marketsegmentation.IncomeGroupSegmenter;
 import edu.utexas.wrap.marketsegmentation.IndustryClass;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.modechoice.FixedProportionSplitter;
@@ -44,10 +46,10 @@ public class wrapNCTCOG {
 
 			Graph graph = readNetworkData(args);
 			
-			
+			Collection<MarketSegment> segments;
 			//Perform trip generation
-			Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps = NCTCOGTripGen.tripGeneratorHNW(graph);
-			hbMaps.put(TripPurpose.HOME_WORK, NCTCOGTripGen.tripGeneratorHBW(graph));
+			Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps = NCTCOGTripGen.tripGeneratorHNW(graph, segments);
+			hbMaps.put(TripPurpose.HOME_WORK, NCTCOGTripGen.tripGeneratorHBW(graph, segments));
 			
 			//Perform trip balancing
 			balance(graph, hbMaps);
@@ -59,38 +61,45 @@ public class wrapNCTCOG {
 			Map<TripPurpose,AggregatePAMatrix> nhbMatrices = nhbTripDist(nhbMaps, nhbFFMaps);
 			combineNHBPurposes(nhbMatrices);
 			Map<TripPurpose,Collection<ModalPAMatrix>> nhbModalMtxs = nhbModeChoice(nhbMatrices);
-			Map<TripPurpose,Collection<ODMatrix>> nhbODs = nhbPA2OD(nhbModalMtxs);
+			Map<TimePeriod,Map<TripPurpose,Collection<ODMatrix>>> nhbODs = nhbPA2OD(nhbModalMtxs);
 			//NHB thread ends here
 
 			
 			//Peak/off-peak splitting
-			Map<MarketSegment,PAMap> pkMaps = splitHBW(hbMaps, 0.5); //TODO this method should both reduce the hbMaps' HBW entries by a half and return a duplicate with the same reduction
+			Map<MarketSegment, PAMap> pkMaps = splitHBW(hbMaps, 0.5); //TODO this method should both reduce the hbMaps' HBW entries by a half and return a duplicate with the same reduction
 			
 			//Perform trip distribution
-			Map<MarketSegment,FrictionFactorMap> pkFFMaps = null; //TODO
-			Map<MarketSegment,AggregatePAMatrix> aggPKMtxs = peakDistribution(graph, pkMaps, pkFFMaps);	//TODO separate threading for distributing pkMaps
+			Map<MarketSegment, FrictionFactorMap> pkFFMaps = null; //TODO
+			Map<MarketSegment, AggregatePAMatrix> aggPKMtxs = peakDistribution(graph, pkMaps, pkFFMaps);	//TODO separate threading for distributing pkMaps
 			
-			Map<TripPurpose,Map<MarketSegment,FrictionFactorMap>> opFFMaps = null; //TODO
-			Map<TripPurpose,Map<MarketSegment,AggregatePAMatrix>> aggOPMtxs = offPeakDistribution(graph, hbMaps, opFFMaps);
+			Map<TripPurpose, Map<MarketSegment, FrictionFactorMap>> opFFMaps = null; //TODO
+			Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggOPMtxs = offPeakDistribution(graph, hbMaps, opFFMaps);
 			
 			//After distributing over different friction factor maps, the HBW trips are stuck back together and SRE & PBO matrices are combined
-			Map<TripPurpose,Map<MarketSegment,AggregatePAMatrix>> aggCombinedMtxs = combineAggregateMatrices(aggPKMtxs,aggOPMtxs); //TODO combine SRE/PBO and HBWPK/OP matrices
+			Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs = combineAggregateMatrices(aggPKMtxs,aggOPMtxs); //TODO combine SRE/PBO and HBWPK/OP matrices
 			
 			//TODO divide market segments further by vehicles per worker
-			Map<MarketSegment,Map<MarketSegment,Map<TravelSurveyZone,Double>>> workerVehicleRates = null;
-			Map<TripPurpose,Map<MarketSegment,AggregatePAMatrix>> dividedCombinedMtxs = subdivideSegments(aggCombinedMtxs,workerVehicleRates);
+			Map<MarketSegment, Map<MarketSegment, Map<TravelSurveyZone, Double>>> workerVehicleRates = null;
+			Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> dividedCombinedMtxs = subdivideSegments(aggCombinedMtxs,workerVehicleRates);
 			
 			//TODO combine HNW trip purposes into single HNW trip purpose for all market segments
-			Map<TripPurpose,Map<MarketSegment,AggregatePAMatrix>> combinedMtxs = combineHNWPurposes(dividedCombinedMtxs);
+			Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> combinedMtxs = combineHNWPurposes(dividedCombinedMtxs);
 			
-			//Perform mode choice splitting
-			Map<TripPurpose,Map<MarketSegment, Collection<ModalPAMatrix>>> hbModalMtxs = modeChoice(combinedMtxs);
+			//Perform mode choice splitting TODO ensure proper use of market segments
+			Map<MarketSegment, Map<Mode, Double>> modeShares = ModeFactory.readModeShares(new File("../../nctcogFiles/modeChoiceSplits.csv"), segments); // ModeChoiceSplits.csv
+			Map<TripPurpose, Map<MarketSegment, Collection<ModalPAMatrix>>> hbModalMtxs = modeChoice(combinedMtxs, modeShares);
 			
 			//PA to OD splitting by time of day
-			Map<TimePeriod,Map<TripPurpose, Map<Mode, ODMatrix>>> hbODs = paToODConversion(hbModalMtxs);
+			Map<Mode, Double> occupancyRates = ModeFactory.readOccRates(new File("../../nctcogFiles/modalOccRates.csv"), true); // modalOccRates.csv
+			
+			//TOD splitting inputs TODO ensure proper use of market segments
+			Map<TimePeriod, Map<MarketSegment, Double>> 
+				depRates = TimePeriodRatesFactory.readDepartureFile(new File("../../nctcogFiles/TODfactors.csv"), segments), //TODFactors.csv
+				arrRates = TimePeriodRatesFactory.readArrivalFile(new File("../../nctcogFiles/TODfactors.csv"), segments); //TODFactors.csv
+			Map<TimePeriod, Map<TripPurpose, Map<MarketSegment, Collection<ODMatrix>>>> hbODs = paToODConversion(hbModalMtxs, occupancyRates, depRates, arrRates);
 			
 			//Reduce the number of OD matrices by combining those of similar VOT
-			Map<TimePeriod,Collection<ODMatrix>> reducedODs = reduceODMatrices(hbODs, nhbODs);
+			Map<TimePeriod, Collection<ODMatrix>> reducedODs = reduceODMatrices(hbODs, nhbODs);
 			
 			writeODs(reducedODs);
 			//TODO eventually, we'll do multiple instances of traffic assignment here instead of just writing to files
@@ -102,6 +111,46 @@ public class wrapNCTCOG {
 			e.printStackTrace();
 			System.exit(2);
 		}
+	}
+
+	private static Map<TimePeriod, Collection<ODMatrix>> reduceODMatrices(
+			Map<TimePeriod, Map<TripPurpose, Map<MarketSegment, Collection<ODMatrix>>>> hbODs,
+			Map<TimePeriod, Map<TripPurpose, Collection<ODMatrix>>> nhbODs) {
+		return Stream.of(TimePeriod.values()).parallel().collect(Collectors.toMap(Function.identity(), timePeriod ->{
+			Collection<ODMatrix> ret = new HashSet<ODMatrix>();
+			
+			// TODO Auto-generated method stub
+			Stream.of(TripPurpose.HOME_WORK,TripPurpose.HOME_NONWORK).parallel().forEach(tripPurpose->
+				Stream.of(Mode.SINGLE_OCC, Mode.HOV).parallel().forEach(mode -> {
+			
+					//First, handle the Work IG123 cases
+					ret.add(
+						hbODs.get(timePeriod)	//add a combination of all OD matrices from this time period
+						.get(tripPurpose).entrySet().parallelStream()	//for this trip purpose
+						.filter(entry -> entry.getKey() instanceof IncomeGroupSegmenter && ((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup() <4)	//in income groups 1, 2, or 3 
+						.map(Entry::getValue).flatMap(Collection::parallelStream).filter(od -> od.getMode() == mode) //which matches this mode
+						.collect(new ODMatrixCollector())
+					);
+			
+					//Next, handle the Work IG4 and Nonwork cases
+					ret.add(
+							Stream.concat(	//Combine two types of maps
+									hbODs.get(timePeriod)	//home-based trips from this time period
+									.get(tripPurpose).entrySet().parallelStream()	//for this trip purpose
+									.filter(entry -> entry.getKey() instanceof IncomeGroupSegmenter && ((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup() >= 4)	//in income group 4
+									.map(Entry::getValue).flatMap(Collection::parallelStream).filter(od -> od.getMode() == mode),	//for this mode
+									
+									nhbODs.get(timePeriod)	//And non-home-based trips
+									.get(tripPurpose).parallelStream()	//for this trip purpose
+									.filter(od -> od.getMode() == mode)	//using this mode
+									)
+							.collect(new ODMatrixCollector())
+					);
+				})
+			);
+			
+			return ret;
+		}));
 	}
 
 	private static Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> subdivideSegments(Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs,
@@ -175,27 +224,18 @@ public class wrapNCTCOG {
 	}
 
 	private static Graph readNetworkData(String[] args) throws FileNotFoundException, IOException {
-		System.out.print("Reading network... ");
-		long ms = System.currentTimeMillis();
 		//Model inputs
 		Graph graph = GraphFactory.readEnhancedGraph(new File(args[0]),Integer.parseInt(args[1]));
-		long nms = System.currentTimeMillis();
-		System.out.println(""+(nms-ms)/1000.0+" s");
 		
-		//TODO read RAAs
-		// add demographic data to zones
-		System.out.print("Reading household demographic data... ");
-		ms = System.currentTimeMillis();
-		readHouseholdData(graph, Paths.get("../../nctcogFiles/hhByIG.csv"), Paths.get("../../nctcogFiles/hhByIGthenWkrthenVeh.csv"));
-		nms = System.currentTimeMillis();
-		System.out.println(""+(nms-ms)/1000.0+" s");
+		//TODO read RAAs - this is for later in the project
 		
+		// add demographic data to zones TODO consider whether this should be a method inside Graph
+		//args[2] = "../../nctcogFiles/hhByIG.csv";
+		//args[3] = "../../nctcogFiles/hhByIGthenWkrthenVeh.csv";
 		
-		System.out.print("Reading employment demographic data... ");
-		ms = System.currentTimeMillis();
+		readHouseholdData(graph, Paths.get(args[2]), Paths.get(args[3]));
 		readEmploymentData(graph, Paths.get("../../nctcogFiles/empByIGthenIC.csv"));
-		nms = System.currentTimeMillis();
-		System.out.println(""+(nms-ms)/1000.0+" s");
+		
 		return graph;
 	}
 
@@ -224,32 +264,33 @@ public class wrapNCTCOG {
 		System.out.println(""+(nms-ms)/1000.0+" s");
 	}
 
-	private static Map<MarketSegment, Map<TimePeriod,FrictionFactorMap>> readFrictionFactorMaps(
-			Collection<MarketSegment> afterPASegments, Graph graph) throws IOException {
-		float[][] skim = SkimFactory.readSkimFile(new File("../../nctcogFiles/PKNOHOV.csv"), false, graph);
-		Map<MarketSegment, FrictionFactorMap> ffmaps = new ConcurrentHashMap<MarketSegment, FrictionFactorMap>();
-		String[] ff_files = {
-				"../../nctcogFiles/FFactorHBW_INC1 PK.csv",
-				"../../nctcogFiles/FFactorHBW_INC2 PK.csv",
-				"../../nctcogFiles/FFactorHBW_INC3 PK.csv"};
-		
-		afterPASegments.parallelStream().forEach(seg -> { // This could be made a lot cleaner...
-					int idx = 0;
-					while(idx < ff_files.length && !ff_files[idx].contains(((IncomeGroupSegment) seg).getIncomeGroup() + "")){
-						idx++;
-					}
-					try {
-						ffmaps.put(seg, FrictionFactorFactory.readFactorFile(new File(ff_files[idx]), true, skim));
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-		);
-		return ffmaps;
-	}
+//	private static Map<MarketSegment, Map<TimePeriod,FrictionFactorMap>> readFrictionFactorMaps(
+//			Collection<MarketSegment> afterPASegments, 
+//			Map<TimePeriod,float[][]> skim,
+//			Graph graph) throws IOException {
+//		float[][] skim = SkimFactory.readSkimFile(new File("../../nctcogFiles/PKNOHOV.csv"), false, graph);
+//		Map<MarketSegment, FrictionFactorMap> ffmaps = new ConcurrentHashMap<MarketSegment, FrictionFactorMap>();
+//		String[] ff_files = {
+//				"../../nctcogFiles/FFactorHBW_INC1 PK.csv",
+//				"../../nctcogFiles/FFactorHBW_INC2 PK.csv",
+//				"../../nctcogFiles/FFactorHBW_INC3 PK.csv"};
+//		
+//		afterPASegments.parallelStream().forEach(seg -> { // This could be made a lot cleaner...
+//					int idx = 0;
+//					while(idx < ff_files.length && !ff_files[idx].contains(((IncomeGroupSegment) seg).getIncomeGroup() + "")){
+//						idx++;
+//					}
+//					try {
+//						ffmaps.put(seg, FrictionFactorFactory.readFactorFile(new File(ff_files[idx]), true, skim));
+//					} catch (IOException e) {
+//						e.printStackTrace();
+//					}
+//				}
+//		);
+//		return ffmaps;
+//	}
 	
 	private static void readHouseholdData(Graph graph, Path igFile, Path igWkrVehFile) throws IOException {
-		// TODO Auto-generated method stub
 		Files.lines(igFile).parallel().filter(line -> !line.startsWith("TSZ")).forEach(line ->{
 			String[] args = line.split(",");
 			int tszID = Integer.parseInt(args[0]);
@@ -339,30 +380,10 @@ public class wrapNCTCOG {
 	}
 
 	private static void balance(Graph g, Map<TripPurpose, Map<MarketSegment, PAMap>> hbMaps) {
-		System.out.print("Performing trip balancing... ");
-		long ms = System.currentTimeMillis();
 	
 		Prod2AttrProportionalBalancer balancer = new Prod2AttrProportionalBalancer(null);
-		hbMaps.values().parallelStream().forEach(map -> balancer.balance(map));
+		hbMaps.values().parallelStream().flatMap(map -> map.values().parallelStream()).forEach(map -> balancer.balance(map));
 		
-		long nms = System.currentTimeMillis();
-		System.out.println(""+(nms-ms)/1000.0+" s");
-	}
-
-	private static Map<MarketSegment, Map<TimePeriod, PAMap>> pkOpSplitting(Map<MarketSegment, PAMap> maps,
-			Collection<MarketSegment> segments) throws IOException {
-		System.out.print("Performing peak-offpeak splitting... ");
-		Map<MarketSegment,Double> pkRates = PeakFactory.readPkOPkSplitRates(new File("../../nctcogFiles/pkOffPkSplits.csv"), true, segments); // pkOffPkSplits.csv
-		return maps.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, 
-				entry -> {
-					double pkRate = pkRates.get(entry.getKey());
-					PAMap pkMap = new FixedMultiplierPassthroughPAMap(entry.getValue(),pkRate);
-					PAMap opMap = new FixedMultiplierPassthroughPAMap(entry.getValue(),1.0-pkRate);
-					Map<TimePeriod,PAMap> ret = new HashMap<TimePeriod,PAMap>(3,1.0f);
-					ret.put(TimePeriod.AM_PK, pkMap);
-					ret.put(TimePeriod.EARLY_OP, opMap);
-					return ret;
-				}));
 	}
 		
 	private static Map<MarketSegment, AggregatePAMatrix> peakDistribution(
@@ -392,52 +413,36 @@ public class wrapNCTCOG {
 		));
 	}
 
-	private static Map<MarketSegment, Collection<ModalPAMatrix>> modeChoice(Collection<MarketSegment> segments,
-			Map<MarketSegment, AggregatePAMatrix> aggMtxs) throws IOException {
-		Map<MarketSegment,Map<Mode,Double>> modeShares = ModeFactory.readModeShares(new File("../../nctcogFiles/modeChoiceSplits.csv"), segments); // ModeChoiceSplits.csv
+	private static Map<TripPurpose,Map<MarketSegment, Collection<ModalPAMatrix>>> modeChoice(
+			Map<TripPurpose,Map<MarketSegment, AggregatePAMatrix>> aggMtxs, 
+			Map<MarketSegment,Map<Mode,Double>> modeShares
+			) throws IOException {
 		TripInterchangeSplitter mc = new FixedProportionSplitter(modeShares);
-		return aggMtxs.entrySet().parallelStream()
-				.collect(Collectors.toMap(Entry::getKey, 
-						entry -> mc.split(entry.getValue(),entry.getKey())
-						.collect(Collectors.toSet())));
+		return aggMtxs.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, purposeMapEntry ->
+			purposeMapEntry.getValue().entrySet().parallelStream()
+			.collect(Collectors.toMap(Entry::getKey, 
+				entry -> mc.split(entry.getValue(),entry.getKey())
+				.collect(Collectors.toSet())))
+				));
 	}
 	
-	private static Map<TimePeriod, Map<Mode,ODMatrix>> paToODConversion(Map<MarketSegment, Collection<ModalPAMatrix>> modalMtxs) throws IOException {
+	private static Map<TimePeriod,Map<TripPurpose, Map<MarketSegment,Collection<ODMatrix>>>> paToODConversion(
+			Map<TripPurpose, Map<MarketSegment, Collection<ModalPAMatrix>>> hbModalMtxs, 
+			Map<Mode,Double> occupancyRates, 
+			Map<TimePeriod,Map<MarketSegment,Double>> depRates,
+			Map<TimePeriod,Map<MarketSegment,Double>> arrRates) throws IOException {
 		
-		
-		
-		System.out.print("Reading modal shares and occupancy rates... ");
-		//Mode choice inputs
-		long ms = System.currentTimeMillis();
-		Map<Mode,Double> occupancyRates = ModeFactory.readOccRates(new File("../../nctcogFiles/modalOccRates.csv"), true); // modalOccRates.csv
-		long nms = System.currentTimeMillis();
-		System.out.println(""+(nms-ms)/1000.0+" s");
-		
-		
-		System.out.print("Reading time-of-day rates... ");
-		//TOD splitting inputs
-		ms = System.currentTimeMillis();
-		Map<MarketSegment, Map<TimePeriod,Double>> depRates = TimePeriodRatesFactory.readDepartureFile(new File("../../nctcogFiles/TODfactors.csv"), modalMtxs.keySet()), //TODFactors.csv
-				   arrRates = TimePeriodRatesFactory.readArrivalFile(new File("../../nctcogFiles/TODfactors.csv"), modalMtxs.keySet()); //TODFactors.csv
-		nms = System.currentTimeMillis();
-		System.out.println(""+(nms-ms)/1000.0+" s");
-		
-		
-		return Stream.of(TimePeriod.values()).parallel()			
-		.collect(Collectors.toMap(Function.identity(), tp -> {
-			
-			//Convert using TOD splitting
-			Stream<ODMatrix> tpODs = modalMtxs.entrySet().parallelStream()
-					.flatMap(entry -> {
-						DepartureArrivalConverter converter = new DepartureArrivalConverter(depRates.get(entry.getKey()).get(tp),arrRates.get(entry.getKey()).get(tp));
-						return entry.getValue().parallelStream().map(mtx -> converter.convert(mtx, occupancyRates.get(mtx.getMode())));
-					});
-			
-			//Combine across income groups 1,2,3 and vehicle ownership
-			//FIXME this loses market segmentation
-//			return tpODs.collect(Collectors.partitioningBy(od -> od.getMode().equals(Mode.SINGLE_OCC), od -> Combiner.combineODMatrices(od));
-			return tpODs.collect(Collectors.groupingBy(ODMatrix::getMode, new ODMatrixCollector<ODMatrix>()));
-		}));
-//		return null;
+		//TODO combine SR2 and SR3
+		return Stream.of(TimePeriod.values()).collect(Collectors.toMap(Function.identity(), tp -> //for each time period
+			hbModalMtxs.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, purposeEntry -> //for each trip purpose
+				purposeEntry.getValue().entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, segmentEntry ->{ //for each market segment
+					//establish a trip converter
+					DepartureArrivalConverter converter = new DepartureArrivalConverter(depRates.get(tp).get(segmentEntry.getKey()), arrRates.get(tp).get(segmentEntry.getKey()));
+					return segmentEntry.getValue().parallelStream().map(modalMtx -> //for each modal matrix
+						converter.convert(modalMtx, occupancyRates.get(modalMtx.getMode()))	//convert the matrix
+					).collect(Collectors.toSet());	//collect into a set 
+				})) //which is collected into a map (for each market segment) 
+			))	//which is collected into a map (for each trip purpose)
+		));	//which is collected into a map (for each time period)
 	}
 }

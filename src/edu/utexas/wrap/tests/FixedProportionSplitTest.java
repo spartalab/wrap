@@ -28,8 +28,8 @@ public class FixedProportionSplitTest {
 			
 			Map<Mode,Float> spct = new HashMap<Mode,Float>();
 			spct.put(Mode.SINGLE_OCC, 0.7999F);
-			spct.put(Mode.HOV_2, 0.0820F);
-			spct.put(Mode.HOV_3, 0.0639F);
+			spct.put(Mode.HOV_2_PSGR, 0.0820F);
+			spct.put(Mode.HOV_3_PSGR, 0.0639F);
 			pct.put(HBWINC1, spct);
 			
 			System.out.println("Splitting");

@@ -193,8 +193,8 @@ public class GraphFactory {
 
 			tollA[Mode.SINGLE_OCC.ordinal()] = (parse(args[27]));
 			tollB[Mode.SINGLE_OCC.ordinal()] = (parse(args[28]));
-			tollA[Mode.HOV_2.ordinal()] = (parse(args[29]));
-			tollB[Mode.HOV_2.ordinal()] = (parse(args[30]));
+			tollA[Mode.HOV_2_PSGR.ordinal()] = (parse(args[29]));
+			tollB[Mode.HOV_2_PSGR.ordinal()] = (parse(args[30]));
 			tollA[Mode.MED_TRUCK.ordinal()] = (parse(args[31]));
 			tollB[Mode.MED_TRUCK.ordinal()] = (parse(args[32]));
 			tollA[Mode.HVY_TRUCK.ordinal()] = (parse(args[33]));

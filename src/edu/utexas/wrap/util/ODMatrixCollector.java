@@ -20,7 +20,7 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-public class ODMatrixCollector<T extends ODMatrix> implements Collector<ODMatrix, CombinedODMatrix, ODMatrix>{
+public class ODMatrixCollector implements Collector<ODMatrix, CombinedODMatrix, ODMatrix>{
 	private final Set<Characteristics> characteristics = new HashSet<Characteristics>(Arrays.asList(Collector.Characteristics.values()));
 
 	@Override

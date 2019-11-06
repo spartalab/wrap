@@ -91,10 +91,10 @@ public class OriginFactory {
 		AutoODMatrix odda45 = new AutoODMatrix(g, 0.45F, Mode.SINGLE_OCC);
 		AutoODMatrix odda90 = new AutoODMatrix(g, 0.90F, Mode.SINGLE_OCC);
 		
-		AutoODMatrix odsr17 = new AutoODMatrix(g, 0.17F, Mode.HOV_2);
-		AutoODMatrix odsr35 = new AutoODMatrix(g, 0.35F, Mode.HOV_2);
-		AutoODMatrix odsr45 = new AutoODMatrix(g, 0.45F, Mode.HOV_2);
-		AutoODMatrix odsr90 = new AutoODMatrix(g, 0.90F, Mode.HOV_2);
+		AutoODMatrix odsr17 = new AutoODMatrix(g, 0.17F, Mode.HOV_2_PSGR);
+		AutoODMatrix odsr35 = new AutoODMatrix(g, 0.35F, Mode.HOV_2_PSGR);
+		AutoODMatrix odsr45 = new AutoODMatrix(g, 0.45F, Mode.HOV_2_PSGR);
+		AutoODMatrix odsr90 = new AutoODMatrix(g, 0.90F, Mode.HOV_2_PSGR);
 		
 		AutoODMatrix odmt = new AutoODMatrix(g, 1.0F, Mode.MED_TRUCK);
 		AutoODMatrix odht = new AutoODMatrix(g, 1.0F, Mode.HVY_TRUCK);

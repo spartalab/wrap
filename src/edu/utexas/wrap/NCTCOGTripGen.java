@@ -25,10 +25,8 @@ import edu.utexas.wrap.util.io.ProductionAttractionFactory;
 public class NCTCOGTripGen {
 
 	static Map<MarketSegment, PAMap> tripGeneratorHBW(Graph g) throws IOException {
-		System.out.print("Performing trip generation... ");
-		long ms = System.currentTimeMillis();
 
-		//Production segmentation
+		//Production segmentation TODO: organize segmentation better - have a plan for when which segments are used
 		Collection<MarketSegment> 
 		primaryProdSegs = IntStream.range(1, 5).parallel().boxed().flatMap(incomeGroup -> 
 			IntStream.range(0, 4).parallel().boxed().flatMap(numberOfWorkers ->
@@ -81,17 +79,6 @@ public class NCTCOGTripGen {
 		//Combine secondary maps across trip purposes
 		Map<MarketSegment,DemandMap> secondaryAttrs = combineMapsByTripPurpose(secondarySegs, secondaryAttrMap);
 
-		PAMap hbwIG123 = igSegs.parallelStream().filter(seg -> ((IncomeGroupSegment) seg).getIncomeGroup() < 4).map(
-				seg -> new PAPassthroughMap(g,null, combinedPrimaryProds.get(seg), combinedPrimaryAttrs.get(seg))).collect(new PAMapCollector());
-		
-		PAMap hbwIG4 = igSegs.parallelStream().filter(seg -> ((IncomeGroupSegment) seg).getIncomeGroup() == 4).map(seg -> new PAPassthroughMap(g,null,combinedPrimaryProds.get(seg),combinedPrimaryAttrs.get(seg))).findAny().get(),
-		nhbw = new PAPassthroughMap(g,null,secondaryProds.values().parallelStream().collect(new DemandMapCollector()), secondaryAttrs.values().parallelStream().collect(new DemandMapCollector())),
-		hbwIG4_nhbw = Stream.of(hbwIG4,nhbw).collect(new PAMapCollector());
-		
-		long nms = System.currentTimeMillis();
-		System.out.println(""+(nms-ms)/1000.0+" s");
-		
-		return null;
 	}
 
 	static Map<MarketSegment, PAMap> tripGeneratorHNW(Graph g) throws IOException {

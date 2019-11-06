@@ -22,7 +22,7 @@ public class NCTCOGPAtoOD {
 
 	public static void main(String[] args) {
 
-		EnumSet<Mode> carModes = EnumSet.of(Mode.SINGLE_OCC, Mode.HOV_2, Mode.HOV_3);
+		EnumSet<Mode> carModes = EnumSet.of(Mode.SINGLE_OCC, Mode.HOV_2_PSGR, Mode.HOV_3_PSGR);
 		EnumSet<Mode> truckModes = EnumSet.of(Mode.HVY_TRUCK, Mode.MED_TRUCK);
 		
 		//Input matrices
@@ -56,7 +56,7 @@ public class NCTCOGPAtoOD {
 		//Get home-based work OD matrices
 		for (MarketSegment segment : hbw.keySet()) {
 			EnumSet<Mode> modes = segment instanceof VehicleSegmenter && ((VehicleSegmenter) segment).getNumberOfVehicles() < 1 ?
-					modes = EnumSet.of(Mode.HOV_2, Mode.HOV_3) : carModes;
+					modes = EnumSet.of(Mode.HOV_2_PSGR, Mode.HOV_3_PSGR) : carModes;
 					
 			Map<Mode,ModalPAMatrix> modalMatrices = hbw.get(segment);
 			Map<TimePeriod,Double> depRates = hbwDepRates.get(segment);
@@ -69,7 +69,7 @@ public class NCTCOGPAtoOD {
 		//Get home-based non-work OD matrices
 		for (MarketSegment segment : hnw.keySet()) {
 			EnumSet<Mode> modes = segment instanceof VehicleSegmenter && ((VehicleSegmenter) segment).getNumberOfVehicles() < 1 ?
-				modes = EnumSet.of(Mode.HOV_2, Mode.HOV_3) : carModes;
+				modes = EnumSet.of(Mode.HOV_2_PSGR, Mode.HOV_3_PSGR) : carModes;
 			
 			Map<Mode,ModalPAMatrix> modalMatrices = hnw.get(segment);
 			Map<TimePeriod,Double> depRates = hnwDepRates.get(segment);
