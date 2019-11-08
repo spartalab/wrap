@@ -55,16 +55,8 @@ public class wrapNCTCOG {
 			//Perform trip balancing
 			balance(graph, hbMaps);
 			
-			//NHB thread starts here
-			//TODO New thread should start here for non-home-based trips
-			Map<TripPurpose,PAMap> nhbMaps = NCTCOGTripGen.tripGeneratorNHB(graph,hbMaps);
-			nhbBalance(graph, nhbMaps);
-			Map<TripPurpose,AggregatePAMatrix> nhbMatrices = nhbTripDist(nhbMaps, nhbFFMaps);
-			combineNHBPurposes(nhbMatrices);
-			Map<TripPurpose,Collection<ModalPAMatrix>> nhbModalMtxs = nhbModeChoice(nhbMatrices);
-			Map<TimePeriod,Map<TripPurpose,Collection<ODMatrix>>> nhbODs = nhbPA2OD(nhbModalMtxs);
-			//NHB thread ends here
-
+			NHBThread nhb = new NHBThread(graph, hbMaps);
+			nhb.start();
 			
 			//Peak/off-peak splitting for HOME_WORK trip purpose
 			Map<MarketSegment, Double> splitRates = null;
@@ -100,8 +92,9 @@ public class wrapNCTCOG {
 				arrRates = TimePeriodRatesFactory.readArrivalFile(new File("../../nctcogFiles/TODfactors.csv"), segments); //TODFactors.csv
 			Map<TimePeriod, Map<TripPurpose, Map<MarketSegment, Collection<ODMatrix>>>> hbODs = paToODConversion(hbModalMtxs, occupancyRates, depRates, arrRates);
 			
+			nhb.join();
 			//Reduce the number of OD matrices by combining those of similar VOT
-			Map<TimePeriod, Collection<ODMatrix>> reducedODs = reduceODMatrices(hbODs, nhbODs);
+			Map<TimePeriod, Collection<ODMatrix>> reducedODs = reduceODMatrices(hbODs, nhb.getODs());
 			
 			//TODO figure out how to identify reduced ODs
 			writeODs(reducedODs);
