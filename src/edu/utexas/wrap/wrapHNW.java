@@ -107,33 +107,6 @@ public class wrapHNW {
         }
     }
 
-
-
-    private static Graph readNetworkData(String[] args) throws FileNotFoundException, IOException {
-        System.out.print("Reading network... ");
-        long ms = System.currentTimeMillis();
-        //Model inputs
-        Graph graph = GraphFactory.readEnhancedGraph(new File(args[0]),Integer.parseInt(args[1]));
-        long nms = System.currentTimeMillis();
-        System.out.println(""+(nms-ms)/1000.0+" s");
-
-        //TODO read RAAs
-        // add demographic data to zones
-        System.out.print("Reading household demographic data... ");
-        ms = System.currentTimeMillis();
-        readHouseholdData(graph, Paths.get("../../nctcogFiles/hhByIG.csv"), Paths.get("../../nctcogFiles/hhByIGthenWkrthenVeh.csv"));
-        nms = System.currentTimeMillis();
-        System.out.println(""+(nms-ms)/1000.0+" s");
-
-
-        System.out.print("Reading employment demographic data... ");
-        ms = System.currentTimeMillis();
-        readEmploymentData(graph, Paths.get("../../nctcogFiles/empByIGthenIC.csv"));
-        nms = System.currentTimeMillis();
-        System.out.println(""+(nms-ms)/1000.0+" s");
-        return graph;
-    }
-
     private static void writeODs(Map<TimePeriod, Map<Mode, ODMatrix>> ods) {
         //TODO determine output files
         Map<TimePeriod,Map<Mode,Path>> outputODPaths = new HashMap<TimePeriod,Map<Mode,Path>>();
@@ -182,98 +155,6 @@ public class wrapHNW {
         );
         return ffmaps;
     }
-
-
-    private static void readHouseholdData(Graph graph, Path igFile, Path igWkrVehFile) throws IOException {
-        // TODO Auto-generated method stub
-        Files.lines(igFile).parallel().filter(line -> !line.startsWith("TSZ")).forEach(line ->{
-            String[] args = line.split(",");
-            int tszID = Integer.parseInt(args[0]);
-
-            Map<Integer, Double> hhByIG = IntStream.range(1, 4).parallel().boxed().collect(
-                    Collectors.toMap(Function.identity(), ig -> Double.parseDouble(args[ig])));
-
-            TravelSurveyZone tsz = graph.getNode(tszID).getZone();
-            tsz.setHouseholdsByIncomeGroup(hhByIG);
-        });
-
-        Files.lines(igWkrVehFile).parallel().filter(line -> !line.startsWith("TSZ")).forEach(line ->{
-            String[] args = line.split(",");
-            int tszID = Integer.parseInt(args[0]);
-
-
-            if (args.length < 72) {
-                args = new String[]{args[0],"0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0"};
-            }
-            String[] newArgs = args;
-
-            TravelSurveyZone tsz = graph.getNode(tszID).getZone();
-
-            IntStream.range(1, 65).parallel().boxed().forEach(idx ->{
-                double val = Double.parseDouble(newArgs[idx]);
-                int wkr, veh, ig;
-                ig = (idx-1) % 4 + 1;
-                veh = ((idx-1)/4) % 4;
-                wkr = ((idx-1)/16) % 4;
-                tsz.setHouseholdsByIncomeGroupThenWorkersThenVehicles(ig, wkr, veh, val);
-            });
-        });
-    }
-
-    private static void readEmploymentData(Graph graph, Path file) throws IOException {
-        Files.lines(file).parallel().filter(line -> !line.startsWith("TSZ")).forEach(line -> {
-            String[] args = line.split(",");
-
-            if (args.length < 11) {
-                args = new String[]{args[0],args[1],"0","0","0","0","0","0","0","0","0"};
-            }
-            int tszID = Integer.parseInt(args[0]);
-            AreaClass ac;
-            switch (Integer.parseInt(args[1])) {
-                case 1:
-                    ac = AreaClass.CBD;
-                    break;
-                case 2:
-                    ac = AreaClass.OBD;
-                    break;
-                case 3:
-                    ac = AreaClass.URBAN_RESIDENTIAL;
-                    break;
-                case 4:
-                    ac = AreaClass.SUBURBAN_RESIDENTIAL;
-                    break;
-                case 5:
-                    ac = AreaClass.RURAL;
-                    break;
-                default:
-                    throw new RuntimeException("Unknown area type");
-            }
-
-            Map<Integer,Map<IndustryClass,Double>> empByIGthenIC = new HashMap<Integer,Map<IndustryClass,Double>>();
-            Map<IndustryClass,Double> ig1 = new HashMap<IndustryClass,Double>();
-            ig1.put(IndustryClass.BASIC, Double.parseDouble(args[2]));
-            ig1.put(IndustryClass.RETAIL, Double.parseDouble(args[3]));
-            ig1.put(IndustryClass.SERVICE, Double.parseDouble(args[4]));
-            empByIGthenIC.put(1, ig1);
-
-            Map<IndustryClass,Double> ig2 = new HashMap<IndustryClass,Double>();
-            ig2.put(IndustryClass.BASIC, Double.parseDouble(args[5]));
-            ig2.put(IndustryClass.RETAIL, Double.parseDouble(args[6]));
-            ig2.put(IndustryClass.SERVICE, Double.parseDouble(args[7]));
-            empByIGthenIC.put(2, ig2);
-
-            Map<IndustryClass,Double> ig3 = new HashMap<IndustryClass,Double>();
-            ig3.put(IndustryClass.BASIC, Double.parseDouble(args[8]));
-            ig3.put(IndustryClass.RETAIL, Double.parseDouble(args[9]));
-            ig3.put(IndustryClass.SERVICE, Double.parseDouble(args[10]));
-            empByIGthenIC.put(3, ig3);
-
-            TravelSurveyZone tsz = graph.getNode(tszID).getZone();
-            tsz.setAreaClass(ac);
-            tsz.setEmploymentByIncomeGroupThenIndustry(empByIGthenIC);
-        });
-    }
-
 
     private static void balance(Graph g, Map<MarketSegment, PAMap> timeMaps) {
         System.out.print("Performing trip balancing... ");
