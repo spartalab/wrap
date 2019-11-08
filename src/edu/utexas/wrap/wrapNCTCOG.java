@@ -65,12 +65,14 @@ public class wrapNCTCOG {
 			//NHB thread ends here
 
 			
-			//Peak/off-peak splitting
-			Map<MarketSegment, PAMap> pkMaps = splitHBW(hbMaps, 0.5); //TODO this method should both reduce the hbMaps' HBW entries by a half and return a duplicate with the same reduction
+			//Peak/off-peak splitting for HOME_WORK trip purpose
+			Map<MarketSegment, Double> splitRates = null;
+			Map<MarketSegment, PAMap> pkMaps = splitHBW(hbMaps, splitRates);
 			
 			//Perform trip distribution
 			Map<MarketSegment, FrictionFactorMap> pkFFMaps = null; //TODO
 			Map<MarketSegment, AggregatePAMatrix> aggPKMtxs = peakDistribution(graph, pkMaps, pkFFMaps);	//TODO separate threading for distributing pkMaps
+			
 			
 			Map<TripPurpose, Map<MarketSegment, FrictionFactorMap>> opFFMaps = null; //TODO
 			Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggOPMtxs = offPeakDistribution(graph, hbMaps, opFFMaps);
@@ -100,7 +102,9 @@ public class wrapNCTCOG {
 			//Reduce the number of OD matrices by combining those of similar VOT
 			Map<TimePeriod, Collection<ODMatrix>> reducedODs = reduceODMatrices(hbODs, nhbODs);
 			
+			//TODO figure out how to identify reduced ODs
 			writeODs(reducedODs);
+			
 			//TODO eventually, we'll do multiple instances of traffic assignment here instead of just writing to files
 			
 		} catch (FileNotFoundException e) {
