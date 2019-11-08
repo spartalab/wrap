@@ -3,6 +3,9 @@ package edu.utexas.wrap;
 public enum TripPurpose {
 	HOME_NONWORK,
 	HOME_WORK,
+	NONHOME_NONWORK,
+	NONHOME_WORK,
+	
 	HOME_COLL_UNIV,
 	HOME_K12,
 	HOME_SRE,
@@ -12,9 +15,10 @@ public enum TripPurpose {
 	WORK_WORK,
 	WORK_ESH,
 	WORK_OTH,
-	NONHOME_WORK,
+
 	NONHOME_EDU,
-	NONHOME_NONWORK,
+	NONHOME_OTH,
+
 	SHOP_SHOP,
 	SHOP_OTH,
 	OTH_OTH

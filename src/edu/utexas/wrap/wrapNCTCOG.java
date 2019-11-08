@@ -116,7 +116,7 @@ public class wrapNCTCOG {
 		
 		//TODO read RAAs - this is for later in the project
 		
-		// add demographic data to zones TODO consider whether this should be a method inside Graph
+		// add demographic data to zones
 		//args[2] = "../../nctcogFiles/hhByIG.csv";
 		//args[3] = "../../nctcogFiles/hhByIGthenWkrthenVeh.csv";
 		//args[4] = "../../nctcogFiles/empByIGthenIC.csv"
