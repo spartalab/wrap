@@ -1,6 +1,9 @@
 package edu.utexas.wrap.net;
 
+import java.io.IOException;
 import java.io.PrintStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,6 +16,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import edu.utexas.wrap.assignment.sensitivity.DerivativeLink;
+import edu.utexas.wrap.marketsegmentation.IndustryClass;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
@@ -306,4 +310,98 @@ public class Graph {
 //	public Set<RegionalAreaAnalysisZone> getRAAs() {
 //		return zones.parallelStream().map(TravelSurveyZone::getRAA).collect(Collectors.toSet());
 //	}
+	
+
+
+	public void readHouseholdsByWorkersVehiclesAndIncomeGroups(Path igWkrVehFile) throws IOException {
+		Files.lines(igWkrVehFile).parallel().filter(line -> !line.startsWith("TSZ")).forEach(line ->{
+			String[] args = line.split(",");
+			int tszID = Integer.parseInt(args[0]);
+			
+
+			if (args.length < 72) {
+				args = new String[]{args[0],"0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0"};
+			}
+			String[] newArgs = args;
+			
+			TravelSurveyZone tsz = getNode(tszID).getZone();
+
+			IntStream.range(1, 65).parallel().boxed().forEach(idx ->{
+				double val = Double.parseDouble(newArgs[idx]);
+				int wkr, veh, ig;
+				ig = (idx-1) % 4 + 1;
+				veh = ((idx-1)/4) % 4;
+				wkr = ((idx-1)/16) % 4;
+				tsz.setHouseholdsByIncomeGroupThenWorkersThenVehicles(ig, wkr, veh, val);
+			});
+		});
+	}
+
+	public void readHouseholdsByIncomeGroup(Path igFile) throws IOException {
+		Files.lines(igFile).parallel().filter(line -> !line.startsWith("TSZ")).forEach(line ->{
+			String[] args = line.split(",");
+			int tszID = Integer.parseInt(args[0]);
+			
+			Map<Integer, Double> hhByIG = IntStream.range(1, 4).parallel().boxed().collect(
+					Collectors.toMap(Function.identity(), ig -> Double.parseDouble(args[ig])));
+			
+			TravelSurveyZone tsz = getNode(tszID).getZone();
+			tsz.setHouseholdsByIncomeGroup(hhByIG);
+		});
+	}
+	
+	public void readEmploymentData(Path employmentFile) throws IOException {
+		Files.lines(employmentFile).parallel().filter(line -> !line.startsWith("TSZ")).forEach(line -> {
+			String[] args = line.split(",");
+			
+			if (args.length < 11) {
+				args = new String[]{args[0],args[1],"0","0","0","0","0","0","0","0","0"};
+			}
+			int tszID = Integer.parseInt(args[0]);
+			
+			AreaClass ac;
+			switch (Integer.parseInt(args[1])) {
+			case 1:
+				ac = AreaClass.CBD;
+				break;
+			case 2:
+				ac = AreaClass.OBD;
+				break;
+			case 3:
+				ac = AreaClass.URBAN_RESIDENTIAL;
+				break;
+			case 4:
+				ac = AreaClass.SUBURBAN_RESIDENTIAL;
+				break;
+			case 5:
+				ac = AreaClass.RURAL;
+				break;
+			default:
+				throw new RuntimeException("Unknown area type");
+			}
+			
+			Map<Integer,Map<IndustryClass,Double>> empByIGthenIC = new HashMap<Integer,Map<IndustryClass,Double>>();
+			Map<IndustryClass,Double> ig1 = new HashMap<IndustryClass,Double>();
+			ig1.put(IndustryClass.BASIC, Double.parseDouble(args[2]));
+			ig1.put(IndustryClass.RETAIL, Double.parseDouble(args[3]));
+			ig1.put(IndustryClass.SERVICE, Double.parseDouble(args[4]));
+			empByIGthenIC.put(1, ig1);
+			
+			Map<IndustryClass,Double> ig2 = new HashMap<IndustryClass,Double>();
+			ig2.put(IndustryClass.BASIC, Double.parseDouble(args[5]));
+			ig2.put(IndustryClass.RETAIL, Double.parseDouble(args[6]));
+			ig2.put(IndustryClass.SERVICE, Double.parseDouble(args[7]));
+			empByIGthenIC.put(2, ig2);
+			
+			Map<IndustryClass,Double> ig3 = new HashMap<IndustryClass,Double>();
+			ig3.put(IndustryClass.BASIC, Double.parseDouble(args[8]));
+			ig3.put(IndustryClass.RETAIL, Double.parseDouble(args[9]));
+			ig3.put(IndustryClass.SERVICE, Double.parseDouble(args[10]));
+			empByIGthenIC.put(3, ig3);
+			
+			TravelSurveyZone tsz = getNode(tszID).getZone();
+			tsz.setAreaClass(ac);
+			tsz.setEmploymentByIncomeGroupThenIndustry(empByIGthenIC);
+		});
+	}
 }
