@@ -16,6 +16,9 @@ import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.distribution.GravityDistributor;
 import edu.utexas.wrap.distribution.TripDistributor;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
+import edu.utexas.wrap.modechoice.FixedProportionSplitter;
+import edu.utexas.wrap.modechoice.Mode;
+import edu.utexas.wrap.modechoice.TripInterchangeSplitter;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.util.AggregatePAMatrixCollector;
 
@@ -36,11 +39,13 @@ class NHBThread extends Thread{
 		
 		balance(nhbMaps);
 		
+		Map<TripPurpose,FrictionFactorMap> nhbFFMaps = null;
 		Map<TripPurpose,AggregatePAMatrix> nhbMatrices = distribute(nhbMaps, nhbFFMaps);
 		
 		Map<TripPurpose,AggregatePAMatrix> combinedMatrices = combinePurposes(nhbMatrices);
 		
-		Map<TripPurpose,Collection<ModalPAMatrix>> nhbModalMtxs = modeChoice(combinedMatrices);
+		Map<TripPurpose,Map<Mode,Double>> modalRates = null;
+		Map<TripPurpose,Collection<ModalPAMatrix>> nhbModalMtxs = modeChoice(combinedMatrices, modalRates);
 		
 		nhbODs = pa2od(nhbModalMtxs);
 		//NHB thread ends here
@@ -91,5 +96,14 @@ class NHBThread extends Thread{
 				);
 
 		return ret;
+	}
+	
+	public Map<TripPurpose,Collection<ModalPAMatrix>> modeChoice(
+			Map<TripPurpose,AggregatePAMatrix> combinedMatrices, 
+			Map<TripPurpose,Map<Mode,Double>> modalRates){
+		return combinedMatrices.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, entry -> {
+			TripInterchangeSplitter mc = new FixedProportionSplitter(modalRates.get(entry.getKey()));
+			return mc.split(entry.getValue()).collect(Collectors.toSet());
+		}));
 	}
 }
