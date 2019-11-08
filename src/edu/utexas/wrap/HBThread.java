@@ -59,7 +59,7 @@ class HBThread extends Thread{
 		}
 
 		//After distributing over different friction factor maps, the HBW trips are stuck back together and SRE & PBO matrices are combined
-		Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs = combineAggregateMatrices(hbTripGen.getAggPKMtxs(),aggOPMtxs); //TODO combine SRE/PBO and HBWPK/OP matrices
+		Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs = combineAggregateMatrices(hbPkGen.getAggPKMtxs(), hbOpGen.getAggOPMtxs()); //TODO combine SRE/PBO and HBWPK/OP matrices
 
 		//TODO divide market segments further by vehicles per worker
 		Map<MarketSegment, Map<MarketSegment, Map<TravelSurveyZone, Double>>> workerVehicleRates = null;
