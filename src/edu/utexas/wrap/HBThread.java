@@ -197,13 +197,15 @@ class HBThread extends Thread{
 			Map<TripPurpose,Map<MarketSegment, AggregatePAMatrix>> aggMtxs,
 			Map<MarketSegment,Map<Mode,Double>> modeShares
 	) throws IOException {
-		TripInterchangeSplitter mc = new FixedProportionSplitter(modeShares);
-		return aggMtxs.entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, purposeMapEntry ->
+		aggMtxs.entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, purposeMapEntry ->
 				purposeMapEntry.getValue().entrySet().parallelStream()
 						.collect(Collectors.toMap(Map.Entry::getKey,
-								entry -> mc.split(entry.getValue(),entry.getKey())
-										.collect(Collectors.toSet())))
+								entry -> {
+									TripInterchangeSplitter mc = new FixedProportionSplitter(modeShares.get(entry.getKey()));
+									return mc.split(entry.getValue()).collect(Collectors.toSet());
+								}))
 		));
+		return null;
 	}
 
 	private static Map<TimePeriod,Map<TripPurpose, Map<MarketSegment,Collection<ODMatrix>>>> paToODConversion(

@@ -1,12 +1,9 @@
 package edu.utexas.wrap.modechoice;
 
-import java.util.Set;
 import java.util.stream.Stream;
 
-import java.util.HashSet;
 import java.util.Map;
 import edu.utexas.wrap.demand.containers.ModalFixedMultiplierPassthroughMatrix;
-import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 
@@ -20,9 +17,9 @@ import edu.utexas.wrap.demand.ModalPAMatrix;
  */
 public class FixedProportionSplitter extends TripInterchangeSplitter {
 
-	private Map<MarketSegment, Map<Mode, Double>> map;
+	private Map<Mode, Double> map;
 
-	public FixedProportionSplitter(Map<MarketSegment, Map<Mode, Double>> map) {
+	public FixedProportionSplitter(Map<Mode, Double> map) {
 		this.map = map;
 	}
 
@@ -35,9 +32,7 @@ public class FixedProportionSplitter extends TripInterchangeSplitter {
 	 *  which is added to a set.
 	 */
 	@Override
-	public Stream<ModalPAMatrix> split(AggregatePAMatrix aggregate, MarketSegment ms) {
-		Set<ModalPAMatrix> fixedProp = new HashSet<ModalPAMatrix>(map.size());
-		Map<Mode, Double> map = this.map.get(ms);
+	public Stream<ModalPAMatrix> split(AggregatePAMatrix aggregate) {
 		return map.entrySet().parallelStream().filter(entry -> entry.getValue() > 0).map(entry ->
 			new ModalFixedMultiplierPassthroughMatrix(entry.getKey(),entry.getValue(),aggregate)
 		);
