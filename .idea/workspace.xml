@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="35b67530-44cd-447b-b333-46a019cdabd5" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/edu/utexas/wrap/HBThread.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/edu/utexas/wrap/HBThread.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/edu/utexas/wrap/wrapNCTCOG.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/edu/utexas/wrap/wrapNCTCOG.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/bin/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -42,8 +42,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/wrapNCTCOG.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="583">
-              <caret line="74" column="13" lean-forward="true" selection-start-line="69" selection-start-column="12" selection-end-line="74" selection-end-column="13" />
+            <state relative-caret-position="58">
+              <caret line="62" selection-start-line="62" selection-end-line="62" />
             </state>
           </provider>
         </entry>
@@ -51,8 +51,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/HBThread.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="486">
-              <caret line="61" column="153" selection-start-line="61" selection-start-column="153" selection-end-line="61" selection-end-column="153" />
+            <state relative-caret-position="593">
+              <caret line="259" column="49" selection-start-line="259" selection-start-column="49" selection-end-line="259" selection-end-column="49" />
               <folding>
                 <element signature="e#4144#4145#0" expanded="true" />
                 <element signature="e#4163#4164#0" expanded="true" />
@@ -64,7 +64,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/util/io/TimePeriodRatesFactory.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="268">
+            <state relative-caret-position="276">
               <caret line="54" column="62" selection-start-line="54" selection-start-column="62" selection-end-line="54" selection-end-column="62" />
             </state>
           </provider>
@@ -162,8 +162,8 @@
         <option value="$PROJECT_DIR$/src/edu/utexas/wrap/wrapHBW.java" />
         <option value="$PROJECT_DIR$/src/edu/utexas/wrap/util/io/ProductionAttractionFactory.java" />
         <option value="$PROJECT_DIR$/src/edu/utexas/wrap/NHBThread.java" />
-        <option value="$PROJECT_DIR$/src/edu/utexas/wrap/wrapNCTCOG.java" />
         <option value="$PROJECT_DIR$/src/edu/utexas/wrap/util/io/ModeFactory.java" />
+        <option value="$PROJECT_DIR$/src/edu/utexas/wrap/wrapNCTCOG.java" />
         <option value="$PROJECT_DIR$/src/edu/utexas/wrap/HBThread.java" />
       </list>
     </option>
@@ -215,7 +215,7 @@
     <property name="Repository.Attach.Annotations" value="false" />
     <property name="Repository.Attach.JavaDocs" value="false" />
     <property name="Repository.Attach.Sources" value="false" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1573246606915" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1573247191969" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="project.structure.last.edited" value="Libraries" />
     <property name="project.structure.proportion" value="0.0" />
@@ -565,13 +565,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/wrapNCTCOG.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="583">
-          <caret line="74" column="13" lean-forward="true" selection-start-line="69" selection-start-column="12" selection-end-line="74" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/util/io/ModeFactory.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="529">
@@ -588,15 +581,22 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/util/io/TimePeriodRatesFactory.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="268">
+        <state relative-caret-position="276">
           <caret line="54" column="62" selection-start-line="54" selection-start-column="62" selection-end-line="54" selection-end-column="62" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/wrapNCTCOG.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="58">
+          <caret line="62" selection-start-line="62" selection-end-line="62" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/HBThread.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="486">
-          <caret line="61" column="153" selection-start-line="61" selection-start-column="153" selection-end-line="61" selection-end-column="153" />
+        <state relative-caret-position="593">
+          <caret line="259" column="49" selection-start-line="259" selection-start-column="49" selection-end-line="259" selection-end-column="49" />
           <folding>
             <element signature="e#4144#4145#0" expanded="true" />
             <element signature="e#4163#4164#0" expanded="true" />
