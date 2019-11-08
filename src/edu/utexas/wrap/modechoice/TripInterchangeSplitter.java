@@ -4,7 +4,6 @@ import java.util.stream.Stream;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.ModalPAMatrix;
-import edu.utexas.wrap.marketsegmentation.MarketSegment;
 
 /**The default method of performing mode choice,
  * this method calculates mode shares as a function
@@ -18,6 +17,6 @@ import edu.utexas.wrap.marketsegmentation.MarketSegment;
  */
 public abstract class TripInterchangeSplitter {
 	
-	public abstract Stream<ModalPAMatrix> split(AggregatePAMatrix aggregate, MarketSegment segment);
+	public abstract Stream<ModalPAMatrix> split(AggregatePAMatrix aggregate);
 	
 }

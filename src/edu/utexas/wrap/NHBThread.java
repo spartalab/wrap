@@ -4,7 +4,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import edu.utexas.wrap.balancing.Attr2ProdProportionalBalancer;
 import edu.utexas.wrap.balancing.TripBalancer;
@@ -16,8 +18,12 @@ import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.distribution.GravityDistributor;
 import edu.utexas.wrap.distribution.TripDistributor;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
+import edu.utexas.wrap.modechoice.FixedProportionSplitter;
+import edu.utexas.wrap.modechoice.Mode;
+import edu.utexas.wrap.modechoice.TripInterchangeSplitter;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.util.AggregatePAMatrixCollector;
+import edu.utexas.wrap.util.DepartureArrivalConverter;
 
 class NHBThread extends Thread{
 	private Graph graph;
@@ -30,20 +36,21 @@ class NHBThread extends Thread{
 	}
 	
 	public void run() {
-		//NHB thread starts here
-		//TODO New thread should start here for non-home-based trips
 		Map<TripPurpose,PAMap> nhbMaps = generate(graph,hbMaps);
 		
 		balance(nhbMaps);
 		
+		Map<TripPurpose,FrictionFactorMap> nhbFFMaps = null;
 		Map<TripPurpose,AggregatePAMatrix> nhbMatrices = distribute(nhbMaps, nhbFFMaps);
 		
 		Map<TripPurpose,AggregatePAMatrix> combinedMatrices = combinePurposes(nhbMatrices);
 		
-		Map<TripPurpose,Collection<ModalPAMatrix>> nhbModalMtxs = modeChoice(combinedMatrices);
+		Map<TripPurpose,Map<Mode,Double>> modalRates = null;
+		Map<TripPurpose,Collection<ModalPAMatrix>> nhbModalMtxs = modeChoice(combinedMatrices, modalRates);
 		
-		nhbODs = pa2od(nhbModalMtxs);
-		//NHB thread ends here
+		Map<Mode,Double> occRates = null;
+		Map<TripPurpose,Map<TimePeriod,Double>> depRates = null, arrRates = null;
+		paToOD(nhbModalMtxs, occRates, depRates, arrRates);
 	}
 	
 	public Map<TimePeriod,Map<TripPurpose,Collection<ODMatrix>>> getODs(){
@@ -91,5 +98,32 @@ class NHBThread extends Thread{
 				);
 
 		return ret;
+	}
+	
+	public Map<TripPurpose,Collection<ModalPAMatrix>> modeChoice(
+			Map<TripPurpose,AggregatePAMatrix> combinedMatrices, 
+			Map<TripPurpose,Map<Mode,Double>> modalRates){
+		return combinedMatrices.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, entry -> {
+			TripInterchangeSplitter mc = new FixedProportionSplitter(modalRates.get(entry.getKey()));
+			return mc.split(entry.getValue()).collect(Collectors.toSet());
+		}));
+	}
+	
+	public void paToOD(
+			Map<TripPurpose,Collection<ModalPAMatrix>> map,
+			Map<Mode,Double> occupancyRates,
+			Map<TripPurpose,Map<TimePeriod,Double>> depRates,
+			Map<TripPurpose,Map<TimePeriod,Double>> arrRates
+			) {
+		nhbODs = Stream.of(TimePeriod.values()).parallel().collect(Collectors.toMap(Function.identity(), time ->
+			map.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, purposeEntry ->{
+				DepartureArrivalConverter converter = new DepartureArrivalConverter(
+						depRates.get(purposeEntry.getKey()).get(time),
+						arrRates.get(purposeEntry.getKey()).get(time));
+				return purposeEntry.getValue().parallelStream()
+				.map(modalMtx -> converter.convert(modalMtx, occupancyRates.get(modalMtx.getMode())))
+				.collect(Collectors.toSet());
+			}))
+		));
 	}
 }

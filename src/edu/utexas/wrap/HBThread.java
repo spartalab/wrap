@@ -5,6 +5,7 @@ import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.PAMap;
+import edu.utexas.wrap.demand.containers.FixedMultiplierPassthroughPAMap;
 import edu.utexas.wrap.demand.containers.PerProductionZoneMultiplierPassthroughMatrix;
 import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.distribution.GravityDistributor;
@@ -32,17 +33,21 @@ import java.util.stream.Stream;
 class HBThread extends Thread{
 	private Graph graph;
 	private Map<TimePeriod, Map<TripPurpose, Map<MarketSegment, Collection<ODMatrix>>>> hbODs;
+	private Map<MarketSegment, Double> splitRates;
 	private Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps;
 	private Map<MarketSegment, PAMap> pkMaps;
 	private Collection<MarketSegment> segments;
 
-	public HBThread(Graph graph, Map<MarketSegment, PAMap> pkMaps, Collection<MarketSegment> segments) {
+	public HBThread(Graph graph, Map<MarketSegment, Double> splitRates, Map<TripPurpose, Map<MarketSegment,PAMap>> hbMaps, Collection<MarketSegment> segments) {
 		this.graph = graph;
-		this.pkMaps = pkMaps;
+		this.splitRates = splitRates;
+		this.hbMaps = hbMaps;
 		this.segments = segments;
 	}
 
 	public void run() {
+		pkMaps = splitHBW(hbMaps, splitRates);
+
 		Map<MarketSegment, FrictionFactorMap> pkFFMaps = null; //TODO
 		HBPkGen hbPkGen = new HBPkGen(graph, pkFFMaps);
 		hbPkGen.start();
@@ -76,7 +81,7 @@ class HBThread extends Thread{
 			//PA to OD splitting by time of day
 			Map<Mode, Double> occupancyRates = ModeFactory.readOccRates(new File("../../nctcogFiles/modalOccRates.csv"), true); // modalOccRates.csv
 			//TOD splitting inputs TODO ensure proper use of market segments
-			Map<TimePeriod, Map<MarketSegment, Double>>
+			Map<MarketSegment, Map<TimePeriod, Double>>
 					depRates = TimePeriodRatesFactory.readDepartureFile(new File("../../nctcogFiles/TODfactors.csv"), segments), //TODFactors.csv
 					arrRates = TimePeriodRatesFactory.readArrivalFile(new File("../../nctcogFiles/TODfactors.csv"), segments); //TODFactors.csv
 			hbODs = paToODConversion(hbModalMtxs, occupancyRates, depRates, arrRates);
@@ -88,6 +93,27 @@ class HBThread extends Thread{
 	
 	public Map<TimePeriod, Map<TripPurpose, Map<MarketSegment, Collection<ODMatrix>>>> getODs(){
 		return hbODs;
+	}
+
+	private static Map<MarketSegment,PAMap> splitHBW(Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps, Map<MarketSegment, Double> splitRates) {
+		Map<MarketSegment,PAMap> hbwMaps = hbMaps.get(TripPurpose.HOME_WORK);
+
+		Map<MarketSegment,PAMap> pkMaps = new HashMap<MarketSegment,PAMap>();
+		Map<MarketSegment,PAMap> opMaps = new HashMap<MarketSegment,PAMap>();
+
+		hbwMaps.keySet().parallelStream().forEach(seg -> {
+			PAMap whole = hbwMaps.get(seg);
+			double pkShare = splitRates.get(seg);
+
+			PAMap peak = new FixedMultiplierPassthroughPAMap(whole, pkShare);
+			PAMap offpeak = new FixedMultiplierPassthroughPAMap(whole, 1-pkShare);
+
+			opMaps.put(seg, offpeak);
+			pkMaps.put(seg, peak);
+		});
+
+		hbMaps.put(TripPurpose.HOME_WORK, opMaps);
+		return pkMaps;
 	}
 
 	private static Map<MarketSegment, AggregatePAMatrix> peakDistribution(
@@ -106,7 +132,7 @@ class HBThread extends Thread{
 			Map<TripPurpose, Map<MarketSegment, FrictionFactorMap>> ffm
 			// TODO: consider if this (and pk distribution) should take in a mapping directly to the distributor
 			// (maybe some purpose-segment pairs have the same friction factor map? So this would be unnecessary)
-	) throws IOException {
+	) {
 
 		return hbMaps.entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, purposeEntry ->
 				purposeEntry.getValue().entrySet().parallelStream()
@@ -171,20 +197,22 @@ class HBThread extends Thread{
 			Map<TripPurpose,Map<MarketSegment, AggregatePAMatrix>> aggMtxs,
 			Map<MarketSegment,Map<Mode,Double>> modeShares
 	) throws IOException {
-		TripInterchangeSplitter mc = new FixedProportionSplitter(modeShares);
-		return aggMtxs.entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, purposeMapEntry ->
+		aggMtxs.entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, purposeMapEntry ->
 				purposeMapEntry.getValue().entrySet().parallelStream()
 						.collect(Collectors.toMap(Map.Entry::getKey,
-								entry -> mc.split(entry.getValue(),entry.getKey())
-										.collect(Collectors.toSet())))
+								entry -> {
+									TripInterchangeSplitter mc = new FixedProportionSplitter(modeShares.get(entry.getKey()));
+									return mc.split(entry.getValue()).collect(Collectors.toSet());
+								}))
 		));
+		return null;
 	}
 
 	private static Map<TimePeriod,Map<TripPurpose, Map<MarketSegment,Collection<ODMatrix>>>> paToODConversion(
 			Map<TripPurpose, Map<MarketSegment, Collection<ModalPAMatrix>>> hbModalMtxs,
 			Map<Mode,Double> occupancyRates,
-			Map<TimePeriod,Map<MarketSegment,Double>> depRates,
-			Map<TimePeriod,Map<MarketSegment,Double>> arrRates) throws IOException {
+			Map<MarketSegment, Map<TimePeriod, Double>> depRates,
+			Map<MarketSegment, Map<TimePeriod, Double>> arrRates) throws IOException {
 
 		//TODO combine SR2 and SR3
 		return Stream.of(TimePeriod.values()).collect(Collectors.toMap(Function.identity(), tp -> //for each time period
@@ -230,11 +258,7 @@ class HBThread extends Thread{
 		}
 
 		public void run() {
-			try {
-				aggOPMtxs = offPeakDistribution(graph, hbMaps, opFFMaps);
-			} catch (IOException e) {
-				System.out.println("There is an IO Exception in the HB Thread's subthread, HBOpGen.");
-			}
+			aggOPMtxs = offPeakDistribution(g, hbMaps, opFFMaps);
 		}
 
 		public Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> getAggOPMtxs() { return aggOPMtxs; }

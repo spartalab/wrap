@@ -60,11 +60,8 @@ public class wrapNCTCOG {
 			
 			//Peak/off-peak splitting for HOME_WORK trip purpose
 			Map<MarketSegment, Double> splitRates = null;
-			Map<MarketSegment, PAMap> pkMaps = splitHBW(hbMaps, splitRates);
-			
-			//Perform trip distribution
-			// Make this a subthread
-			HBThread hb = new HBThread(graph, pkMaps, segments);
+
+			HBThread hb = new HBThread(graph, splitRates, hbMaps, segments);
 			hb.start();
 
 			try {
@@ -113,26 +110,6 @@ public class wrapNCTCOG {
 		//TODO verify this behavior is correct
 		Prod2AttrProportionalBalancer balancer = new Prod2AttrProportionalBalancer(null);
 		hbMaps.values().parallelStream().flatMap(map -> map.values().parallelStream()).forEach(map -> balancer.balance(map));
-	}
-	
-	private static Map<MarketSegment,PAMap> splitHBW(Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps, double pkShare) {
-		Map<MarketSegment,PAMap> hbwMaps = hbMaps.get(TripPurpose.HOME_WORK);
-		
-		Map<MarketSegment,PAMap> pkMaps = new HashMap<MarketSegment,PAMap>();
-		Map<MarketSegment,PAMap> opMaps = new HashMap<MarketSegment,PAMap>();
-		
-		hbwMaps.keySet().parallelStream().forEach(seg -> {
-			PAMap whole = hbwMaps.get(seg);
-			
-			PAMap peak = new FixedMultiplierPassthroughPAMap(whole, pkShare);
-			PAMap offpeak = new FixedMultiplierPassthroughPAMap(whole, 1-pkShare);
-			
-			opMaps.put(seg, offpeak);
-			pkMaps.put(seg, peak);
-		});
-		
-		hbMaps.put(TripPurpose.HOME_WORK, opMaps);
-		return pkMaps;
 	}
 
 	private static Map<TimePeriod, Collection<ODMatrix>> reduceODMatrices(
