@@ -8,6 +8,7 @@ import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.io.GraphFactory;
+import edu.utexas.wrap.util.io.ProductionAttractionFactory;
 import sun.jvm.hotspot.oops.Mark;
 
 import java.io.File;
@@ -31,7 +32,7 @@ public class HBFileModelInputs implements ModelInput {
     private Map<TripPurpose, Map<MarketSegment, Map<AreaClass, Double>>> areaClassProdRates;
     private Map<TripPurpose, Map<MarketSegment, Double>> attractionRates;
     private Map<TripPurpose, Map<MarketSegment, Map<AreaClass, Double>>> areaClassAttrRates;
-    private float[][] skimFactors;
+    private Map<TimePeriod, float[][]> skimFactors;
     private Map<MarketSegment, FrictionFactorMap> frictionFactors;
     private Map<MarketSegment, Map<Mode, Double>> modalShares;
     private Map<Mode,Double> occupancyRates;
@@ -192,28 +193,45 @@ public class HBFileModelInputs implements ModelInput {
     public Map<MarketSegment, Double> getGeneralProdRates(TripPurpose purpose) {
         if(productionRates.containsKey(purpose))
             return productionRates.get(purpose);
-
+        String purposeDetailsFile = inputs.getProperty("productions.general." + purpose.toString());
+        Map<MarketSegment, Double> rates = ProductionAttractionFactory.readGeneralRates(purposeDetailsFile);
+        productionRates.put(purpose, rates);
+        return rates;
     }
 
     @Override
     public Map<MarketSegment, Map<AreaClass, Double>> getAreaClassProdRates(TripPurpose purpose) {
         if(areaClassProdRates.containsKey(purpose))
-            return areaClassAttrRates.get(purpose);
+            return areaClassProdRates.get(purpose);
+        String purposeDetailsFile = inputs.getProperty("productions.area." + purpose.toString());
+        Map<MarketSegment, Map<AreaClass, Double>> rates = ProductionAttractionFactory.readAreaRates(purposeDetailsFile);
+        areaClassProdRates.put(purpose, rates);
+        return rates;
     }
 
     @Override
     public Map<MarketSegment, Double> getGeneralAttrRates(TripPurpose purpose) {
-        if(productionRates.containsKey(purpose))
-            return productionRates.get(purpose);
+        if(attractionRates.containsKey(purpose))
+            return attractionRates.get(purpose);
+        String purposeDetailsFile = inputs.getProperty("attractions.general." + purpose.toString());
+        Map<MarketSegment, Double> rates = ProductionAttractionFactory.readGeneralRates(purposeDetailsFile);
+        attractionRates.put(purpose, rates);
+        return rates;
     }
 
     @Override
     public Map<MarketSegment, Map<AreaClass, Double>> getAreaClassAttrRates(TripPurpose purpose) {
-        return null;
+        if(areaClassAttrRates.containsKey(purpose))
+            return areaClassAttrRates.get(purpose);
+        String purposeDetailsFile = inputs.getProperty("attractions.area." + purpose.toString());
+        Map<MarketSegment, Map<AreaClass, Double>> rates = ProductionAttractionFactory.readAreaRates(purposeDetailsFile);
+        areaClassAttrRates.put(purpose, rates);
+        return rates;
     }
 
+
     @Override
-    public float[][] getSkimFactors() {
+    public float[][] getSkimFactors(TimePeriod timePeriod) {
         return new float[0][];
     }
 

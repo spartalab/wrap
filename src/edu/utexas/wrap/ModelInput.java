@@ -26,7 +26,7 @@ public interface ModelInput {
 
 
     //Trip Distribution Inputs
-    float[][] getSkimFactors();
+    float[][] getSkimFactors(TimePeriod timePeriod);
 
     Map<MarketSegment, FrictionFactorMap> getFrictionFactors(TripPurpose purpose);
 
