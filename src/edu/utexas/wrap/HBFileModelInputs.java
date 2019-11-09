@@ -193,7 +193,7 @@ public class HBFileModelInputs implements ModelInput {
     public Map<MarketSegment, Double> getGeneralProdRates(TripPurpose purpose) {
         if(productionRates.containsKey(purpose))
             return productionRates.get(purpose);
-        String purposeDetailsFile = inputs.getProperty("productions.general." + purpose.toString());
+        String purposeDetailsFile = inputs.getProperty("productions.general." + purpose);
         Map<MarketSegment, Double> rates = ProductionAttractionFactory.readGeneralRates(purposeDetailsFile);
         productionRates.put(purpose, rates);
         return rates;

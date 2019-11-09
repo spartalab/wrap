@@ -1,9 +1,7 @@
 package edu.utexas.wrap.util.io;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
@@ -24,6 +22,120 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  * This class provides static methods to read various files relating to productions, attractions, and their respective rates
  */
 public class ProductionAttractionFactory {
+	private static final Map<String, Class> headertoSegment;
+	private static final AreaClass[] areaTypes = new AreaClass[6];
+
+	static {
+		headertoSegment = new HashMap<>();
+		headertoSegment.put("WRKCNT,", WorkerSegment.class);
+		headertoSegment.put("COLTYPE,", CollegeSegment.class);
+		headertoSegment.put("NUMOFCHILD,", ChildSegment.class);
+		headertoSegment.put("WRKCNT,HHSIZE,", WorkerHouseholdSizeSegment.class);
+		headertoSegment.put("WRKCNT,VEHCNT,", WorkerVehicleSegment.class);
+		headertoSegment.put("EDUCATION,", StudentSegment.class);
+		headertoSegment.put("INDUSTRY,", IndustrySegment.class);
+		headertoSegment.put("INCOME,INDUSTRY,", IncomeGroupIndustrySegment.class);
+
+		areaTypes[0] = null;
+		areaTypes[1] = AreaClass.CBD;
+		areaTypes[2] = AreaClass.OBD;
+		areaTypes[3] = AreaClass.URBAN_RESIDENTIAL;
+		areaTypes[4] = AreaClass.SUBURBAN_RESIDENTIAL;
+		areaTypes[5] = AreaClass.RURAL;
+
+	}
+
+	public static Map<MarketSegment, Double> readGeneralRates(String file) {
+		BufferedReader in = null;
+		Map<MarketSegment,Double> map = new ConcurrentHashMap<>();
+		try {
+			in = new BufferedReader(new FileReader(file));
+			String header = in.readLine();
+			String[] headers = header.split(",");
+			StringBuilder key = new StringBuilder();
+			for(int i = 0;i < headers.length-1; i++) {
+				key.append(headers[i]).append(",");
+			}
+			Class seg = headertoSegment.get(key.toString());
+			in.lines().parallel().forEach(line -> {
+				String[] args = line.split(",");
+				StringBuilder arg = new StringBuilder();
+				for(int i = 0;i < args.length-1; i++) {
+					arg.append(args[i]).append(",");
+				}
+				try {
+					Object segment = seg.getConstructor(String.class).newInstance(arg.toString());
+					map.put((MarketSegment) segment, Double.parseDouble(args[args.length-1]));
+				} catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
+					System.err.println("Unable to generate market segment");
+					e.printStackTrace();
+				}
+
+			});
+			in.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return map;
+	}
+
+	public static Map<MarketSegment, Map<AreaClass, Double>> readAreaRates(String purposeDetailsFile) {
+		BufferedReader in = null;
+		Map<MarketSegment,Map<AreaClass,Double>> map = new ConcurrentHashMap<MarketSegment,Map<AreaClass,Double>>();
+		try {
+			in = new BufferedReader(new FileReader(purposeDetailsFile));
+			String header = in.readLine();
+			String[] headers = header.split(",");
+			StringBuilder key = new StringBuilder();
+			for(int i = 0;i < headers.length-2; i++) {
+				key.append(headers[i]).append(",");
+			}
+			Class seg = headertoSegment.get(key.toString());
+			in.lines().parallel().forEach(line -> {
+				String[] args = line.split(",");
+				StringBuilder arg = new StringBuilder();
+				for(int i = 0;i < args.length-2; i++) {
+					arg.append(args[i]).append(",");
+				}
+				MarketSegment segment = null;
+				try {
+					segment = (MarketSegment) seg.getConstructor(String.class).newInstance(arg.toString());
+				} catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
+					e.printStackTrace();
+				}
+				AreaClass areaClass = null;
+				int areaType = Integer.parseInt(args[args.length-2]);
+				switch (areaType) {
+					case 1:
+						areaClass = AreaClass.CBD;
+						break;
+					case 2:
+						areaClass = AreaClass.OBD;
+						break;
+					case 3:
+						areaClass = AreaClass.URBAN_RESIDENTIAL;
+						break;
+					case 4:
+						areaClass = AreaClass.SUBURBAN_RESIDENTIAL;
+						break;
+					case 5:
+						areaClass = AreaClass.RURAL;
+						break;
+					default:
+						throw new RuntimeException("Unrecognized area class");
+				}
+
+				// If we don't have the market segment we add it
+				map.computeIfAbsent(segment, k -> new HashMap<AreaClass,Double>()).put(areaClass, Double.parseDouble(args[args.length-1]));
+
+			});
+			in.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return map;
+	}
+
 	/**
 	 * This method takes an input file and produces a PA Map
 	 * It expects a .csv file with the values in the following order:

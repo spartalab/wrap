@@ -5,10 +5,18 @@ import java.util.function.ToDoubleFunction;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class WorkerSegment implements WorkerSegmenter{
-	int numWorkers;
+	private int numWorkers, hash;
 	
 	public WorkerSegment(int workers) {
 		numWorkers = workers;
+	}
+
+	public WorkerSegment(String arguments) {
+		String[] args = arguments.split(",");
+		if(args.length != 1) {
+			throw new IllegalArgumentException("Mismatch number of arguments expected 1 got " + args.length);
+		}
+		this.numWorkers = Integer.parseInt(args[0]);
 	}
 
 	@Override
@@ -24,5 +32,24 @@ public class WorkerSegment implements WorkerSegmenter{
 	
 	public String toString() {
 		return "Households with "+numWorkers+" workers";
+	}
+
+
+	@Override
+	public int hashCode() {
+		if(hash == 0) {
+			hash = toString().hashCode();
+		}
+		return hash;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		try {
+			WorkerSegment other = (WorkerSegment) obj;
+			return other.numWorkers == numWorkers;
+		} catch (ClassCastException e) {
+			return false;
+		}
 	}
 }

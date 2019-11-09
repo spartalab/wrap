@@ -8,10 +8,20 @@ public class IncomeGroupIndustrySegment implements IncomeGroupSegmenter, Industr
 
 	private int incomeGroup;
 	private IndustryClass industry;
+	private int hash;
 	
 	public IncomeGroupIndustrySegment(Integer incomeGrp, IndustryClass industry) {
 		incomeGroup = incomeGrp;
 		this.industry = industry;
+	}
+
+	public IncomeGroupIndustrySegment(String arguments) {
+		String[] args = arguments.split(",");
+		if(args.length != 2) {
+			throw new IllegalArgumentException("Mismatch number of arguments expected 2 got " + args.length);
+		}
+		this.incomeGroup = Integer.parseInt(args[0]);
+		this.industry = IndustryClass.valueOf(args[1]);
 	}
 	
 	@Override
@@ -31,5 +41,24 @@ public class IncomeGroupIndustrySegment implements IncomeGroupSegmenter, Industr
 	
 	public String toString() {
 		return "MS:"+industry.name()+" employment in income groupd "+incomeGroup;
+	}
+
+
+	@Override
+	public int hashCode() {
+		if(hash == 0) {
+			hash = toString().hashCode();
+		}
+		return hash;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		try {
+			IncomeGroupIndustrySegment other = (IncomeGroupIndustrySegment) obj;
+			return other.incomeGroup == incomeGroup && other.industry.equals(industry);
+		} catch (ClassCastException e) {
+			return false;
+		}
 	}
 }

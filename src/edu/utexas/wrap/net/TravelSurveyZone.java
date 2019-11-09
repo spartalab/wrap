@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+import edu.utexas.wrap.marketsegmentation.CollegeType;
 import edu.utexas.wrap.marketsegmentation.EducationClass;
 import edu.utexas.wrap.marketsegmentation.IndustryClass;
 
@@ -20,6 +21,7 @@ public class TravelSurveyZone {
 	private Map<Integer, Map<Integer, Map<Integer, Double>>> householdsByIncomeGroupThenWorkersThenVehicles;
 	private Map<Integer,Map<IndustryClass,Double>> employmentByIncomeGroupThenIndustry;
 	private Map<EducationClass,Double> studentsByEducationLevel;
+	private Map<CollegeType, Double> collegesByType;
 	
 	
 	public TravelSurveyZone(Node origin, int order, Map<String,Float> attrs) {
@@ -106,5 +108,10 @@ public class TravelSurveyZone {
 
 	public double getEmploymentByIndustry(IndustryClass industry) {
 		return employmentByIncomeGroupThenIndustry.values().parallelStream().mapToDouble(map -> map.get(industry)).sum();
+	}
+
+
+	public double getCollegesByType(CollegeType colType) {
+		return collegesByType.getOrDefault(colType, 0.0);
 	}
 }
