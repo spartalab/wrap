@@ -6,6 +6,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import edu.utexas.wrap.demand.DemandMap;
+import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.net.Graph;
@@ -37,10 +38,10 @@ public class RateProportionTripGenerator {
 	public RateProportionTripGenerator(Graph g, 
 			Map<MarketSegment,Double> primaryProductionRates, 
 			Map<MarketSegment,Double> secondaryProductionRates, 
-			Map<MarketSegment, DemandMap> primaryProds) {
+			Map<MarketSegment, PAMap> primaryProds) {
 		
 		totalProds = g.getTSZs().parallelStream().collect(Collectors.toMap(Function.identity(), 
-				tsz -> primaryProds.values().parallelStream().mapToDouble(map -> map.getOrDefault(tsz,0.0)).sum()
+				tsz -> primaryProds.values().parallelStream().mapToDouble(map -> map.getProductions(tsz)).sum()
 				));
 		
 		shares = getTripShares(g, primaryProds);
@@ -68,7 +69,7 @@ public class RateProportionTripGenerator {
 	}
 
 	private Map<MarketSegment, Map<TravelSurveyZone,Double>> getTripShares(Graph g,
-			Map<MarketSegment, DemandMap> primaryProds) {
+			Map<MarketSegment, PAMap> primaryProds) {
 				
 		//Calculate each segment's household share of the total trips
 
@@ -79,7 +80,7 @@ public class RateProportionTripGenerator {
 						//A Map from each zone with trips to
 						Collectors.toMap(Function.identity(), 
 							//A rate based on the segment's share of the total trips from that zone
-							tsz -> primaryProds.get(sgmt).get(tsz)/totalProds.get(tsz)
+							tsz -> primaryProds.get(sgmt).getProductions(tsz)/totalProds.get(tsz)
 							)
 						)
 					)

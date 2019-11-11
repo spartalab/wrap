@@ -135,6 +135,7 @@ public class HBFileModelInputs implements ModelInput {
             tsz.setEmploymentByIncomeGroupThenIndustry(empByIGthenIC);
         });
     }
+    
     @Override
     public Graph getNetwork() {
         if (this.graph != null) {

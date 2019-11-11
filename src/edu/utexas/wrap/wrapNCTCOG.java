@@ -43,7 +43,7 @@ public class wrapNCTCOG {
 
 	public static void main(String[] args) {
 		try{
-
+			HBFileModelInputs model = null;
 			Graph graph = readNetworkData(args);
 			
 			Collection<MarketSegment> segments;
@@ -55,7 +55,7 @@ public class wrapNCTCOG {
 			//Perform trip balancing
 			balance(graph, hbMaps);
 			
-			NHBThread nhb = new NHBThread(graph, hbMaps);
+			NHBThread nhb = new NHBThread(graph, model, hbMaps);
 			nhb.start();
 			
 			//Peak/off-peak splitting for HOME_WORK trip purpose

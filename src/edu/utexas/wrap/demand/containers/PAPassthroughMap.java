@@ -59,4 +59,14 @@ public class PAPassthroughMap implements PAMap {
 		return vot.floatValue();
 	}
 
+	@Override
+	public DemandMap getProductionMap() {
+		return prods;
+	}
+
+	@Override
+	public DemandMap getAttractionMap() {
+		return attrs;
+	}
+
 }

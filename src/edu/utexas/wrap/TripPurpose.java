@@ -12,6 +12,8 @@ public enum TripPurpose {
 	HOME_SHOP,
 	HOME_PBO,
 	HOME_SRE_PBO,
+	HOME_OTH,
+	
 	WORK_WORK,
 	WORK_ESH,
 	WORK_OTH,
