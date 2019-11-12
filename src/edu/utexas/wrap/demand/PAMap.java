@@ -57,10 +57,6 @@ public interface PAMap {
 	 */
 	public void putProductions(TravelSurveyZone z, Float amt);
 
-	/**
-	 * @return the value of time of trips associated with this matrix
-	 */
-	public Float getVOT();
 	
 	public DemandMap getProductionMap();
 	

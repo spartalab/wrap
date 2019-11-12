@@ -71,8 +71,15 @@ public class Combiner {
 			}
 
 			@Override
-			public Float getVOT() {
-				return null;
+			public DemandMap getProductionMap() {
+				// TODO Auto-generated method stub
+				return productions;
+			}
+
+			@Override
+			public DemandMap getAttractionMap() {
+				// TODO Auto-generated method stub
+				return attractions;
 			}
 			
 		};

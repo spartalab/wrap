@@ -10,11 +10,9 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 public class PAPassthroughMap implements PAMap {
 	private Graph g;
 	private DemandMap prods, attrs;
-	private Double vot;
 	
-	public PAPassthroughMap(Graph g, Double valueOfTime, DemandMap productions, DemandMap attractions) {
+	public PAPassthroughMap(Graph g, DemandMap productions, DemandMap attractions) {
 		this.g = g;
-		vot = valueOfTime;
 		prods = productions;
 		attrs = attractions;
 	}
@@ -52,11 +50,6 @@ public class PAPassthroughMap implements PAMap {
 	@Override
 	public void putProductions(TravelSurveyZone z, Float amt) {
 		prods.put(z, amt.doubleValue());
-	}
-
-	@Override
-	public Float getVOT() {
-		return vot.floatValue();
 	}
 
 	@Override

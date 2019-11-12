@@ -107,7 +107,7 @@ public class wrap{
 			if (args.length < 3) {
 				printHelp();
 			}
-			if (args[args.length-1].trim().startsWith("-") && args[args.length-1].trim().contains("d")) Bush.cachingAllowed = false;
+//			if (args[args.length-1].trim().startsWith("-") && args[args.length-1].trim().contains("d")) Bush.cachingAllowed = false;
 			if (args[args.length-1].trim().startsWith("-") && args[args.length-1].trim().contains("p")) BushOptimizer.printProgress = false;
 			
 			if ((args[0].trim().equals("-e") || args[0].trim().equals("--enhanced"))) {

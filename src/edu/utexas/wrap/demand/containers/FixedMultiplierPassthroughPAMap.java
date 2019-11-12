@@ -1,7 +1,8 @@
 package edu.utexas.wrap.demand.containers;
 
-import java.util.Set;
+import java.util.Collection;
 
+import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
@@ -17,12 +18,12 @@ public class FixedMultiplierPassthroughPAMap implements PAMap {
 	}
 
 	@Override
-	public Set<TravelSurveyZone> getProducers() {
+	public Collection<TravelSurveyZone> getProducers() {
 		return base.getProducers();
 	}
 
 	@Override
-	public Set<TravelSurveyZone> getAttractors() {
+	public Collection<TravelSurveyZone> getAttractors() {
 		return base.getAttractors();
 	}
 
@@ -52,8 +53,15 @@ public class FixedMultiplierPassthroughPAMap implements PAMap {
 	}
 
 	@Override
-	public Float getVOT() {
-		return base.getVOT();
+	public DemandMap getProductionMap() {
+		// TODO Auto-generated method stub
+		throw new RuntimeException();
+	}
+
+	@Override
+	public DemandMap getAttractionMap() {
+		// TODO Auto-generated method stub
+		throw new RuntimeException();
 	}
 
 }

@@ -13,6 +13,7 @@ import java.util.stream.Collector;
 import java.util.stream.Collector.Characteristics;
 import java.util.stream.Collectors;
 
+import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
@@ -101,8 +102,15 @@ class CombinedPAMap implements PAMap {
 	}
 
 	@Override
-	public Float getVOT() {
-		throw new RuntimeException("Not yet implemented");
+	public DemandMap getProductionMap() {
+		// TODO Auto-generated method stub
+		throw new RuntimeException();
+	}
+
+	@Override
+	public DemandMap getAttractionMap() {
+		// TODO Auto-generated method stub
+		throw new RuntimeException();
 	}
 	
 }

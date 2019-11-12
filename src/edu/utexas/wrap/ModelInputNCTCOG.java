@@ -24,7 +24,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-public class HBFileModelInputs implements ModelInput {
+public class ModelInputNCTCOG implements ModelInput {
     private Properties inputs;
     private Graph graph;
     private Map<TripPurpose, Map<MarketSegment, Double>> productionRates;
@@ -39,7 +39,7 @@ public class HBFileModelInputs implements ModelInput {
     private Map<TripPurpose, Map<MarketSegment, Map<TimePeriod, Double>>> arrivalRates;
 
 
-    public HBFileModelInputs(String inputFile) throws IOException {
+    public ModelInputNCTCOG(String inputFile) throws IOException {
         InputStream input = new FileInputStream(inputFile);
         inputs = new Properties();
         inputs.load(input);

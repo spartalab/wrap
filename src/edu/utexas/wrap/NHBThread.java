@@ -96,7 +96,7 @@ class NHBThread extends Thread{
 		
 		
 		return source.keySet().parallelStream().collect(Collectors.toMap(Function.identity(), 
-				purpose -> new PAPassthroughMap(graph, null, secondaryProds.get(purpose), secondaryAttrs.get(purpose))));
+				purpose -> new PAPassthroughMap(graph, secondaryProds.get(purpose), secondaryAttrs.get(purpose))));
 	}
 	
 	public void balance(Map<TripPurpose,PAMap> nhbMaps) {

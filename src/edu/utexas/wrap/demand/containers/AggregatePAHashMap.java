@@ -1,5 +1,6 @@
 package edu.utexas.wrap.demand.containers;
 
+import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
@@ -21,7 +22,6 @@ public class AggregatePAHashMap implements PAMap {
     private Graph g;
     private Map<TravelSurveyZone, Float> attractors;
     private Map<TravelSurveyZone, Float> producers;
-    private float vot;
 
     public AggregatePAHashMap(Graph graph) {
         this.g = graph;
@@ -84,12 +84,16 @@ public class AggregatePAHashMap implements PAMap {
     public void putProductions(TravelSurveyZone z, Float amt) {
         producers.put(z, amt);
     }
-    
-	/* (non-Javadoc)
-	 * @see edu.utexas.wrap.demand.PAMap#getVOT()
-	 */
+
 	@Override
-	public Float getVOT() {
-		return vot;
+	public DemandMap getProductionMap() {
+		// TODO Auto-generated method stub
+		throw new RuntimeException();
+	}
+
+	@Override
+	public DemandMap getAttractionMap() {
+		// TODO Auto-generated method stub
+		throw new RuntimeException();
 	}
 }
