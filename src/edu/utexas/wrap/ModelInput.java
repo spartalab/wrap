@@ -5,8 +5,8 @@ import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.net.TravelSurveyZone;
 
-import java.io.IOException;
 import java.util.Map;
 
 public interface ModelInput {
@@ -15,7 +15,6 @@ public interface ModelInput {
     Graph getNetwork();
 
     //Trip Generation Inputs
-
     Map<MarketSegment,Double> getGeneralProdRates(TripPurpose purpose);
 
     Map<MarketSegment, Map<AreaClass, Double>> getAreaClassProdRates(TripPurpose purpose);
@@ -23,19 +22,22 @@ public interface ModelInput {
     Map<MarketSegment, Double> getGeneralAttrRates(TripPurpose purpose);
 
     Map<MarketSegment, Map<AreaClass, Double>> getAreaClassAttrRates(TripPurpose purpose);
-
+    
+    //Peak/off-peak splitting inputs
+    Map<MarketSegment,Double> getPeakOffpeakSplit(TripPurpose purpose);
 
     //Trip Distribution Inputs
-    float[][] getSkimFactors(TimePeriod timePeriod);
+    float[][] getRoadwaySkim(TimePeriod timePeriod);
 
-    Map<MarketSegment, FrictionFactorMap> getFrictionFactors(TripPurpose purpose);
+    Map<MarketSegment, FrictionFactorMap> getFrictionFactors(TripPurpose purpose, TimePeriod timePeriod);
 
+    //Market segmentation inputs
+    Map<MarketSegment,Map<TravelSurveyZone,Double>> getWorkerVehicleSplits(MarketSegment segment);
 
     //Mode Choice Inputs
     Map<MarketSegment,Map<Mode,Double>> getModeShares(TripPurpose purpose);
 
     Map<Mode,Double> getOccupancyRates();
-
 
     //PA to OD
     Map<TimePeriod, Double> getDepartureRates(TripPurpose purpose, MarketSegment segment);

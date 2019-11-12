@@ -1,6 +1,5 @@
 package edu.utexas.wrap;
 
-import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.ODMatrix;
@@ -18,14 +17,12 @@ import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.AggregatePAMatrixCollector;
 import edu.utexas.wrap.util.DepartureArrivalConverter;
-import edu.utexas.wrap.util.io.ModeFactory;
-import edu.utexas.wrap.util.io.TimePeriodRatesFactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,60 +30,49 @@ import java.util.stream.Stream;
 class HBThread extends Thread{
 	private Graph graph;
 	private Map<TimePeriod, Map<TripPurpose, Map<MarketSegment, Collection<ODMatrix>>>> hbODs;
-	private Map<MarketSegment, Double> splitRates;
 	private Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps;
-	private Map<MarketSegment, PAMap> pkMaps;
-	private Collection<MarketSegment> segments;
+	private ModelInput model;
 
-	public HBThread(Graph graph, Map<MarketSegment, Double> splitRates, Map<TripPurpose, Map<MarketSegment,PAMap>> hbMaps, Collection<MarketSegment> segments) {
+	public HBThread(Graph graph, Map<TripPurpose, Map<MarketSegment,PAMap>> hbMaps) {
 		this.graph = graph;
-		this.splitRates = splitRates;
 		this.hbMaps = hbMaps;
-		this.segments = segments;
 	}
 
 	public void run() {
-		pkMaps = splitHBW(hbMaps, splitRates);
+		Map<MarketSegment, PAMap> pkMaps = extractPeakTrips(hbMaps);
 
-		Map<MarketSegment, FrictionFactorMap> pkFFMaps = null; //TODO
-		HBPkGen hbPkGen = new HBPkGen(graph, pkFFMaps);
+		HBPkGen hbPkGen = new HBPkGen(graph, pkMaps);
 		hbPkGen.start();
 
-		Map<TripPurpose, Map<MarketSegment, FrictionFactorMap>> opFFMaps = null; //TODO
-		HBOpGen hbOpGen = new HBOpGen(graph, hbMaps, opFFMaps);
+		HBOpGen hbOpGen = new HBOpGen(graph, hbMaps);
 		hbOpGen.start();
 
 		try {
 			hbPkGen.join();
 			hbOpGen.join();
 		} catch(InterruptedException e) {
-			System.out.println("Thread is interrupted.");
+			System.err.println("Thread is interrupted.");
+			e.printStackTrace();
 		}
 
 		//After distributing over different friction factor maps, the HBW trips are stuck back together and SRE & PBO matrices are combined
 		Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs = combineAggregateMatrices(hbPkGen.getAggPKMtxs(), hbOpGen.getAggOPMtxs()); //TODO combine SRE/PBO and HBWPK/OP matrices
 
-		//TODO divide market segments further by vehicles per worker
-		Map<MarketSegment, Map<MarketSegment, Map<TravelSurveyZone, Double>>> workerVehicleRates = null;
-		Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> dividedCombinedMtxs = subdivideSegments(aggCombinedMtxs,workerVehicleRates);
+		//divide market segments further by vehicles per worker
+		Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> dividedCombinedMtxs = subdivideSegments(aggCombinedMtxs);
 
-		//TODO combine HNW trip purposes into single HNW trip purpose for all market segments
+		//combine HNW trip purposes into single HNW trip purpose for all market segments
 		Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> combinedMtxs = combineHNWPurposes(dividedCombinedMtxs);
 
 		try {
 			//Perform mode choice splitting TODO ensure proper use of market segments
-			Map<MarketSegment, Map<Mode, Double>> modeShares = ModeFactory.readModeShares(new File("../../nctcogFiles/modeChoiceSplits.csv"), segments); // ModeChoiceSplits.csv
-			Map<TripPurpose, Map<MarketSegment, Collection<ModalPAMatrix>>> hbModalMtxs = modeChoice(combinedMtxs, modeShares);
+			Map<TripPurpose, Map<MarketSegment, Collection<ModalPAMatrix>>> hbModalMtxs = modeChoice(combinedMtxs);
 
 			//PA to OD splitting by time of day
-			Map<Mode, Double> occupancyRates = ModeFactory.readOccRates(new File("../../nctcogFiles/modalOccRates.csv"), true); // modalOccRates.csv
-			//TOD splitting inputs TODO ensure proper use of market segments
-			Map<MarketSegment, Map<TimePeriod, Double>>
-					depRates = TimePeriodRatesFactory.readDepartureFile(new File("../../nctcogFiles/TODfactors.csv"), segments), //TODFactors.csv
-					arrRates = TimePeriodRatesFactory.readArrivalFile(new File("../../nctcogFiles/TODfactors.csv"), segments); //TODFactors.csv
-			hbODs = paToODConversion(hbModalMtxs, occupancyRates, depRates, arrRates);
+			hbODs = paToODConversion(hbModalMtxs);
 		} catch (IOException e) {
-			System.out.println("There is an IO Exception in the HB Thread.");
+			System.err.println("There is an IO Exception in the HB Thread.");
+			e.printStackTrace();
 		}
 		//thread ends here
 	}
@@ -95,8 +81,9 @@ class HBThread extends Thread{
 		return hbODs;
 	}
 
-	private static Map<MarketSegment,PAMap> splitHBW(Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps, Map<MarketSegment, Double> splitRates) {
+	private Map<MarketSegment,PAMap> extractPeakTrips(Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps) {
 		Map<MarketSegment,PAMap> hbwMaps = hbMaps.get(TripPurpose.HOME_WORK);
+		Map<MarketSegment,Double> splitRates = model.getPeakOffpeakSplit(TripPurpose.HOME_WORK);
 
 		Map<MarketSegment,PAMap> pkMaps = new HashMap<MarketSegment,PAMap>();
 		Map<MarketSegment,PAMap> opMaps = new HashMap<MarketSegment,PAMap>();
@@ -116,7 +103,7 @@ class HBThread extends Thread{
 		return pkMaps;
 	}
 
-	private static Map<MarketSegment, AggregatePAMatrix> peakDistribution(
+	private Map<MarketSegment, AggregatePAMatrix> peakDistribution(
 			Graph graph,
 			Map<MarketSegment, PAMap> pkMaps,
 			Map<MarketSegment, FrictionFactorMap> pkFFMaps) {
@@ -126,7 +113,7 @@ class HBThread extends Thread{
 		}));
 	}
 
-	private static Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> offPeakDistribution(
+	private Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> offPeakDistribution(
 			Graph g,
 			Map<TripPurpose, Map<MarketSegment, PAMap>> hbMaps,
 			Map<TripPurpose, Map<MarketSegment, FrictionFactorMap>> ffm
@@ -143,7 +130,7 @@ class HBThread extends Thread{
 		));
 	}
 
-	private static Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> combineAggregateMatrices(
+	private Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> combineAggregateMatrices(
 			Map<MarketSegment, AggregatePAMatrix> aggPKMtxs,
 			Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggMtxs) {
 
@@ -162,8 +149,11 @@ class HBThread extends Thread{
 		return aggMtxs;
 	}
 
-	private static Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> subdivideSegments(Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs,
-																							 Map<MarketSegment, Map<MarketSegment, Map<TravelSurveyZone, Double>>> workerVehicleRates) {
+	private Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> subdivideSegments(Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs) {
+		Map<MarketSegment, Map<MarketSegment, Map<TravelSurveyZone, Double>>> workerVehicleRates = aggCombinedMtxs.values().parallelStream()
+				.flatMap(map -> map.keySet().parallelStream()).distinct()
+				.collect(Collectors.toMap(Function.identity(), seg -> model.getWorkerVehicleSplits(seg)));
+		
 		return aggCombinedMtxs.entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, purposeMapEntry-> //for each trip purpose
 				purposeMapEntry.getValue().entrySet().parallelStream() //Stream of MarketSegment-Matrix entries
 						.map(oldSegmentMap ->	//Take each segment-matrix pair
@@ -179,7 +169,7 @@ class HBThread extends Thread{
 
 	}
 
-	private static Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> combineHNWPurposes(Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs) {
+	private Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> combineHNWPurposes(Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs) {
 		Map<TripPurpose,Map<MarketSegment,AggregatePAMatrix>> ret = new HashMap<TripPurpose,Map<MarketSegment,AggregatePAMatrix>>();
 		ret.put(TripPurpose.HOME_WORK, aggCombinedMtxs.get(TripPurpose.HOME_WORK));
 		ret.put(TripPurpose.HOME_NONWORK,
@@ -193,33 +183,41 @@ class HBThread extends Thread{
 		return ret;
 	}
 
-	private static Map<TripPurpose,Map<MarketSegment, Collection<ModalPAMatrix>>> modeChoice(
-			Map<TripPurpose,Map<MarketSegment, AggregatePAMatrix>> aggMtxs,
-			Map<MarketSegment,Map<Mode,Double>> modeShares
-	) throws IOException {
-		aggMtxs.entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, purposeMapEntry ->
+	private Map<TripPurpose,Map<MarketSegment, Collection<ModalPAMatrix>>> modeChoice(Map<TripPurpose,Map<MarketSegment, AggregatePAMatrix>> aggMtxs) throws IOException {
+		Map<TripPurpose,Map<MarketSegment, Map<Mode, Double>>> modeShares = aggMtxs.keySet().parallelStream()
+				.collect(Collectors.toMap(Function.identity(), purpose -> model.getModeShares(purpose)));
+		
+		return aggMtxs.entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, purposeMapEntry ->
 				purposeMapEntry.getValue().entrySet().parallelStream()
 						.collect(Collectors.toMap(Map.Entry::getKey,
 								entry -> {
-									TripInterchangeSplitter mc = new FixedProportionSplitter(modeShares.get(entry.getKey()));
+									TripInterchangeSplitter mc = new FixedProportionSplitter(modeShares.get(purposeMapEntry.getKey()).get(entry.getKey()));
 									return mc.split(entry.getValue()).collect(Collectors.toSet());
 								}))
 		));
-		return null;
 	}
 
-	private static Map<TimePeriod,Map<TripPurpose, Map<MarketSegment,Collection<ODMatrix>>>> paToODConversion(
-			Map<TripPurpose, Map<MarketSegment, Collection<ModalPAMatrix>>> hbModalMtxs,
-			Map<Mode,Double> occupancyRates,
-			Map<MarketSegment, Map<TimePeriod, Double>> depRates,
-			Map<MarketSegment, Map<TimePeriod, Double>> arrRates) throws IOException {
-
-		//TODO combine SR2 and SR3
-		return Stream.of(TimePeriod.values()).collect(Collectors.toMap(Function.identity(), tp -> //for each time period
+	private Map<TimePeriod,Map<TripPurpose, Map<MarketSegment,Collection<ODMatrix>>>> paToODConversion(Map<TripPurpose, Map<MarketSegment, Collection<ModalPAMatrix>>> hbModalMtxs) throws IOException {
+		Map<Mode, Double> occupancyRates = model.getOccupancyRates(); // modalOccRates.csv
+		//TOD splitting inputs TODO ensure proper use of market segments
+		Map<TripPurpose,Map<MarketSegment, Map<TimePeriod, Double>>>
+				depRates = 
+				hbModalMtxs.entrySet().parallelStream()
+				.collect(Collectors.toMap(Entry::getKey, entry ->
+					entry.getValue().keySet().parallelStream().collect(Collectors.toMap(Function.identity(), seg -> model.getDepartureRates(entry.getKey(),seg))))),
+				arrRates = hbModalMtxs.entrySet().parallelStream()
+					.collect(Collectors.toMap(Entry::getKey, entry ->
+					entry.getValue().keySet().parallelStream().collect(Collectors.toMap(Function.identity(), seg -> model.getArrivalRates(entry.getKey(),seg)))));
+		
+		
+		return Stream.of(TimePeriod.values()).collect(Collectors.toMap(Function.identity(), time -> //for each time period
 				hbModalMtxs.entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, purposeEntry -> //for each trip purpose
 						purposeEntry.getValue().entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, segmentEntry ->{ //for each market segment
 							//establish a trip converter
-							DepartureArrivalConverter converter = new DepartureArrivalConverter(depRates.get(tp).get(segmentEntry.getKey()), arrRates.get(tp).get(segmentEntry.getKey()));
+							DepartureArrivalConverter converter = new DepartureArrivalConverter(
+									depRates.get(purposeEntry.getKey()).get(segmentEntry.getKey()).get(time), 
+									arrRates.get(purposeEntry.getKey()).get(segmentEntry.getKey()).get(time)
+									);
 							return segmentEntry.getValue().parallelStream().map(modalMtx -> //for each modal matrix
 									converter.convert(modalMtx, occupancyRates.get(modalMtx.getMode()))	//convert the matrix
 							).collect(Collectors.toSet());	//collect into a set
@@ -230,19 +228,23 @@ class HBThread extends Thread{
 
 	class HBPkGen extends Thread {
 		private Graph g;
-		private Map<MarketSegment, FrictionFactorMap> pkFFMaps;
-		private Map<MarketSegment, AggregatePAMatrix> aggPKMtxs;
+		private Map<MarketSegment, FrictionFactorMap> frictionFactorMaps;
+		private Map<MarketSegment, AggregatePAMatrix> aggregateMatrices;
+		private Map<MarketSegment, PAMap> pkMaps;
 
-		public HBPkGen(Graph graph, Map<MarketSegment, FrictionFactorMap> pkFFMaps) {
+		public HBPkGen(Graph graph,
+				Map<MarketSegment, PAMap> pkMaps) {
 			this.g = graph;
-			this.pkFFMaps = pkFFMaps;
+			this.pkMaps = pkMaps;
+			this.frictionFactorMaps = model.getFrictionFactors(TripPurpose.HOME_WORK, TimePeriod.AM_PK); //TODO
+;
 		}
 
 		public void run() {
-			aggPKMtxs = peakDistribution(g, pkMaps, pkFFMaps);	//TODO separate threading for distributing pkMaps
+			aggregateMatrices = peakDistribution(g, pkMaps, frictionFactorMaps);
 		}
 
-		public Map<MarketSegment, AggregatePAMatrix> getAggPKMtxs() { return aggPKMtxs; }
+		public Map<MarketSegment, AggregatePAMatrix> getAggPKMtxs() { return aggregateMatrices; }
 	}
 
 	class HBOpGen extends Thread {
@@ -251,10 +253,17 @@ class HBThread extends Thread{
 		private Map<TripPurpose, Map<MarketSegment, FrictionFactorMap>> opFFMaps;
 		private Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggOPMtxs;
 
-		public HBOpGen(Graph graph, Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps, Map<TripPurpose, Map<MarketSegment, FrictionFactorMap>> opFFMaps) {
+		public HBOpGen(Graph graph, Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps) {
 			this.g = graph;
 			this.hbMaps = hbMaps;
-			this.opFFMaps = opFFMaps;
+			this.opFFMaps = Stream.of(
+					TripPurpose.HOME_COLL_UNIV,
+					TripPurpose.HOME_PBO,
+					TripPurpose.HOME_SHOP,
+					TripPurpose.HOME_SRE,
+					TripPurpose.HOME_WORK).parallel()
+					.collect(Collectors.toMap(Function.identity(),
+							purpose -> model.getFrictionFactors(purpose, TimePeriod.EARLY_OP)));
 		}
 
 		public void run() {

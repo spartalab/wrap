@@ -9,7 +9,6 @@ import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.io.GraphFactory;
 import edu.utexas.wrap.util.io.ProductionAttractionFactory;
-import sun.jvm.hotspot.oops.Mark;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -232,12 +231,12 @@ public class HBFileModelInputs implements ModelInput {
 
 
     @Override
-    public float[][] getSkimFactors(TimePeriod timePeriod) {
+    public float[][] getRoadwaySkim(TimePeriod timePeriod) {
         return new float[0][];
     }
 
     @Override
-    public Map<MarketSegment, FrictionFactorMap> getFrictionFactors(TripPurpose purpose) {
+    public Map<MarketSegment, FrictionFactorMap> getFrictionFactors(TripPurpose purpose, TimePeriod timePeriod) {
         return null;
     }
 
@@ -260,5 +259,17 @@ public class HBFileModelInputs implements ModelInput {
     public Map<TimePeriod, Double> getArrivalRates(TripPurpose purpose, MarketSegment segment) {
         return null;
     }
+
+	@Override
+	public Map<MarketSegment, Double> getPeakOffpeakSplit(TripPurpose purpose) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Map<MarketSegment, Map<TravelSurveyZone, Double>> getWorkerVehicleSplits(MarketSegment segment) {
+		// TODO Auto-generated method stub
+		return null;
+	}
 
 }

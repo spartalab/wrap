@@ -43,7 +43,7 @@ public class wrapNCTCOG {
 
 	public static void main(String[] args) {
 		try{
-			HBFileModelInputs model = null;
+			ModelInput model = new HBFileModelInputs("inputs.properties");
 			Graph graph = readNetworkData(args);
 			
 			Collection<MarketSegment> segments;
@@ -61,7 +61,7 @@ public class wrapNCTCOG {
 			//Peak/off-peak splitting for HOME_WORK trip purpose
 			Map<MarketSegment, Double> splitRates = null;
 
-			HBThread hb = new HBThread(graph, splitRates, hbMaps, segments);
+			HBThread hb = new HBThread(graph, hbMaps);
 			hb.start();
 
 			try {
@@ -118,7 +118,6 @@ public class wrapNCTCOG {
 		return Stream.of(TimePeriod.values()).parallel().collect(Collectors.toMap(Function.identity(), timePeriod ->{
 			Collection<ODMatrix> ret = new HashSet<ODMatrix>();
 			
-			// TODO Auto-generated method stub
 			Stream.of(TripPurpose.HOME_WORK,TripPurpose.HOME_NONWORK).parallel().forEach(tripPurpose->
 				Stream.of(Mode.SINGLE_OCC, Mode.HOV).parallel().forEach(mode -> {
 			
@@ -127,7 +126,7 @@ public class wrapNCTCOG {
 						hbODs.get(timePeriod)	//add a combination of all OD matrices from this time period
 						.get(tripPurpose).entrySet().parallelStream()	//for this trip purpose
 						.filter(entry -> entry.getKey() instanceof IncomeGroupSegmenter && ((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup() <4)	//in income groups 1, 2, or 3 
-						.map(Entry::getValue).flatMap(Collection::parallelStream).filter(od -> od.getMode() == mode) //which matches this mode
+						.map(Entry::getValue).flatMap(Collection::parallelStream).filter(od -> od.getMode() == mode || (mode == Mode.HOV && (od.getMode() == Mode.HOV_2_PSGR || od.getMode() == Mode.HOV_3_PSGR))) //which matches this mode
 						.collect(new ODMatrixCollector())
 					);
 			
@@ -137,7 +136,7 @@ public class wrapNCTCOG {
 									hbODs.get(timePeriod)	//home-based trips from this time period
 									.get(tripPurpose).entrySet().parallelStream()	//for this trip purpose
 									.filter(entry -> entry.getKey() instanceof IncomeGroupSegmenter && ((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup() >= 4)	//in income group 4
-									.map(Entry::getValue).flatMap(Collection::parallelStream).filter(od -> od.getMode() == mode),	//for this mode
+									.map(Entry::getValue).flatMap(Collection::parallelStream).filter(od -> od.getMode() == mode || (mode == Mode.HOV && (od.getMode() == Mode.HOV_2_PSGR || od.getMode() == Mode.HOV_3_PSGR))),	//for this mode
 									
 									nhbODs.get(timePeriod)	//And non-home-based trips
 									.get(tripPurpose).parallelStream()	//for this trip purpose
