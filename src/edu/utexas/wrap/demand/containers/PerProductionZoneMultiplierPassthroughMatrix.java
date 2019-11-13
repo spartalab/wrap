@@ -1,7 +1,5 @@
 package edu.utexas.wrap.demand.containers;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -40,18 +38,6 @@ public class PerProductionZoneMultiplierPassthroughMatrix implements AggregatePA
 	@Override
 	public DemandMap getDemandMap(TravelSurveyZone producer) {
 		return new FixedMultiplierPassthroughDemandMap(parent.getDemandMap(producer),rates.get(producer).floatValue());
-	}
-
-	@Override
-	public float getVOT() {
-		// TODO Auto-generated method stub
-		throw new RuntimeException();
-	}
-
-	@Override
-	public void toFile(File out) throws IOException {
-		// TODO Auto-generated method stub
-		throw new RuntimeException();
 	}
 
 	@Override

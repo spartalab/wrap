@@ -1,9 +1,5 @@
 package edu.utexas.wrap.demand.containers;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
 
@@ -21,6 +17,7 @@ public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 	private final Mode m;
 	private Graph g;
 	protected Map<TravelSurveyZone,DemandMap> map;
+	private float vot;
 	
 	public ModalHashMatrix(Graph g, Mode mode) {
 		this.g = g;
@@ -64,8 +61,8 @@ public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 	 * @see edu.utexas.wrap.demand.PAMatrix#getVOT()
 	 */
 	@Override
-	public float getVOT() {
-		return 0;
+	public Float getVOT() {
+		return vot;
 	}
 
 	/* (non-Javadoc)
@@ -74,23 +71,6 @@ public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 	@Override
 	public Graph getGraph() {
 		return g;
-	}
-
-	@Override
-	public void toFile(File out) throws IOException {
-		FileWriter o = null;
-		try{
-			o = new FileWriter(out);
-
-			for (TravelSurveyZone orig : map.keySet()) {
-				DemandMap demand = map.get(orig);
-				for (TravelSurveyZone dest : demand.getZones()) {
-					o.write(""+orig.getNode().getID()+","+dest.getNode().getID()+","+demand.get(dest)+"\n");
-				}
-			}
-		} finally {
-			if (o != null) o.close();
-		}
 	}
 
 	@Override
@@ -104,9 +84,8 @@ public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 	}
 
 	@Override
-	public void write(Path outputOD) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException();
+	public void setVOT(float VOT) {
+		vot = VOT;
 	}
 
 

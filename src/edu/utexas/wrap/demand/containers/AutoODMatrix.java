@@ -21,7 +21,7 @@ public class AutoODMatrix extends ModalHashMatrix {
 	 * @see edu.utexas.wrap.demand.containers.ModalHashMatrix#getVOT()
 	 */
 	@Override
-	public float getVOT() {
+	public Float getVOT() {
 		return vot;
 	}
 

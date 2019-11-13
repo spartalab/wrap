@@ -1,58 +1,39 @@
 package edu.utexas.wrap;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import edu.utexas.wrap.balancing.Prod2AttrProportionalBalancer;
-import edu.utexas.wrap.demand.AggregatePAMatrix;
-import edu.utexas.wrap.demand.Combiner;
 import edu.utexas.wrap.demand.DemandMap;
-import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.PAMap;
-import edu.utexas.wrap.demand.containers.FixedMultiplierPassthroughPAMap;
 import edu.utexas.wrap.demand.containers.PAPassthroughMap;
-import edu.utexas.wrap.demand.containers.PerProductionZoneMultiplierPassthroughMatrix;
-import edu.utexas.wrap.distribution.FrictionFactorMap;
-import edu.utexas.wrap.distribution.GravityDistributor;
-import edu.utexas.wrap.distribution.TripDistributor;
 import edu.utexas.wrap.generation.AreaSpecificTripGenerator;
 import edu.utexas.wrap.generation.BasicTripGenerator;
 import edu.utexas.wrap.marketsegmentation.IncomeGroupSegment;
 import edu.utexas.wrap.marketsegmentation.IncomeGroupSegmenter;
-import edu.utexas.wrap.marketsegmentation.IndustryClass;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
-import edu.utexas.wrap.modechoice.FixedProportionSplitter;
 import edu.utexas.wrap.modechoice.Mode;
-import edu.utexas.wrap.modechoice.TripInterchangeSplitter;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.TravelSurveyZone;
-import edu.utexas.wrap.util.*;
-import edu.utexas.wrap.util.io.*;
+import edu.utexas.wrap.util.DemandMapCollector;
+import edu.utexas.wrap.util.ODMatrixCollector;
+import edu.utexas.wrap.util.io.ODMatrixWriter;
 
 public class wrapNCTCOG {
 
 	public static void main(String[] args) {
 		try{
 			ModelInput model = new ModelInputNCTCOG("inputs.properties");
-			Graph graph = readNetworkData(args);
-			
-			Collection<MarketSegment> segments;
+			Graph graph = model.getNetwork();
 			
 			//Perform trip generation
 			Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps = generateTrips(graph, model);
@@ -63,9 +44,6 @@ public class wrapNCTCOG {
 			NHBThread nhb = new NHBThread(graph, model, hbMaps);
 			nhb.start();
 			
-			//Peak/off-peak splitting for HOME_WORK trip purpose
-			Map<MarketSegment, Double> splitRates = null;
-
 			HBThread hb = new HBThread(graph, hbMaps);
 			hb.start();
 
@@ -80,7 +58,7 @@ public class wrapNCTCOG {
 			Map<TimePeriod, Collection<ODMatrix>> reducedODs = reduceODMatrices(hb.getODs(), nhb.getODs());
 			
 			//TODO figure out how to identify reduced ODs
-			writeODs(reducedODs);
+			writeODs(reducedODs, model.getOutputDirectory());
 			
 			//TODO eventually, we'll do multiple instances of traffic assignment here instead of just writing to files
 			
@@ -93,24 +71,6 @@ public class wrapNCTCOG {
 		}
 	}
 	
-	private static Graph readNetworkData(String[] args) throws FileNotFoundException, IOException {
-		//Model inputs
-		Graph graph = GraphFactory.readEnhancedGraph(new File(args[0]),Integer.parseInt(args[1]));
-		
-		//TODO read RAAs - this is for later in the project
-		
-		// add demographic data to zones
-		//args[2] = "../../nctcogFiles/hhByIG.csv";
-		//args[3] = "../../nctcogFiles/hhByIGthenWkrthenVeh.csv";
-		//args[4] = "../../nctcogFiles/empByIGthenIC.csv"
-		
-		graph.readHouseholdsByIncomeGroup(Paths.get(args[2]));
-		graph.readHouseholdsByWorkersVehiclesAndIncomeGroups(Paths.get(args[3]));
-		graph.readEmploymentData(Paths.get(args[4]));
-		
-		return graph;
-	}
-
 	private static Map<TripPurpose,Map<MarketSegment, PAMap>> generateTrips(Graph g, ModelInput model) throws IOException {
 		
 
@@ -161,6 +121,7 @@ public class wrapNCTCOG {
 		));
 	}
 
+	
 	private static Map<MarketSegment, DemandMap> generateAttractions(Graph g, Map<MarketSegment, Map<AreaClass, Double>> attrRates) {
 		AreaSpecificTripGenerator generator = new AreaSpecificTripGenerator(g,attrRates);
 		return attrRates.keySet().parallelStream().collect(Collectors.toMap(Function.identity(), seg -> generator.generate(seg)));
@@ -177,6 +138,7 @@ public class wrapNCTCOG {
 		hbMaps.values().parallelStream().flatMap(map -> map.values().parallelStream()).forEach(map -> balancer.balance(map));
 	}
 
+	
 	private static Map<TimePeriod, Collection<ODMatrix>> reduceODMatrices(
 			Map<TimePeriod, Map<TripPurpose, Map<MarketSegment, Collection<ODMatrix>>>> hbODs,
 			Map<TimePeriod, Map<TripPurpose, Collection<ODMatrix>>> nhbODs) {
@@ -216,29 +178,10 @@ public class wrapNCTCOG {
 		}));
 	}
 	
-	private static void writeODs(Map<TimePeriod, Map<Mode, ODMatrix>> ods) {
-		//TODO determine output files
-		Map<TimePeriod,Map<Mode,Path>> outputODPaths = new HashMap<TimePeriod,Map<Mode,Path>>();
-//		outputODPaths.put(TimePeriod.AM_PK, Paths.get("morningPeak.csv"));
-//		outputODPaths.put(TimePeriod.PM_PK, Paths.get("eveningPeak.csv"));
-
-		System.out.print("Writing OD matrices... ");
-		//Write to file AM and PM peak OD matrices
-		long ms = System.currentTimeMillis();
+	
+	private static void writeODs(Map<TimePeriod, Collection<ODMatrix>> ods, String outputDir) {
 		
-		ods.entrySet().parallelStream()
-		.filter(todEntry -> 
-//				todEntry.getKey().equals(TimePeriod.AM_PK) || 
-			todEntry.getKey().equals(TimePeriod.PM_PK)
-			)
-		.forEach(todEntry -> todEntry.getValue().entrySet().parallelStream()
-				.forEach(modeEntry -> 
-					modeEntry.getValue().write(outputODPaths.get(todEntry.getKey()).get(modeEntry.getKey()))
-					)
-				);
-
-		long nms = System.currentTimeMillis();
-		System.out.println(""+(nms-ms)/1000.0+" s");
+		ods.entrySet().parallelStream().forEach(todEntry -> todEntry.getValue().parallelStream().forEach(matrix -> ODMatrixWriter.write(outputDir,todEntry.getKey(), matrix)));
 	}
 	
 }

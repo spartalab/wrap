@@ -1,12 +1,6 @@
 package edu.utexas.wrap.demand;
 
 
-import java.io.BufferedWriter;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
@@ -14,6 +8,7 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 public class ODPassthroughMatrix implements ODMatrix {
 	
 	private ModalPAMatrix base;
+	private Float vot = null;
 	
 	public ODPassthroughMatrix(ModalPAMatrix baseMatrix) {
 		base = baseMatrix;
@@ -40,31 +35,13 @@ public class ODPassthroughMatrix implements ODMatrix {
 	}
 
 	@Override
-	public void write(Path outputOD) {
-		
-		try (BufferedWriter out = Files.newBufferedWriter(outputOD, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)){
-			base.getProducers().parallelStream().forEach( orig -> {
-				DemandMap map = base.getDemandMap(orig);
-				map.getZones().parallelStream().forEach(dest ->{
-					try {
-						StringBuilder sb = new StringBuilder();
-						sb.append(orig.getNode().getID());
-						sb.append(",");
-						sb.append(dest.getNode().getID());
-						sb.append(",");
-						sb.append(getDemand(orig,dest));
-						sb.append("\r\n");
-						out.write(sb.toString());
-						out.flush();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				});
-			});
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public Float getVOT() {
+		return vot;
+	}
+
+	@Override
+	public void setVOT(float VOT) {
+		vot = VOT;
 	}
 
 }

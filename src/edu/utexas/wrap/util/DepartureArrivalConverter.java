@@ -3,7 +3,6 @@ package edu.utexas.wrap.util;
 import java.util.Collection;
 import java.util.HashSet;
 
-import edu.utexas.wrap.demand.Combiner;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.ODPassthroughMatrix;
@@ -30,6 +29,7 @@ public class DepartureArrivalConverter {
 		matrices.add(new ModalFixedMultiplierPassthroughMatrix(arrivalRate*vehOccRate,transpose));
 
 		//sum the two matrices and pass on as an OD matrix
-		return new ODPassthroughMatrix(Combiner.combineModalMatrices(pa.getGraph(), matrices));
+		
+		return new ODPassthroughMatrix(matrices.stream().collect(new ModalPAMatrixCollector()));
 	}
 }

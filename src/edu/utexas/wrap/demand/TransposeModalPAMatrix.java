@@ -1,7 +1,5 @@
 package edu.utexas.wrap.demand;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 
 import edu.utexas.wrap.modechoice.Mode;
@@ -35,17 +33,6 @@ public class TransposeModalPAMatrix implements ModalPAMatrix {
 	public DemandMap getDemandMap(TravelSurveyZone producer) {
 		// TODO Auto-generated method stub
 		throw new RuntimeException("Not yet implemented");
-	}
-
-	@Override
-	public float getVOT() {
-		return base.getVOT();
-	}
-
-	@Override
-	public void toFile(File out) throws IOException {
-		// TODO Auto-generated method stub
-		throw new RuntimeException();
 	}
 
 	@Override

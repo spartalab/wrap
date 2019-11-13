@@ -140,7 +140,6 @@ public class ModelInputNCTCOG implements ModelInput {
         if (this.graph != null) {
             return this.graph;
         }
-        System.out.print("Reading network... ");
         long ms = System.currentTimeMillis();
         //Model inputs
         String graphFile = inputs.getProperty("network.graphFile");
@@ -162,28 +161,19 @@ public class ModelInputNCTCOG implements ModelInput {
 
         //TODO read RAAs
         // add demographic data to zones
-        System.out.print("Reading household demographic data... ");
-        ms = System.currentTimeMillis();
         try {
             readHouseholdData(graph, Paths.get(hhIG), Paths.get(hhVeh));
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(1);
         }
-        nms = System.currentTimeMillis();
-        System.out.println(""+(nms-ms)/1000.0+" s");
 
-
-        System.out.print("Reading employment demographic data... ");
-        ms = System.currentTimeMillis();
         try {
             readEmploymentData(graph, Paths.get(emp));
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(1);
         }
-        nms = System.currentTimeMillis();
-        System.out.println(""+(nms-ms)/1000.0+" s");
         this.graph = graph;
 
         return this.graph;
@@ -270,6 +260,11 @@ public class ModelInputNCTCOG implements ModelInput {
 	public Map<MarketSegment, Map<TravelSurveyZone, Double>> getWorkerVehicleSplits(MarketSegment segment) {
 		// TODO Auto-generated method stub
 		return null;
+	}
+
+	@Override
+	public String getOutputDirectory() {
+		return inputs.getProperty("outputDirectory");
 	}
 
 }

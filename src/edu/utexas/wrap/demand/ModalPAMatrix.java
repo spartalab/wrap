@@ -13,7 +13,7 @@ import edu.utexas.wrap.modechoice.Mode;
  * @author William
  *
  */
-public interface ModalPAMatrix extends PAMatrix {
+public interface ModalPAMatrix extends AggregatePAMatrix {
 
 	/**
 	 * @return the Mode associated with this matrix

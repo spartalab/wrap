@@ -1,7 +1,5 @@
 package edu.utexas.wrap.demand;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 
 import edu.utexas.wrap.net.Graph;
@@ -48,13 +46,6 @@ public interface PAMatrix {
 	 */
 	public DemandMap getDemandMap(TravelSurveyZone producer);
 
-	/**
-	 * @return the value of time of trips associated with this matrix
-	 */
-	public float getVOT();
-
-	public void toFile(File out) throws IOException;
-	
 	public Collection<TravelSurveyZone> getProducers();
 
 }

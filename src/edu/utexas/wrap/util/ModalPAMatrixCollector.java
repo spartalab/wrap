@@ -11,55 +11,55 @@ import java.util.function.Supplier;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
-import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
+import edu.utexas.wrap.demand.ModalPAMatrix;
+import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-public class AggregatePAMatrixCollector implements Collector<AggregatePAMatrix, Collection<AggregatePAMatrix>, AggregatePAMatrix> {
+public class ModalPAMatrixCollector implements Collector<ModalPAMatrix,Collection<ModalPAMatrix>,ModalPAMatrix> {
 	private final Set<Characteristics> characteristics = new HashSet<Characteristics>(Arrays.asList(Collector.Characteristics.CONCURRENT,Collector.Characteristics.UNORDERED));
-	
+
 	@Override
-	public BiConsumer<Collection<AggregatePAMatrix>, AggregatePAMatrix> accumulator() {
+	public Function<Collection<ModalPAMatrix>,ModalPAMatrix> finisher(){
+		return (PAs) -> new CombinedModalPAMatrix(PAs);
+	}
+
+	@Override
+	public Supplier<Collection<ModalPAMatrix>> supplier() {
+		return () -> new HashSet<ModalPAMatrix>();
+	}
+
+	@Override
+	public BiConsumer<Collection<ModalPAMatrix>, ModalPAMatrix> accumulator() {
 		return (collection, child) -> collection.add(child);
+	}
+
+	@Override
+	public BinaryOperator<Collection<ModalPAMatrix>> combiner() {
+		return (collection1, collection2) -> {
+			collection1.addAll(collection2);
+			return collection1;
+		};
 	}
 
 	@Override
 	public Set<Characteristics> characteristics() {
 		return characteristics;
 	}
-
-	@Override
-	public BinaryOperator<Collection<AggregatePAMatrix>> combiner() {
-		return (mtx1, mtx2) -> {
-			mtx1.addAll(mtx2);
-			return mtx1;
-		};
-	}
-
-	@Override
-	public Function<Collection<AggregatePAMatrix>, AggregatePAMatrix> finisher() {
-		return (PAs) -> new CombinedAggregatePAMatrix(PAs) ;
-	}
-
-	@Override
-	public Supplier<Collection<AggregatePAMatrix>> supplier() {
-		return () -> new HashSet<AggregatePAMatrix>();
-	}
-
 }
 
-class CombinedAggregatePAMatrix implements AggregatePAMatrix {
+class CombinedModalPAMatrix implements ModalPAMatrix {
 
-	private Collection<AggregatePAMatrix> children;
+	private Collection<ModalPAMatrix> children;
 	
-	public CombinedAggregatePAMatrix(Collection<AggregatePAMatrix> pas) {
+	public CombinedModalPAMatrix(Collection<ModalPAMatrix> pas) {
 		children = pas;
 	}
 	
 	@Override
 	public Graph getGraph() {
-		return children.parallelStream().map(AggregatePAMatrix::getGraph).findAny().get();
+		return children.parallelStream().map(ModalPAMatrix::getGraph).findAny().get();
 	}
 
 	@Override
@@ -83,6 +83,11 @@ class CombinedAggregatePAMatrix implements AggregatePAMatrix {
 	@Override
 	public Collection<TravelSurveyZone> getProducers() {
 		return children.parallelStream().flatMap(mtx -> mtx.getProducers().parallelStream()).collect(Collectors.toSet());
+	}
+
+	@Override
+	public Mode getMode() {
+		return children.parallelStream().map(ModalPAMatrix::getMode).findAny().get();
 	}
 	
 }

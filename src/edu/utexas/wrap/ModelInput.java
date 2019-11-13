@@ -43,5 +43,7 @@ public interface ModelInput {
     Map<TimePeriod, Double> getDepartureRates(TripPurpose purpose, MarketSegment segment);
 
     Map<TimePeriod, Double> getArrivalRates(TripPurpose purpose, MarketSegment segment);
+    
+    String getOutputDirectory();
 
 }

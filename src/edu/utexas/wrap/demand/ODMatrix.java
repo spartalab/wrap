@@ -1,7 +1,5 @@
 package edu.utexas.wrap.demand;
 
-import java.nio.file.Path;
-
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
@@ -41,6 +39,8 @@ public interface ODMatrix {
 	 */
 	public Graph getGraph();
 
-	public void write(Path outputOD);
+	public Float getVOT();
+	
+	public void setVOT(float VOT);
 	
 }

@@ -1,8 +1,5 @@
 package edu.utexas.wrap.demand.containers;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 
@@ -75,23 +72,6 @@ public class AggregatePAHashMatrix implements AggregatePAMatrix {
 		matrix.putIfAbsent(producer,new DemandHashMap(g));
 		((DemandMap) matrix.get(producer)).put(attractor,demand.doubleValue());
 		
-	}
-
-	@Override
-	public void toFile(File out) throws IOException {
-		FileWriter o = null;
-		try{
-			o = new FileWriter(out);
-
-			for (TravelSurveyZone prod : matrix.keySet()) {
-				DemandMap demand = matrix.get(prod);
-				for (TravelSurveyZone attr : demand.getZones()) {
-					o.write(""+prod.getNode().getID()+","+attr.getNode().getID()+","+demand.get(attr)+"\n");
-				}
-			}
-		} finally {
-			if (o != null) o.close();
-		}
 	}
 
 	@Override

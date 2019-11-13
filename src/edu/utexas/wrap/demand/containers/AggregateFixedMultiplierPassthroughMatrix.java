@@ -1,8 +1,5 @@
 package edu.utexas.wrap.demand.containers;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -39,28 +36,6 @@ public class AggregateFixedMultiplierPassthroughMatrix implements AggregatePAMat
 	@Override
 	public DemandMap getDemandMap(TravelSurveyZone producer) {
 		return new FixedMultiplierPassthroughDemandMap(base.getDemandMap(producer),multip);
-	}
-
-	@Override
-	public float getVOT() {
-		return base.getVOT();
-	}
-
-	@Override
-	public void toFile(File out) throws IOException {
-		FileWriter o = null;
-		try{
-			o = new FileWriter(out);
-
-			for (TravelSurveyZone orig : base.getProducers()) {
-				DemandMap demand = base.getDemandMap(orig);
-				for (TravelSurveyZone dest : demand.getZones()) {
-					o.write(""+orig.getNode().getID()+","+dest.getNode().getID()+","+demand.get(dest)+"\n");
-				}
-			}
-		} finally {
-			if (o != null) o.close();
-		}
 	}
 
 	@Override

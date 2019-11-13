@@ -1,8 +1,5 @@
 package edu.utexas.wrap.demand.containers;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 
@@ -48,28 +45,6 @@ public class ModalFixedMultiplierPassthroughMatrix implements ModalPAMatrix {
 	@Override
 	public DemandMap getDemandMap(TravelSurveyZone producer) {
 		return new FixedMultiplierPassthroughDemandMap(aggregate.getDemandMap(producer),percent);
-	}
-
-	@Override
-	public float getVOT() {
-		return aggregate.getVOT();
-	}
-
-	@Override
-	public void toFile(File out) throws IOException {
-		FileWriter o = null;
-		try{
-			o = new FileWriter(out);
-
-			for (TravelSurveyZone orig : aggregate.getProducers()) {
-				DemandMap demand = aggregate.getDemandMap(orig);
-				for (TravelSurveyZone dest : demand.getZones()) {
-					o.write(""+orig.getNode().getID()+","+dest.getNode().getID()+","+demand.get(dest)+"\n");
-				}
-			}
-		} finally {
-			if (o != null) o.close();
-		}
 	}
 
 	@Override
