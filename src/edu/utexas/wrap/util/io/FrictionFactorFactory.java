@@ -1,10 +1,11 @@
 package edu.utexas.wrap.util.io;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
-import java.util.TreeMap;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.NavigableMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import edu.utexas.wrap.distribution.CostBasedFrictionFactorMap;
 import edu.utexas.wrap.distribution.FrictionFactorMap;
@@ -23,26 +24,32 @@ public class FrictionFactorFactory {
 	 * @return A FrictionFactorMap
 	 * @throws IOException
 	 */
-	public static FrictionFactorMap readFactorFile(File file, boolean header, float[][] skim) throws IOException {
-		TreeMap<Integer, Float> tree = new TreeMap<Integer, Float>();
+	public static FrictionFactorMap readFactorFile(Path file, boolean header, float[][] skim) {
+		NavigableMap<Integer, Float> tree = new ConcurrentSkipListMap<Integer, Float>();
 		BufferedReader in = null;
 
 		try {
-			in = new BufferedReader(new FileReader(file));
+			in = new BufferedReader(Files.newBufferedReader(file));
 			if (header) in.readLine();
-			String line = in.readLine();
 
-			while (line != null) {
+			in.lines().parallel().forEach(line -> {
 				String[] args = line.split(",");
 				Integer cost = Integer.parseInt(args[0]);
 				Float factor = Float.parseFloat(args[1]);
 
 				tree.put(cost, factor);
-
-				line = in.readLine();
-			}
+			});
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(-4);
 		} finally {
-			if (in != null) in.close();
+			if (in != null)
+				try {
+					in.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+					System.exit(-4);
+				}
 		}
 		return new CostBasedFrictionFactorMap(skim, tree);
 	}

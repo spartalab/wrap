@@ -119,7 +119,6 @@ public class GraphFactory {
 		BufferedReader lf = new BufferedReader(new InputStreamReader(dis));
 		Map<Integer, Node> nodes = new Int2ObjectOpenHashMap<Node>();
 		lf.readLine(); // skip header
-		int zoneCount = 0;
 		
 		while (true) {
 			line = lf.readLine();

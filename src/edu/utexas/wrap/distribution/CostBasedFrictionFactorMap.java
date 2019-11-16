@@ -1,9 +1,7 @@
 package edu.utexas.wrap.distribution;
 
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.NavigableMap;
 
-import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**A friction factor map that depends on a cost skim and
@@ -18,10 +16,10 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 public class CostBasedFrictionFactorMap implements FrictionFactorMap {
 
 	private float[][] travelCosts;
-	private TreeMap<Integer, Float> costFactors;
+	private NavigableMap<Integer, Float> costFactors;
 
 
-	public CostBasedFrictionFactorMap(float[][] costSkim, TreeMap<Integer, Float> factors) {
+	public CostBasedFrictionFactorMap(float[][] costSkim, NavigableMap<Integer, Float> factors) {
 		travelCosts = costSkim;
 		costFactors = factors;
 	}

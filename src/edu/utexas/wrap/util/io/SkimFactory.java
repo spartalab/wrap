@@ -1,15 +1,13 @@
 package edu.utexas.wrap.util.io;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Comparator;
-import java.util.Map;
 
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
-import java.util.concurrent.ConcurrentSkipListMap;
 
 /**
  * This class provides static methods to read information about Skim rates
@@ -25,18 +23,25 @@ public class SkimFactory {
 	 * @return 2d array of floats that can be indexed by the pair of zones storing the skim rates between the zones
 	 * @throws IOException
 	 */
-	public static float[][] readSkimFile(File file, boolean header, Graph graph) throws IOException {
+	public static float[][] readSkimFile(Path file, boolean header, Graph graph) {
 		float[][] ret = new float[graph.numZones()][graph.numZones()];
 //		Map<TravelSurveyZone,Map<TravelSurveyZone,Float>> ret = new ConcurrentSkipListMap<TravelSurveyZone, Map<TravelSurveyZone,Float>>(new ZoneComparator());
 		BufferedReader in = null;
-
+		
 		try {
-			in = new BufferedReader(new FileReader(file));
+			in = new BufferedReader(Files.newBufferedReader(file));
 			if (header) in.readLine();
 			in.lines().parallel().forEach(line -> processLine(graph,ret,line));
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 		finally {
-			if (in != null) in.close();
+			if (in != null)
+				try {
+					in.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 		}
 		return ret;
 	}

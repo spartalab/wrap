@@ -7,8 +7,10 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
+import edu.utexas.wrap.util.io.FrictionFactorFactory;
 import edu.utexas.wrap.util.io.GraphFactory;
 import edu.utexas.wrap.util.io.ProductionAttractionFactory;
+import edu.utexas.wrap.util.io.SkimFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -17,6 +19,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -32,8 +35,8 @@ public class ModelInputNCTCOG implements ModelInput {
     private Map<TripPurpose, Map<MarketSegment, Double>> attractionRates;
     private Map<TripPurpose, Map<MarketSegment, Map<AreaClass, Double>>> areaClassAttrRates;
     private Map<TimePeriod, float[][]> skimFactors;
-    private Map<MarketSegment, FrictionFactorMap> frictionFactors;
-    private Map<MarketSegment, Map<Mode, Double>> modalShares;
+    private Map<TripPurpose, Map<TimePeriod, Map<MarketSegment, FrictionFactorMap>>> frictionFactors;
+    private Map<TripPurpose, Map<MarketSegment, Map<Mode, Double>>> modalShares;
     private Map<Mode,Double> occupancyRates;
     private Map<TripPurpose, Map<MarketSegment, Map<TimePeriod, Double>>> departureRates;
     private Map<TripPurpose, Map<MarketSegment, Map<TimePeriod, Double>>> arrivalRates;
@@ -51,7 +54,7 @@ public class ModelInputNCTCOG implements ModelInput {
             String[] args = line.split(",");
             int tszID = Integer.parseInt(args[0]);
 
-            Map<Integer, Double> hhByIG = IntStream.range(1, 4).parallel().boxed().collect(
+            Map<Integer, Double> hhByIG = IntStream.range(1, 5).parallel().boxed().collect(
                     Collectors.toMap(Function.identity(), ig -> Double.parseDouble(args[ig])));
 
             TravelSurveyZone tsz = graph.getNode(tszID).getZone();
@@ -63,7 +66,7 @@ public class ModelInputNCTCOG implements ModelInput {
             int tszID = Integer.parseInt(args[0]);
 
 
-            if (args.length < 72) {
+            if (args.length < 65) {
                 args = new String[]{args[0],"0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0"};
             }
             String[] newArgs = args;
@@ -111,23 +114,29 @@ public class ModelInputNCTCOG implements ModelInput {
             }
 
             Map<Integer,Map<IndustryClass,Double>> empByIGthenIC = new HashMap<Integer,Map<IndustryClass,Double>>();
-            Map<IndustryClass,Double> ig1 = new HashMap<IndustryClass,Double>();
+            Map<IndustryClass,Double> ig1 = new HashMap<IndustryClass,Double>(4,1.0f);
             ig1.put(IndustryClass.BASIC, Double.parseDouble(args[2]));
             ig1.put(IndustryClass.RETAIL, Double.parseDouble(args[3]));
             ig1.put(IndustryClass.SERVICE, Double.parseDouble(args[4]));
             empByIGthenIC.put(1, ig1);
 
-            Map<IndustryClass,Double> ig2 = new HashMap<IndustryClass,Double>();
+            Map<IndustryClass,Double> ig2 = new HashMap<IndustryClass,Double>(4,1.0f);
             ig2.put(IndustryClass.BASIC, Double.parseDouble(args[5]));
             ig2.put(IndustryClass.RETAIL, Double.parseDouble(args[6]));
             ig2.put(IndustryClass.SERVICE, Double.parseDouble(args[7]));
             empByIGthenIC.put(2, ig2);
 
-            Map<IndustryClass,Double> ig3 = new HashMap<IndustryClass,Double>();
+            Map<IndustryClass,Double> ig3 = new HashMap<IndustryClass,Double>(4,1.0f);
             ig3.put(IndustryClass.BASIC, Double.parseDouble(args[8]));
             ig3.put(IndustryClass.RETAIL, Double.parseDouble(args[9]));
             ig3.put(IndustryClass.SERVICE, Double.parseDouble(args[10]));
             empByIGthenIC.put(3, ig3);
+
+            Map<IndustryClass,Double> ig4 = new HashMap<IndustryClass,Double>(4,1.0f);
+            ig4.put(IndustryClass.BASIC, Double.parseDouble(args[11]));
+            ig4.put(IndustryClass.RETAIL, Double.parseDouble(args[12]));
+            ig4.put(IndustryClass.SERVICE, Double.parseDouble(args[13]));
+            empByIGthenIC.put(4, ig4);
 
             TravelSurveyZone tsz = graph.getNode(tszID).getZone();
             tsz.setAreaClass(ac);
@@ -136,16 +145,15 @@ public class ModelInputNCTCOG implements ModelInput {
     }
     
     @Override
-    public Graph getNetwork() {
+    public synchronized Graph getNetwork() {
         if (this.graph != null) {
             return this.graph;
         }
-        long ms = System.currentTimeMillis();
         //Model inputs
         String graphFile = inputs.getProperty("network.graphFile");
         String thruNode = inputs.getProperty("network.firstThruNode");
         String hhIG = inputs.getProperty("network.hhIG");
-        String hhVeh = inputs.getProperty("network.hhVeh");
+        String hhVeh = inputs.getProperty("network.hhIGWkrVeh");
         String emp = inputs.getProperty("network.emp");
 
 
@@ -156,8 +164,6 @@ public class ModelInputNCTCOG implements ModelInput {
             e.printStackTrace();
             System.exit(1);
         }
-        long nms = System.currentTimeMillis();
-        System.out.println(""+(nms-ms)/1000.0+" s");
 
         //TODO read RAAs
         // add demographic data to zones
@@ -180,8 +186,8 @@ public class ModelInputNCTCOG implements ModelInput {
     }
 
     @Override
-    public Map<MarketSegment, Double> getGeneralProdRates(TripPurpose purpose) {
-        if(productionRates.containsKey(purpose))
+    public synchronized Map<MarketSegment, Double> getGeneralProdRates(TripPurpose purpose) {
+        if(productionRates != null && productionRates.containsKey(purpose))
             return productionRates.get(purpose);
         String purposeDetailsFile = inputs.getProperty("productions.general." + purpose);
         Map<MarketSegment, Double> rates = ProductionAttractionFactory.readGeneralRates(purposeDetailsFile);
@@ -190,7 +196,7 @@ public class ModelInputNCTCOG implements ModelInput {
     }
 
     @Override
-    public Map<MarketSegment, Map<AreaClass, Double>> getAreaClassProdRates(TripPurpose purpose) {
+    public synchronized Map<MarketSegment, Map<AreaClass, Double>> getAreaClassProdRates(TripPurpose purpose) {
         if(areaClassProdRates.containsKey(purpose))
             return areaClassProdRates.get(purpose);
         String purposeDetailsFile = inputs.getProperty("productions.area." + purpose.toString());
@@ -200,7 +206,7 @@ public class ModelInputNCTCOG implements ModelInput {
     }
 
     @Override
-    public Map<MarketSegment, Double> getGeneralAttrRates(TripPurpose purpose) {
+    public synchronized Map<MarketSegment, Double> getGeneralAttrRates(TripPurpose purpose) {
         if(attractionRates.containsKey(purpose))
             return attractionRates.get(purpose);
         String purposeDetailsFile = inputs.getProperty("attractions.general." + purpose.toString());
@@ -210,7 +216,7 @@ public class ModelInputNCTCOG implements ModelInput {
     }
 
     @Override
-    public Map<MarketSegment, Map<AreaClass, Double>> getAreaClassAttrRates(TripPurpose purpose) {
+    public synchronized Map<MarketSegment, Map<AreaClass, Double>> getAreaClassAttrRates(TripPurpose purpose) {
         if(areaClassAttrRates.containsKey(purpose))
             return areaClassAttrRates.get(purpose);
         String purposeDetailsFile = inputs.getProperty("attractions.area." + purpose.toString());
@@ -219,47 +225,70 @@ public class ModelInputNCTCOG implements ModelInput {
         return rates;
     }
 
-
     @Override
-    public float[][] getRoadwaySkim(TimePeriod timePeriod) {
-        return new float[0][];
+    public synchronized float[][] getRoadwaySkim(TimePeriod timePeriod) {
+    	if (skimFactors != null && skimFactors.containsKey(timePeriod)) 
+    		return skimFactors.get(timePeriod);
+    	String skimFile = inputs.getProperty("skims."+timePeriod.toString());
+    	float[][] skim = SkimFactory.readSkimFile(Paths.get(skimFile), false, getNetwork());
+    	skimFactors.put(timePeriod, skim);
+        return skim;
     }
 
     @Override
-    public Map<MarketSegment, FrictionFactorMap> getFrictionFactors(TripPurpose purpose, TimePeriod timePeriod) {
-        return null;
+    public synchronized Map<MarketSegment, FrictionFactorMap> getFrictionFactors(TripPurpose purpose, TimePeriod timePeriod) {
+        if (frictionFactors != null && frictionFactors.get(purpose) != null && frictionFactors.get(purpose).get(timePeriod) != null)
+        	return frictionFactors.get(purpose).get(timePeriod);
+        if (frictionFactors == null) frictionFactors = new HashMap<TripPurpose, Map<TimePeriod, Map<MarketSegment, FrictionFactorMap>>>();
+        if (frictionFactors.get(purpose) == null) frictionFactors.put(purpose, new HashMap<TimePeriod, Map<MarketSegment,FrictionFactorMap>>());
+        
+        Collection<MarketSegment> segments;
+        
+        Map<MarketSegment,FrictionFactorMap> map = segments.parallelStream().collect(Collectors.toMap(Function.identity(), segment ->{
+        	String frictionFile = inputs.getProperty("frictionFactors."+purpose.toString()+"."+timePeriod.toString()+"."+segment.toString());
+        	float[][] skim = getRoadwaySkim(timePeriod);
+        	return FrictionFactorFactory.readFactorFile(Paths.get(frictionFile), true, skim);
+        }));
+        frictionFactors.get(purpose).put(timePeriod,map);
+    	return map;
     }
 
     @Override
-    public Map<MarketSegment, Map<Mode, Double>> getModeShares(TripPurpose purpose) {
-        return null;
+    public synchronized Map<MarketSegment, Map<Mode, Double>> getModeShares(TripPurpose purpose) {
+    	if (modalShares != null && modalShares.get(purpose) != null) return modalShares.get(purpose);
+    	if (modalShares == null) modalShares = new HashMap<TripPurpose, Map<MarketSegment,Map<Mode,Double>>>();
+    	//TODO finish this
+    	
     }
 
     @Override
-    public Map<Mode, Double> getOccupancyRates() {
-        return null;
+    public synchronized Map<Mode, Double> getOccupancyRates() {
+    	// TODO
+    	
     }
 
     @Override
-    public Map<TimePeriod, Double> getDepartureRates(TripPurpose purpose, MarketSegment segment) {
-        return null;
+    public synchronized Map<TimePeriod, Double> getDepartureRates(TripPurpose purpose, MarketSegment segment) {
+    	// TODO
+    	
     }
 
     @Override
-    public Map<TimePeriod, Double> getArrivalRates(TripPurpose purpose, MarketSegment segment) {
-        return null;
+    public synchronized Map<TimePeriod, Double> getArrivalRates(TripPurpose purpose, MarketSegment segment) {
+    	// TODO
+    	
     }
 
 	@Override
-	public Map<MarketSegment, Double> getPeakOffpeakSplit(TripPurpose purpose) {
+	public synchronized Map<MarketSegment, Double> getPeakOffpeakSplit(TripPurpose purpose) {
 		// TODO Auto-generated method stub
-		return null;
+
 	}
 
 	@Override
-	public Map<MarketSegment, Map<TravelSurveyZone, Double>> getWorkerVehicleSplits(MarketSegment segment) {
+	public synchronized Map<MarketSegment, Map<TravelSurveyZone, Double>> getWorkerVehicleSplits(MarketSegment segment) {
 		// TODO Auto-generated method stub
-		return null;
+
 	}
 
 	@Override

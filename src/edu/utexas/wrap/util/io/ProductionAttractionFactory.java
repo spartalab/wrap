@@ -22,11 +22,10 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  * This class provides static methods to read various files relating to productions, attractions, and their respective rates
  */
 public class ProductionAttractionFactory {
-	private static final Map<String, Class> headertoSegment;
-	private static final AreaClass[] areaTypes = new AreaClass[6];
+	private static final Map<String, Class<? extends MarketSegment>> headertoSegment;
 
 	static {
-		headertoSegment = new HashMap<>();
+		headertoSegment = new HashMap<String,Class<? extends MarketSegment>>();
 		headertoSegment.put("WRKCNT,", WorkerSegment.class);
 		headertoSegment.put("COLTYPE,", CollegeSegment.class);
 		headertoSegment.put("NUMOFCHILD,", ChildSegment.class);
@@ -35,19 +34,11 @@ public class ProductionAttractionFactory {
 		headertoSegment.put("EDUCATION,", StudentSegment.class);
 		headertoSegment.put("INDUSTRY,", IndustrySegment.class);
 		headertoSegment.put("INCOME,INDUSTRY,", IncomeGroupIndustrySegment.class);
-
-		areaTypes[0] = null;
-		areaTypes[1] = AreaClass.CBD;
-		areaTypes[2] = AreaClass.OBD;
-		areaTypes[3] = AreaClass.URBAN_RESIDENTIAL;
-		areaTypes[4] = AreaClass.SUBURBAN_RESIDENTIAL;
-		areaTypes[5] = AreaClass.RURAL;
-
 	}
 
 	public static Map<MarketSegment, Double> readGeneralRates(String file) {
 		BufferedReader in = null;
-		Map<MarketSegment,Double> map = new ConcurrentHashMap<>();
+		Map<MarketSegment,Double> map = new ConcurrentHashMap<MarketSegment,Double>();
 		try {
 			in = new BufferedReader(new FileReader(file));
 			String header = in.readLine();
@@ -56,7 +47,7 @@ public class ProductionAttractionFactory {
 			for(int i = 0;i < headers.length-1; i++) {
 				key.append(headers[i]).append(",");
 			}
-			Class seg = headertoSegment.get(key.toString());
+			Class<? extends MarketSegment> seg = headertoSegment.get(key.toString());
 			in.lines().parallel().forEach(line -> {
 				String[] args = line.split(",");
 				StringBuilder arg = new StringBuilder();
@@ -90,7 +81,7 @@ public class ProductionAttractionFactory {
 			for(int i = 0;i < headers.length-2; i++) {
 				key.append(headers[i]).append(",");
 			}
-			Class seg = headertoSegment.get(key.toString());
+			Class<? extends MarketSegment> seg = headertoSegment.get(key.toString());
 			in.lines().parallel().forEach(line -> {
 				String[] args = line.split(",");
 				StringBuilder arg = new StringBuilder();
