@@ -22,6 +22,7 @@ public class IncomeGroupWorkerVehicleSegment implements IncomeGroupSegmenter, Ve
 		this.workerCount = Integer.parseInt(args[1]);
 		this.vehicleCount = Integer.parseInt(args[2]);
 	}
+	
 	@Override
 	public ToDoubleFunction<TravelSurveyZone> attributeDataGetter() {
 		// TODO Auto-generated method stub

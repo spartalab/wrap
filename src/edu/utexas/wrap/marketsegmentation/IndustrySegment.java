@@ -18,7 +18,16 @@ public class IndustrySegment implements IndustrySegmenter {
 		if(args.length != 1) {
 			throw new IllegalArgumentException("Mismatch number of arguments expected 1 got " + args.length);
 		}
-		this.industry = IndustryClass.valueOf(args[0]);
+		if (args[0].equalsIgnoreCase("b")) {
+			this.industry = IndustryClass.BASIC;
+		}
+		else if (args[0].equalsIgnoreCase("r")) {
+			this.industry = IndustryClass.RETAIL;
+		}
+		else if (args[0].equalsIgnoreCase("s")) {
+			this.industry = IndustryClass.SERVICE;
+		}
+		else this.industry = IndustryClass.valueOf(args[0]);
 	}
 
 	@Override

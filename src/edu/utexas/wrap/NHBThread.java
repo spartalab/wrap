@@ -113,7 +113,7 @@ class NHBThread extends Thread{
 				TripPurpose.WORK_ESH,
 				TripPurpose.WORK_OTH,
 				TripPurpose.WORK_WORK).parallel()
-				.collect(Collectors.toMap(Function.identity(), purpose -> model.getFrictionFactors(purpose, TimePeriod.EARLY_OP).get(null)));
+				.collect(Collectors.toMap(Function.identity(), purpose -> model.getFrictionFactors(purpose, TimePeriod.EARLY_OP, null)));
 		
 		return paMaps.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, entry->
 			 new GravityDistributor(graph, ffs.get(entry.getKey())).distribute(entry.getValue())

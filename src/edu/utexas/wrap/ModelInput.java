@@ -29,7 +29,7 @@ public interface ModelInput {
     //Trip Distribution Inputs
     float[][] getRoadwaySkim(TimePeriod timePeriod);
 
-    Map<MarketSegment, FrictionFactorMap> getFrictionFactors(TripPurpose purpose, TimePeriod timePeriod);
+    FrictionFactorMap getFrictionFactors(TripPurpose purpose, TimePeriod timePeriod, MarketSegment segment);
 
     //Market segmentation inputs
     Map<MarketSegment,Map<TravelSurveyZone,Double>> getWorkerVehicleSplits(MarketSegment segment);
@@ -46,4 +46,7 @@ public interface ModelInput {
     
     String getOutputDirectory();
 
+    Class<? extends MarketSegment> getSegmenterByString(String segmentLabel);
+    
+    String getLabel(MarketSegment segment);
 }

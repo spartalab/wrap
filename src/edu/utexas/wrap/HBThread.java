@@ -115,8 +115,7 @@ class HBThread extends Thread{
 
 	private Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> offPeakDistribution(
 			Graph g,
-			Map<TripPurpose, Map<MarketSegment, PAMap>> hbMaps,
-			Map<TripPurpose, Map<MarketSegment, FrictionFactorMap>> ffm
+			Map<TripPurpose, Map<MarketSegment, PAMap>> hbMaps
 			// TODO: consider if this (and pk distribution) should take in a mapping directly to the distributor
 			// (maybe some purpose-segment pairs have the same friction factor map? So this would be unnecessary)
 	) {
@@ -124,7 +123,7 @@ class HBThread extends Thread{
 		return hbMaps.entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, purposeEntry ->
 				purposeEntry.getValue().entrySet().parallelStream()
 						.collect(Collectors.toMap(Map.Entry::getKey, segmentEntry -> {
-							TripDistributor distributor = new GravityDistributor(g, ffm.get(purposeEntry.getKey()).get(segmentEntry.getKey()));
+							TripDistributor distributor = new GravityDistributor(g, model.getFrictionFactors(purposeEntry.getKey(), TimePeriod.EARLY_OP, segmentEntry.getKey()));
 							return distributor.distribute(segmentEntry.getValue());
 						}))
 		));
@@ -236,7 +235,7 @@ class HBThread extends Thread{
 				Map<MarketSegment, PAMap> pkMaps) {
 			this.g = graph;
 			this.pkMaps = pkMaps;
-			this.frictionFactorMaps = model.getFrictionFactors(TripPurpose.HOME_WORK, TimePeriod.AM_PK); //TODO
+			this.frictionFactorMaps = pkMaps.keySet().parallelStream().collect(Collectors.toMap(Function.identity(), seg -> model.getFrictionFactors(TripPurpose.HOME_WORK, TimePeriod.AM_PK, seg))); //TODO
 ;
 		}
 
@@ -250,24 +249,15 @@ class HBThread extends Thread{
 	class HBOpGen extends Thread {
 		private Graph g;
 		private Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps;
-		private Map<TripPurpose, Map<MarketSegment, FrictionFactorMap>> opFFMaps;
 		private Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggOPMtxs;
 
 		public HBOpGen(Graph graph, Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps) {
 			this.g = graph;
 			this.hbMaps = hbMaps;
-			this.opFFMaps = Stream.of(
-					TripPurpose.HOME_COLL_UNIV,
-					TripPurpose.HOME_PBO,
-					TripPurpose.HOME_SHOP,
-					TripPurpose.HOME_SRE,
-					TripPurpose.HOME_WORK).parallel()
-					.collect(Collectors.toMap(Function.identity(),
-							purpose -> model.getFrictionFactors(purpose, TimePeriod.EARLY_OP)));
 		}
 
 		public void run() {
-			aggOPMtxs = offPeakDistribution(g, hbMaps, opFFMaps);
+			aggOPMtxs = offPeakDistribution(g, hbMaps);
 		}
 
 		public Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> getAggOPMtxs() { return aggOPMtxs; }

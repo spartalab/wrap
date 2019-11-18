@@ -16,6 +16,12 @@ public class FixedSizeDemandMap implements DemandMap {
 		graph = g;
 		demand = new double[g.numZones()];
 	}
+	
+	public FixedSizeDemandMap(DemandMap base) {
+		graph = base.getGraph();
+		demand = new double[graph.numZones()];
+		base.getZones().parallelStream().forEach(tsz -> demand[tsz.getOrder()] = base.get(tsz));
+	}
 
 	@Override
 	public Double get(TravelSurveyZone dest) {

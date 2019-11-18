@@ -1,8 +1,23 @@
 package edu.utexas.wrap;
 
 import edu.utexas.wrap.distribution.FrictionFactorMap;
+import edu.utexas.wrap.marketsegmentation.ChildSegment;
+import edu.utexas.wrap.marketsegmentation.CollegeSegment;
+import edu.utexas.wrap.marketsegmentation.IncomeGroupChildSegment;
+import edu.utexas.wrap.marketsegmentation.IncomeGroupIndustrySegment;
+import edu.utexas.wrap.marketsegmentation.IncomeGroupSegmenter;
+import edu.utexas.wrap.marketsegmentation.IncomeGroupWorkerHouseholdSizeSegment;
+import edu.utexas.wrap.marketsegmentation.IncomeGroupWorkerVehicleSegment;
 import edu.utexas.wrap.marketsegmentation.IndustryClass;
+import edu.utexas.wrap.marketsegmentation.IndustrySegment;
+import edu.utexas.wrap.marketsegmentation.IndustrySegmenter;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
+import edu.utexas.wrap.marketsegmentation.StudentSegment;
+import edu.utexas.wrap.marketsegmentation.VehicleSegmenter;
+import edu.utexas.wrap.marketsegmentation.WorkerHouseholdSizeSegment;
+import edu.utexas.wrap.marketsegmentation.WorkerSegment;
+import edu.utexas.wrap.marketsegmentation.WorkerSegmenter;
+import edu.utexas.wrap.marketsegmentation.WorkerVehicleSegment;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
@@ -19,7 +34,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -40,15 +54,32 @@ public class ModelInputNCTCOG implements ModelInput {
     private Map<Mode,Double> occupancyRates;
     private Map<TripPurpose, Map<MarketSegment, Map<TimePeriod, Double>>> departureRates;
     private Map<TripPurpose, Map<MarketSegment, Map<TimePeriod, Double>>> arrivalRates;
+	private Map<String, Class<? extends MarketSegment>> headerToSegment;
 
+
+
+	
 
     public ModelInputNCTCOG(String inputFile) throws IOException {
         InputStream input = new FileInputStream(inputFile);
         inputs = new Properties();
         inputs.load(input);
+        
+		headerToSegment = new HashMap<String,Class<? extends MarketSegment>>();
+		headerToSegment.put("WRKCNT,", WorkerSegment.class);
+		headerToSegment.put("COLTYPE,", CollegeSegment.class);
+		headerToSegment.put("NUMOFCHILD,", ChildSegment.class);
+		headerToSegment.put("WRKCNT,HHSIZE,", WorkerHouseholdSizeSegment.class);
+		headerToSegment.put("WRKCNT,VEHCNT,", WorkerVehicleSegment.class);
+		headerToSegment.put("EDUCATION,", StudentSegment.class);
+		headerToSegment.put("INDUSTRY,", IndustrySegment.class);
+		headerToSegment.put("INCOME,INDUSTRY,", IncomeGroupIndustrySegment.class);
+		headerToSegment.put("INCOME,WRKCNT,VEHCNT,", IncomeGroupWorkerVehicleSegment.class);
+		headerToSegment.put("INCOME,NUMOFCHILD,", IncomeGroupChildSegment.class);
+		headerToSegment.put("INCOME,WRKCNT,HHSIZE,", IncomeGroupWorkerHouseholdSizeSegment.class);
     }
 
-    private static void readHouseholdData(Graph graph, Path igFile, Path igWkrVehFile) throws IOException {
+    private static void readHouseholdData(Graph graph, Path igFile, Path igWkrVehFile, Path sizeWkrIGFile, Path wkrIGChildFile) throws IOException {
         // TODO Auto-generated method stub
         Files.lines(igFile).parallel().filter(line -> !line.startsWith("TSZ")).forEach(line ->{
             String[] args = line.split(",");
@@ -81,6 +112,38 @@ public class ModelInputNCTCOG implements ModelInput {
                 wkr = ((idx-1)/16) % 4;
                 tsz.setHouseholdsByIncomeGroupThenWorkersThenVehicles(ig, wkr, veh, val);
             });
+        });
+        
+        Files.lines(sizeWkrIGFile).parallel().filter(line -> !line.startsWith("TSZ")).forEach(line ->{
+        	String[] args = line.split(",");
+        	
+        	TravelSurveyZone tsz = graph.getNode(Integer.parseInt(args[0])).getZone();
+        	
+        	IntStream.range(1, 65).parallel().boxed().forEach(idx ->{
+        		double val = Double.parseDouble(args[idx]);
+        		int size, wkr, ig;
+        		ig = (idx-1)%4+1;
+        		size = ((idx-1)/4)%4+1;
+        		wkr = ((idx-1)/16)%4+1;
+        		
+        		tsz.setHouseholdsBySizeThenWorkersThenIncomeGroup(size, wkr, ig, val);
+        	});
+        });
+        
+        Files.lines(wkrIGChildFile).parallel().filter(line -> !line.startsWith("TSZ")).forEach(line ->{
+        	String[] args = line.split(",");
+        	
+        	TravelSurveyZone tsz = graph.getNode(Integer.parseInt(args[0])).getZone();
+        	
+        	IntStream.range(1, 49).parallel().boxed().forEach(idx ->{
+        		double val = Double.parseDouble(args[idx]);
+        		int wkr, ig, child;
+        		child = (idx-1)%3;
+        		ig = ((idx-1)/3)%4+1;
+        		wkr = ((idx-1)/12)%4;
+        		
+        		tsz.setHouseholdsByWorkersThenIncomeGroupThenChildren(wkr, ig, child, val);
+        	});
         });
     }
 
@@ -144,6 +207,20 @@ public class ModelInputNCTCOG implements ModelInput {
         });
     }
     
+    private static void readChildData(Graph graph, Path file) throws IOException{
+    	Files.lines(file).parallel().filter(line -> !line.startsWith("TSZ")).forEach(line ->{
+    		String[] args = line.split(",");
+    		Integer tszID = Integer.parseInt(args[0]);
+    		
+    		Map<Integer, Double> hhByChild = new HashMap<Integer, Double>();
+    		hhByChild.put(0, Double.parseDouble(args[1]));
+    		hhByChild.put(1, Double.parseDouble(args[2]));
+    		hhByChild.put(2, Double.parseDouble(args[3]));
+    		
+    		graph.getNode(tszID).getZone().setHouseholdsByChildren(hhByChild);
+    	});
+    }
+    
     @Override
     public synchronized Graph getNetwork() {
         if (this.graph != null) {
@@ -155,7 +232,9 @@ public class ModelInputNCTCOG implements ModelInput {
         String hhIG = inputs.getProperty("network.hhIG");
         String hhVeh = inputs.getProperty("network.hhIGWkrVeh");
         String emp = inputs.getProperty("network.emp");
-
+        String child = inputs.getProperty("network.child");
+        String hhSize = inputs.getProperty("network.hhSzWkrIG");
+        String hhWkrIGChild = inputs.getProperty("network.hhWkrIGChild");
 
         Graph graph = null;
         try {
@@ -168,18 +247,14 @@ public class ModelInputNCTCOG implements ModelInput {
         //TODO read RAAs
         // add demographic data to zones
         try {
-            readHouseholdData(graph, Paths.get(hhIG), Paths.get(hhVeh));
+            readHouseholdData(graph, Paths.get(hhIG), Paths.get(hhVeh), Paths.get(hhSize), Paths.get(hhWkrIGChild));
+            readEmploymentData(graph, Paths.get(emp));
+            readChildData(graph,Paths.get(child));
         } catch (IOException e) {
             e.printStackTrace();
             System.exit(1);
         }
 
-        try {
-            readEmploymentData(graph, Paths.get(emp));
-        } catch (IOException e) {
-            e.printStackTrace();
-            System.exit(1);
-        }
         this.graph = graph;
 
         return this.graph;
@@ -189,38 +264,50 @@ public class ModelInputNCTCOG implements ModelInput {
     public synchronized Map<MarketSegment, Double> getGeneralProdRates(TripPurpose purpose) {
         if(productionRates != null && productionRates.containsKey(purpose))
             return productionRates.get(purpose);
+        
+        if (productionRates == null) productionRates = new HashMap<TripPurpose,Map<MarketSegment,Double>>();
+        
         String purposeDetailsFile = inputs.getProperty("productions.general." + purpose);
-        Map<MarketSegment, Double> rates = ProductionAttractionFactory.readGeneralRates(purposeDetailsFile);
+        Map<MarketSegment, Double> rates = ProductionAttractionFactory.readGeneralRates(purposeDetailsFile, this);
         productionRates.put(purpose, rates);
         return rates;
     }
 
     @Override
     public synchronized Map<MarketSegment, Map<AreaClass, Double>> getAreaClassProdRates(TripPurpose purpose) {
-        if(areaClassProdRates.containsKey(purpose))
+        if (areaClassProdRates == null) areaClassProdRates = new HashMap<TripPurpose,Map<MarketSegment,Map<AreaClass,Double>>>();
+        else if (areaClassProdRates.containsKey(purpose))
             return areaClassProdRates.get(purpose);
+        
         String purposeDetailsFile = inputs.getProperty("productions.area." + purpose.toString());
-        Map<MarketSegment, Map<AreaClass, Double>> rates = ProductionAttractionFactory.readAreaRates(purposeDetailsFile);
+        Map<MarketSegment, Map<AreaClass, Double>> rates = ProductionAttractionFactory.readAreaRates(purposeDetailsFile, this);
         areaClassProdRates.put(purpose, rates);
         return rates;
     }
 
     @Override
     public synchronized Map<MarketSegment, Double> getGeneralAttrRates(TripPurpose purpose) {
-        if(attractionRates.containsKey(purpose))
+        if (attractionRates == null) attractionRates = new HashMap<TripPurpose,Map<MarketSegment,Double>>();
+        else if (attractionRates.containsKey(purpose))
             return attractionRates.get(purpose);
+        
+        
+        
         String purposeDetailsFile = inputs.getProperty("attractions.general." + purpose.toString());
-        Map<MarketSegment, Double> rates = ProductionAttractionFactory.readGeneralRates(purposeDetailsFile);
+        Map<MarketSegment, Double> rates = ProductionAttractionFactory.readGeneralRates(purposeDetailsFile, this);
         attractionRates.put(purpose, rates);
         return rates;
     }
 
     @Override
     public synchronized Map<MarketSegment, Map<AreaClass, Double>> getAreaClassAttrRates(TripPurpose purpose) {
-        if(areaClassAttrRates.containsKey(purpose))
+        if (areaClassAttrRates == null) areaClassAttrRates = new HashMap<TripPurpose,Map<MarketSegment,Map<AreaClass,Double>>>();
+
+        else if(areaClassAttrRates.containsKey(purpose))
             return areaClassAttrRates.get(purpose);
+        
         String purposeDetailsFile = inputs.getProperty("attractions.area." + purpose.toString());
-        Map<MarketSegment, Map<AreaClass, Double>> rates = ProductionAttractionFactory.readAreaRates(purposeDetailsFile);
+        Map<MarketSegment, Map<AreaClass, Double>> rates = ProductionAttractionFactory.readAreaRates(purposeDetailsFile, this);
         areaClassAttrRates.put(purpose, rates);
         return rates;
     }
@@ -236,20 +323,25 @@ public class ModelInputNCTCOG implements ModelInput {
     }
 
     @Override
-    public synchronized Map<MarketSegment, FrictionFactorMap> getFrictionFactors(TripPurpose purpose, TimePeriod timePeriod) {
-        if (frictionFactors != null && frictionFactors.get(purpose) != null && frictionFactors.get(purpose).get(timePeriod) != null)
-        	return frictionFactors.get(purpose).get(timePeriod);
+    public synchronized FrictionFactorMap getFrictionFactors(TripPurpose purpose, TimePeriod timePeriod, MarketSegment segment) {
+        if (frictionFactors != null 
+        		&& frictionFactors.get(purpose) != null 
+        		&& frictionFactors.get(purpose).get(timePeriod) != null
+        		&& frictionFactors.get(purpose).get(timePeriod).get(segment) != null)
+        	return frictionFactors.get(purpose).get(timePeriod).get(segment);
+
         if (frictionFactors == null) frictionFactors = new HashMap<TripPurpose, Map<TimePeriod, Map<MarketSegment, FrictionFactorMap>>>();
-        if (frictionFactors.get(purpose) == null) frictionFactors.put(purpose, new HashMap<TimePeriod, Map<MarketSegment,FrictionFactorMap>>());
+        frictionFactors.putIfAbsent(purpose, new HashMap<TimePeriod, Map<MarketSegment,FrictionFactorMap>>());
+        frictionFactors.get(purpose).putIfAbsent(timePeriod, new HashMap<MarketSegment,FrictionFactorMap>());
         
-        Collection<MarketSegment> segments;
         
-        Map<MarketSegment,FrictionFactorMap> map = segments.parallelStream().collect(Collectors.toMap(Function.identity(), segment ->{
-        	String frictionFile = inputs.getProperty("frictionFactors."+purpose.toString()+"."+timePeriod.toString()+"."+segment.toString());
-        	float[][] skim = getRoadwaySkim(timePeriod);
-        	return FrictionFactorFactory.readFactorFile(Paths.get(frictionFile), true, skim);
-        }));
-        frictionFactors.get(purpose).put(timePeriod,map);
+
+        String frictionFile = inputs.getProperty("frictionFactors."+purpose.toString()+"."+timePeriod.toString()+
+        		(segment == null? "" : "."+getLabel(segment)));
+        float[][] skim = getRoadwaySkim(timePeriod);
+        FrictionFactorMap map = FrictionFactorFactory.readFactorFile(Paths.get(frictionFile), true, skim);
+        frictionFactors.get(purpose).get(timePeriod).put(segment,map);
+        
     	return map;
     }
 
@@ -294,6 +386,40 @@ public class ModelInputNCTCOG implements ModelInput {
 	@Override
 	public String getOutputDirectory() {
 		return inputs.getProperty("outputDirectory");
+	}
+
+	@Override
+	public Class<? extends MarketSegment> getSegmenterByString(String segmentLabel) {
+		// TODO Auto-generated method stub
+		return headerToSegment.get(segmentLabel);
+	}
+	
+	@Override
+	public String getLabel(MarketSegment segment) {
+		StringBuilder sb = new StringBuilder();
+		
+		if (segment instanceof WorkerSegmenter) {
+			sb.append("W");
+			sb.append(((WorkerSegmenter) segment).getNumberOfWorkers());
+		}
+		
+		if (segment instanceof VehicleSegmenter) {
+			sb.append("V");
+			sb.append(((VehicleSegmenter) segment).getNumberOfVehicles());
+		}
+		
+		if (segment instanceof IncomeGroupSegmenter) {
+			sb.append("IG");
+			sb.append(((IncomeGroupSegmenter) segment).getIncomeGroup());
+		}
+		
+		if (segment instanceof IndustrySegmenter) {
+			String ic = ((IndustrySegmenter) segment).getIndustryClass().toString();
+			sb.append(ic.substring(0,1).toUpperCase());
+			sb.append(ic.substring(1, 2).toLowerCase());
+		}
+		
+		return sb.toString();
 	}
 
 }

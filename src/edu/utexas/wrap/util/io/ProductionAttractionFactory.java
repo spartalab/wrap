@@ -2,6 +2,8 @@ package edu.utexas.wrap.util.io;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
@@ -9,6 +11,8 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.Collection;
 import java.util.HashMap;
+
+import edu.utexas.wrap.ModelInput;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.PAMatrix;
 import edu.utexas.wrap.demand.containers.AggregatePAHashMap;
@@ -22,32 +26,19 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  * This class provides static methods to read various files relating to productions, attractions, and their respective rates
  */
 public class ProductionAttractionFactory {
-	private static final Map<String, Class<? extends MarketSegment>> headertoSegment;
 
-	static {
-		headertoSegment = new HashMap<String,Class<? extends MarketSegment>>();
-		headertoSegment.put("WRKCNT,", WorkerSegment.class);
-		headertoSegment.put("COLTYPE,", CollegeSegment.class);
-		headertoSegment.put("NUMOFCHILD,", ChildSegment.class);
-		headertoSegment.put("WRKCNT,HHSIZE,", WorkerHouseholdSizeSegment.class);
-		headertoSegment.put("WRKCNT,VEHCNT,", WorkerVehicleSegment.class);
-		headertoSegment.put("EDUCATION,", StudentSegment.class);
-		headertoSegment.put("INDUSTRY,", IndustrySegment.class);
-		headertoSegment.put("INCOME,INDUSTRY,", IncomeGroupIndustrySegment.class);
-	}
-
-	public static Map<MarketSegment, Double> readGeneralRates(String file) {
+	public static Map<MarketSegment, Double> readGeneralRates(String file, ModelInput model) {
 		BufferedReader in = null;
 		Map<MarketSegment,Double> map = new ConcurrentHashMap<MarketSegment,Double>();
 		try {
-			in = new BufferedReader(new FileReader(file));
-			String header = in.readLine();
+			in = Files.newBufferedReader(Paths.get(file));
+			String header = in.readLine().trim().replaceAll("[^\\x00-\\xff]", ""); //weird file IO kludge
 			String[] headers = header.split(",");
 			StringBuilder key = new StringBuilder();
 			for(int i = 0;i < headers.length-1; i++) {
 				key.append(headers[i]).append(",");
 			}
-			Class<? extends MarketSegment> seg = headertoSegment.get(key.toString());
+			Class<? extends MarketSegment> seg = model.getSegmenterByString(key.toString());
 			in.lines().parallel().forEach(line -> {
 				String[] args = line.split(",");
 				StringBuilder arg = new StringBuilder();
@@ -70,18 +61,18 @@ public class ProductionAttractionFactory {
 		return map;
 	}
 
-	public static Map<MarketSegment, Map<AreaClass, Double>> readAreaRates(String purposeDetailsFile) {
+	public static Map<MarketSegment, Map<AreaClass, Double>> readAreaRates(String purposeDetailsFile, ModelInput model) {
 		BufferedReader in = null;
 		Map<MarketSegment,Map<AreaClass,Double>> map = new ConcurrentHashMap<MarketSegment,Map<AreaClass,Double>>();
 		try {
-			in = new BufferedReader(new FileReader(purposeDetailsFile));
-			String header = in.readLine();
+			in = Files.newBufferedReader(Paths.get(purposeDetailsFile));
+			String header = in.readLine().trim().replaceAll("[^\\x00-\\xff]", "");
 			String[] headers = header.split(",");
 			StringBuilder key = new StringBuilder();
 			for(int i = 0;i < headers.length-2; i++) {
 				key.append(headers[i]).append(",");
 			}
-			Class<? extends MarketSegment> seg = headertoSegment.get(key.toString());
+			Class<? extends MarketSegment> seg = model.getSegmenterByString(key.toString());
 			in.lines().parallel().forEach(line -> {
 				String[] args = line.split(",");
 				StringBuilder arg = new StringBuilder();

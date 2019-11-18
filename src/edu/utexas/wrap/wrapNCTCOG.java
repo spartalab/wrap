@@ -11,10 +11,13 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import edu.utexas.wrap.balancing.Attr2ProdProportionalBalancer;
 import edu.utexas.wrap.balancing.Prod2AttrProportionalBalancer;
+import edu.utexas.wrap.balancing.TripBalancer;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.PAMap;
+import edu.utexas.wrap.demand.containers.FixedSizePAMap;
 import edu.utexas.wrap.demand.containers.PAPassthroughMap;
 import edu.utexas.wrap.generation.AreaSpecificTripGenerator;
 import edu.utexas.wrap.generation.BasicTripGenerator;
@@ -37,6 +40,8 @@ public class wrapNCTCOG {
 			
 			//Perform trip generation
 			Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps = generateTrips(graph, model);
+			
+			hbMaps = flatten(hbMaps);
 			
 			//Perform trip balancing
 			balance(graph, hbMaps);
@@ -71,6 +76,14 @@ public class wrapNCTCOG {
 		}
 	}
 	
+	private static Map<TripPurpose,Map<MarketSegment,PAMap>> flatten(Map<TripPurpose,Map<MarketSegment,PAMap>> maps) {
+		return maps.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, purposeEntry ->
+			purposeEntry.getValue().entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, segmentEntry->
+				new FixedSizePAMap(segmentEntry.getValue())
+			))
+		));
+	}
+	
 	private static Map<TripPurpose,Map<MarketSegment, PAMap>> generateTrips(Graph g, ModelInput model) throws IOException {
 		
 
@@ -78,8 +91,9 @@ public class wrapNCTCOG {
 				TripPurpose.HOME_WORK,
 				TripPurpose.HOME_SHOP,
 				TripPurpose.HOME_SRE,
-				TripPurpose.HOME_PBO,
-				TripPurpose.HOME_K12).parallel().collect(Collectors.toMap(Function.identity(), purpose -> model.getGeneralProdRates(purpose)));
+//				TripPurpose.HOME_K12,
+				TripPurpose.HOME_PBO
+				).parallel().collect(Collectors.toMap(Function.identity(), purpose -> model.getGeneralProdRates(purpose)));
 
 		Map<TripPurpose,Map<MarketSegment,Map<AreaClass,Double>>> attrRates = prodRates.keySet().parallelStream()
 				.collect(Collectors.toMap(Function.identity(), purpose -> model.getAreaClassAttrRates(purpose)));
@@ -134,8 +148,12 @@ public class wrapNCTCOG {
 	
 	private static void balance(Graph g, Map<TripPurpose, Map<MarketSegment, PAMap>> hbMaps) {
 		//TODO verify this behavior is correct
-		Prod2AttrProportionalBalancer balancer = new Prod2AttrProportionalBalancer(null);
-		hbMaps.values().parallelStream().flatMap(map -> map.values().parallelStream()).forEach(map -> balancer.balance(map));
+		hbMaps.entrySet().parallelStream().forEach(entry -> {
+			TripBalancer balancer = entry.getKey().equals(TripPurpose.HOME_WORK)? 
+					new Prod2AttrProportionalBalancer(null) : new Attr2ProdProportionalBalancer();
+
+			entry.getValue().values().parallelStream().forEach(paMap -> balancer.balance(paMap));
+		});
 	}
 
 	

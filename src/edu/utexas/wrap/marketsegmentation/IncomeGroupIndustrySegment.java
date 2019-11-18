@@ -21,7 +21,16 @@ public class IncomeGroupIndustrySegment implements IncomeGroupSegmenter, Industr
 			throw new IllegalArgumentException("Mismatch number of arguments expected 2 got " + args.length);
 		}
 		this.incomeGroup = Integer.parseInt(args[0]);
-		this.industry = IndustryClass.valueOf(args[1]);
+		if (args[1].equalsIgnoreCase("b")) {
+			this.industry = IndustryClass.BASIC;
+		}
+		else if (args[1].equalsIgnoreCase("r")) {
+			this.industry = IndustryClass.RETAIL;
+		}
+		else if (args[1].equalsIgnoreCase("s")) {
+			this.industry = IndustryClass.SERVICE;
+		}
+		else this.industry = IndustryClass.valueOf(args[1]);
 	}
 	
 	@Override
@@ -40,7 +49,7 @@ public class IncomeGroupIndustrySegment implements IncomeGroupSegmenter, Industr
 	}
 	
 	public String toString() {
-		return "MS:"+industry.name()+" employment in income groupd "+incomeGroup;
+		return "MS:"+industry.name()+" employment in income group "+incomeGroup;
 	}
 
 
