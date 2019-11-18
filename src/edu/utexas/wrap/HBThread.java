@@ -14,7 +14,6 @@ import edu.utexas.wrap.modechoice.FixedProportionSplitter;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.modechoice.TripInterchangeSplitter;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.AggregatePAMatrixCollector;
 import edu.utexas.wrap.util.DepartureArrivalConverter;
 
@@ -33,9 +32,10 @@ class HBThread extends Thread{
 	private Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps;
 	private ModelInput model;
 
-	public HBThread(Graph graph, Map<TripPurpose, Map<MarketSegment,PAMap>> hbMaps) {
+	public HBThread(Graph graph, ModelInput model, Map<TripPurpose, Map<MarketSegment,PAMap>> hbMaps) {
 		this.graph = graph;
 		this.hbMaps = hbMaps;
+		this.model = model;
 	}
 
 	public void run() {
@@ -83,7 +83,7 @@ class HBThread extends Thread{
 
 	private Map<MarketSegment,PAMap> extractPeakTrips(Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps) {
 		Map<MarketSegment,PAMap> hbwMaps = hbMaps.get(TripPurpose.HOME_WORK);
-		Map<MarketSegment,Double> splitRates = model.getPeakOffpeakSplit(TripPurpose.HOME_WORK);
+		Map<MarketSegment,Double> splitRates = model.getPeakShares(TripPurpose.HOME_WORK);
 
 		Map<MarketSegment,PAMap> pkMaps = new HashMap<MarketSegment,PAMap>();
 		Map<MarketSegment,PAMap> opMaps = new HashMap<MarketSegment,PAMap>();
@@ -120,7 +120,7 @@ class HBThread extends Thread{
 			// (maybe some purpose-segment pairs have the same friction factor map? So this would be unnecessary)
 	) {
 
-		return hbMaps.entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, purposeEntry ->
+		return hbMaps.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, purposeEntry ->
 				purposeEntry.getValue().entrySet().parallelStream()
 						.collect(Collectors.toMap(Map.Entry::getKey, segmentEntry -> {
 							TripDistributor distributor = new GravityDistributor(g, model.getFrictionFactors(purposeEntry.getKey(), TimePeriod.EARLY_OP, segmentEntry.getKey()));
@@ -149,14 +149,11 @@ class HBThread extends Thread{
 	}
 
 	private Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> subdivideSegments(Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs) {
-		Map<MarketSegment, Map<MarketSegment, Map<TravelSurveyZone, Double>>> workerVehicleRates = aggCombinedMtxs.values().parallelStream()
-				.flatMap(map -> map.keySet().parallelStream()).distinct()
-				.collect(Collectors.toMap(Function.identity(), seg -> model.getWorkerVehicleSplits(seg)));
 		
 		return aggCombinedMtxs.entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, purposeMapEntry-> //for each trip purpose
 				purposeMapEntry.getValue().entrySet().parallelStream() //Stream of MarketSegment-Matrix entries
 						.map(oldSegmentMap ->	//Take each segment-matrix pair
-								workerVehicleRates.get(oldSegmentMap.getKey()).entrySet().parallelStream()		//get a stream of all related segment-rateMap pairs
+								model.getWorkerVehicleSplits(oldSegmentMap.getKey(),purposeMapEntry.getKey()).entrySet().parallelStream()		//get a stream of all related segment-rateMap pairs
 										.collect(Collectors.toMap(Map.Entry::getKey, 										//map each related (more bespoke) segment to
 												rateMap ->  new PerProductionZoneMultiplierPassthroughMatrix(oldSegmentMap.getValue(),rateMap.getValue())))	//a rate multiplier map
 						).flatMap(map -> map.entrySet().parallelStream()) 			//unpackage the map to a set of entries
@@ -235,11 +232,11 @@ class HBThread extends Thread{
 				Map<MarketSegment, PAMap> pkMaps) {
 			this.g = graph;
 			this.pkMaps = pkMaps;
-			this.frictionFactorMaps = pkMaps.keySet().parallelStream().collect(Collectors.toMap(Function.identity(), seg -> model.getFrictionFactors(TripPurpose.HOME_WORK, TimePeriod.AM_PK, seg))); //TODO
 ;
 		}
 
 		public void run() {
+			frictionFactorMaps = pkMaps.keySet().stream().collect(Collectors.toMap(Function.identity(), seg -> model.getFrictionFactors(TripPurpose.HOME_WORK, TimePeriod.AM_PK, seg)));
 			aggregateMatrices = peakDistribution(g, pkMaps, frictionFactorMaps);
 		}
 

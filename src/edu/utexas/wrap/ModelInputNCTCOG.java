@@ -5,6 +5,7 @@ import edu.utexas.wrap.marketsegmentation.ChildSegment;
 import edu.utexas.wrap.marketsegmentation.CollegeSegment;
 import edu.utexas.wrap.marketsegmentation.IncomeGroupChildSegment;
 import edu.utexas.wrap.marketsegmentation.IncomeGroupIndustrySegment;
+import edu.utexas.wrap.marketsegmentation.IncomeGroupSegment;
 import edu.utexas.wrap.marketsegmentation.IncomeGroupSegmenter;
 import edu.utexas.wrap.marketsegmentation.IncomeGroupWorkerHouseholdSizeSegment;
 import edu.utexas.wrap.marketsegmentation.IncomeGroupWorkerVehicleSegment;
@@ -313,13 +314,17 @@ public class ModelInputNCTCOG implements ModelInput {
     }
 
     @Override
-    public synchronized float[][] getRoadwaySkim(TimePeriod timePeriod) {
-    	if (skimFactors != null && skimFactors.containsKey(timePeriod)) 
-    		return skimFactors.get(timePeriod);
-    	String skimFile = inputs.getProperty("skims."+timePeriod.toString());
-    	float[][] skim = SkimFactory.readSkimFile(Paths.get(skimFile), false, getNetwork());
-    	skimFactors.put(timePeriod, skim);
-        return skim;
+    public float[][] getRoadwaySkim(TimePeriod timePeriod) {
+    	synchronized(timePeriod) {
+    		if (skimFactors != null && skimFactors.containsKey(timePeriod)) 
+    			return skimFactors.get(timePeriod);
+    		if (skimFactors == null) skimFactors = new HashMap<TimePeriod,float[][]>();
+    		
+    		String skimFile = inputs.getProperty("skims."+timePeriod.toString());
+    		float[][] skim = SkimFactory.readSkimFile(Paths.get(skimFile.trim()), false, getNetwork());
+    		skimFactors.put(timePeriod, skim);
+    		return skim;
+    	}
     }
 
     @Override
@@ -372,15 +377,38 @@ public class ModelInputNCTCOG implements ModelInput {
     }
 
 	@Override
-	public synchronized Map<MarketSegment, Double> getPeakOffpeakSplit(TripPurpose purpose) {
-		// TODO Auto-generated method stub
-
+	public synchronized Map<MarketSegment, Double> getPeakShares(TripPurpose purpose) {
+		try {
+			String shareFile = inputs.getProperty("splitting.peakShares");
+			return Files.lines(Paths.get(shareFile)).parallel().filter(line -> !line.startsWith("I"))
+					.map(line -> line.split(","))
+					.collect(Collectors.toMap(
+							args ->	new IncomeGroupSegment(Integer.parseInt(args[0])),
+							args -> Double.parseDouble(args[1])));
+		} catch (IOException e) {
+			e.printStackTrace();
+			System.exit(-6);
+			return null;
+		}
 	}
 
 	@Override
-	public synchronized Map<MarketSegment, Map<TravelSurveyZone, Double>> getWorkerVehicleSplits(MarketSegment segment) {
+	public synchronized Map<MarketSegment, Map<TravelSurveyZone, Double>> getWorkerVehicleSplits(MarketSegment segment, TripPurpose purpose) {
 		// TODO Auto-generated method stub
-
+		String splitFile = inputs.getProperty("splitting.wkrVehSplits."+purpose.toString());
+		try {
+			Files.lines(Paths.get(splitFile)).parallel().filter(line -> !line.startsWith("T")).forEach(line ->{
+				String[] args = line.split(",");
+				TravelSurveyZone tsz = getNetwork().getNode(Integer.parseInt(args[0])).getZone();
+				
+				
+			});
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.exit(-9);
+			return null;
+		}
 	}
 
 	@Override

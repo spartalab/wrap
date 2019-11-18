@@ -50,7 +50,7 @@ public class SkimFactory {
 		String[] args = line.split(",");
 		TravelSurveyZone orig = graph.getNode(Integer.parseInt(args[0])).getZone();
 		TravelSurveyZone dest = graph.getNode(Integer.parseInt(args[1])).getZone();
-		Float cost = Float.parseFloat(args[5]);
+		Float cost = Float.parseFloat(args[2]);
 //		ret.putIfAbsent(orig, new ConcurrentSkipListMap<TravelSurveyZone, Float>(new ZoneComparator()));
 		ret[orig.getOrder()][dest.getOrder()] = cost;
 //		ret.get(orig).put(dest, cost);

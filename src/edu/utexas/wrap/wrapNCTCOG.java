@@ -47,14 +47,14 @@ public class wrapNCTCOG {
 			balance(graph, hbMaps);
 			
 			NHBThread nhb = new NHBThread(graph, model, hbMaps);
-			nhb.start();
+//			nhb.start();
 			
-			HBThread hb = new HBThread(graph, hbMaps);
+			HBThread hb = new HBThread(graph, model, hbMaps);
 			hb.start();
 
 			try {
 				hb.join();
-				nhb.join();
+//				nhb.join();
 			} catch(InterruptedException e) {
 				System.out.println("Thread is interrupted.\n");
 			}

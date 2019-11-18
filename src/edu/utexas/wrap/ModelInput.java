@@ -24,7 +24,7 @@ public interface ModelInput {
     Map<MarketSegment, Map<AreaClass, Double>> getAreaClassAttrRates(TripPurpose purpose);
     
     //Peak/off-peak splitting inputs
-    Map<MarketSegment,Double> getPeakOffpeakSplit(TripPurpose purpose);
+    Map<MarketSegment,Double> getPeakShares(TripPurpose purpose);
 
     //Trip Distribution Inputs
     float[][] getRoadwaySkim(TimePeriod timePeriod);
@@ -32,7 +32,7 @@ public interface ModelInput {
     FrictionFactorMap getFrictionFactors(TripPurpose purpose, TimePeriod timePeriod, MarketSegment segment);
 
     //Market segmentation inputs
-    Map<MarketSegment,Map<TravelSurveyZone,Double>> getWorkerVehicleSplits(MarketSegment segment);
+    Map<MarketSegment,Map<TravelSurveyZone,Double>> getWorkerVehicleSplits(MarketSegment segment, TripPurpose purpose);
 
     //Mode Choice Inputs
     Map<MarketSegment,Map<Mode,Double>> getModeShares(TripPurpose purpose);
