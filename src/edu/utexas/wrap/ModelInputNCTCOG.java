@@ -42,6 +42,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class ModelInputNCTCOG implements ModelInput {
     private Properties inputs;
@@ -394,13 +395,91 @@ public class ModelInputNCTCOG implements ModelInput {
     @Override
     public synchronized Map<TimePeriod, Double> getDepartureRates(TripPurpose purpose, MarketSegment segment) {
     	// TODO
+    	if (departureRates != null 
+    			&& departureRates.get(purpose) != null 
+    			&& departureRates.get(purpose).get(segment) != null) 
+    		return departureRates.get(purpose).get(segment); 
+    	if (departureRates == null) {
+    		departureRates = new HashMap<TripPurpose,Map<MarketSegment,Map<TimePeriod,Double>>>();
+    		
+    		Stream.of(TripPurpose.HOME_WORK, TripPurpose.HOME_NONWORK, TripPurpose.NONHOME_WORK, TripPurpose.NONHOME_NONWORK)
+    		.forEach(seg -> departureRates.put(seg,new HashMap<MarketSegment,Map<TimePeriod,Double>>()));
+    		
+    		Stream.of(TripPurpose.HOME_WORK, TripPurpose.HOME_NONWORK).forEach(seg ->
+    			IntStream.range(1,5).boxed().forEach(ig ->
+    			departureRates.get(seg).put(new IncomeGroupSegment(ig), new HashMap<TimePeriod,Double>()))
+    		);
+    		Stream.of(TripPurpose.NONHOME_WORK,TripPurpose.NONHOME_NONWORK).forEach(seg -> departureRates.get(seg).put(null, new HashMap<TimePeriod,Double>()));
+    	}
+    	String depFile = inputs.getProperty("pa2od.depRates");
     	
+    	try {
+			Files.lines(Paths.get(depFile)).filter(line -> !line.startsWith("T")).forEach(line -> {
+				String[] args = line.split(",");
+				
+				TimePeriod tp = TimePeriod.valueOf(args[0]);
+				
+				departureRates.get(TripPurpose.HOME_WORK).entrySet().forEach(entry ->{
+					entry.getValue().put(tp, Double.parseDouble(args[((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup()]));
+				});
+				departureRates.get(TripPurpose.HOME_NONWORK).entrySet().forEach(entry ->{
+					entry.getValue().put(tp, Double.parseDouble(args[((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup()+4]));
+				});
+				departureRates.get(TripPurpose.NONHOME_WORK).get(null).put(tp, Double.parseDouble(args[9]));
+				departureRates.get(TripPurpose.NONHOME_NONWORK).get(null).put(tp, Double.parseDouble(args[10]));
+			});
+			return departureRates.get(purpose).get(segment);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.exit(-4);
+			return null;
+		}
     }
 
     @Override
     public synchronized Map<TimePeriod, Double> getArrivalRates(TripPurpose purpose, MarketSegment segment) {
     	// TODO
+    	if (arrivalRates != null 
+    			&& arrivalRates.get(purpose) != null 
+    			&& arrivalRates.get(purpose).get(segment) != null) 
+    		return arrivalRates.get(purpose).get(segment); 
+    	if (arrivalRates == null) {
+    		arrivalRates = new HashMap<TripPurpose,Map<MarketSegment,Map<TimePeriod,Double>>>();
+    		
+    		Stream.of(TripPurpose.HOME_WORK, TripPurpose.HOME_NONWORK, TripPurpose.NONHOME_WORK, TripPurpose.NONHOME_NONWORK)
+    		.forEach(seg -> arrivalRates.put(seg,new HashMap<MarketSegment,Map<TimePeriod,Double>>()));
+    		
+    		Stream.of(TripPurpose.HOME_WORK, TripPurpose.HOME_NONWORK).forEach(seg ->
+    			IntStream.range(1,5).boxed().forEach(ig ->
+    			arrivalRates.get(seg).put(new IncomeGroupSegment(ig), new HashMap<TimePeriod,Double>()))
+    		);
+    		Stream.of(TripPurpose.NONHOME_WORK,TripPurpose.NONHOME_NONWORK).forEach(seg -> arrivalRates.get(seg).put(null, new HashMap<TimePeriod,Double>()));
+    	}
+    	String depFile = inputs.getProperty("pa2od.arrRates");
     	
+    	try {
+			Files.lines(Paths.get(depFile)).filter(line -> !line.startsWith("T")).forEach(line -> {
+				String[] args = line.split(",");
+				
+				TimePeriod tp = TimePeriod.valueOf(args[0]);
+				
+				arrivalRates.get(TripPurpose.HOME_WORK).entrySet().forEach(entry ->{
+					entry.getValue().put(tp, Double.parseDouble(args[((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup()]));
+				});
+				arrivalRates.get(TripPurpose.HOME_NONWORK).entrySet().forEach(entry ->{
+					entry.getValue().put(tp, Double.parseDouble(args[((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup()+4]));
+				});
+				arrivalRates.get(TripPurpose.NONHOME_WORK).get(null).put(tp, Double.parseDouble(args[9]));
+				arrivalRates.get(TripPurpose.NONHOME_NONWORK).get(null).put(tp, Double.parseDouble(args[10]));
+			});
+			return arrivalRates.get(purpose).get(segment);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			System.exit(-4);
+			return null;
+		}
     }
 
 	@Override
