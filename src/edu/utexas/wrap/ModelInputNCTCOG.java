@@ -38,6 +38,7 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -52,6 +53,7 @@ public class ModelInputNCTCOG implements ModelInput {
     private Map<TimePeriod, float[][]> skimFactors;
     private Map<TripPurpose, Map<TimePeriod, Map<MarketSegment, FrictionFactorMap>>> frictionFactors;
     private Map<TripPurpose, Map<MarketSegment, Map<Mode, Double>>> modalShares;
+    private Map<TripPurpose,Map<MarketSegment, Map<MarketSegment,Map<TravelSurveyZone,Double>>>> subsegmentations;
     private Map<Mode,Double> occupancyRates;
     private Map<TripPurpose, Map<MarketSegment, Map<TimePeriod, Double>>> departureRates;
     private Map<TripPurpose, Map<MarketSegment, Map<TimePeriod, Double>>> arrivalRates;
@@ -354,14 +356,39 @@ public class ModelInputNCTCOG implements ModelInput {
     public synchronized Map<MarketSegment, Map<Mode, Double>> getModeShares(TripPurpose purpose) {
     	if (modalShares != null && modalShares.get(purpose) != null) return modalShares.get(purpose);
     	if (modalShares == null) modalShares = new HashMap<TripPurpose, Map<MarketSegment,Map<Mode,Double>>>();
-    	//TODO finish this
+
+    	String shareFile = inputs.getProperty("modeChoice.shares."+purpose.toString());
+    	
+    	try {
+    		return Files.lines(Paths.get(shareFile)).filter(line -> !line.startsWith("I")).collect(Collectors.toMap(
+    				line -> new IncomeGroupSegment(Integer.parseInt(line.split(",")[0])), 
+    				line -> {
+    					String[] args = line.split(",");
+    					Map<Mode,Double> map = new HashMap<Mode,Double>();
+    					
+    					map.put(Mode.SINGLE_OCC, Double.parseDouble(args[1]));
+    					map.put(Mode.HOV_2_PSGR, Double.parseDouble(args[2]));
+    					map.put(Mode.HOV_3_PSGR, Double.parseDouble(args[3]));
+    					
+    					return map;
+    				}));
+    	} catch (IOException e) {
+    		e.printStackTrace();
+    		System.exit(-7);
+    		return null;
+    	}
     	
     }
 
     @Override
     public synchronized Map<Mode, Double> getOccupancyRates() {
-    	// TODO
+    	if (occupancyRates != null) return occupancyRates;
+    	occupancyRates = new HashMap<Mode,Double>();
+    	occupancyRates.put(Mode.SINGLE_OCC, 1.0);
+    	occupancyRates.put(Mode.HOV_2_PSGR, 0.5);
+    	occupancyRates.put(Mode.HOV_3_PSGR, Double.parseDouble(inputs.getProperty("modeChoice.occupancyRate.HOV3")));
     	
+    	return occupancyRates;
     }
 
     @Override
@@ -394,17 +421,56 @@ public class ModelInputNCTCOG implements ModelInput {
 
 	@Override
 	public synchronized Map<MarketSegment, Map<TravelSurveyZone, Double>> getWorkerVehicleSplits(MarketSegment segment, TripPurpose purpose) {
-		// TODO Auto-generated method stub
+		// TODO the outer map is mostly redundant - almost all trip purposes use the same data 
+		if (subsegmentations != null
+				&& subsegmentations.get(purpose) != null 
+				&& subsegmentations.get(purpose).get(segment) != null) 
+			return subsegmentations.get(purpose).get(segment);
+		if (subsegmentations == null) subsegmentations = new ConcurrentHashMap<TripPurpose,Map<MarketSegment,Map<MarketSegment,Map<TravelSurveyZone,Double>>>>();
+		if (subsegmentations.get(purpose) == null) subsegmentations.put(purpose, new ConcurrentHashMap<MarketSegment,Map<MarketSegment,Map<TravelSurveyZone,Double>>>());
+		
+		final Map<MarketSegment,Map<TravelSurveyZone,Double>> map =  new ConcurrentHashMap<MarketSegment,Map<TravelSurveyZone,Double>>();
+		map.put(new IncomeGroupWorkerVehicleSegment(((IncomeGroupSegmenter) segment).getIncomeGroup(),0,0), new ConcurrentHashMap<TravelSurveyZone,Double>(getNetwork().numZones()));
+		map.put(new IncomeGroupWorkerVehicleSegment(((IncomeGroupSegmenter) segment).getIncomeGroup(),2,1), new ConcurrentHashMap<TravelSurveyZone,Double>(getNetwork().numZones()));
+		map.put(new IncomeGroupWorkerVehicleSegment(((IncomeGroupSegmenter) segment).getIncomeGroup(),1,1), new ConcurrentHashMap<TravelSurveyZone,Double>(getNetwork().numZones()));
+		subsegmentations.get(purpose).put(segment, map);
+
+		
+		
 		String splitFile = inputs.getProperty("splitting.wkrVehSplits."+purpose.toString());
+		final int ig;
+		if (segment instanceof IncomeGroupSegmenter) {
+			ig = ((IncomeGroupSegmenter) segment).getIncomeGroup();
+		} else {
+			throw new RuntimeException();
+		}
 		try {
 			Files.lines(Paths.get(splitFile)).parallel().filter(line -> !line.startsWith("T")).forEach(line ->{
 				String[] args = line.split(",");
 				TravelSurveyZone tsz = getNetwork().getNode(Integer.parseInt(args[0])).getZone();
 				
+				double veh0 = Double.parseDouble(args[ig]);
+				double vehLtWk = Double.parseDouble(args[4+ig]);
+				double vehGeWk = Double.parseDouble(args[8+ig]);
+					
+				map.entrySet().parallelStream().filter(seg -> 
+						seg.getKey() instanceof VehicleSegmenter && ((VehicleSegmenter) seg.getKey())
+						.getNumberOfVehicles() == 0).findFirst().get().getValue().put(tsz, veh0);
+				map.entrySet().parallelStream().filter(seg -> 
+						seg.getKey() instanceof VehicleSegmenter 
+						&& seg.getKey() instanceof WorkerSegmenter 
+						&& ((VehicleSegmenter) seg.getKey()).getNumberOfVehicles() < ((WorkerSegmenter) seg.getKey()).getNumberOfWorkers())
+				.findFirst().get().getValue().put(tsz, vehLtWk);
+				map.entrySet().parallelStream().filter(seg -> 
+					seg.getKey() instanceof VehicleSegmenter 
+					&& seg.getKey() instanceof WorkerSegmenter 
+					&& ((VehicleSegmenter) seg.getKey()).getNumberOfVehicles() >= ((WorkerSegmenter) seg.getKey()).getNumberOfWorkers())
+				.findFirst().get().getValue().put(tsz, vehGeWk);
+				
 				
 			});
+			return map;
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			System.exit(-9);
 			return null;
