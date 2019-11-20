@@ -35,7 +35,7 @@ public interface ModelInput {
     Map<MarketSegment,Map<TravelSurveyZone,Double>> getWorkerVehicleSplits(MarketSegment segment, TripPurpose purpose);
 
     //Mode Choice Inputs
-    Map<MarketSegment,Map<Mode,Double>> getModeShares(TripPurpose purpose);
+    Map<Integer,Map<Mode,Double>> getModeShares(TripPurpose purpose);
 
     Map<Mode,Double> getOccupancyRates();
 

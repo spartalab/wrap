@@ -33,17 +33,26 @@ import edu.utexas.wrap.util.io.ODMatrixWriter;
 
 public class wrapNCTCOG {
 
+	public static long startMS = System.currentTimeMillis();
 	public static void main(String[] args) {
 		try{
 			ModelInput model = new ModelInputNCTCOG("inputs.properties");
+			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+			System.out.println("Reading network");
 			Graph graph = model.getNetwork();
 			
 			//Perform trip generation
+			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+			System.out.println("Generating primary trips");
 			Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps = generateTrips(graph, model);
 			
+			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+			System.out.println("Flattening production-attraction maps");
 			hbMaps = flatten(hbMaps);
 			
 			//Perform trip balancing
+			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+			System.out.println("Balancing production-attraction maps");
 			balance(graph, hbMaps);
 			
 			NHBThread nhb = new NHBThread(graph, model, hbMaps);
@@ -60,9 +69,13 @@ public class wrapNCTCOG {
 			}
 
 			//Reduce the number of OD matrices by combining those of similar VOT
+			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+			System.out.println("Reducing OD matrices");
 			Map<TimePeriod, Collection<ODMatrix>> reducedODs = reduceODMatrices(hb.getODs(), nhb.getODs());
 			
 			//TODO figure out how to identify reduced ODs
+			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+			System.out.println("Writing to files");
 			writeODs(reducedODs, model.getOutputDirectory());
 			
 			//TODO eventually, we'll do multiple instances of traffic assignment here instead of just writing to files

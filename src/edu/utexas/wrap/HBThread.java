@@ -9,6 +9,7 @@ import edu.utexas.wrap.demand.containers.PerProductionZoneMultiplierPassthroughM
 import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.distribution.GravityDistributor;
 import edu.utexas.wrap.distribution.TripDistributor;
+import edu.utexas.wrap.marketsegmentation.IncomeGroupSegmenter;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.modechoice.FixedProportionSplitter;
 import edu.utexas.wrap.modechoice.Mode;
@@ -39,8 +40,12 @@ class HBThread extends Thread{
 	}
 
 	public void run() {
+		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+		System.out.println("Splitting HBW trips");
 		Map<MarketSegment, PAMap> pkMaps = extractPeakTrips(hbMaps);
-
+		
+		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+		System.out.println("Performing trip distribution");
 		HBPkGen hbPkGen = new HBPkGen(graph, pkMaps);
 		hbPkGen.start();
 
@@ -56,19 +61,29 @@ class HBThread extends Thread{
 		}
 
 		//After distributing over different friction factor maps, the HBW trips are stuck back together and SRE & PBO matrices are combined
-		Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs = combineAggregateMatrices(hbPkGen.getAggPKMtxs(), hbOpGen.getAggOPMtxs()); //TODO combine SRE/PBO and HBWPK/OP matrices
+		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+		System.out.println("Combining aggregate matrices");
+		Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs = combineAggregateMatrices(hbPkGen.getAggPKMtxs(), hbOpGen.getAggOPMtxs()); // combine SRE/PBO and HBWPK/OP matrices
 
 		//divide market segments further by vehicles per worker
+		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+		System.out.println("Subdividing market segments");
 		Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> dividedCombinedMtxs = subdivideSegments(aggCombinedMtxs);
 
 		//combine HNW trip purposes into single HNW trip purpose for all market segments
+		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+		System.out.println("Combining HNW trip purposes");
 		Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> combinedMtxs = combineHNWPurposes(dividedCombinedMtxs);
 
 		try {
 			//Perform mode choice splitting TODO ensure proper use of market segments
+			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+			System.out.println("Performing mode choice");
 			Map<TripPurpose, Map<MarketSegment, Collection<ModalPAMatrix>>> hbModalMtxs = modeChoice(combinedMtxs);
 
 			//PA to OD splitting by time of day
+			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+			System.out.println("Converting PA matrices to OD matrices");
 			hbODs = paToODConversion(hbModalMtxs);
 		} catch (IOException e) {
 			System.err.println("There is an IO Exception in the HB Thread.");
@@ -180,14 +195,17 @@ class HBThread extends Thread{
 	}
 
 	private Map<TripPurpose,Map<MarketSegment, Collection<ModalPAMatrix>>> modeChoice(Map<TripPurpose,Map<MarketSegment, AggregatePAMatrix>> aggMtxs) throws IOException {
-		Map<TripPurpose,Map<MarketSegment, Map<Mode, Double>>> modeShares = aggMtxs.keySet().parallelStream()
+		Map<TripPurpose,Map<Integer, Map<Mode, Double>>> modeShares = aggMtxs.keySet().parallelStream()
 				.collect(Collectors.toMap(Function.identity(), purpose -> model.getModeShares(purpose)));
 		
 		return aggMtxs.entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, purposeMapEntry ->
 				purposeMapEntry.getValue().entrySet().parallelStream()
-						.collect(Collectors.toMap(Map.Entry::getKey,
+				.collect(
+						Collectors.toMap(
+								Map.Entry::getKey,
 								entry -> {
-									TripInterchangeSplitter mc = new FixedProportionSplitter(modeShares.get(purposeMapEntry.getKey()).get(entry.getKey()));
+									Map<Mode,Double> ms = modeShares.get(purposeMapEntry.getKey()).get(((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup());
+									TripInterchangeSplitter mc = new FixedProportionSplitter(ms);
 									return mc.split(entry.getValue()).collect(Collectors.toSet());
 								}))
 		));
@@ -200,25 +218,50 @@ class HBThread extends Thread{
 				depRates = 
 				hbModalMtxs.entrySet().parallelStream()
 				.collect(Collectors.toMap(Entry::getKey, entry ->
-					entry.getValue().keySet().parallelStream().collect(Collectors.toMap(Function.identity(), seg -> model.getDepartureRates(entry.getKey(),seg))))),
+					entry.getValue().keySet()
+					.parallelStream().collect(
+							//This collector is a kludge to fix a known bug in Java which doesn't allow null keys
+							HashMap::new,
+							(m,seg) -> m.put(seg,model.getDepartureRates(entry.getKey(),seg)),
+							HashMap::putAll
+							
+							))),
 				arrRates = hbModalMtxs.entrySet().parallelStream()
 					.collect(Collectors.toMap(Entry::getKey, entry ->
-					entry.getValue().keySet().parallelStream().collect(Collectors.toMap(Function.identity(), seg -> model.getArrivalRates(entry.getKey(),seg)))));
+					entry.getValue().keySet().parallelStream().collect(
+							//This collector is a kludge to fix a known bug in Java which doesn't allow null keys
+							HashMap::new,
+							(m,seg) -> m.put(seg,model.getArrivalRates(entry.getKey(),seg)),
+							HashMap::putAll
+							
+							)));
 		
 		
 		return Stream.of(TimePeriod.values()).collect(Collectors.toMap(Function.identity(), time -> //for each time period
-				hbModalMtxs.entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, purposeEntry -> //for each trip purpose
-						purposeEntry.getValue().entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, segmentEntry ->{ //for each market segment
-							//establish a trip converter
-							DepartureArrivalConverter converter = new DepartureArrivalConverter(
-									depRates.get(purposeEntry.getKey()).get(segmentEntry.getKey()).get(time), 
-									arrRates.get(purposeEntry.getKey()).get(segmentEntry.getKey()).get(time)
-									);
-							return segmentEntry.getValue().parallelStream().map(modalMtx -> //for each modal matrix
-									converter.convert(modalMtx, occupancyRates.get(modalMtx.getMode()))	//convert the matrix
-							).collect(Collectors.toSet());	//collect into a set
-						})) //which is collected into a map (for each market segment)
-				))	//which is collected into a map (for each trip purpose)
+				hbModalMtxs.entrySet().parallelStream().collect(
+
+						HashMap::new,
+						(m,purposeEntry) -> m.put(purposeEntry.getKey(), //for each trip purpose
+								purposeEntry.getValue().entrySet().parallelStream().collect(
+
+										HashMap::new, 
+										(n,segmentEntry) ->{ //for each market segment
+											//establish a trip converter
+											DepartureArrivalConverter converter = new DepartureArrivalConverter(
+													depRates.get(purposeEntry.getKey())
+													.get(segmentEntry.getKey())
+													.get(time), 
+													arrRates.get(purposeEntry.getKey()).get(segmentEntry.getKey()).get(time)
+													);
+											n.put(segmentEntry.getKey(), segmentEntry.getValue().parallelStream().map(modalMtx -> //for each modal matrix
+											converter.convert(modalMtx, occupancyRates.get(modalMtx.getMode()))	//convert the matrix
+													).collect(Collectors.toSet()));	//collect into a set
+										}, HashMap::putAll
+										
+										) //which is collected into a map (for each market segment)
+								), 
+						HashMap::putAll
+						)	//which is collected into a map (for each trip purpose)
 		));	//which is collected into a map (for each time period)
 	}
 
