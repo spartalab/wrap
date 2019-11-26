@@ -15,6 +15,7 @@ import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.PAMap;
+import edu.utexas.wrap.demand.containers.FixedSizePAMap;
 import edu.utexas.wrap.demand.containers.PAPassthroughMap;
 import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.distribution.GravityDistributor;
@@ -34,26 +35,52 @@ import edu.utexas.wrap.util.DepartureArrivalConverter;
 class NHBThread extends Thread{
 	private Graph graph;
 	private Map<TimePeriod,Map<TripPurpose,Collection<ODMatrix>>> nhbODs;
-	private Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps;
+	private Map<TripPurpose,Map<MarketSegment,DemandMap>> hbMaps;
 	private ModelInput model;
 	
-	public NHBThread(Graph graph, ModelInput model, Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps) {
+	public NHBThread(Graph graph, ModelInput model, Map<TripPurpose,Map<MarketSegment,DemandMap>> hbMaps) {
 		this.graph = graph;
-		this.hbMaps = hbMaps;
 		this.model = model;
+		this.hbMaps = hbMaps.entrySet().parallelStream().filter(purpose -> 
+			purpose.getKey() != TripPurpose.HOME_PBO &&
+			purpose.getKey() != TripPurpose.HOME_SRE
+				).collect(Collectors.toMap(Entry::getKey, Entry::getValue)); //TODO preprocess this to combine HBSRE and HBPBO into HBOTH maps
+		this.hbMaps.put(TripPurpose.HOME_OTH, hbMaps.entrySet().parallelStream()
+				.filter(entry ->
+			entry.getKey() == TripPurpose.HOME_PBO ||
+			entry.getKey() == TripPurpose.HOME_SRE
+				)
+				.flatMap(entry -> entry.getValue().entrySet().parallelStream())
+		.collect(Collectors.groupingBy(Entry::getKey, Collectors.mapping(Entry::getValue, new DemandMapCollector()))));
 	}
 	
 	public void run() {
+		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+		System.out.println("Generating secondary trips");
 		Map<TripPurpose,PAMap> nhbMaps = generate();
 		
+		nhbMaps = nhbMaps.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, 
+				entry -> new FixedSizePAMap(entry.getValue())
+				));
+		
+		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+		System.out.println("Balancing secondary production-attraction maps");
 		balance(nhbMaps);
 		
+		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+		System.out.println("Performing secondary trip distribution");
 		Map<TripPurpose,AggregatePAMatrix> nhbMatrices = distribute(nhbMaps);
 		
+		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+		System.out.println("Combining secondary trip purposes");
 		Map<TripPurpose,AggregatePAMatrix> combinedMatrices = combinePurposes(nhbMatrices);
 		
+		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+		System.out.println("Performing secondary trip mode choice");
 		Map<TripPurpose,Collection<ModalPAMatrix>> nhbModalMtxs = modeChoice(combinedMatrices);
 		
+		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+		System.out.println("Converting secondary PA matrices to OD matrices");
 		paToOD(nhbModalMtxs);
 	}
 	
@@ -63,28 +90,48 @@ class NHBThread extends Thread{
 	
 	public Map<TripPurpose,PAMap> generate(){
 		
-		Map<TripPurpose,TripPurpose> source = new HashMap<TripPurpose,TripPurpose>();
-		source.put(TripPurpose.WORK_WORK,	TripPurpose.HOME_WORK);
-		source.put(TripPurpose.WORK_ESH,	TripPurpose.HOME_WORK);
-		source.put(TripPurpose.WORK_OTH,	TripPurpose.HOME_WORK);
-		source.put(TripPurpose.SHOP_SHOP,	TripPurpose.HOME_SHOP);
-		source.put(TripPurpose.SHOP_OTH,	TripPurpose.HOME_SHOP);
-		source.put(TripPurpose.OTH_OTH,		TripPurpose.HOME_OTH);
+		Map<TripPurpose,TripPurpose> srcPurposes = new HashMap<TripPurpose,TripPurpose>();
+		srcPurposes.put(TripPurpose.WORK_WORK,	TripPurpose.HOME_WORK);
+		srcPurposes.put(TripPurpose.WORK_ESH,	TripPurpose.HOME_WORK);
+		srcPurposes.put(TripPurpose.WORK_OTH,	TripPurpose.HOME_WORK);
+		srcPurposes.put(TripPurpose.SHOP_SHOP,	TripPurpose.HOME_SHOP);
+		srcPurposes.put(TripPurpose.SHOP_OTH,	TripPurpose.HOME_SHOP);
+		srcPurposes.put(TripPurpose.OTH_OTH,	TripPurpose.HOME_OTH);
 		
-		Map<TripPurpose,Map<MarketSegment,Double>> secondaryProdRates = source.keySet().parallelStream()
+		Map<TripPurpose, DemandMap> secondaryProds = getProds(srcPurposes);
+
+		Map<TripPurpose, DemandMap> secondaryAttrs = getAttrs(srcPurposes);
+		
+		return merge(srcPurposes.keySet(), secondaryProds, secondaryAttrs);
+	}
+
+	private Map<TripPurpose, PAMap> merge(Collection<TripPurpose> srcPurposes,
+			Map<TripPurpose, DemandMap> secondaryProds, Map<TripPurpose, DemandMap> secondaryAttrs) {
+		return srcPurposes.parallelStream().collect(Collectors.toMap(Function.identity(), 
+				purpose -> new PAPassthroughMap(graph, secondaryProds.get(purpose), secondaryAttrs.get(purpose))));
+	}
+
+	private Map<TripPurpose, DemandMap> getProds(Map<TripPurpose, TripPurpose> srcPurposes) {
+		Map<TripPurpose,Map<MarketSegment,Double>> secondaryProdRates = srcPurposes.keySet().parallelStream()
 				.collect(Collectors.toMap(Function.identity(), purpose -> model.getGeneralProdRates(purpose)));
 		
-		Map<TripPurpose,Map<MarketSegment,Double>> primaryProdRates = source.values().parallelStream().distinct()
+		Map<TripPurpose,Map<MarketSegment,Double>> primaryProdRates = srcPurposes.values().parallelStream().distinct()
 				.collect(Collectors.toMap(Function.identity(), purpose -> model.getGeneralProdRates(purpose)));
 		
-		Map<TripPurpose, DemandMap> secondaryProds = source.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, entry ->{
-			RateProportionTripGenerator generator = new RateProportionTripGenerator(graph, primaryProdRates.get(entry.getValue()), secondaryProdRates.get(entry.getKey()),hbMaps.get(entry.getValue()));
+		Map<TripPurpose, DemandMap> secondaryProds = srcPurposes.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, entry ->{
+			Map<MarketSegment,Double> prPuProRates = primaryProdRates.get(entry.getValue());
+			Map<MarketSegment,Double> sePuProRates = secondaryProdRates.get(entry.getKey());
+			Map<MarketSegment,DemandMap> puMaps = hbMaps.get(entry.getValue());
+			
+			RateProportionTripGenerator generator = new RateProportionTripGenerator(graph, prPuProRates, sePuProRates, puMaps);
 			return hbMaps.get(entry.getValue()).entrySet().parallelStream()
-			.map(segEntry -> generator.generate(segEntry.getValue().getProductionMap(), segEntry.getKey()))
+			.map(segEntry -> generator.generate(segEntry.getValue(), segEntry.getKey()))
 			.collect(new DemandMapCollector());
 		}));
+		return secondaryProds;
+	}
 
-		
+	private Map<TripPurpose, DemandMap> getAttrs(Map<TripPurpose, TripPurpose> source) {
 		Map<TripPurpose,Map<MarketSegment,Map<AreaClass,Double>>> secondaryAttrRates = source.keySet().parallelStream()
 				.collect(Collectors.toMap(Function.identity(), purpose -> model.getAreaClassAttrRates(purpose)));
 		
@@ -93,10 +140,7 @@ class NHBThread extends Thread{
 			BasicTripGenerator generator = new AreaSpecificTripGenerator(graph, rates);
 			return rates.keySet().parallelStream().map(seg -> generator.generate(seg)).collect(new DemandMapCollector());
 		}));
-		
-		
-		return source.keySet().parallelStream().collect(Collectors.toMap(Function.identity(), 
-				purpose -> new PAPassthroughMap(graph, secondaryProds.get(purpose), secondaryAttrs.get(purpose))));
+		return secondaryAttrs;
 	}
 	
 	public void balance(Map<TripPurpose,PAMap> nhbMaps) {
@@ -106,7 +150,7 @@ class NHBThread extends Thread{
 	
 	public Map<TripPurpose,AggregatePAMatrix> distribute(Map<TripPurpose,PAMap> paMaps) {
 		Map<TripPurpose,FrictionFactorMap> ffs = Stream.of(
-				TripPurpose.NONHOME_EDU,
+//				TripPurpose.NONHOME_EDU,
 				TripPurpose.OTH_OTH,
 				TripPurpose.SHOP_OTH,
 				TripPurpose.SHOP_SHOP,
@@ -152,14 +196,7 @@ class NHBThread extends Thread{
 	
 	public Map<TripPurpose,Collection<ModalPAMatrix>> modeChoice(
 			Map<TripPurpose,AggregatePAMatrix> combinedMatrices){
-		Map<TripPurpose,Map<Mode,Double>> modalRates = Stream.of(
-				TripPurpose.NONHOME_EDU,
-				TripPurpose.OTH_OTH,
-				TripPurpose.SHOP_OTH,
-				TripPurpose.SHOP_SHOP,
-				TripPurpose.WORK_ESH,
-				TripPurpose.WORK_OTH,
-				TripPurpose.WORK_WORK).parallel()
+		Map<TripPurpose,Map<Mode,Double>> modalRates = combinedMatrices.keySet().parallelStream()
 				.collect(Collectors.toMap(Function.identity(), purpose -> model.getModeShares(purpose).get(null)));;
 		
 		return combinedMatrices.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, entry -> {

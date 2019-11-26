@@ -56,8 +56,8 @@ public class ModelInputNCTCOG implements ModelInput {
     private Map<TripPurpose, Map<Integer, Map<Mode, Double>>> modalShares;
     private Map<TripPurpose,Map<MarketSegment, Map<MarketSegment,Map<TravelSurveyZone,Double>>>> subsegmentations;
     private Map<Mode,Double> occupancyRates;
-    private Map<TripPurpose, Map<MarketSegment, Map<TimePeriod, Double>>> departureRates;
-    private Map<TripPurpose, Map<MarketSegment, Map<TimePeriod, Double>>> arrivalRates;
+    private Map<TripPurpose, Map<Integer, Map<TimePeriod, Double>>> departureRates;
+    private Map<TripPurpose, Map<Integer, Map<TimePeriod, Double>>> arrivalRates;
 	private Map<String, Class<? extends MarketSegment>> headerToSegment;
 
 
@@ -269,7 +269,7 @@ public class ModelInputNCTCOG implements ModelInput {
         if(productionRates != null && productionRates.containsKey(purpose))
             return productionRates.get(purpose);
         
-        if (productionRates == null) productionRates = new HashMap<TripPurpose,Map<MarketSegment,Double>>();
+        if (productionRates == null) productionRates = new ConcurrentHashMap<TripPurpose,Map<MarketSegment,Double>>();
         
         String purposeDetailsFile = inputs.getProperty("productions.general." + purpose);
         Map<MarketSegment, Double> rates = ProductionAttractionFactory.readGeneralRates(purposeDetailsFile, this);
@@ -279,7 +279,7 @@ public class ModelInputNCTCOG implements ModelInput {
 
     @Override
     public synchronized Map<MarketSegment, Map<AreaClass, Double>> getAreaClassProdRates(TripPurpose purpose) {
-        if (areaClassProdRates == null) areaClassProdRates = new HashMap<TripPurpose,Map<MarketSegment,Map<AreaClass,Double>>>();
+        if (areaClassProdRates == null) areaClassProdRates = new ConcurrentHashMap<TripPurpose,Map<MarketSegment,Map<AreaClass,Double>>>();
         else if (areaClassProdRates.containsKey(purpose))
             return areaClassProdRates.get(purpose);
         
@@ -395,21 +395,21 @@ public class ModelInputNCTCOG implements ModelInput {
     }
 
     @Override
-    public synchronized Map<TimePeriod, Double> getDepartureRates(TripPurpose purpose, MarketSegment segment) {
+    public synchronized Map<TimePeriod, Double> getDepartureRates(TripPurpose purpose, Integer segment) {
     	// TODO
     	if (departureRates != null 
     			&& departureRates.get(purpose) != null 
     			&& departureRates.get(purpose).get(segment) != null) 
     		return departureRates.get(purpose).get(segment); 
     	if (departureRates == null) {
-    		departureRates = new HashMap<TripPurpose,Map<MarketSegment,Map<TimePeriod,Double>>>();
+    		departureRates = new HashMap<TripPurpose,Map<Integer,Map<TimePeriod,Double>>>();
     		
     		Stream.of(TripPurpose.HOME_WORK, TripPurpose.HOME_NONWORK, TripPurpose.NONHOME_WORK, TripPurpose.NONHOME_NONWORK)
-    		.forEach(seg -> departureRates.put(seg,new HashMap<MarketSegment,Map<TimePeriod,Double>>()));
+    		.forEach(seg -> departureRates.put(seg,new HashMap<Integer,Map<TimePeriod,Double>>()));
     		
     		Stream.of(TripPurpose.HOME_WORK, TripPurpose.HOME_NONWORK).forEach(seg ->
     			IntStream.range(1,5).boxed().forEach(ig ->
-    			departureRates.get(seg).put(new IncomeGroupSegment(ig), new HashMap<TimePeriod,Double>()))
+    			departureRates.get(seg).put(ig, new HashMap<TimePeriod,Double>()))
     		);
     		Stream.of(TripPurpose.NONHOME_WORK,TripPurpose.NONHOME_NONWORK).forEach(seg -> departureRates.get(seg).put(null, new HashMap<TimePeriod,Double>()));
     	}
@@ -422,10 +422,10 @@ public class ModelInputNCTCOG implements ModelInput {
 				TimePeriod tp = TimePeriod.valueOf(args[0]);
 				
 				departureRates.get(TripPurpose.HOME_WORK).entrySet().forEach(entry ->{
-					entry.getValue().put(tp, Double.parseDouble(args[((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup()]));
+					entry.getValue().put(tp, Double.parseDouble(args[entry.getKey()]));
 				});
 				departureRates.get(TripPurpose.HOME_NONWORK).entrySet().forEach(entry ->{
-					entry.getValue().put(tp, Double.parseDouble(args[((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup()+4]));
+					entry.getValue().put(tp, Double.parseDouble(args[entry.getKey()+4]));
 				});
 				departureRates.get(TripPurpose.NONHOME_WORK).get(null).put(tp, Double.parseDouble(args[9]));
 				departureRates.get(TripPurpose.NONHOME_NONWORK).get(null).put(tp, Double.parseDouble(args[10]));
@@ -440,37 +440,37 @@ public class ModelInputNCTCOG implements ModelInput {
     }
 
     @Override
-    public synchronized Map<TimePeriod, Double> getArrivalRates(TripPurpose purpose, MarketSegment segment) {
+    public synchronized Map<TimePeriod, Double> getArrivalRates(TripPurpose purpose, Integer segment) {
     	// TODO
     	if (arrivalRates != null 
     			&& arrivalRates.get(purpose) != null 
     			&& arrivalRates.get(purpose).get(segment) != null) 
     		return arrivalRates.get(purpose).get(segment); 
     	if (arrivalRates == null) {
-    		arrivalRates = new HashMap<TripPurpose,Map<MarketSegment,Map<TimePeriod,Double>>>();
+    		arrivalRates = new HashMap<TripPurpose,Map<Integer,Map<TimePeriod,Double>>>();
     		
     		Stream.of(TripPurpose.HOME_WORK, TripPurpose.HOME_NONWORK, TripPurpose.NONHOME_WORK, TripPurpose.NONHOME_NONWORK)
-    		.forEach(seg -> arrivalRates.put(seg,new HashMap<MarketSegment,Map<TimePeriod,Double>>()));
+    		.forEach(seg -> arrivalRates.put(seg,new HashMap<Integer,Map<TimePeriod,Double>>()));
     		
     		Stream.of(TripPurpose.HOME_WORK, TripPurpose.HOME_NONWORK).forEach(seg ->
     			IntStream.range(1,5).boxed().forEach(ig ->
-    			arrivalRates.get(seg).put(new IncomeGroupSegment(ig), new HashMap<TimePeriod,Double>()))
+    			arrivalRates.get(seg).put(ig, new HashMap<TimePeriod,Double>()))
     		);
     		Stream.of(TripPurpose.NONHOME_WORK,TripPurpose.NONHOME_NONWORK).forEach(seg -> arrivalRates.get(seg).put(null, new HashMap<TimePeriod,Double>()));
     	}
-    	String depFile = inputs.getProperty("pa2od.arrRates");
+    	String arrFile = inputs.getProperty("pa2od.arrRates");
     	
     	try {
-			Files.lines(Paths.get(depFile)).filter(line -> !line.replaceAll("[^\\x00-\\xff]", "").startsWith("T")).forEach(line -> {
+			Files.lines(Paths.get(arrFile)).filter(line -> !line.replaceAll("[^\\x00-\\xff]", "").startsWith("T")).forEach(line -> {
 				String[] args = line.split(",");
 				
 				TimePeriod tp = TimePeriod.valueOf(args[0]);
 				
 				arrivalRates.get(TripPurpose.HOME_WORK).entrySet().forEach(entry ->{
-					entry.getValue().put(tp, Double.parseDouble(args[((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup()]));
+					entry.getValue().put(tp, Double.parseDouble(args[entry.getKey()]));
 				});
 				arrivalRates.get(TripPurpose.HOME_NONWORK).entrySet().forEach(entry ->{
-					entry.getValue().put(tp, Double.parseDouble(args[((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup()+4]));
+					entry.getValue().put(tp, Double.parseDouble(args[entry.getKey()+4]));
 				});
 				arrivalRates.get(TripPurpose.NONHOME_WORK).get(null).put(tp, Double.parseDouble(args[9]));
 				arrivalRates.get(TripPurpose.NONHOME_NONWORK).get(null).put(tp, Double.parseDouble(args[10]));

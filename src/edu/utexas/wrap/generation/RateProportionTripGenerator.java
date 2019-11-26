@@ -4,9 +4,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import edu.utexas.wrap.demand.DemandMap;
-import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.net.Graph;
@@ -38,38 +38,66 @@ public class RateProportionTripGenerator {
 	public RateProportionTripGenerator(Graph g, 
 			Map<MarketSegment,Double> primaryProductionRates, 
 			Map<MarketSegment,Double> secondaryProductionRates, 
-			Map<MarketSegment, PAMap> primaryProds) {
+			Map<MarketSegment,DemandMap> primaryProds) {
 		
 		totalProds = g.getTSZs().parallelStream().collect(Collectors.toMap(Function.identity(), 
-				tsz -> primaryProds.values().parallelStream().mapToDouble(map -> map.getProductions(tsz)).sum()
+				tsz -> primaryProds.values().parallelStream()
+				.mapToDouble(
+						map -> map.get(tsz)
+						).sum()
 				));
 		
 		shares = getTripShares(g, primaryProds);
 		
-		calculateRelativeRates(g, primaryProductionRates, secondaryProductionRates, shares);
+		calculateRelativeRates(g, primaryProductionRates, secondaryProductionRates);
 		
 	}
 
 	private void calculateRelativeRates(Graph g, 
 			Map<MarketSegment, Double> primaryProductionRates,
-			Map<MarketSegment, Double> secondaryProductionRates,
-			Map<MarketSegment, Map<TravelSurveyZone, Double>> shares) {
+			Map<MarketSegment, Double> secondaryProductionRates) {
 		
 		//Calculate relative production rates
-		rates = primaryProductionRates.keySet().parallelStream().collect( Collectors.toMap(Function.identity(), sgmt -> {
-			//Determine the ratio of NHB to HB trips
-			if (primaryProductionRates.get(sgmt) <= 0)  return null;
-			
-			double factor = secondaryProductionRates.get(sgmt)/primaryProductionRates.get(sgmt);
-			return shares.get(sgmt).entrySet().parallelStream().collect(Collectors.toMap(
-					Entry::getKey,
-					entry -> entry.getValue()*factor
-					));			
-		}));
+
+		rates = shares.entrySet().parallelStream().collect(
+				Collectors.toMap(Entry::getKey, 
+						segEntry -> 
+									
+
+							 segEntry.getValue().entrySet().parallelStream().collect(
+									Collectors.toMap(Entry::getKey, tszEntry ->
+									tszEntry.getValue()*secondaryProductionRates.entrySet().parallelStream().filter(
+											secondaryEntry -> 
+											compareByLooserMS(segEntry.getKey(),secondaryEntry.getKey())
+											)
+									.mapToDouble(secondaryRate -> 
+
+										secondaryRate.getValue() / primaryProductionRates.entrySet().parallelStream()
+										.filter(primaryEntry ->
+										compareByLooserMS(segEntry.getKey(), primaryEntry.getKey())
+												)
+										.mapToDouble(Entry::getValue).sum()
+
+											)
+									.sum()
+											)
+									 )
+						
+						)
+				);
+	}
+
+	private boolean compareByLooserMS(MarketSegment stricterEntry,
+			MarketSegment looserEntry) {
+		return Stream.of(looserEntry.getClass().getInterfaces())
+		.filter(ifc -> MarketSegment.class.isInstance(ifc) && ifc.isInstance(stricterEntry))
+		.allMatch(ifc ->
+				ifc.cast(stricterEntry).equals(ifc.cast(looserEntry))
+				);
 	}
 
 	private Map<MarketSegment, Map<TravelSurveyZone,Double>> getTripShares(Graph g,
-			Map<MarketSegment, PAMap> primaryProds) {
+			Map<MarketSegment, DemandMap> primaryProds) {
 				
 		//Calculate each segment's household share of the total trips
 
@@ -80,7 +108,7 @@ public class RateProportionTripGenerator {
 						//A Map from each zone with trips to
 						Collectors.toMap(Function.identity(), 
 							//A rate based on the segment's share of the total trips from that zone
-							tsz -> primaryProds.get(sgmt).getProductions(tsz)/totalProds.get(tsz)
+							tsz -> primaryProds.get(sgmt).get(tsz)/totalProds.get(tsz)
 							)
 						)
 					)
@@ -92,7 +120,8 @@ public class RateProportionTripGenerator {
 		Map<TravelSurveyZone, Double> rate = rates.get(segment);
 		DemandMap ret = new FixedSizeDemandMap(demandMap.getGraph());
 		demandMap.getZones().parallelStream().forEach( 
-				entry -> ret.put(entry, demandMap.get(entry)*rate.get(entry))
+				entry -> ret.put(entry, demandMap.get(entry)
+						*rate.getOrDefault(entry,0.0))
 		);
 		return ret;
 	}

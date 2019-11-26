@@ -1,6 +1,7 @@
 package edu.utexas.wrap.demand.containers;
 
 import java.util.Collection;
+import java.util.Collections;
 
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.PAMap;
@@ -19,22 +20,22 @@ public class PAPassthroughMap implements PAMap {
 
 	@Override
 	public Collection<TravelSurveyZone> getProducers() {
-		return prods.getZones();
+		return prods == null? Collections.emptySet() : prods.getZones();
 	}
 
 	@Override
 	public Collection<TravelSurveyZone> getAttractors() {
-		return attrs.getZones();
+		return attrs == null? Collections.emptySet() : attrs.getZones();
 	}
 
 	@Override
 	public Float getAttractions(TravelSurveyZone z) {
-		return attrs.get(z).floatValue();
+		return attrs == null? 0.0f : attrs.get(z).floatValue();
 	}
 
 	@Override
 	public Float getProductions(TravelSurveyZone z) {
-		return prods.get(z).floatValue();
+		return prods == null? 0.0f : prods.get(z).floatValue();
 	}
 
 	@Override

@@ -27,8 +27,8 @@ import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.util.DemandMapCollector;
 import edu.utexas.wrap.util.ODMatrixCollector;
+import edu.utexas.wrap.util.PAMapCollector;
 import edu.utexas.wrap.util.io.ODMatrixWriter;
 
 public class wrapNCTCOG {
@@ -44,26 +44,41 @@ public class wrapNCTCOG {
 			//Perform trip generation
 			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
 			System.out.println("Generating primary trips");
-			Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps = generateTrips(graph, model);
+			
+			Map<TripPurpose, Map<MarketSegment, Double>> prodRates = getProdRates(model);
+			//Generate primary productions
+			Map<TripPurpose, Map<MarketSegment, DemandMap>> primaryProds = getProds(graph, prodRates);
+			
+			NHBThread nhb = new NHBThread(graph, model, primaryProds);
+			nhb.start();
+						
+			Map<TripPurpose, Map<MarketSegment, Map<AreaClass, Double>>> attrRates = getAttrRates(model);
+			//Generate primary attractions
+			Map<TripPurpose, Map<MarketSegment, DemandMap>> primaryAttrs = getAttrs(graph, attrRates);
+
+			Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps = combine(graph, primaryProds, primaryAttrs);
+			
+
+
+			hbMaps = hbMaps.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, entry -> combineMapsByIncomeGroupSegment(entry.getValue())));
+			
 			
 			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
-			System.out.println("Flattening production-attraction maps");
+			System.out.println("Flattening primary production-attraction maps");
 			hbMaps = flatten(hbMaps);
 			
 			//Perform trip balancing
 			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
-			System.out.println("Balancing production-attraction maps");
-			balance(graph, hbMaps);
+			System.out.println("Balancing primary production-attraction maps");
+			balance(graph, hbMaps);	
 			
-			NHBThread nhb = new NHBThread(graph, model, hbMaps);
-//			nhb.start();
 			
 			HBThread hb = new HBThread(graph, model, hbMaps);
 			hb.start();
 
 			try {
 				hb.join();
-//				nhb.join();
+				nhb.join();
 			} catch(InterruptedException e) {
 				System.out.println("Thread is interrupted.\n");
 			}
@@ -97,39 +112,50 @@ public class wrapNCTCOG {
 		));
 	}
 	
-	private static Map<TripPurpose,Map<MarketSegment, PAMap>> generateTrips(Graph g, ModelInput model) throws IOException {
-		
+	private static Map<TripPurpose, Map<MarketSegment, PAMap>> combine(Graph g,
+			Map<TripPurpose, Map<MarketSegment, DemandMap>> primaryProds,
+			Map<TripPurpose, Map<MarketSegment, DemandMap>> primaryAttrs) {
+		return primaryProds.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, 
+				purposeEntry -> Stream.concat(
+						purposeEntry.getValue().keySet().parallelStream(),
+						primaryAttrs.get(purposeEntry.getKey()).keySet().parallelStream()
+						).distinct().collect(Collectors.toMap(Function.identity(),
+						segment -> new PAPassthroughMap(g,purposeEntry.getValue().get(segment), primaryAttrs.get(purposeEntry.getKey()).get(segment))))));
+	}
 
-		Map<TripPurpose,Map<MarketSegment,Double>> prodRates = Stream.of(
+	private static Map<TripPurpose, Map<MarketSegment, DemandMap>> getAttrs(Graph g,
+			Map<TripPurpose, Map<MarketSegment, Map<AreaClass, Double>>> attrRates) {
+		Map<TripPurpose,Map<MarketSegment, DemandMap>> primaryAttrs = attrRates.keySet().parallelStream()
+				.collect(Collectors.toMap(Function.identity(), purpose -> generateAttractions(g, attrRates.get(purpose))));
+		return primaryAttrs;
+	}
+
+	private static Map<TripPurpose, Map<MarketSegment, Map<AreaClass, Double>>> getAttrRates(ModelInput model) {
+		Map<TripPurpose,Map<MarketSegment,Map<AreaClass,Double>>> attrRates =  getHBPurposes()
+				.collect(Collectors.toMap(Function.identity(), purpose -> model.getAreaClassAttrRates(purpose)));
+		return attrRates;
+	}
+
+	private static Stream<TripPurpose> getHBPurposes() {
+		return Stream.of(
 				TripPurpose.HOME_WORK,
 				TripPurpose.HOME_SHOP,
 				TripPurpose.HOME_SRE,
 //				TripPurpose.HOME_K12,
 				TripPurpose.HOME_PBO
-				).parallel().collect(Collectors.toMap(Function.identity(), purpose -> model.getGeneralProdRates(purpose)));
+				).parallel();
+	}
 
-		Map<TripPurpose,Map<MarketSegment,Map<AreaClass,Double>>> attrRates = prodRates.keySet().parallelStream()
-				.collect(Collectors.toMap(Function.identity(), purpose -> model.getAreaClassAttrRates(purpose)));
-
-		//Generate primary productions
+	private static Map<TripPurpose, Map<MarketSegment, DemandMap>> getProds(Graph g,
+			Map<TripPurpose, Map<MarketSegment, Double>> prodRates) {
 		Map<TripPurpose,Map<MarketSegment, DemandMap>> primaryProds = prodRates.keySet().parallelStream()
 				.collect(Collectors.toMap(Function.identity(), purpose -> generateProductions(g, prodRates.get(purpose))));
-		//Generate primary attractions
-		Map<TripPurpose,Map<MarketSegment, DemandMap>> primaryAttrs = attrRates.keySet().parallelStream()
-				.collect(Collectors.toMap(Function.identity(), purpose -> generateAttractions(g, attrRates.get(purpose))));
+		return primaryProds;
+	}
 
-		//Combine primary maps across non-income-group segments
-		Map<TripPurpose,Map<MarketSegment,DemandMap>> combinedProds = primaryProds.entrySet().parallelStream()
-				.collect(Collectors.toMap(Entry::getKey, entry -> combineMapsByIncomeGroupSegment(entry.getValue())));
-		Map<TripPurpose,Map<MarketSegment,DemandMap>> combinedAttrs = primaryAttrs.entrySet().parallelStream()
-				.collect(Collectors.toMap(Entry::getKey, entry-> combineMapsByIncomeGroupSegment(entry.getValue())));
-
-		return combinedProds.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, 
-				purposeEntry -> Stream.concat(
-						purposeEntry.getValue().keySet().parallelStream(),
-						combinedAttrs.get(purposeEntry.getKey()).keySet().parallelStream()
-						).distinct().collect(Collectors.toMap(Function.identity(),
-						segment -> new PAPassthroughMap(g,purposeEntry.getValue().get(segment), combinedAttrs.get(purposeEntry.getKey()).get(segment))))));
+	private static Map<TripPurpose, Map<MarketSegment, Double>> getProdRates(ModelInput model) {
+		Map<TripPurpose,Map<MarketSegment,Double>> prodRates = getHBPurposes().collect(Collectors.toMap(Function.identity(), purpose -> model.getGeneralProdRates(purpose)));
+		return prodRates;
 	}
 
 	/** This method combines a set of MarketSegment-DemandMap pairs together 
@@ -138,13 +164,13 @@ public class wrapNCTCOG {
 	 * @param demandMaps the maps from more fine-grained market segmentations to their demand maps
 	 * @return a reduced MarketSegment-DemandMap pair where all values have the same income group as the key
 	 */
-	private static Map<MarketSegment, DemandMap> combineMapsByIncomeGroupSegment(Map<MarketSegment, DemandMap> demandMaps) {
+	private static Map<MarketSegment, PAMap> combineMapsByIncomeGroupSegment(Map<MarketSegment, PAMap> paMaps) {
 		return IntStream.range(1, 5).parallel().boxed().map(ig -> new IncomeGroupSegment(ig)).collect(Collectors.toMap(Function.identity(), newSeg ->
 			
-			 demandMaps.entrySet().parallelStream()
+			 paMaps.entrySet().parallelStream()
 					.filter(entry -> entry.getKey() instanceof IncomeGroupSegmenter && ((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup() == ((IncomeGroupSegmenter) newSeg).getIncomeGroup())
 					.map(Entry::getValue)
-					.collect(new DemandMapCollector())
+					.collect(new PAMapCollector())
 		));
 	}
 

@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.PAMap;
+import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
@@ -103,14 +104,16 @@ class CombinedPAMap implements PAMap {
 
 	@Override
 	public DemandMap getProductionMap() {
-		// TODO Auto-generated method stub
-		throw new RuntimeException();
+		DemandMap ret = new FixedSizeDemandMap(getGraph());
+		getProducers().parallelStream().forEach(producer -> ret.put(producer, getProductions(producer).doubleValue()));
+		return ret;
 	}
 
 	@Override
 	public DemandMap getAttractionMap() {
-		// TODO Auto-generated method stub
-		throw new RuntimeException();
+		DemandMap ret = new FixedSizeDemandMap(getGraph());
+		getAttractors().parallelStream().forEach(attractor -> ret.put(attractor, getAttractions(attractor).doubleValue()));
+		return ret;
 	}
 	
 }

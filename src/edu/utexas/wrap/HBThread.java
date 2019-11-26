@@ -41,15 +41,15 @@ class HBThread extends Thread{
 
 	public void run() {
 		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
-		System.out.println("Splitting HBW trips");
+		System.out.println("Splitting primary trips");
 		Map<MarketSegment, PAMap> pkMaps = extractPeakTrips(hbMaps);
 		
 		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
-		System.out.println("Performing trip distribution");
-		HBPkGen hbPkGen = new HBPkGen(graph, pkMaps);
+		System.out.println("Performing primary trip distribution");
+		PeakDistributionThread hbPkGen = new PeakDistributionThread(graph, pkMaps);
 		hbPkGen.start();
 
-		HBOpGen hbOpGen = new HBOpGen(graph, hbMaps);
+		OffPeakDistributionThread hbOpGen = new OffPeakDistributionThread(graph, hbMaps);
 		hbOpGen.start();
 
 		try {
@@ -62,28 +62,28 @@ class HBThread extends Thread{
 
 		//After distributing over different friction factor maps, the HBW trips are stuck back together and SRE & PBO matrices are combined
 		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
-		System.out.println("Combining aggregate matrices");
+		System.out.println("Combining primary matrices");
 		Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs = combineAggregateMatrices(hbPkGen.getAggPKMtxs(), hbOpGen.getAggOPMtxs()); // combine SRE/PBO and HBWPK/OP matrices
 
 		//divide market segments further by vehicles per worker
 		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
-		System.out.println("Subdividing market segments");
+		System.out.println("Subdividing primary market segments");
 		Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> dividedCombinedMtxs = subdivideSegments(aggCombinedMtxs);
 
 		//combine HNW trip purposes into single HNW trip purpose for all market segments
 		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
-		System.out.println("Combining HNW trip purposes");
+		System.out.println("Combining primary trip purposes");
 		Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> combinedMtxs = combineHNWPurposes(dividedCombinedMtxs);
 
 		try {
 			//Perform mode choice splitting TODO ensure proper use of market segments
 			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
-			System.out.println("Performing mode choice");
+			System.out.println("Performing primary trip mode choice");
 			Map<TripPurpose, Map<MarketSegment, Collection<ModalPAMatrix>>> hbModalMtxs = modeChoice(combinedMtxs);
 
 			//PA to OD splitting by time of day
 			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
-			System.out.println("Converting PA matrices to OD matrices");
+			System.out.println("Converting primary PA matrices to OD matrices");
 			hbODs = paToODConversion(hbModalMtxs);
 		} catch (IOException e) {
 			System.err.println("There is an IO Exception in the HB Thread.");
@@ -214,24 +214,30 @@ class HBThread extends Thread{
 	private Map<TimePeriod,Map<TripPurpose, Map<MarketSegment,Collection<ODMatrix>>>> paToODConversion(Map<TripPurpose, Map<MarketSegment, Collection<ModalPAMatrix>>> hbModalMtxs) throws IOException {
 		Map<Mode, Double> occupancyRates = model.getOccupancyRates(); // modalOccRates.csv
 		//TOD splitting inputs TODO ensure proper use of market segments
-		Map<TripPurpose,Map<MarketSegment, Map<TimePeriod, Double>>>
+		Map<TripPurpose,Map<Integer, Map<TimePeriod, Double>>>
 				depRates = 
 				hbModalMtxs.entrySet().parallelStream()
 				.collect(Collectors.toMap(Entry::getKey, entry ->
 					entry.getValue().keySet()
-					.parallelStream().collect(
+					.parallelStream()
+					.map(seg -> ((IncomeGroupSegmenter) seg).getIncomeGroup())
+					.distinct()
+					.collect(
 							//This collector is a kludge to fix a known bug in Java which doesn't allow null keys
 							HashMap::new,
-							(m,seg) -> m.put(seg,model.getDepartureRates(entry.getKey(),seg)),
+							(m,ig) -> m.put(ig,model.getDepartureRates(entry.getKey(),ig)),
 							HashMap::putAll
 							
 							))),
 				arrRates = hbModalMtxs.entrySet().parallelStream()
 					.collect(Collectors.toMap(Entry::getKey, entry ->
-					entry.getValue().keySet().parallelStream().collect(
+					entry.getValue().keySet().parallelStream()
+					.map(seg -> ((IncomeGroupSegmenter) seg).getIncomeGroup())
+					.distinct()
+					.collect(
 							//This collector is a kludge to fix a known bug in Java which doesn't allow null keys
 							HashMap::new,
-							(m,seg) -> m.put(seg,model.getArrivalRates(entry.getKey(),seg)),
+							(m,ig) -> m.put(ig,model.getArrivalRates(entry.getKey(),ig)),
 							HashMap::putAll
 							
 							)));
@@ -249,9 +255,11 @@ class HBThread extends Thread{
 											//establish a trip converter
 											DepartureArrivalConverter converter = new DepartureArrivalConverter(
 													depRates.get(purposeEntry.getKey())
-													.get(segmentEntry.getKey())
-													.get(time), 
-													arrRates.get(purposeEntry.getKey()).get(segmentEntry.getKey()).get(time)
+													.get(((IncomeGroupSegmenter) segmentEntry.getKey()).getIncomeGroup())
+													.get(time), //here there be bugs - why am I getting a NPE here?
+													arrRates.get(purposeEntry.getKey())
+													.get(((IncomeGroupSegmenter) segmentEntry.getKey()).getIncomeGroup())
+													.get(time)
 													);
 											n.put(segmentEntry.getKey(), segmentEntry.getValue().parallelStream().map(modalMtx -> //for each modal matrix
 											converter.convert(modalMtx, occupancyRates.get(modalMtx.getMode()))	//convert the matrix
@@ -265,13 +273,13 @@ class HBThread extends Thread{
 		));	//which is collected into a map (for each time period)
 	}
 
-	class HBPkGen extends Thread {
+	class PeakDistributionThread extends Thread {
 		private Graph g;
 		private Map<MarketSegment, FrictionFactorMap> frictionFactorMaps;
 		private Map<MarketSegment, AggregatePAMatrix> aggregateMatrices;
 		private Map<MarketSegment, PAMap> pkMaps;
 
-		public HBPkGen(Graph graph,
+		public PeakDistributionThread(Graph graph,
 				Map<MarketSegment, PAMap> pkMaps) {
 			this.g = graph;
 			this.pkMaps = pkMaps;
@@ -286,12 +294,12 @@ class HBThread extends Thread{
 		public Map<MarketSegment, AggregatePAMatrix> getAggPKMtxs() { return aggregateMatrices; }
 	}
 
-	class HBOpGen extends Thread {
+	class OffPeakDistributionThread extends Thread {
 		private Graph g;
 		private Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps;
 		private Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggOPMtxs;
 
-		public HBOpGen(Graph graph, Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps) {
+		public OffPeakDistributionThread(Graph graph, Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps) {
 			this.g = graph;
 			this.hbMaps = hbMaps;
 		}

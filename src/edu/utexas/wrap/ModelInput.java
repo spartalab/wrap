@@ -40,9 +40,9 @@ public interface ModelInput {
     Map<Mode,Double> getOccupancyRates();
 
     //PA to OD
-    Map<TimePeriod, Double> getDepartureRates(TripPurpose purpose, MarketSegment segment);
+    Map<TimePeriod, Double> getDepartureRates(TripPurpose purpose, Integer ig);
 
-    Map<TimePeriod, Double> getArrivalRates(TripPurpose purpose, MarketSegment segment);
+    Map<TimePeriod, Double> getArrivalRates(TripPurpose purpose, Integer ig);
     
     String getOutputDirectory();
 
