@@ -197,7 +197,7 @@ class NHBThread extends Thread{
 	public Map<TripPurpose,Collection<ModalPAMatrix>> modeChoice(
 			Map<TripPurpose,AggregatePAMatrix> combinedMatrices){
 		Map<TripPurpose,Map<Mode,Double>> modalRates = combinedMatrices.keySet().parallelStream()
-				.collect(Collectors.toMap(Function.identity(), purpose -> model.getModeShares(purpose).get(null)));;
+				.collect(Collectors.toMap(Function.identity(), purpose -> model.getModeShares(purpose).get(0)));
 		
 		return combinedMatrices.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, entry -> {
 			TripInterchangeSplitter mc = new FixedProportionSplitter(modalRates.get(entry.getKey()));
@@ -208,23 +208,11 @@ class NHBThread extends Thread{
 	public void paToOD(
 			Map<TripPurpose,Collection<ModalPAMatrix>> map) {
 		Map<Mode,Double> occupancyRates = model.getOccupancyRates();
-		Map<TripPurpose,Map<TimePeriod,Double>> depRates = Stream.of(
-					TripPurpose.NONHOME_EDU,
-					TripPurpose.OTH_OTH,
-					TripPurpose.SHOP_OTH,
-					TripPurpose.SHOP_SHOP,
-					TripPurpose.WORK_ESH,
-					TripPurpose.WORK_OTH,
-					TripPurpose.WORK_WORK).parallel()
+		Map<TripPurpose,Map<TimePeriod,Double>> depRates = 
+				map.keySet().parallelStream()
 				.collect(Collectors.toMap(Function.identity(), purpose -> model.getDepartureRates(purpose, null))), 
-				arrRates = Stream.of(
-					TripPurpose.NONHOME_EDU,
-					TripPurpose.OTH_OTH,
-					TripPurpose.SHOP_OTH,
-					TripPurpose.SHOP_SHOP,
-					TripPurpose.WORK_ESH,
-					TripPurpose.WORK_OTH,
-					TripPurpose.WORK_WORK).parallel()
+				arrRates = 
+				map.keySet().parallelStream()
 				.collect(Collectors.toMap(Function.identity(), purpose -> model.getArrivalRates(purpose,null)));
 		
 		nhbODs = Stream.of(TimePeriod.values()).parallel().collect(Collectors.toMap(Function.identity(), time ->

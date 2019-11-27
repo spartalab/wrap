@@ -3,6 +3,7 @@ package edu.utexas.wrap;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -93,6 +94,8 @@ public class wrapNCTCOG {
 			System.out.println("Writing to files");
 			writeODs(reducedODs, model.getOutputDirectory());
 			
+			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+			System.out.println("Done");
 			//TODO eventually, we'll do multiple instances of traffic assignment here instead of just writing to files
 			
 		} catch (FileNotFoundException e) {
@@ -199,6 +202,30 @@ public class wrapNCTCOG {
 	private static Map<TimePeriod, Collection<ODMatrix>> reduceODMatrices(
 			Map<TimePeriod, Map<TripPurpose, Map<MarketSegment, Collection<ODMatrix>>>> hbODs,
 			Map<TimePeriod, Map<TripPurpose, Collection<ODMatrix>>> nhbODs) {
+		
+		Map<TripPurpose,TripPurpose> purposePairs = new HashMap<TripPurpose,TripPurpose>(3);
+		purposePairs.put(TripPurpose.HOME_WORK, TripPurpose.NONHOME_WORK);
+		purposePairs.put(TripPurpose.HOME_NONWORK, TripPurpose.NONHOME_NONWORK);
+		
+		Map<TripPurpose,Map<Mode,Map<Boolean,Double>>> vots = new HashMap<TripPurpose,Map<Mode,Map<Boolean,Double>>>();
+		vots.put(TripPurpose.HOME_WORK, new HashMap<Mode,Map<Boolean,Double>>());
+		vots.put(TripPurpose.HOME_NONWORK, new HashMap<Mode,Map<Boolean,Double>>());
+		
+		vots.get(TripPurpose.HOME_WORK).put(Mode.SINGLE_OCC, new HashMap<Boolean,Double>());
+		vots.get(TripPurpose.HOME_WORK).put(Mode.HOV, new HashMap<Boolean,Double>());
+		vots.get(TripPurpose.HOME_NONWORK).put(Mode.SINGLE_OCC, new HashMap<Boolean,Double>());
+		vots.get(TripPurpose.HOME_NONWORK).put(Mode.HOV, new HashMap<Boolean,Double>());
+		
+		vots.get(TripPurpose.HOME_WORK).get(Mode.SINGLE_OCC).put(false,0.35);
+		vots.get(TripPurpose.HOME_WORK).get(Mode.SINGLE_OCC).put(true,0.9);
+		vots.get(TripPurpose.HOME_WORK).get(Mode.HOV).put(false,0.35);
+		vots.get(TripPurpose.HOME_WORK).get(Mode.HOV).put(true,0.9);
+		vots.get(TripPurpose.HOME_NONWORK).get(Mode.SINGLE_OCC).put(false,0.17);
+		vots.get(TripPurpose.HOME_NONWORK).get(Mode.SINGLE_OCC).put(true,0.45);
+		vots.get(TripPurpose.HOME_NONWORK).get(Mode.HOV).put(false,0.17);
+		vots.get(TripPurpose.HOME_NONWORK).get(Mode.HOV).put(true,0.45);
+		
+		
 		return Stream.of(TimePeriod.values()).parallel().collect(Collectors.toMap(Function.identity(), timePeriod ->{
 			Collection<ODMatrix> ret = new HashSet<ODMatrix>();
 			
@@ -211,7 +238,7 @@ public class wrapNCTCOG {
 						.get(tripPurpose).entrySet().parallelStream()	//for this trip purpose
 						.filter(entry -> entry.getKey() instanceof IncomeGroupSegmenter && ((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup() <4)	//in income groups 1, 2, or 3 
 						.map(Entry::getValue).flatMap(Collection::parallelStream).filter(od -> od.getMode() == mode || (mode == Mode.HOV && (od.getMode() == Mode.HOV_2_PSGR || od.getMode() == Mode.HOV_3_PSGR))) //which matches this mode
-						.collect(new ODMatrixCollector())
+						.collect(new ODMatrixCollector(vots.get(tripPurpose).get(mode).get(false)))
 					);
 			
 					//Next, handle the Work IG4 and Nonwork cases
@@ -223,10 +250,10 @@ public class wrapNCTCOG {
 									.map(Entry::getValue).flatMap(Collection::parallelStream).filter(od -> od.getMode() == mode || (mode == Mode.HOV && (od.getMode() == Mode.HOV_2_PSGR || od.getMode() == Mode.HOV_3_PSGR))),	//for this mode
 									
 									nhbODs.get(timePeriod)	//And non-home-based trips
-									.get(tripPurpose).parallelStream()	//for this trip purpose
+									.get(purposePairs.get(tripPurpose)).parallelStream()	//for this trip purpose
 									.filter(od -> od.getMode() == mode)	//using this mode
 									)
-							.collect(new ODMatrixCollector())
+							.collect(new ODMatrixCollector(vots.get(tripPurpose).get(mode).get(true)))
 					);
 				})
 			);
@@ -238,7 +265,10 @@ public class wrapNCTCOG {
 	
 	private static void writeODs(Map<TimePeriod, Collection<ODMatrix>> ods, String outputDir) {
 		
-		ods.entrySet().parallelStream().forEach(todEntry -> todEntry.getValue().parallelStream().forEach(matrix -> ODMatrixWriter.write(outputDir,todEntry.getKey(), matrix)));
+		ods.entrySet().parallelStream()
+		.forEach(todEntry -> 
+			todEntry.getValue().parallelStream()
+			.forEach(matrix -> ODMatrixWriter.write(outputDir,todEntry.getKey(), matrix)));
 	}
 	
 }
