@@ -55,33 +55,41 @@ class NHBThread extends Thread{
 	}
 	
 	public void run() {
+		//Perform non-home-based trip generation
 		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
 		System.out.println("Generating secondary trips");
 		Map<TripPurpose,PAMap> nhbMaps = generate();
 		
+		//Flatten NHB PA maps before balancing
 		nhbMaps = nhbMaps.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, 
 				entry -> new FixedSizePAMap(entry.getValue())
 				));
 		
+		//Perform NHB trip balancing
 		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
 		System.out.println("Balancing secondary production-attraction maps");
 		balance(nhbMaps);
 		
+		//Perform NHB trip distribution
 		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
 		System.out.println("Performing secondary trip distribution");
 		Map<TripPurpose,AggregatePAMatrix> nhbMatrices = distribute(nhbMaps);
 		
+		//Combine all trip purposes into a single AggregatePAMatrix
 		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
 		System.out.println("Combining secondary trip purposes");
 		Map<TripPurpose,AggregatePAMatrix> combinedMatrices = combinePurposes(nhbMatrices);
 		
+		//Perform NHB mode choice
 		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
 		System.out.println("Performing secondary trip mode choice");
 		Map<TripPurpose,Collection<ModalPAMatrix>> nhbModalMtxs = modeChoice(combinedMatrices);
 		
+		//Perform NHB PA-to-OD matrix conversion
 		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
 		System.out.println("Converting secondary PA matrices to OD matrices");
 		paToOD(nhbModalMtxs);
+		//NHB Thread ends here
 	}
 	
 	public Map<TimePeriod,Map<TripPurpose,Collection<ODMatrix>>> getODs(){

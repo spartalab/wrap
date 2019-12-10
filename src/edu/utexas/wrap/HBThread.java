@@ -40,10 +40,12 @@ class HBThread extends Thread{
 	}
 
 	public void run() {
+		//Separate out some fraction of home-based work trips for peak-hour distribution
 		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
 		System.out.println("Splitting primary trips");
 		Map<MarketSegment, PAMap> pkMaps = extractPeakTrips(hbMaps);
 		
+		//Perform peak and off-peak distribution in parallel
 		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
 		System.out.println("Performing primary trip distribution");
 		PeakDistributionThread hbPkGen = new PeakDistributionThread(graph, pkMaps);
@@ -52,6 +54,7 @@ class HBThread extends Thread{
 		OffPeakDistributionThread hbOpGen = new OffPeakDistributionThread(graph, hbMaps);
 		hbOpGen.start();
 
+		//Wait for trip distribution to finish
 		try {
 			hbPkGen.join();
 			hbOpGen.join();
@@ -63,7 +66,8 @@ class HBThread extends Thread{
 		//After distributing over different friction factor maps, the HBW trips are stuck back together and SRE & PBO matrices are combined
 		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
 		System.out.println("Combining primary matrices");
-		Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs = combineAggregateMatrices(hbPkGen.getAggPKMtxs(), hbOpGen.getAggOPMtxs()); // combine SRE/PBO and HBWPK/OP matrices
+		Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs = 
+				combineAggregateMatrices(hbPkGen.getAggPKMtxs(), hbOpGen.getAggOPMtxs()); // combine SRE/PBO and HBWPK/OP matrices
 
 		//divide market segments further by vehicles per worker
 		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
@@ -76,7 +80,7 @@ class HBThread extends Thread{
 		Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> combinedMtxs = combineHNWPurposes(dividedCombinedMtxs);
 
 		try {
-			//Perform mode choice splitting TODO ensure proper use of market segments
+			//Perform mode choice splitting 
 			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
 			System.out.println("Performing primary trip mode choice");
 			Map<TripPurpose, Map<MarketSegment, Collection<ModalPAMatrix>>> hbModalMtxs = modeChoice(combinedMtxs);
@@ -88,6 +92,7 @@ class HBThread extends Thread{
 		} catch (IOException e) {
 			System.err.println("There is an IO Exception in the HB Thread.");
 			e.printStackTrace();
+			System.exit(3);
 		}
 		//thread ends here
 	}

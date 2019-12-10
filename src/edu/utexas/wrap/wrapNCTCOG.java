@@ -34,6 +34,7 @@ import edu.utexas.wrap.util.io.ODMatrixWriter;
 public class wrapNCTCOG {
 
 	public static long startMS = System.currentTimeMillis();
+	
 	public static void main(String[] args) {
 		try{
 			ModelInput model = new ModelInputNCTCOG("inputs.properties");
@@ -49,20 +50,23 @@ public class wrapNCTCOG {
 			//Generate primary productions
 			Map<TripPurpose, Map<MarketSegment, DemandMap>> primaryProds = getProds(graph, prodRates);
 			
-			NHBThread nhb = new NHBThread(graph, model, primaryProds);
+			//Begin a separate thread for handling NHB trip generation, distribution, mode choice, and PA-to-OD conversion
+			NHBThread nhb = new NHBThread(graph, model, primaryProds); 
 			nhb.start();
 						
 			Map<TripPurpose, Map<MarketSegment, Map<AreaClass, Double>>> attrRates = getAttrRates(model);
 			//Generate primary attractions
 			Map<TripPurpose, Map<MarketSegment, DemandMap>> primaryAttrs = getAttrs(graph, attrRates);
 
+			//Combine home-based productions and attractions into a PAMap structure
 			Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps = combine(graph, primaryProds, primaryAttrs);
 			
 
-
-			hbMaps = hbMaps.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, entry -> combineMapsByIncomeGroupSegment(entry.getValue())));
+			//Combine all segments based on their income group
+			hbMaps = hbMaps.entrySet().parallelStream().collect(
+					Collectors.toMap(Entry::getKey, entry -> combineMapsByIncomeGroupSegment(entry.getValue())));
 			
-			
+			//Reduce the depth of the object structure before balancing
 			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
 			System.out.println("Flattening primary production-attraction maps");
 			hbMaps = flatten(hbMaps);
@@ -72,7 +76,7 @@ public class wrapNCTCOG {
 			System.out.println("Balancing primary production-attraction maps");
 			balance(graph, hbMaps);	
 			
-			
+			//Begin a separate thread for handling distribution, mode choice, and PA-to-OD conversion
 			HBThread hb = new HBThread(graph, model, hbMaps);
 			hb.start();
 
@@ -88,7 +92,7 @@ public class wrapNCTCOG {
 			System.out.println("Reducing OD matrices");
 			Map<TimePeriod, Collection<ODMatrix>> reducedODs = reduceODMatrices(hb.getODs(), nhb.getODs());
 			
-			//TODO figure out how to identify reduced ODs
+			//Write OD matrices to a CSV file
 			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
 			System.out.println("Writing to files");
 			writeODs(reducedODs, model.getOutputDirectory());
@@ -120,7 +124,9 @@ public class wrapNCTCOG {
 						purposeEntry.getValue().keySet().parallelStream(),
 						primaryAttrs.get(purposeEntry.getKey()).keySet().parallelStream()
 						).distinct().collect(Collectors.toMap(Function.identity(),
-						segment -> new PAPassthroughMap(g,purposeEntry.getValue().get(segment), primaryAttrs.get(purposeEntry.getKey()).get(segment))))));
+						segment -> new PAPassthroughMap(g,
+								purposeEntry.getValue().get(segment), 
+								primaryAttrs.get(purposeEntry.getKey()).get(segment))))));
 	}
 
 	private static Map<TripPurpose, Map<MarketSegment, DemandMap>> getAttrs(Graph g,
