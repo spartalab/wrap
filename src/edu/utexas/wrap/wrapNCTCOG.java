@@ -30,7 +30,7 @@ import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.util.ODMatrixCollector;
 import edu.utexas.wrap.util.PAMapCollector;
-import edu.utexas.wrap.util.io.ODMatrixWriter;
+import edu.utexas.wrap.util.io.ODMatrixCSVWriter;
 
 public class wrapNCTCOG {
 
@@ -274,7 +274,7 @@ public class wrapNCTCOG {
 		ods.entrySet().parallelStream()
 		.forEach(todEntry -> 
 			todEntry.getValue().parallelStream()
-			.forEach(matrix -> ODMatrixWriter.write(outputDir,todEntry.getKey(), matrix)));
+			.forEach(matrix -> ODMatrixCSVWriter.write(outputDir,todEntry.getKey(), matrix)));
 	}
 	
 }
