@@ -1,7 +1,8 @@
 package edu.utexas.wrap.util.io;
 
-import java.io.BufferedWriter;
 import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,19 +16,23 @@ public class ODMatrixBINWriter {
 		Path path = Paths.get(outputDirectory, 
 				timePeriod.toString(), 
 				matrix.getMode().toString(), 
-				matrix.getVOT().toString()+".matrix");
+				matrix.getVOT().toString()+".bmtx");
 		try{
 			Files.createDirectories(path.getParent());
-			BufferedWriter out = Files.newBufferedWriter(path,
+			OutputStream out = Files.newOutputStream(path,
 					StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 			matrix.getGraph().getTSZs().parallelStream().forEach( orig -> {
-				matrix.getGraph().getTSZs().parallelStream().filter(dest -> matrix.getDemand(orig,dest) > 0)
+				matrix.getGraph().getTSZs().parallelStream()
+//				.filter(dest -> matrix.getDemand(orig,dest) > 0)
 				.forEach(dest ->{
 					try {
-						//TODO implement byte-level writing
+						float demand = matrix.getDemand(orig,dest);
 						
-						out.write();
-//						out.flush();
+						if (demand > 0)	out.write(
+								ByteBuffer.allocate(2*Integer.BYTES+Float.BYTES)
+								.putInt(orig.getNode().getID())
+								.putInt(dest.getNode().getID())
+								.putFloat(demand).array());
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

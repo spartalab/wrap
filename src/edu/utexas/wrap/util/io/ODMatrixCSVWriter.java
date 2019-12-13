@@ -22,18 +22,22 @@ public class ODMatrixCSVWriter {
 			BufferedWriter out = Files.newBufferedWriter(path,
 					StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 			matrix.getGraph().getTSZs().parallelStream().forEach( orig -> {
-				matrix.getGraph().getTSZs().parallelStream().filter(dest -> matrix.getDemand(orig,dest) > 0)
+				matrix.getGraph().getTSZs().parallelStream()
+//				.filter(dest -> matrix.getDemand(orig,dest) > 0)
 				.forEach(dest ->{
 					try {
-						StringBuilder sb = new StringBuilder();
-						sb.append(orig.getNode().getID());
-						sb.append(",");
-						sb.append(dest.getNode().getID());
-						sb.append(",");
-						sb.append(matrix.getDemand(orig,dest));
-						sb.append("\r\n");
-						out.write(sb.toString());
-//						out.flush();
+						float demand = matrix.getDemand(orig, dest);
+						if (demand > 0) {
+							StringBuilder sb = new StringBuilder();
+							sb.append(orig.getNode().getID());
+							sb.append(",");
+							sb.append(dest.getNode().getID());
+							sb.append(",");
+							sb.append(demand);
+							sb.append("\r\n");
+							out.write(sb.toString());
+//							out.flush();
+						}
 					} catch (IOException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
