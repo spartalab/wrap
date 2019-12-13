@@ -18,15 +18,17 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 public class ODMatrixCollector implements Collector<ODMatrix, CombinedODMatrix, ODMatrix>{
 	private final Set<Characteristics> characteristics = new HashSet<Characteristics>(Arrays.asList(Collector.Characteristics.values()));
 	private double vot;
+	private Mode mode;
 	
-	public ODMatrixCollector(Double vot) {
+	public ODMatrixCollector(Mode mode, Double vot) {
 		// TODO Auto-generated constructor stub
+		this.mode = mode;
 		this.vot = vot;
 	}
 
 	@Override
 	public Supplier<CombinedODMatrix> supplier() {
-		return () -> new CombinedODMatrix(vot);
+		return () -> new CombinedODMatrix(mode,vot);
 	}
 
 	@Override
@@ -58,14 +60,16 @@ public class ODMatrixCollector implements Collector<ODMatrix, CombinedODMatrix, 
 class CombinedODMatrix implements ODMatrix {
 	private Collection<ODMatrix> children;
 	private Float vot;
+	private Mode mode;
 	
-	public CombinedODMatrix(Double vot) {
+	public CombinedODMatrix(Mode mode, Double vot) {
 		children = new HashSet<ODMatrix>();
 		this.vot = vot == null? 0.0f : vot.floatValue();
+		this.mode = mode;
 	}
 	
 	public CombinedODMatrix() {
-		this(null);
+		this(null, null);
 	}
 
 	
@@ -79,7 +83,7 @@ class CombinedODMatrix implements ODMatrix {
 	
 	@Override
 	public Mode getMode() {
-		return children.parallelStream().map(ODMatrix::getMode).distinct().findAny().orElse(null);
+		return mode;
 	}
 
 	@Override

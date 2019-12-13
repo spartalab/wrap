@@ -245,7 +245,7 @@ public class wrapNCTCOG {
 						.get(tripPurpose).entrySet().parallelStream()	//for this trip purpose
 						.filter(entry -> entry.getKey() instanceof IncomeGroupSegmenter && ((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup() <4)	//in income groups 1, 2, or 3 
 						.map(Entry::getValue).flatMap(Collection::parallelStream).filter(od -> od.getMode() == mode || (mode == Mode.HOV && (od.getMode() == Mode.HOV_2_PSGR || od.getMode() == Mode.HOV_3_PSGR))) //which matches this mode
-						.collect(new ODMatrixCollector(vots.get(tripPurpose).get(mode).get(false)))
+						.collect(new ODMatrixCollector(mode,vots.get(tripPurpose).get(mode).get(false)))
 					);
 			
 					//Next, handle the Work IG4 and Nonwork cases
@@ -260,7 +260,7 @@ public class wrapNCTCOG {
 									.get(purposePairs.get(tripPurpose)).parallelStream()	//for this trip purpose
 									.filter(od -> od.getMode() == mode)	//using this mode
 									)
-							.collect(new ODMatrixCollector(vots.get(tripPurpose).get(mode).get(true)))
+							.collect(new ODMatrixCollector(mode,vots.get(tripPurpose).get(mode).get(true)))
 					);
 				})
 			);
