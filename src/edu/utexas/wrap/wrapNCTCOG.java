@@ -40,12 +40,12 @@ public class wrapNCTCOG {
 	public static void main(String[] args) {
 		try{
 			ModelInput model = new ModelInputNCTCOG("inputs.properties");
-			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+			printTimeStamp();
 			System.out.println("Reading network");
 			Graph graph = model.getNetwork();
 			
 			//Perform trip generation
-			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+			printTimeStamp();
 			System.out.println("Generating primary trips");
 			
 			Map<TripPurpose, Map<MarketSegment, Double>> prodRates = getProdRates(model);
@@ -68,13 +68,11 @@ public class wrapNCTCOG {
 			hbMaps = hbMaps.entrySet().parallelStream().collect(
 					Collectors.toMap(Entry::getKey, entry -> combineMapsByIncomeGroupSegment(entry.getValue())));
 			
-			//Reduce the depth of the object structure before balancing
-			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+			printTimeStamp();
 			System.out.println("Flattening primary production-attraction maps");
 			hbMaps = flatten(hbMaps);
 			
-			//Perform trip balancing
-			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+			printTimeStamp();
 			System.out.println("Balancing primary production-attraction maps");
 			balance(graph, hbMaps);	
 			
@@ -89,17 +87,15 @@ public class wrapNCTCOG {
 				System.out.println("Thread is interrupted.\n");
 			}
 
-			//Reduce the number of OD matrices by combining those of similar VOT
-			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+			printTimeStamp();
 			System.out.println("Reducing OD matrices");
 			Map<TimePeriod, Collection<ODMatrix>> reducedODs = reduceODMatrices(hb.getODs(), nhb.getODs());
 			
-			//Write OD matrices to a CSV file
-			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+			printTimeStamp();
 			System.out.println("Writing to files");
 			writeODs(reducedODs, model.getOutputDirectory());
 			
-			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
+			printTimeStamp();
 			System.out.println("Done");
 			//TODO eventually, we'll do multiple instances of traffic assignment here instead of just writing to files
 			
@@ -110,6 +106,10 @@ public class wrapNCTCOG {
 			e.printStackTrace();
 			System.exit(2);
 		}
+	}
+
+	private static void printTimeStamp() {
+		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
 	}
 	
 	private static Map<TripPurpose,Map<MarketSegment,PAMap>> flatten(Map<TripPurpose,Map<MarketSegment,PAMap>> maps) {
