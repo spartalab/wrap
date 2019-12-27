@@ -556,7 +556,7 @@ public class Bush implements AssignmentContainer {
 	 * 
 	 * @return a topological ordering of this bush's nodes
 	 */
-	public Node[] getTopologicalOrder(boolean toCache) {
+	public synchronized Node[] getTopologicalOrder(boolean toCache) {
 		return (cachedTopoOrder != null) ? cachedTopoOrder : generateTopoOrder(toCache);
 	}
 

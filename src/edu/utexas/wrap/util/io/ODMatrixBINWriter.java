@@ -11,6 +11,17 @@ import java.nio.file.StandardOpenOption;
 import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.demand.ODMatrix;
 
+/**This class includes a method to write OD matrices to a file named using the following pattern:
+ * 		./{outputDirectory}/{timePeriod}/{matrix.getVOT()}.bmtx
+ * 
+ * The file is encoded with each record requiring 12 bytes:
+ * 		0x0-0x3	ORIGIN ID		(int)
+ * 		0x4-0x7	DESTINATION ID	(int)
+ * 		0x8-0xB	DEMAND			(float)
+ * 
+ * @author William
+ *
+ */
 public class ODMatrixBINWriter {
 	public static void write(String outputDirectory, TimePeriod timePeriod, ODMatrix matrix) {
 		Path path = Paths.get(outputDirectory, 

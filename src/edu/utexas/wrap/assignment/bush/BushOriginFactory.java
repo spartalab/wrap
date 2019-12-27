@@ -8,8 +8,11 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 
 import edu.utexas.wrap.assignment.AssignmentLoader;
-import edu.utexas.wrap.demand.containers.AutoODMatrix;
+import edu.utexas.wrap.demand.containers.AutoDemandPassthroughMap;
+import edu.utexas.wrap.demand.containers.AutoODHashMatrix;
+import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.demand.AutoDemandMap;
+import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
@@ -49,7 +52,7 @@ public class BushOriginFactory extends AssignmentLoader {
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.assignment.AssignmentLoader#addAll(edu.utexas.wrap.demand.containers.AutoODHashMatrix)
 	 */
-	public void submitAll(AutoODMatrix matrix) {
+	public void submitAll(AutoODHashMatrix matrix) {
 		for (TravelSurveyZone o : matrix.getProducers()) {
 			submit(o, matrix.get(o));
 		}
@@ -84,6 +87,12 @@ public class BushOriginFactory extends AssignmentLoader {
 		}
 		System.out.print("\rInitial trips loaded\tMemory usage: "+(Runtime.getRuntime().totalMemory()/1048576)+" MiB            ");
 		return origins;
+	}
+
+	@Override
+	public void submit(TravelSurveyZone root, DemandMap map, Mode mode, Float vot) {
+		// TODO Auto-generated method stub
+		submit(root, new AutoDemandPassthroughMap(map,mode,vot));
 	}
 
 }

@@ -12,7 +12,7 @@ import edu.utexas.wrap.net.Node;
  *
  */
 public class BushMerge implements BackVector {
-	private Double[] shares;
+	private Float[] shares;
 	private Link shortLink;
 	private Link longLink;
 	private final Node head;
@@ -24,8 +24,8 @@ public class BushMerge implements BackVector {
 	 */
 	public BushMerge(Bush b, Link u, Link l) {
 		this(b,u == null? l.getHead() : u.getHead());
-		shares[u.getHead().orderOf(u)] = 1.0;
-		shares[l.getHead().orderOf(l)] = 0.0;
+		shares[u.getHead().orderOf(u)] = 1.0f;
+		shares[l.getHead().orderOf(l)] = 0.0f;
 	}
 	
 	/**Duplication constructor
@@ -47,7 +47,7 @@ public class BushMerge implements BackVector {
 	 * @param b
 	 */
 	protected BushMerge(Bush b, Node n) {
-		shares = new Double[n.reverseStar().length];
+		shares = new Float[n.reverseStar().length];
 		head = n;
 	}
 	
@@ -124,8 +124,8 @@ public class BushMerge implements BackVector {
 		if (d.isNaN()) {
 			throw new RuntimeException("BushMerge split set to NaN");
 		}
-		Double val = shares[head.orderOf(l)];
-		shares[head.orderOf(l)] = d;
+		Float val = shares[head.orderOf(l)];
+		shares[head.orderOf(l)] = d.floatValue();
 		return val == null? 0.0 : val;
 	}
 
@@ -141,7 +141,7 @@ public class BushMerge implements BackVector {
 	public Boolean add(Link l) {
 		int idx = head.orderOf(l);
 		if (idx < 0 || idx > head.reverseStar().length) return false;
-		shares[idx] = 0.0;
+		shares[idx] = 0.0f;
 		return true;
 
 	}

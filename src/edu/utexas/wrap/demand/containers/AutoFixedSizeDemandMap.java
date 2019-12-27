@@ -5,9 +5,9 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 
 public class AutoFixedSizeDemandMap extends FixedSizeDemandMap implements AutoDemandMap {
-	private AutoODMatrix parent;
+	private AutoODHashMatrix parent;
 	
-	public AutoFixedSizeDemandMap(Graph g, AutoODMatrix p) {
+	public AutoFixedSizeDemandMap(Graph g, AutoODHashMatrix p) {
 		super(g);
 		parent = p;
 		// TODO Auto-generated constructor stub

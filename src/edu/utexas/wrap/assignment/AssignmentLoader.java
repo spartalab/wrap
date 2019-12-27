@@ -1,7 +1,9 @@
 package edu.utexas.wrap.assignment;
  
-import edu.utexas.wrap.demand.containers.AutoODMatrix;
+import edu.utexas.wrap.demand.containers.AutoODHashMatrix;
+import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.demand.AutoDemandMap;
+import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
@@ -24,14 +26,16 @@ public abstract class AssignmentLoader {
 	/**Load all demand from an OD matrix
 	 * @param od the ODMatrix to be loaded into the network
 	 */
-	protected abstract void submitAll(AutoODMatrix od);
+	protected abstract void submitAll(AutoODHashMatrix od);
 
 	/** add a given node's DemandHashMap to the pool of demand to be loaded onto the network 
 	 * TODO: figure out AutoDemand vs general Demand and generalizing to any Map
 	 * @param root the Node from which the demand should emanate
-	 * @param split the demand from the given node to any other Node in the network
+	 * @param solo17 the demand from the given node to any other Node in the network
 	 */
-	public abstract void submit(TravelSurveyZone root, AutoDemandMap split);
+	public abstract void submit(TravelSurveyZone root, AutoDemandMap map);
+	
+	public abstract void submit(TravelSurveyZone root, DemandMap map, Mode mode, Float vot);
 	
 	/**
 	 * @param root begin the process of loading this Node's demand onto the network 

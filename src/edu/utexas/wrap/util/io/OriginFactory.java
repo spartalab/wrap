@@ -10,11 +10,15 @@ import java.util.List;
 import java.util.Map;
 
 import edu.utexas.wrap.assignment.AssignmentLoader;
-import edu.utexas.wrap.demand.containers.AutoODMatrix;
+import edu.utexas.wrap.demand.containers.AutoODHashMatrix;
 import edu.utexas.wrap.demand.AutoDemandMap;
+import edu.utexas.wrap.demand.DemandMap;
+import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.containers.AutoDemandHashMap;
 import edu.utexas.wrap.demand.containers.AutoFixedSizeDemandMap;
+import edu.utexas.wrap.demand.containers.AutoFixedSizeMatrix;
 import edu.utexas.wrap.demand.containers.DemandHashMap;
+import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
@@ -86,20 +90,20 @@ public class OriginFactory {
 		BufferedReader matrixFile = new BufferedReader(new FileReader(odMatrix));
 		String line;
 		Integer curOrig = null;
-		AutoODMatrix odda17 = new AutoODMatrix(g, 0.17F, Mode.SINGLE_OCC);
-		AutoODMatrix odda35 = new AutoODMatrix(g, 0.35F, Mode.SINGLE_OCC);
-		AutoODMatrix odda45 = new AutoODMatrix(g, 0.45F, Mode.SINGLE_OCC);
-		AutoODMatrix odda90 = new AutoODMatrix(g, 0.90F, Mode.SINGLE_OCC);
+//		ODMatrix odda17 = new AutoFixedSizeMatrix(g, Mode.SINGLE_OCC, 0.17F);
+//		ODMatrix odda35 = new AutoFixedSizeMatrix(g, Mode.SINGLE_OCC, 0.35F);
+//		ODMatrix odda45 = new AutoFixedSizeMatrix(g, Mode.SINGLE_OCC, 0.45F);
+//		ODMatrix odda90 = new AutoFixedSizeMatrix(g, Mode.SINGLE_OCC, 0.90F);
+//		
+//		ODMatrix odsr17 = new AutoFixedSizeMatrix(g, Mode.HOV_2_PSGR, 0.17F);
+//		ODMatrix odsr35 = new AutoFixedSizeMatrix(g, Mode.HOV_2_PSGR, 0.35F);
+//		ODMatrix odsr45 = new AutoFixedSizeMatrix(g, Mode.HOV_2_PSGR, 0.45F);
+//		ODMatrix odsr90 = new AutoFixedSizeMatrix(g, Mode.HOV_2_PSGR, 0.90F);
+//		
+//		ODMatrix odmt = new AutoFixedSizeMatrix(g, Mode.MED_TRUCK, 1.0F);
+//		ODMatrix odht = new AutoFixedSizeMatrix(g, Mode.HVY_TRUCK, 1.0F);
 		
-		AutoODMatrix odsr17 = new AutoODMatrix(g, 0.17F, Mode.HOV_2_PSGR);
-		AutoODMatrix odsr35 = new AutoODMatrix(g, 0.35F, Mode.HOV_2_PSGR);
-		AutoODMatrix odsr45 = new AutoODMatrix(g, 0.45F, Mode.HOV_2_PSGR);
-		AutoODMatrix odsr90 = new AutoODMatrix(g, 0.90F, Mode.HOV_2_PSGR);
-		
-		AutoODMatrix odmt = new AutoODMatrix(g, 1.0F, Mode.MED_TRUCK);
-		AutoODMatrix odht = new AutoODMatrix(g, 1.0F, Mode.HVY_TRUCK);
-		
-		AutoDemandMap solo17 = null, solo35 = null, solo45 = null, solo90 = null,
+		DemandMap solo17 = null, solo35 = null, solo45 = null, solo90 = null,
 				hov17 = null, hov35 = null, hov45 = null, hov90 = null,
 				medTrucks = null, hvyTrucks = null;
 
@@ -115,18 +119,18 @@ public class OriginFactory {
 						g.addZone(curZone);
 					}
 					
-					dl.submit(curZone, solo17);
-					dl.submit(curZone, solo35);
-					dl.submit(curZone, solo45);
-					dl.submit(curZone, solo90);
+					dl.submit(curZone, solo17, Mode.SINGLE_OCC, 0.17f);
+					dl.submit(curZone, solo35, Mode.SINGLE_OCC, 0.35f);
+					dl.submit(curZone, solo45, Mode.SINGLE_OCC, 0.45f);
+					dl.submit(curZone, solo90, Mode.SINGLE_OCC, 0.90f);
 
-					dl.submit(curZone, hov17);
-					dl.submit(curZone, hov35);
-					dl.submit(curZone, hov45);
-					dl.submit(curZone, hov90);
+					dl.submit(curZone, hov17, Mode.HOV,0.17f);
+					dl.submit(curZone, hov35, Mode.HOV,0.35f);
+					dl.submit(curZone, hov45, Mode.HOV,0.45f);
+					dl.submit(curZone, hov90, Mode.HOV,0.90f);
 					
-					dl.submit(curZone, medTrucks);
-					dl.submit(curZone, hvyTrucks);
+					dl.submit(curZone, medTrucks, Mode.MED_TRUCK,1.00f);
+					dl.submit(curZone, hvyTrucks, Mode.HVY_TRUCK,1.00f);
 					
 					dl.start(curZone);
 				}
@@ -164,19 +168,19 @@ public class OriginFactory {
 						g.addZone(curZone);
 					}
 					// build previous origin's bushes
-					dl.submit(curZone, solo17);
-					dl.submit(curZone, solo35);
-					dl.submit(curZone, solo45);
-					dl.submit(curZone, solo90);
+					
+					dl.submit(curZone, solo17, Mode.SINGLE_OCC, 0.17f);
+					dl.submit(curZone, solo35, Mode.SINGLE_OCC, 0.35f);
+					dl.submit(curZone, solo45, Mode.SINGLE_OCC, 0.45f);
+					dl.submit(curZone, solo90, Mode.SINGLE_OCC, 0.90f);
 
-					dl.submit(curZone, hov17);
-					dl.submit(curZone, hov35);
-					dl.submit(curZone, hov45);
-					dl.submit(curZone, hov90);
+					dl.submit(curZone, hov17, Mode.HOV,0.17f);
+					dl.submit(curZone, hov35, Mode.HOV,0.35f);
+					dl.submit(curZone, hov45, Mode.HOV,0.45f);
+					dl.submit(curZone, hov90, Mode.HOV,0.90f);
 					
-					dl.submit(curZone, medTrucks);
-					dl.submit(curZone, hvyTrucks);
-					
+					dl.submit(curZone, medTrucks, Mode.MED_TRUCK,1.00f);
+					dl.submit(curZone, hvyTrucks, Mode.HVY_TRUCK,1.00f);
 					dl.start(curZone);
 
 				}
@@ -184,18 +188,18 @@ public class OriginFactory {
 				// Reset maps
 				System.out.print("\rReading demand for origin " + orig);
 				curOrig = orig;
-				solo17 = new AutoDemandHashMap(g,odda17);
-				solo35 = new AutoDemandHashMap(g,odda35);
-				solo45 = new AutoDemandHashMap(g,odda45);
-				solo90 = new AutoDemandHashMap(g,odda90);
+				solo17 = new FixedSizeDemandMap(g);
+				solo35 = new FixedSizeDemandMap(g);
+				solo45 = new FixedSizeDemandMap(g);
+				solo90 = new FixedSizeDemandMap(g);
 
-				hov17 = new AutoDemandHashMap(g,odsr17);
-				hov35 = new AutoDemandHashMap(g,odsr35);
-				hov45 = new AutoDemandHashMap(g,odsr45);
-				hov90 = new AutoDemandHashMap(g,odsr90);
+				hov17 = new FixedSizeDemandMap(g);
+				hov35 = new FixedSizeDemandMap(g);
+				hov45 = new FixedSizeDemandMap(g);
+				hov90 = new FixedSizeDemandMap(g);
 
-				medTrucks = new AutoDemandHashMap(g,odmt);
-				hvyTrucks = new AutoDemandHashMap(g,odht);
+				medTrucks = new FixedSizeDemandMap(g);
+				hvyTrucks = new FixedSizeDemandMap(g);
 			}
 
 			if (da17 > 0.0F)
@@ -243,7 +247,7 @@ public class OriginFactory {
 		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
 		String line;
 		
-		Map<Double, AutoODMatrix> ods = new Double2ObjectOpenHashMap<AutoODMatrix>();
+		Map<Double, AutoODHashMatrix> ods = new Double2ObjectOpenHashMap<AutoODHashMatrix>();
 		int numZones = 0;
 		
 		do { // Move past headers in the file
@@ -270,7 +274,7 @@ public class OriginFactory {
 			DemandHashMap unified = readDestinationDemand(of, g, numZones);
 			
 			for (Double[] entry : map.get(root)) {
-				ods.putIfAbsent(entry[0], new AutoODMatrix(g, entry[0].floatValue(), null)); //Ensure a parent OD matrix exists
+				ods.putIfAbsent(entry[0], new AutoODHashMatrix(g, entry[0].floatValue(), null)); //Ensure a parent OD matrix exists
 				AutoDemandMap split = new AutoFixedSizeDemandMap(g, ods.get(entry[0]));	//Attach the parent OD
 				
 				for (TravelSurveyZone dest : unified.getZones()) { //Split each destination proportionally

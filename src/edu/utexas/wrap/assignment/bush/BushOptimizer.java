@@ -27,7 +27,7 @@ import edu.utexas.wrap.util.calc.TotalSystemTravelTimeCalculator;
  *
  */
 public abstract class BushOptimizer extends Optimizer {
-	public static boolean printProgress = false;
+	public static boolean printProgress = true;
 	public static boolean printBushes = true;
 
 	private int innerIters = 8;
@@ -116,7 +116,8 @@ public abstract class BushOptimizer extends Optimizer {
 		// A single general step iteration
 		// TODO explore which bushes should be examined 
 		Long imprStart = System.currentTimeMillis();
-		ForkJoinPool p = (ForkJoinPool) Executors.newWorkStealingPool();
+//		origins.parallelStream().flatMap(o -> o.getContainers().parallelStream()).forEach(Bush::improve);
+		ForkJoinPool p = new ForkJoinPool();
 		for (BushOrigin o : origins) {
 			for (Bush b : o.getContainers()) {
 				Thread t = new Thread() {

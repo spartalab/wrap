@@ -112,6 +112,10 @@ public class wrapNCTCOG {
 		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
 	}
 	
+	/**This method flattens PA maps into a fixed-size array-backed PAMap by duplicating the entries
+	 * @param maps the collection of maps to be flattened
+	 * @return a copy of the input where all PAMaps are replaced by FixedsizePAMaps
+	 */
 	private static Map<TripPurpose,Map<MarketSegment,PAMap>> flatten(Map<TripPurpose,Map<MarketSegment,PAMap>> maps) {
 		return maps.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, purposeEntry ->
 			purposeEntry.getValue().entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, segmentEntry->
@@ -120,6 +124,12 @@ public class wrapNCTCOG {
 		));
 	}
 	
+	/** this method combines a series of DemandMap pairs as a PAMap
+	 * @param g	the graph to which the PAPassthrough map should be associated
+	 * @param primaryProds	the production maps
+	 * @param primaryAttrs	the attraction maps
+	 * @return	maps to PAMaps
+	 */
 	private static Map<TripPurpose, Map<MarketSegment, PAMap>> combine(Graph g,
 			Map<TripPurpose, Map<MarketSegment, DemandMap>> primaryProds,
 			Map<TripPurpose, Map<MarketSegment, DemandMap>> primaryAttrs) {
@@ -244,7 +254,13 @@ public class wrapNCTCOG {
 						hbODs.get(timePeriod)	//add a combination of all OD matrices from this time period
 						.get(tripPurpose).entrySet().parallelStream()	//for this trip purpose
 						.filter(entry -> entry.getKey() instanceof IncomeGroupSegmenter && ((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup() <4)	//in income groups 1, 2, or 3 
-						.map(Entry::getValue).flatMap(Collection::parallelStream).filter(od -> od.getMode() == mode || (mode == Mode.HOV && (od.getMode() == Mode.HOV_2_PSGR || od.getMode() == Mode.HOV_3_PSGR))) //which matches this mode
+						.map(Entry::getValue)
+						.flatMap(Collection::parallelStream)
+						.filter(
+								od -> od.getMode() == mode || 
+								(mode == Mode.HOV && 
+									(od.getMode() == Mode.HOV_2_PSGR || 
+									od.getMode() == Mode.HOV_3_PSGR))) //which matches this mode
 						.collect(new ODMatrixCollector(mode,vots.get(tripPurpose).get(mode).get(false)))
 					);
 			
@@ -254,7 +270,14 @@ public class wrapNCTCOG {
 									hbODs.get(timePeriod)	//home-based trips from this time period
 									.get(tripPurpose).entrySet().parallelStream()	//for this trip purpose
 									.filter(entry -> entry.getKey() instanceof IncomeGroupSegmenter && ((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup() >= 4)	//in income group 4
-									.map(Entry::getValue).flatMap(Collection::parallelStream).filter(od -> od.getMode() == mode || (mode == Mode.HOV && (od.getMode() == Mode.HOV_2_PSGR || od.getMode() == Mode.HOV_3_PSGR))),	//for this mode
+									.map(Entry::getValue)
+									.flatMap(Collection::parallelStream)
+									.filter(
+											od -> od.getMode() == mode || 
+											(mode == Mode.HOV && 
+												(od.getMode() == Mode.HOV_2_PSGR || 
+												od.getMode() == Mode.HOV_3_PSGR))
+											),	//for this mode
 									
 									nhbODs.get(timePeriod)	//And non-home-based trips
 									.get(purposePairs.get(tripPurpose)).parallelStream()	//for this trip purpose

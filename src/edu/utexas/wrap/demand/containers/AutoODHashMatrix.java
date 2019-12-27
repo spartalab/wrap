@@ -9,10 +9,10 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  * @author William
  *
  */
-public class AutoODMatrix extends ModalHashMatrix {
+public class AutoODHashMatrix extends ModalHashMatrix {
 	private final Float vot;
 	
-	public AutoODMatrix(Graph g, Float vot, Mode c) {
+	public AutoODHashMatrix(Graph g, Float vot, Mode c) {
 		super(g, c);
 		this.vot = vot;
 	}

@@ -10,14 +10,14 @@ import edu.utexas.wrap.net.Graph;
  */
 public class AutoDemandHashMap extends DemandHashMap implements AutoDemandMap {
 
-	private final AutoODMatrix parent;
+	private final AutoODHashMatrix parent;
 	
-	public AutoDemandHashMap(Graph g, AutoODMatrix parent) {
+	public AutoDemandHashMap(Graph g, AutoODHashMatrix parent) {
 		super(g);
 		this.parent = parent;
 	}
 
-	public AutoDemandHashMap(DemandHashMap sub, AutoODMatrix parent) {
+	public AutoDemandHashMap(DemandHashMap sub, AutoODHashMatrix parent) {
 		super(sub);
 		this.parent = parent;
 	}
