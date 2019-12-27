@@ -30,8 +30,8 @@ import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.util.ODMatrixCollector;
 import edu.utexas.wrap.util.PAMapCollector;
-import edu.utexas.wrap.util.io.ODMatrixBINWriter;
-import edu.utexas.wrap.util.io.ODMatrixCSVWriter;
+import edu.utexas.wrap.util.io.output.ODMatrixBINWriter;
+import edu.utexas.wrap.util.io.output.ODMatrixCSVWriter;
 
 public class wrapNCTCOG {
 
@@ -68,6 +68,7 @@ public class wrapNCTCOG {
 			hbMaps = hbMaps.entrySet().parallelStream().collect(
 					Collectors.toMap(Entry::getKey, entry -> combineMapsByIncomeGroupSegment(entry.getValue())));
 			
+			
 			printTimeStamp();
 			System.out.println("Flattening primary production-attraction maps");
 			hbMaps = flatten(hbMaps);
@@ -75,6 +76,9 @@ public class wrapNCTCOG {
 			printTimeStamp();
 			System.out.println("Balancing primary production-attraction maps");
 			balance(graph, hbMaps);	
+			
+			Entry<MarketSegment,PAMap> mp = hbMaps.get(TripPurpose.HOME_WORK).entrySet().stream().findFirst().get();
+
 			
 			//Begin a separate thread for handling distribution, mode choice, and PA-to-OD conversion
 			HBThread hb = new HBThread(graph, model, hbMaps);

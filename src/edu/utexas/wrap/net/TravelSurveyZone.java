@@ -35,6 +35,15 @@ public class TravelSurveyZone {
 		return origin;
 	}
 	
+	public int getID() {
+		return origin.getID();
+	}
+	
+	@Override
+	public String toString() {
+		return "Zone "+this.getID();
+	}
+	
 //	public void setRAA(RegionalAreaAnalysisZone parent) {
 //		this.parent = parent;
 //	}
