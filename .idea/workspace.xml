@@ -2,8 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="35b67530-44cd-447b-b333-46a019cdabd5" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/edu/utexas/wrap/util/io/output/ODMatrixStreamWriter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/edu/utexas/wrap/util/io/output/ODMatrixStreamWriter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/edu/utexas/wrap/util/io/output/ODMatrixStreamWriter.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/edu/utexas/wrap/wrapNCTCOG.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/edu/utexas/wrap/wrapNCTCOG.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/bin/" />
@@ -45,12 +44,34 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/wrapNCTCOG.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-5426">
-              <caret line="34" column="49" selection-start-line="34" selection-start-column="38" selection-end-line="34" selection-end-column="49" />
+            <state relative-caret-position="5043">
+              <caret line="354" lean-forward="true" selection-start-line="354" selection-end-line="354" />
               <folding>
+                <element signature="imports" expanded="true" />
                 <element signature="e#4359#4360#0" expanded="true" />
                 <element signature="e#4439#4440#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/util/io/output/ODMatrixStreamWriter.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="542">
+              <caret line="39" column="48" lean-forward="true" selection-start-line="39" selection-start-column="48" selection-end-line="39" selection-end-column="48" />
+              <folding>
+                <element signature="imports" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/TimePeriod.java">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="54">
+              <caret line="3" column="12" selection-start-line="3" selection-start-column="4" selection-end-line="3" selection-end-column="12" />
             </state>
           </provider>
         </entry>
@@ -60,18 +81,6 @@
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="118">
               <caret line="15" column="17" selection-start-line="15" selection-start-column="17" selection-end-line="15" selection-end-column="17" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/util/io/output/ODMatrixStreamWriter.java">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="592">
-              <caret line="48" column="26" selection-start-line="48" selection-start-column="26" selection-end-line="48" selection-end-column="26" />
-              <folding>
-                <element signature="imports" expanded="true" />
-              </folding>
             </state>
           </provider>
         </entry>
@@ -101,6 +110,7 @@
       <find>peakDis</find>
       <find>rates</find>
       <find>Fixedpro</find>
+      <find>timep</find>
       <find>ODMATRIXCSV</find>
     </findStrings>
   </component>
@@ -132,8 +142,8 @@
         <option value="$PROJECT_DIR$/src/edu/utexas/wrap/NHBThread.java" />
         <option value="$PROJECT_DIR$/src/edu/utexas/wrap/util/io/ModeFactory.java" />
         <option value="$PROJECT_DIR$/src/edu/utexas/wrap/HBThread.java" />
-        <option value="$PROJECT_DIR$/src/edu/utexas/wrap/wrapNCTCOG.java" />
         <option value="$PROJECT_DIR$/src/edu/utexas/wrap/util/io/output/ODMatrixCSVWriter.java" />
+        <option value="$PROJECT_DIR$/src/edu/utexas/wrap/wrapNCTCOG.java" />
         <option value="$PROJECT_DIR$/src/edu/utexas/wrap/util/io/output/ODMatrixStreamWriter.java" />
       </list>
     </option>
@@ -165,30 +175,6 @@
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="wrap" type="462c0819:PsiDirectoryNode" />
             </path>
-            <path>
-              <item name="algorithmB" type="b2602c69:ProjectViewProjectNode" />
-              <item name="wrap" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="wrap" type="462c0819:PsiDirectoryNode" />
-              <item name="util" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="algorithmB" type="b2602c69:ProjectViewProjectNode" />
-              <item name="wrap" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="wrap" type="462c0819:PsiDirectoryNode" />
-              <item name="util" type="462c0819:PsiDirectoryNode" />
-              <item name="io" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="algorithmB" type="b2602c69:ProjectViewProjectNode" />
-              <item name="wrap" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="wrap" type="462c0819:PsiDirectoryNode" />
-              <item name="util" type="462c0819:PsiDirectoryNode" />
-              <item name="io" type="462c0819:PsiDirectoryNode" />
-              <item name="output" type="462c0819:PsiDirectoryNode" />
-            </path>
           </expand>
           <select />
         </subPane>
@@ -203,7 +189,7 @@
     <property name="Repository.Attach.Annotations" value="false" />
     <property name="Repository.Attach.JavaDocs" value="false" />
     <property name="Repository.Attach.Sources" value="false" />
-    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1577999802996" />
+    <property name="com.android.tools.idea.instantapp.provision.ProvisionBeforeRunTaskProvider.myTimeStamp" value="1578002706701" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="project.structure.last.edited" value="Libraries" />
     <property name="project.structure.proportion" value="0.0" />
@@ -403,13 +389,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/TimePeriod.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="36">
-          <caret line="2" column="12" selection-start-line="2" selection-start-column="12" selection-end-line="2" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/wrapHNW.java" />
     <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/modechoice/FixedProportionSplitter.java">
       <provider selected="true" editor-type-id="text-editor">
@@ -531,13 +510,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/demand/ODMatrix.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="118">
-          <caret line="15" column="17" selection-start-line="15" selection-start-column="17" selection-end-line="15" selection-end-column="17" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/util/io/output/ODMatrixCSVWriter.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="351">
@@ -548,11 +520,26 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/demand/ODMatrix.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="118">
+          <caret line="15" column="17" selection-start-line="15" selection-start-column="17" selection-end-line="15" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/TimePeriod.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="54">
+          <caret line="3" column="12" selection-start-line="3" selection-start-column="4" selection-end-line="3" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/wrapNCTCOG.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-5426">
-          <caret line="34" column="49" selection-start-line="34" selection-start-column="38" selection-end-line="34" selection-end-column="49" />
+        <state relative-caret-position="5043">
+          <caret line="354" lean-forward="true" selection-start-line="354" selection-end-line="354" />
           <folding>
+            <element signature="imports" expanded="true" />
             <element signature="e#4359#4360#0" expanded="true" />
             <element signature="e#4439#4440#0" expanded="true" />
           </folding>
@@ -561,8 +548,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/edu/utexas/wrap/util/io/output/ODMatrixStreamWriter.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="592">
-          <caret line="48" column="26" selection-start-line="48" selection-start-column="26" selection-end-line="48" selection-end-column="26" />
+        <state relative-caret-position="542">
+          <caret line="39" column="48" lean-forward="true" selection-start-line="39" selection-start-column="48" selection-end-line="39" selection-end-column="48" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>

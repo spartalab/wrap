@@ -33,6 +33,7 @@ import edu.utexas.wrap.util.ODMatrixCollector;
 import edu.utexas.wrap.util.PAMapCollector;
 import edu.utexas.wrap.util.io.output.ODMatrixBINWriter;
 import edu.utexas.wrap.util.io.output.ODMatrixCSVWriter;
+import edu.utexas.wrap.util.io.output.ODMatrixStreamWriter;
 
 
 public class wrapNCTCOG {
@@ -352,21 +353,20 @@ public class wrapNCTCOG {
 			.forEach(matrix -> ODMatrixBINWriter.write(outputDir,todEntry.getKey(), matrix)));
 	}
 
-	private static void streamODs(Map<TimePeriod, Collection<ODMatrix>> ods, String outputDir) {
-		for (Map.Entry<TimePeriod, Collection<ODMatrix>> entry : ods.entrySet()) {
-			Collection<ODMatrix> ods_clone = entry.getValue();
-			for (ODMatrix od : ods_clone) {
-				System.out.println(i);
-				try {
-					Process proc = Runtime.getRuntime().exec("./hello");
-					OutputStream out = proc.getOutputStream();
-					out.write(buff);
-					out.flush();
-				} catch(Exception e) {
-					e.printStackTrace();
+	private static void streamODs(Map<TimePeriod, Collection<ODMatrix>> ods) {
+		try {
+			Process proc = Runtime.getRuntime().exec("./tap");
+			for (Map.Entry<TimePeriod, Collection<ODMatrix>> entry : ods.entrySet()) {
+				Collection<ODMatrix> ods_clone = entry.getValue();
+				for (ODMatrix od : ods_clone) {
+					ODMatrixStreamWriter writer = new ODMatrixStreamWriter();
+					writer.write(od, proc.getOutputStream());
 				}
 			}
+		} catch(Exception e) {
+			e.printStackTrace();
 		}
+
 	}
 	
 }

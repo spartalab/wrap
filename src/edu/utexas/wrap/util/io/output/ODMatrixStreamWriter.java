@@ -13,7 +13,7 @@ import java.nio.file.StandardOpenOption;
 
 public class ODMatrixStreamWriter {
 
-    public static void write(String outputDirectory, TimePeriod timePeriod, ODMatrix matrix, OutputStream stdin) {
+    public static void write(ODMatrix matrix, OutputStream stdin) {
 //        Path path = Paths.get(outputDirectory,
 //                timePeriod.toString(),
 //                matrix.getMode().toString(),
@@ -31,13 +31,12 @@ public class ODMatrixStreamWriter {
                                 if (demand > 0) {
                                     StringBuilder sb = new StringBuilder();
                                     sb.append(orig.getNode().getID());
-                                    sb.append(",");
                                     sb.append(dest.getNode().getID());
-                                    sb.append(",");
                                     sb.append(demand);
                                     sb.append("\r\n");
 //                                    out.write(sb.toString());
-                                    stdin.write(sb.toString().getBytes("UTF-8"));
+                                    stdin.write("start".getBytes());
+                                    stdin.write(sb.toString().getBytes());
 //							        out.flush();
                                 }
                             } catch (IOException e) {
