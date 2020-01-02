@@ -2,6 +2,7 @@ package edu.utexas.wrap;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -349,6 +350,23 @@ public class wrapNCTCOG {
 		.forEach(todEntry -> 
 			todEntry.getValue().parallelStream()
 			.forEach(matrix -> ODMatrixBINWriter.write(outputDir,todEntry.getKey(), matrix)));
+	}
+
+	private static void streamODs(Map<TimePeriod, Collection<ODMatrix>> ods, String outputDir) {
+		for (Map.Entry<TimePeriod, Collection<ODMatrix>> entry : ods.entrySet()) {
+			Collection<ODMatrix> ods_clone = entry.getValue();
+			for (ODMatrix od : ods_clone) {
+				System.out.println(i);
+				try {
+					Process proc = Runtime.getRuntime().exec("./hello");
+					OutputStream out = proc.getOutputStream();
+					out.write(buff);
+					out.flush();
+				} catch(Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
 	}
 	
 }
