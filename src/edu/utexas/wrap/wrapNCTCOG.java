@@ -101,8 +101,9 @@ public class wrapNCTCOG {
 			//Write OD matrices to files
 			printTimeStamp();
 			System.out.println("Writing to files");
-			writeODs(reducedODs, model.getOutputDirectory());
-			
+			// writeODs(reducedODs, model.getOutputDirectory());
+			streamODs(reducedODs);
+
 			printTimeStamp();
 			System.out.println("Done");
 			//TODO eventually, we'll do multiple instances of traffic assignment here instead of just writing to files
@@ -355,13 +356,11 @@ public class wrapNCTCOG {
 
 	private static void streamODs(Map<TimePeriod, Collection<ODMatrix>> ods) {
 		try {
-			Process proc = Runtime.getRuntime().exec("./tap");
+			//Process proc = Runtime.getRuntime().exec("./tap PM_NCTCOG_net.csv stream convertertable.txt");
+			ODMatrixStreamWriter writer = new ODMatrixStreamWriter();
 			for (Map.Entry<TimePeriod, Collection<ODMatrix>> entry : ods.entrySet()) {
-				Collection<ODMatrix> ods_clone = entry.getValue();
-				for (ODMatrix od : ods_clone) {
-					ODMatrixStreamWriter writer = new ODMatrixStreamWriter();
-					writer.write(od, proc.getOutputStream());
-				}
+				Collection<ODMatrix> matrices = entry.getValue();
+				writer.write(matrices, System.out);
 			}
 		} catch(Exception e) {
 			e.printStackTrace();
