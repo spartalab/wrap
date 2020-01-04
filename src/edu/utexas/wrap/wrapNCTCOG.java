@@ -102,7 +102,9 @@ public class wrapNCTCOG {
 			printTimeStamp();
 			System.out.println("Writing to files");
 			// writeODs(reducedODs, model.getOutputDirectory());
-			streamODs(reducedODs);
+            //Process proc = Runtime.getRuntime().exec("./tap PM_NCTCOG_net.csv stream convertertable.txt");
+
+            streamODs(reducedODs);
 
 			printTimeStamp();
 			System.out.println("Done");
@@ -356,11 +358,9 @@ public class wrapNCTCOG {
 
 	private static void streamODs(Map<TimePeriod, Collection<ODMatrix>> ods) {
 		try {
-			//Process proc = Runtime.getRuntime().exec("./tap PM_NCTCOG_net.csv stream convertertable.txt");
-			ODMatrixStreamWriter writer = new ODMatrixStreamWriter();
 			for (Map.Entry<TimePeriod, Collection<ODMatrix>> entry : ods.entrySet()) {
 				Collection<ODMatrix> matrices = entry.getValue();
-				writer.write(matrices, System.out);
+				ODMatrixStreamWriter.write(matrices, System.out);
 			}
 		} catch(Exception e) {
 			e.printStackTrace();
