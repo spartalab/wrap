@@ -1,5 +1,6 @@
 package edu.utexas.wrap;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -102,14 +103,25 @@ public class wrapNCTCOG {
 			printTimeStamp();
 			System.out.println("Writing to files");
 			// writeODs(reducedODs, model.getOutputDirectory());
-            //Process proc = Runtime.getRuntime().exec("./tap PM_NCTCOG_net.csv stream convertertable.txt");
 
-            streamODs(reducedODs);
-
+			//TODO eventually, run instances of TA in parallel with writing to files
+			try {
+				for (Map.Entry<TimePeriod, Collection<ODMatrix>> entry : reducedODs.entrySet()) {
+					Collection<ODMatrix> matrices = entry.getValue();
+//					ProcessBuilder builder = new ProcessBuilder("./tap","NCTCOG_net.csv","STREAM", "convertertable.txt");
+//					builder.directory(new File("outputs/"+ entry.getKey().toString() + "/"));
+//					builder.redirectOutput(new File("outputs/" + entry.getKey().toString() + "/log.txt"));
+//					Process proc = builder.start();
+//					OutputStream stdin = proc.getOutputStream();
+//					streamODs(matrices, stdin);
+					streamODs(matrices, null);
+				}
+			} catch(Exception e) {
+				e.printStackTrace();
+			}
 			printTimeStamp();
 			System.out.println("Done");
-			//TODO eventually, we'll do multiple instances of traffic assignment here instead of just writing to files
-			
+
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			System.exit(1);
@@ -356,16 +368,8 @@ public class wrapNCTCOG {
 			.forEach(matrix -> ODMatrixBINWriter.write(outputDir,todEntry.getKey(), matrix)));
 	}
 
-	private static void streamODs(Map<TimePeriod, Collection<ODMatrix>> ods) {
-		try {
-			for (Map.Entry<TimePeriod, Collection<ODMatrix>> entry : ods.entrySet()) {
-				Collection<ODMatrix> matrices = entry.getValue();
-				ODMatrixStreamWriter.write(matrices, System.out);
-			}
-		} catch(Exception e) {
-			e.printStackTrace();
-		}
-
+	private static void streamODs(Collection<ODMatrix> ods, OutputStream o) {
+		ODMatrixStreamWriter.write(ods, System.out);
 	}
 	
 }
