@@ -43,6 +43,8 @@ public class wrapNCTCOG {
 	
 	public static void main(String[] args) {
 		try{
+			System.out.println(new File(".").getAbsolutePath());
+
 			ModelInput model = new ModelInputNCTCOG("inputs.properties");
 			printTimeStamp();
 			System.out.println("Reading network");
@@ -109,12 +111,13 @@ public class wrapNCTCOG {
 				for (Map.Entry<TimePeriod, Collection<ODMatrix>> entry : reducedODs.entrySet()) {
 					Collection<ODMatrix> matrices = entry.getValue();
 //					ProcessBuilder builder = new ProcessBuilder("./tap","NCTCOG_net.csv","STREAM", "convertertable.txt");
+					System.out.println(entry.getKey().toString());
 //					builder.directory(new File("outputs/"+ entry.getKey().toString() + "/"));
 //					builder.redirectOutput(new File("outputs/" + entry.getKey().toString() + "/log.txt"));
-//					Process proc = builder.start();
-//					OutputStream stdin = proc.getOutputStream();
-//					streamODs(matrices, stdin);
-					streamODs(matrices, null);
+					Process proc = Runtime.getRuntime().exec("./tap NCTCOG_net.csv STREAM convertertable.txt");
+					OutputStream stdin = proc.getOutputStream();
+					streamODs(matrices, stdin);
+// 					streamODs(matrices, null);
 				}
 			} catch(Exception e) {
 				e.printStackTrace();
