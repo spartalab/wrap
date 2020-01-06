@@ -3,7 +3,9 @@ package edu.utexas.wrap;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.BufferedReader;
 import java.io.OutputStream;
+import java.io.InputStreamReader;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -108,15 +110,22 @@ public class wrapNCTCOG {
 
 			//TODO eventually, run instances of TA in parallel with writing to files
 			try {
+				byte b[] = new byte[100];
 				for (Map.Entry<TimePeriod, Collection<ODMatrix>> entry : reducedODs.entrySet()) {
 					Collection<ODMatrix> matrices = entry.getValue();
-//					ProcessBuilder builder = new ProcessBuilder("./tap","NCTCOG_net.csv","STREAM", "convertertable.txt");
-					System.out.println(entry.getKey().toString());
+					ProcessBuilder builder = new ProcessBuilder("./tap","PM_NCTCOG_net.csv","STREAM", "convertertable.txt");
 //					builder.directory(new File("outputs/"+ entry.getKey().toString() + "/"));
 //					builder.redirectOutput(new File("outputs/" + entry.getKey().toString() + "/log.txt"));
-					Process proc = Runtime.getRuntime().exec("./tap NCTCOG_net.csv STREAM convertertable.txt");
+					Process proc = builder.start();
 					OutputStream stdin = proc.getOutputStream();
-					streamODs(matrices, stdin);
+
+					String line;
+					BufferedReader input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+					while ((line = input.readLine()) != null) {
+						System.out.println(line);
+					}
+					input.close();
+//					streamODs(matrices, stdin);
 // 					streamODs(matrices, null);
 				}
 			} catch(Exception e) {
