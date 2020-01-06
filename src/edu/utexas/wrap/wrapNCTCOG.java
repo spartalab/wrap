@@ -113,11 +113,13 @@ public class wrapNCTCOG {
 				byte b[] = new byte[100];
 				for (Map.Entry<TimePeriod, Collection<ODMatrix>> entry : reducedODs.entrySet()) {
 					Collection<ODMatrix> matrices = entry.getValue();
-					ProcessBuilder builder = new ProcessBuilder("./tap","PM_NCTCOG_net.csv","STREAM", "convertertable.txt");
+					ProcessBuilder builder = new ProcessBuilder("./tap","PM_NCTCOG_net.csv","STREAM", "PM_convertertable.csv");
 //					builder.directory(new File("outputs/"+ entry.getKey().toString() + "/"));
 //					builder.redirectOutput(new File("outputs/" + entry.getKey().toString() + "/log.txt"));
 					Process proc = builder.start();
 					OutputStream stdin = proc.getOutputStream();
+					stdin.write("Start".getBytes());
+					stdin.flush();
 
 					String line;
 					BufferedReader input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
@@ -125,7 +127,7 @@ public class wrapNCTCOG {
 						System.out.println(line);
 					}
 					input.close();
-//					streamODs(matrices, stdin);
+					streamODs(matrices, stdin);
 // 					streamODs(matrices, null);
 				}
 			} catch(Exception e) {

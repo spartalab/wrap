@@ -34,9 +34,7 @@ public class ODMatrixStreamWriter {
 
     public static void write(Collection<ODMatrix> ods, OutputStream stdin) {
         try{
-//            stdin.write("Start".getBytes());
-//            stdin.flush();
-            ByteBuffer buffer = ByteBuffer.allocate(64);
+            ByteBuffer buffer = ByteBuffer.allocate(48);
             List<ODMatrix> temp = new ArrayList(ods);
             // Assuming that there is something in the ods
             if (temp.size() == 0) {
