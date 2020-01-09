@@ -49,20 +49,20 @@ public class wrapNCTCOG {
 			printTimeStamp();
 			System.out.println("Generating primary trips");
 			
-			Map<TripPurpose, Map<MarketSegment, Double>> prodRates = getProdRates(model);
+			Map<TripPurposeEnum, Map<MarketSegment, Double>> prodRates = getProdRates(model);
 			//Generate primary productions
-			Map<TripPurpose, Map<MarketSegment, DemandMap>> primaryProds = getProds(graph, prodRates);
+			Map<TripPurposeEnum, Map<MarketSegment, DemandMap>> primaryProds = getProds(graph, prodRates);
 			
 			//Begin a separate thread for handling NHB trip generation, distribution, mode choice, and PA-to-OD conversion
 			NHBThread nhb = new NHBThread(graph, model, primaryProds); 
 			nhb.start();
 						
-			Map<TripPurpose, Map<MarketSegment, Map<AreaClass, Double>>> attrRates = getAttrRates(model);
+			Map<TripPurposeEnum, Map<MarketSegment, Map<AreaClass, Double>>> attrRates = getAttrRates(model);
 			//Generate primary attractions
-			Map<TripPurpose, Map<MarketSegment, DemandMap>> primaryAttrs = getAttrs(graph, attrRates);
+			Map<TripPurposeEnum, Map<MarketSegment, DemandMap>> primaryAttrs = getAttrs(graph, attrRates);
 
 			//Combine home-based productions and attractions into a PAMap structure
-			Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps = combine(graph, primaryProds, primaryAttrs);
+			Map<TripPurposeEnum,Map<MarketSegment,PAMap>> hbMaps = combine(graph, primaryProds, primaryAttrs);
 			
 
 			//Combine all segments based on their income group
@@ -125,13 +125,13 @@ public class wrapNCTCOG {
 	/**
 	 * @return a Stream consisting of the TripPurposes which should be used for this model's primary trips
 	 */
-	private static Stream<TripPurpose> getPrimaryTripPurposes() {
+	private static Stream<TripPurposeEnum> getPrimaryTripPurposes() {
 		return Stream.of(
-				TripPurpose.HOME_WORK,
-				TripPurpose.HOME_SHOP,
-				TripPurpose.HOME_SRE,
+				TripPurposeEnum.HOME_WORK,
+				TripPurposeEnum.HOME_SHOP,
+				TripPurposeEnum.HOME_SRE,
 //				TripPurpose.HOME_K12,
-				TripPurpose.HOME_PBO
+				TripPurposeEnum.HOME_PBO
 				).parallel();
 	}
 
@@ -140,7 +140,7 @@ public class wrapNCTCOG {
 	 * @param model the model input whence the rates should be retrieved
 	 * @return a map from each trip purpose to its pertinent market segments and their rates
 	 */
-	private static Map<TripPurpose, Map<MarketSegment, Double>> getProdRates(ModelInput model) {
+	private static Map<TripPurposeEnum, Map<MarketSegment, Double>> getProdRates(ModelInput model) {
 		return getPrimaryTripPurposes().collect(Collectors.toMap(Function.identity(), //for each trip purpose,
 				purpose -> model.getGeneralProdRates(purpose)));	//map the purpose to the model's production rates
 	}
@@ -152,8 +152,8 @@ public class wrapNCTCOG {
 	 * @param prodRates the rates by which trips are generated for each trip purpose and market segment
 	 * @return a mapping from each purpose to a map from each pertinent market segment to its production demand map
 	 */
-	private static Map<TripPurpose, Map<MarketSegment, DemandMap>> getProds(Graph g,
-			Map<TripPurpose, Map<MarketSegment, Double>> prodRates) {
+	private static Map<TripPurposeEnum, Map<MarketSegment, DemandMap>> getProds(Graph g,
+			Map<TripPurposeEnum, Map<MarketSegment, Double>> prodRates) {
 		
 		return prodRates.keySet().parallelStream() //a map from each trip purpose to
 				.collect(Collectors.toMap(Function.identity(), 
@@ -178,7 +178,7 @@ public class wrapNCTCOG {
 	 * @param model the model input whence the rates should be retrieved
 	 * @return a map from each trip purpose to its pertinent market segments and their rates
 	 */
-	private static Map<TripPurpose, Map<MarketSegment, Map<AreaClass, Double>>> getAttrRates(ModelInput model) {
+	private static Map<TripPurposeEnum, Map<MarketSegment, Map<AreaClass, Double>>> getAttrRates(ModelInput model) {
 		
 		return getPrimaryTripPurposes()	//for each trip purpose, map the purpose to the model's attraction rates
 				.collect(Collectors.toMap(Function.identity(), purpose -> model.getAreaClassAttrRates(purpose)));
@@ -191,8 +191,8 @@ public class wrapNCTCOG {
 	 * @param attrRates the rates by which trips are generated for each trip purpose, market segment, and area class
 	 * @return a mapping from each purpose to a map from each pertinent market segment to its attraction demand map
 	 */
-	private static Map<TripPurpose, Map<MarketSegment, DemandMap>> getAttrs(Graph g,
-			Map<TripPurpose, Map<MarketSegment, Map<AreaClass, Double>>> attrRates) {
+	private static Map<TripPurposeEnum, Map<MarketSegment, DemandMap>> getAttrs(Graph g,
+			Map<TripPurposeEnum, Map<MarketSegment, Map<AreaClass, Double>>> attrRates) {
 		
 		return attrRates.keySet().parallelStream()	//a map from each trip purpose to
 				.collect(Collectors.toMap(Function.identity(), 
@@ -214,7 +214,7 @@ public class wrapNCTCOG {
 	 * @param maps the maps that should be flattened, as a mapping from each trip purpose to each marketsegment to each map
 	 * @return the same mapping with PAMaps replaced by duplicate writable instances
 	 */
-	private static Map<TripPurpose,Map<MarketSegment,PAMap>> flatten(Map<TripPurpose,Map<MarketSegment,PAMap>> maps) {
+	private static Map<TripPurposeEnum,Map<MarketSegment,PAMap>> flatten(Map<TripPurposeEnum,Map<MarketSegment,PAMap>> maps) {
 		
 		return maps.entrySet().parallelStream().collect(					//for each trip purpose,
 				Collectors.toMap(Entry::getKey, purposeEntry ->				//map the purpose to
@@ -227,9 +227,9 @@ public class wrapNCTCOG {
 		));
 	}
 	
-	private static Map<TripPurpose, Map<MarketSegment, PAMap>> combine(Graph g,
-			Map<TripPurpose, Map<MarketSegment, DemandMap>> primaryProds,
-			Map<TripPurpose, Map<MarketSegment, DemandMap>> primaryAttrs) {
+	private static Map<TripPurposeEnum, Map<MarketSegment, PAMap>> combine(Graph g,
+			Map<TripPurposeEnum, Map<MarketSegment, DemandMap>> primaryProds,
+			Map<TripPurposeEnum, Map<MarketSegment, DemandMap>> primaryAttrs) {
 		
 		return primaryProds.entrySet().parallelStream().collect(	//For each trip purpose,
 				Collectors.toMap(Entry::getKey, 	//return a map from the purpose to 
@@ -268,10 +268,10 @@ public class wrapNCTCOG {
 
 
 	
-	private static void balance(Graph g, Map<TripPurpose, Map<MarketSegment, PAMap>> hbMaps) {
+	private static void balance(Graph g, Map<TripPurposeEnum, Map<MarketSegment, PAMap>> hbMaps) {
 		//TODO verify this behavior is correct
 		hbMaps.entrySet().parallelStream().forEach(entry -> {
-			TripBalancer balancer = entry.getKey().equals(TripPurpose.HOME_WORK)? 
+			TripBalancer balancer = entry.getKey().equals(TripPurposeEnum.HOME_WORK)? 
 					new Prod2AttrProportionalBalancer(null) : new Attr2ProdProportionalBalancer();
 
 			entry.getValue().values().parallelStream().forEach(paMap -> balancer.balance(paMap));
@@ -280,36 +280,36 @@ public class wrapNCTCOG {
 
 	
 	private static Map<TimePeriod, Collection<ODMatrix>> reduceODMatrices(
-			Map<TimePeriod, Map<TripPurpose, Map<MarketSegment, Collection<ODMatrix>>>> hbODs,
-			Map<TimePeriod, Map<TripPurpose, Collection<ODMatrix>>> nhbODs) {
+			Map<TimePeriod, Map<TripPurposeEnum, Map<MarketSegment, Collection<ODMatrix>>>> hbODs,
+			Map<TimePeriod, Map<TripPurposeEnum, Collection<ODMatrix>>> nhbODs) {
 		
-		Map<TripPurpose,TripPurpose> purposePairs = new HashMap<TripPurpose,TripPurpose>(3);
-		purposePairs.put(TripPurpose.HOME_WORK, TripPurpose.NONHOME_WORK);
-		purposePairs.put(TripPurpose.HOME_NONWORK, TripPurpose.NONHOME_NONWORK);
+		Map<TripPurposeEnum,TripPurposeEnum> purposePairs = new HashMap<TripPurposeEnum,TripPurposeEnum>(3);
+		purposePairs.put(TripPurposeEnum.HOME_WORK, TripPurposeEnum.NONHOME_WORK);
+		purposePairs.put(TripPurposeEnum.HOME_NONWORK, TripPurposeEnum.NONHOME_NONWORK);
 		
-		Map<TripPurpose,Map<Mode,Map<Boolean,Double>>> vots = new HashMap<TripPurpose,Map<Mode,Map<Boolean,Double>>>();
-		vots.put(TripPurpose.HOME_WORK, new HashMap<Mode,Map<Boolean,Double>>());
-		vots.put(TripPurpose.HOME_NONWORK, new HashMap<Mode,Map<Boolean,Double>>());
+		Map<TripPurposeEnum,Map<Mode,Map<Boolean,Double>>> vots = new HashMap<TripPurposeEnum,Map<Mode,Map<Boolean,Double>>>();
+		vots.put(TripPurposeEnum.HOME_WORK, new HashMap<Mode,Map<Boolean,Double>>());
+		vots.put(TripPurposeEnum.HOME_NONWORK, new HashMap<Mode,Map<Boolean,Double>>());
 		
-		vots.get(TripPurpose.HOME_WORK).put(Mode.SINGLE_OCC, new HashMap<Boolean,Double>());
-		vots.get(TripPurpose.HOME_WORK).put(Mode.HOV, new HashMap<Boolean,Double>());
-		vots.get(TripPurpose.HOME_NONWORK).put(Mode.SINGLE_OCC, new HashMap<Boolean,Double>());
-		vots.get(TripPurpose.HOME_NONWORK).put(Mode.HOV, new HashMap<Boolean,Double>());
+		vots.get(TripPurposeEnum.HOME_WORK).put(Mode.SINGLE_OCC, new HashMap<Boolean,Double>());
+		vots.get(TripPurposeEnum.HOME_WORK).put(Mode.HOV, new HashMap<Boolean,Double>());
+		vots.get(TripPurposeEnum.HOME_NONWORK).put(Mode.SINGLE_OCC, new HashMap<Boolean,Double>());
+		vots.get(TripPurposeEnum.HOME_NONWORK).put(Mode.HOV, new HashMap<Boolean,Double>());
 		
-		vots.get(TripPurpose.HOME_WORK).get(Mode.SINGLE_OCC).put(false,0.35);
-		vots.get(TripPurpose.HOME_WORK).get(Mode.SINGLE_OCC).put(true,0.9);
-		vots.get(TripPurpose.HOME_WORK).get(Mode.HOV).put(false,0.35);
-		vots.get(TripPurpose.HOME_WORK).get(Mode.HOV).put(true,0.9);
-		vots.get(TripPurpose.HOME_NONWORK).get(Mode.SINGLE_OCC).put(false,0.17);
-		vots.get(TripPurpose.HOME_NONWORK).get(Mode.SINGLE_OCC).put(true,0.45);
-		vots.get(TripPurpose.HOME_NONWORK).get(Mode.HOV).put(false,0.17);
-		vots.get(TripPurpose.HOME_NONWORK).get(Mode.HOV).put(true,0.45);
+		vots.get(TripPurposeEnum.HOME_WORK).get(Mode.SINGLE_OCC).put(false,0.35);
+		vots.get(TripPurposeEnum.HOME_WORK).get(Mode.SINGLE_OCC).put(true,0.9);
+		vots.get(TripPurposeEnum.HOME_WORK).get(Mode.HOV).put(false,0.35);
+		vots.get(TripPurposeEnum.HOME_WORK).get(Mode.HOV).put(true,0.9);
+		vots.get(TripPurposeEnum.HOME_NONWORK).get(Mode.SINGLE_OCC).put(false,0.17);
+		vots.get(TripPurposeEnum.HOME_NONWORK).get(Mode.SINGLE_OCC).put(true,0.45);
+		vots.get(TripPurposeEnum.HOME_NONWORK).get(Mode.HOV).put(false,0.17);
+		vots.get(TripPurposeEnum.HOME_NONWORK).get(Mode.HOV).put(true,0.45);
 		
 		
 		return Stream.of(TimePeriod.values()).parallel().collect(Collectors.toMap(Function.identity(), timePeriod ->{
 			Collection<ODMatrix> ret = new HashSet<ODMatrix>();
 			
-			Stream.of(TripPurpose.HOME_WORK,TripPurpose.HOME_NONWORK).parallel().forEach(tripPurpose->
+			Stream.of(TripPurposeEnum.HOME_WORK,TripPurposeEnum.HOME_NONWORK).parallel().forEach(tripPurpose->
 				Stream.of(Mode.SINGLE_OCC, Mode.HOV).parallel().forEach(mode -> {
 			
 					//First, handle the Work IG123 cases

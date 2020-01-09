@@ -7,5 +7,5 @@ public interface TripBalancer {
 	/**
 	 * Balance Trips such that the total number of productions is equivalent to the total number of attractions
 	 */
-	public void balance(PAMap paMap);
+	public PAMap balance(PAMap paMap); //TODO don't balance in-place
 }

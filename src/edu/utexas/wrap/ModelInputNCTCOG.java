@@ -404,14 +404,14 @@ public class ModelInputNCTCOG implements ModelInput {
     	if (departureRates == null) {
     		departureRates = new HashMap<TripPurpose,Map<Integer,Map<TimePeriod,Double>>>();
     		
-    		Stream.of(TripPurpose.HOME_WORK, TripPurpose.HOME_NONWORK, TripPurpose.NONHOME_WORK, TripPurpose.NONHOME_NONWORK)
+    		Stream.of(TripPurposeEnum.HOME_WORK, TripPurposeEnum.HOME_NONWORK, TripPurposeEnum.NONHOME_WORK, TripPurposeEnum.NONHOME_NONWORK)
     		.forEach(seg -> departureRates.put(seg,new HashMap<Integer,Map<TimePeriod,Double>>()));
     		
-    		Stream.of(TripPurpose.HOME_WORK, TripPurpose.HOME_NONWORK).forEach(seg ->
+    		Stream.of(TripPurposeEnum.HOME_WORK, TripPurposeEnum.HOME_NONWORK).forEach(seg ->
     			IntStream.range(1,5).boxed().forEach(ig ->
     			departureRates.get(seg).put(ig, new HashMap<TimePeriod,Double>()))
     		);
-    		Stream.of(TripPurpose.NONHOME_WORK,TripPurpose.NONHOME_NONWORK).forEach(seg -> departureRates.get(seg).put(null, new HashMap<TimePeriod,Double>()));
+    		Stream.of(TripPurposeEnum.NONHOME_WORK,TripPurposeEnum.NONHOME_NONWORK).forEach(seg -> departureRates.get(seg).put(null, new HashMap<TimePeriod,Double>()));
     	}
     	String depFile = inputs.getProperty("pa2od.depRates");
     	
@@ -421,14 +421,14 @@ public class ModelInputNCTCOG implements ModelInput {
 				
 				TimePeriod tp = TimePeriod.valueOf(args[0]);
 				
-				departureRates.get(TripPurpose.HOME_WORK).entrySet().forEach(entry ->{
+				departureRates.get(TripPurposeEnum.HOME_WORK).entrySet().forEach(entry ->{
 					entry.getValue().put(tp, Double.parseDouble(args[entry.getKey()]));
 				});
-				departureRates.get(TripPurpose.HOME_NONWORK).entrySet().forEach(entry ->{
+				departureRates.get(TripPurposeEnum.HOME_NONWORK).entrySet().forEach(entry ->{
 					entry.getValue().put(tp, Double.parseDouble(args[entry.getKey()+4]));
 				});
-				departureRates.get(TripPurpose.NONHOME_WORK).get(null).put(tp, Double.parseDouble(args[9]));
-				departureRates.get(TripPurpose.NONHOME_NONWORK).get(null).put(tp, Double.parseDouble(args[10]));
+				departureRates.get(TripPurposeEnum.NONHOME_WORK).get(null).put(tp, Double.parseDouble(args[9]));
+				departureRates.get(TripPurposeEnum.NONHOME_NONWORK).get(null).put(tp, Double.parseDouble(args[10]));
 			});
 			return departureRates.get(purpose).get(segment);
 		} catch (IOException e) {
@@ -449,14 +449,14 @@ public class ModelInputNCTCOG implements ModelInput {
     	if (arrivalRates == null) {
     		arrivalRates = new HashMap<TripPurpose,Map<Integer,Map<TimePeriod,Double>>>();
     		
-    		Stream.of(TripPurpose.HOME_WORK, TripPurpose.HOME_NONWORK, TripPurpose.NONHOME_WORK, TripPurpose.NONHOME_NONWORK)
+    		Stream.of(TripPurposeEnum.HOME_WORK, TripPurposeEnum.HOME_NONWORK, TripPurposeEnum.NONHOME_WORK, TripPurposeEnum.NONHOME_NONWORK)
     		.forEach(seg -> arrivalRates.put(seg,new HashMap<Integer,Map<TimePeriod,Double>>()));
     		
-    		Stream.of(TripPurpose.HOME_WORK, TripPurpose.HOME_NONWORK).forEach(seg ->
+    		Stream.of(TripPurposeEnum.HOME_WORK, TripPurposeEnum.HOME_NONWORK).forEach(seg ->
     			IntStream.range(1,5).boxed().forEach(ig ->
     			arrivalRates.get(seg).put(ig, new HashMap<TimePeriod,Double>()))
     		);
-    		Stream.of(TripPurpose.NONHOME_WORK,TripPurpose.NONHOME_NONWORK).forEach(seg -> arrivalRates.get(seg).put(null, new HashMap<TimePeriod,Double>()));
+    		Stream.of(TripPurposeEnum.NONHOME_WORK,TripPurposeEnum.NONHOME_NONWORK).forEach(seg -> arrivalRates.get(seg).put(null, new HashMap<TimePeriod,Double>()));
     	}
     	String arrFile = inputs.getProperty("pa2od.arrRates");
     	
@@ -466,14 +466,14 @@ public class ModelInputNCTCOG implements ModelInput {
 				
 				TimePeriod tp = TimePeriod.valueOf(args[0]);
 				
-				arrivalRates.get(TripPurpose.HOME_WORK).entrySet().forEach(entry ->{
+				arrivalRates.get(TripPurposeEnum.HOME_WORK).entrySet().forEach(entry ->{
 					entry.getValue().put(tp, Double.parseDouble(args[entry.getKey()]));
 				});
-				arrivalRates.get(TripPurpose.HOME_NONWORK).entrySet().forEach(entry ->{
+				arrivalRates.get(TripPurposeEnum.HOME_NONWORK).entrySet().forEach(entry ->{
 					entry.getValue().put(tp, Double.parseDouble(args[entry.getKey()+4]));
 				});
-				arrivalRates.get(TripPurpose.NONHOME_WORK).get(null).put(tp, Double.parseDouble(args[9]));
-				arrivalRates.get(TripPurpose.NONHOME_NONWORK).get(null).put(tp, Double.parseDouble(args[10]));
+				arrivalRates.get(TripPurposeEnum.NONHOME_WORK).get(null).put(tp, Double.parseDouble(args[9]));
+				arrivalRates.get(TripPurposeEnum.NONHOME_NONWORK).get(null).put(tp, Double.parseDouble(args[10]));
 			});
 			return arrivalRates.get(purpose).get(segment);
 		} catch (IOException e) {

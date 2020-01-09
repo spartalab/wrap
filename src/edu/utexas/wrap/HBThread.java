@@ -29,11 +29,11 @@ import java.util.stream.Stream;
 
 class HBThread extends Thread{
 	private Graph graph;
-	private Map<TimePeriod, Map<TripPurpose, Map<MarketSegment, Collection<ODMatrix>>>> hbODs;
-	private Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps;
+	private Map<TimePeriod, Map<TripPurposeEnum, Map<MarketSegment, Collection<ODMatrix>>>> hbODs;
+	private Map<TripPurposeEnum,Map<MarketSegment,PAMap>> hbMaps;
 	private ModelInput model;
 
-	public HBThread(Graph graph, ModelInput model, Map<TripPurpose, Map<MarketSegment,PAMap>> hbMaps) {
+	public HBThread(Graph graph, ModelInput model, Map<TripPurposeEnum, Map<MarketSegment,PAMap>> hbMaps) {
 		this.graph = graph;
 		this.hbMaps = hbMaps;
 		this.model = model;
@@ -66,24 +66,24 @@ class HBThread extends Thread{
 		//After distributing over different friction factor maps, the HBW trips are stuck back together and SRE & PBO matrices are combined
 		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
 		System.out.println("Combining primary matrices");
-		Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs = 
+		Map<TripPurposeEnum, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs = 
 				combineAggregateMatrices(hbPkGen.getAggPKMtxs(), hbOpGen.getAggOPMtxs()); // combine SRE/PBO and HBWPK/OP matrices
 
 		//divide market segments further by vehicles per worker
 		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
 		System.out.println("Subdividing primary market segments");
-		Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> dividedCombinedMtxs = subdivideSegments(aggCombinedMtxs);
+		Map<TripPurposeEnum, Map<MarketSegment, AggregatePAMatrix>> dividedCombinedMtxs = subdivideSegments(aggCombinedMtxs);
 
 		//combine HNW trip purposes into single HNW trip purpose for all market segments
 		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
 		System.out.println("Combining primary trip purposes");
-		Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> combinedMtxs = combineHNWPurposes(dividedCombinedMtxs);
+		Map<TripPurposeEnum, Map<MarketSegment, AggregatePAMatrix>> combinedMtxs = combineHNWPurposes(dividedCombinedMtxs);
 
 		try {
 			//Perform mode choice splitting 
 			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
 			System.out.println("Performing primary trip mode choice");
-			Map<TripPurpose, Map<MarketSegment, Collection<ModalPAMatrix>>> hbModalMtxs = modeChoice(combinedMtxs);
+			Map<TripPurposeEnum, Map<MarketSegment, Collection<ModalPAMatrix>>> hbModalMtxs = modeChoice(combinedMtxs);
 
 			//PA to OD splitting by time of day
 			System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
@@ -97,13 +97,13 @@ class HBThread extends Thread{
 		//thread ends here
 	}
 	
-	public Map<TimePeriod, Map<TripPurpose, Map<MarketSegment, Collection<ODMatrix>>>> getODs(){
+	public Map<TimePeriod, Map<TripPurposeEnum, Map<MarketSegment, Collection<ODMatrix>>>> getODs(){
 		return hbODs;
 	}
 
-	private Map<MarketSegment,PAMap> extractPeakTrips(Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps) {
-		Map<MarketSegment,PAMap> hbwMaps = hbMaps.get(TripPurpose.HOME_WORK);
-		Map<MarketSegment,Double> splitRates = model.getPeakShares(TripPurpose.HOME_WORK);
+	private Map<MarketSegment,PAMap> extractPeakTrips(Map<TripPurposeEnum,Map<MarketSegment,PAMap>> hbMaps) {
+		Map<MarketSegment,PAMap> hbwMaps = hbMaps.get(TripPurposeEnum.HOME_WORK);
+		Map<MarketSegment,Double> splitRates = model.getPeakShares(TripPurposeEnum.HOME_WORK);
 
 		Map<MarketSegment,PAMap> pkMaps = new HashMap<MarketSegment,PAMap>();
 		Map<MarketSegment,PAMap> opMaps = new HashMap<MarketSegment,PAMap>();
@@ -119,7 +119,7 @@ class HBThread extends Thread{
 			pkMaps.put(seg, peak);
 		});
 
-		hbMaps.put(TripPurpose.HOME_WORK, opMaps);
+		hbMaps.put(TripPurposeEnum.HOME_WORK, opMaps);
 		return pkMaps;
 	}
 
@@ -133,9 +133,9 @@ class HBThread extends Thread{
 		}));
 	}
 
-	private Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> offPeakDistribution(
+	private Map<TripPurposeEnum, Map<MarketSegment, AggregatePAMatrix>> offPeakDistribution(
 			Graph g,
-			Map<TripPurpose, Map<MarketSegment, PAMap>> hbMaps
+			Map<TripPurposeEnum, Map<MarketSegment, PAMap>> hbMaps
 			// TODO: consider if this (and pk distribution) should take in a mapping directly to the distributor
 			// (maybe some purpose-segment pairs have the same friction factor map? So this would be unnecessary)
 	) {
@@ -149,11 +149,11 @@ class HBThread extends Thread{
 		));
 	}
 
-	private Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> combineAggregateMatrices(
+	private Map<TripPurposeEnum, Map<MarketSegment, AggregatePAMatrix>> combineAggregateMatrices(
 			Map<MarketSegment, AggregatePAMatrix> aggPKMtxs,
-			Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggMtxs) {
+			Map<TripPurposeEnum, Map<MarketSegment, AggregatePAMatrix>> aggMtxs) {
 
-		Map<MarketSegment,AggregatePAMatrix> hbwOPMtxs = aggMtxs.get(TripPurpose.HOME_WORK);
+		Map<MarketSegment,AggregatePAMatrix> hbwOPMtxs = aggMtxs.get(TripPurposeEnum.HOME_WORK);
 		Map<MarketSegment,AggregatePAMatrix> hbwMtxs = new HashMap<MarketSegment,AggregatePAMatrix>();
 
 		hbwOPMtxs.keySet().parallelStream().forEach(seg -> {
@@ -164,11 +164,11 @@ class HBThread extends Thread{
 			hbwMtxs.put(seg, combined);
 		});
 
-		aggMtxs.put(TripPurpose.HOME_WORK, hbwMtxs);
+		aggMtxs.put(TripPurposeEnum.HOME_WORK, hbwMtxs);
 		return aggMtxs;
 	}
 
-	private Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> subdivideSegments(Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs) {
+	private Map<TripPurposeEnum, Map<MarketSegment, AggregatePAMatrix>> subdivideSegments(Map<TripPurposeEnum, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs) {
 		
 		return aggCombinedMtxs.entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, purposeMapEntry-> //for each trip purpose
 				purposeMapEntry.getValue().entrySet().parallelStream() //Stream of MarketSegment-Matrix entries
@@ -185,12 +185,12 @@ class HBThread extends Thread{
 
 	}
 
-	private Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> combineHNWPurposes(Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs) {
-		Map<TripPurpose,Map<MarketSegment,AggregatePAMatrix>> ret = new HashMap<TripPurpose,Map<MarketSegment,AggregatePAMatrix>>();
-		ret.put(TripPurpose.HOME_WORK, aggCombinedMtxs.get(TripPurpose.HOME_WORK));
-		ret.put(TripPurpose.HOME_NONWORK,
+	private Map<TripPurposeEnum, Map<MarketSegment, AggregatePAMatrix>> combineHNWPurposes(Map<TripPurposeEnum, Map<MarketSegment, AggregatePAMatrix>> aggCombinedMtxs) {
+		Map<TripPurposeEnum,Map<MarketSegment,AggregatePAMatrix>> ret = new HashMap<TripPurposeEnum,Map<MarketSegment,AggregatePAMatrix>>();
+		ret.put(TripPurposeEnum.HOME_WORK, aggCombinedMtxs.get(TripPurposeEnum.HOME_WORK));
+		ret.put(TripPurposeEnum.HOME_NONWORK,
 				aggCombinedMtxs.entrySet().parallelStream()							//For every trip purpose
-						.filter(entry -> entry.getKey() != TripPurpose.HOME_WORK)		//Except home-based work
+						.filter(entry -> entry.getKey() != TripPurposeEnum.HOME_WORK)		//Except home-based work
 						.flatMap(entry -> entry.getValue().entrySet().parallelStream())	//Get a stream of its MarketSegment-Matrix pairings
 						.collect(Collectors.groupingBy(									//Group them by their market segments
 								Map.Entry::getKey,Collectors.mapping(						//then map to the values
@@ -199,8 +199,8 @@ class HBThread extends Thread{
 		return ret;
 	}
 
-	private Map<TripPurpose,Map<MarketSegment, Collection<ModalPAMatrix>>> modeChoice(Map<TripPurpose,Map<MarketSegment, AggregatePAMatrix>> aggMtxs) throws IOException {
-		Map<TripPurpose,Map<Integer, Map<Mode, Double>>> modeShares = aggMtxs.keySet().parallelStream()
+	private Map<TripPurposeEnum,Map<MarketSegment, Collection<ModalPAMatrix>>> modeChoice(Map<TripPurposeEnum,Map<MarketSegment, AggregatePAMatrix>> aggMtxs) throws IOException {
+		Map<TripPurposeEnum,Map<Integer, Map<Mode, Double>>> modeShares = aggMtxs.keySet().parallelStream()
 				.collect(Collectors.toMap(Function.identity(), purpose -> model.getModeShares(purpose)));
 		
 		return aggMtxs.entrySet().parallelStream().collect(Collectors.toMap(Map.Entry::getKey, purposeMapEntry ->
@@ -216,10 +216,10 @@ class HBThread extends Thread{
 		));
 	}
 
-	private Map<TimePeriod,Map<TripPurpose, Map<MarketSegment,Collection<ODMatrix>>>> paToODConversion(Map<TripPurpose, Map<MarketSegment, Collection<ModalPAMatrix>>> hbModalMtxs) throws IOException {
+	private Map<TimePeriod,Map<TripPurposeEnum, Map<MarketSegment,Collection<ODMatrix>>>> paToODConversion(Map<TripPurposeEnum, Map<MarketSegment, Collection<ModalPAMatrix>>> hbModalMtxs) throws IOException {
 		Map<Mode, Double> occupancyRates = model.getOccupancyRates(); // modalOccRates.csv
 		//TOD splitting inputs TODO ensure proper use of market segments
-		Map<TripPurpose,Map<Integer, Map<TimePeriod, Double>>>
+		Map<TripPurposeEnum,Map<Integer, Map<TimePeriod, Double>>>
 				depRates = 
 				hbModalMtxs.entrySet().parallelStream()
 				.collect(Collectors.toMap(Entry::getKey, entry ->
@@ -292,7 +292,7 @@ class HBThread extends Thread{
 		}
 
 		public void run() {
-			frictionFactorMaps = pkMaps.keySet().stream().collect(Collectors.toMap(Function.identity(), seg -> model.getFrictionFactors(TripPurpose.HOME_WORK, TimePeriod.AM_PK, seg)));
+			frictionFactorMaps = pkMaps.keySet().stream().collect(Collectors.toMap(Function.identity(), seg -> model.getFrictionFactors(TripPurposeEnum.HOME_WORK, TimePeriod.AM_PK, seg)));
 			aggregateMatrices = peakDistribution(g, pkMaps, frictionFactorMaps);
 		}
 
@@ -301,10 +301,10 @@ class HBThread extends Thread{
 
 	class OffPeakDistributionThread extends Thread {
 		private Graph g;
-		private Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps;
-		private Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> aggOPMtxs;
+		private Map<TripPurposeEnum,Map<MarketSegment,PAMap>> hbMaps;
+		private Map<TripPurposeEnum, Map<MarketSegment, AggregatePAMatrix>> aggOPMtxs;
 
-		public OffPeakDistributionThread(Graph graph, Map<TripPurpose,Map<MarketSegment,PAMap>> hbMaps) {
+		public OffPeakDistributionThread(Graph graph, Map<TripPurposeEnum,Map<MarketSegment,PAMap>> hbMaps) {
 			this.g = graph;
 			this.hbMaps = hbMaps;
 		}
@@ -313,6 +313,6 @@ class HBThread extends Thread{
 			aggOPMtxs = offPeakDistribution(g, hbMaps);
 		}
 
-		public Map<TripPurpose, Map<MarketSegment, AggregatePAMatrix>> getAggOPMtxs() { return aggOPMtxs; }
+		public Map<TripPurposeEnum, Map<MarketSegment, AggregatePAMatrix>> getAggOPMtxs() { return aggOPMtxs; }
 	}
 }
