@@ -63,6 +63,25 @@ public class BasicTripPurpose extends Thread implements TripPurpose {
 	@Override
 	public Stream<Entry<MarketSegment, PAMap>> buildProductionAttractionMaps(
 			Stream<Entry<MarketSegment, DemandMap>> prods, Stream<Entry<MarketSegment, DemandMap>> attrs) {
+		Map<MarketSegment,DemandMap> prodSegs = prods.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+		Map<MarketSegment,DemandMap> attrSegs = attrs.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+		
+		Collection<MarketSegment> bigSegs = model.getSegments(this);
+		
+		bigSegs.parallelStream().map(bigSeg -> {
+			Stream<DemandMap> 
+				prodMaps = prodSegs.entrySet().parallelStream()
+					.filter(entry -> bigSeg.equals(entry.getKey()))
+					.map(Entry::getValue),
+					
+				attrMaps = attrSegs.entrySet().parallelStream()
+					.filter(entry -> bigSeg.equals(entry.getKey()))
+					.map(Entry::getValue);
+			
+			//TODO create a way to combine these into a FLAT PAMap
+		});
+		
+		
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -79,28 +98,23 @@ public class BasicTripPurpose extends Thread implements TripPurpose {
 	@Override
 	public Stream<Entry<MarketSegment, AggregatePAMatrix>> distribute(
 			Stream<Entry<MarketSegment, PAMap>> paMaps) {
-		Map<MarketSegment,Double> pkShares = model.getPeakShares(this);
 		
-		return paMaps.map( entry -> {
+		return paMaps.map( msEntry -> {
 			
-			Double pkShare = pkShares.get(entry.getKey());
-			AggregatePAMatrix pkMtx, opMtx;
+			Map<TimePeriod,Double> shares = model.getDistributionShares(this,msEntry.getKey());
 			
-			//TODO execute these two if clauses in parallel
-			//TODO handle the case of more than two time periods for distribution
+			Stream<AggregatePAMatrix> mtxs = shares.entrySet().parallelStream()
+				.filter(tpEntry -> tpEntry.getValue() > 0)
+				.map(tpEntry -> 
+					model.getDistributor(
+							this,
+							tpEntry.getKey(),
+							msEntry.getKey())
+					.distribute(msEntry.getValue()));
 			
-			if (pkShare > 0) { //do peak distribution
-				PAMap pkMap = new FixedMultiplierPassthroughPAMap(entry.getValue(),pkShare);
-				pkMtx = peakDistributor.distribute(pkMap);
-			} else pkMtx = new EmptyAggregatePAMatrix(model.getNetwork());
 			
-			if (pkShare < 1) { //do off-peak distribution
-				PAMap opMap = new FixedMultiplierPassthroughPAMap(entry.getValue(), 1-pkShare);
-				opMtx = offPeakDistributor.distribute(opMap);
-			} else opMtx = new EmptyAggregatePAMatrix(model.getNetwork());
-			
-			return new SimpleEntry<MarketSegment,AggregatePAMatrix>(entry.getKey(),
-					Stream.of(pkMtx,opMtx).collect(new AggregatePAMatrixCollector()));
+			return new SimpleEntry<MarketSegment,AggregatePAMatrix>(msEntry.getKey(),
+					mtxs.collect(new AggregatePAMatrixCollector()));
 		});
 	}
 

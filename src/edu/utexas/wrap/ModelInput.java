@@ -1,6 +1,7 @@
 package edu.utexas.wrap;
 
 import edu.utexas.wrap.distribution.FrictionFactorMap;
+import edu.utexas.wrap.distribution.TripDistributor;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.AreaClass;
@@ -72,6 +73,8 @@ public interface ModelInput {
      * @return a Map from each applicable MarketSegment to the corresponding peak share
      */
     Map<MarketSegment,Double> getPeakShares(TripPurpose purpose);
+    //TODO deprecate the above method in favor of the later one
+    Map<TimePeriod,Double> getDistributionShares(TripPurpose purpose, MarketSegment segment);
 
     //Trip Distribution Inputs
     /**This method provides a matrix of costs between all pairs of TravelSurveyZones
@@ -97,6 +100,9 @@ public interface ModelInput {
      * in the network
      */
     FrictionFactorMap getFrictionFactors(TripPurpose purpose, TimePeriod timePeriod, MarketSegment segment);
+    
+    //TODO document this and provide implementation
+    TripDistributor getDistributor(TripPurpose purpose, TimePeriod timePeriod, MarketSegment segment);
 
     //Market segmentation inputs
     /** For market subsegmentation, this method provides details on the fraction of each TravelSurveyZone's
