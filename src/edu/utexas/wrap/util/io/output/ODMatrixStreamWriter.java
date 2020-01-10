@@ -52,6 +52,7 @@ public class ODMatrixStreamWriter {
 
             for(TravelSurveyZone orig : origins) {
                 for(TravelSurveyZone dest : demands) {
+                    buffer.clear();
                     buffer.putInt(orig.getNode().getID());
                     buffer.putInt(dest.getNode().getID());
                     Map<String, Float> od_info = new HashMap<>();
@@ -76,6 +77,9 @@ public class ODMatrixStreamWriter {
                         // MED_TRUCKS and HEAVY_TRUCKS
                         buffer.putFloat(0);
                         buffer.putFloat(0);
+                        System.out.println("r: " + orig.getNode().getID() + " s: " + dest.getNode().getID() + " "
+                                            + od_info.get("SINGLE_OCC_0.35") + " " + od_info.get("SINGLE_OCC_0.9"));
+
                         stdin.write(reverse(buffer.array()));
                         stdin.flush();
                         buffer.clear();
@@ -87,6 +91,7 @@ public class ODMatrixStreamWriter {
             }
         } catch (Exception e) {
             e.printStackTrace();
+            System.exit(1);
         }
     }
 }

@@ -115,18 +115,18 @@ public class wrapNCTCOG {
 					Collection<ODMatrix> matrices = entry.getValue();
 					ProcessBuilder builder = new ProcessBuilder("./tap","PM_NCTCOG_net.csv","STREAM", "PM_convertertable.csv");
 //					builder.directory(new File("outputs/"+ entry.getKey().toString() + "/"));
-//					builder.redirectOutput(new File("outputs/" + entry.getKey().toString() + "/log.txt"));
+					builder.redirectOutput(new File("outputs/" + entry.getKey().toString() + "/log.txt"));
 					Process proc = builder.start();
 					OutputStream stdin = proc.getOutputStream();
 					stdin.write("Start".getBytes());
 					stdin.flush();
 
-					String line;
-					BufferedReader input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-					while ((line = input.readLine()) != null) {
-						System.out.println(line);
-					}
-					input.close();
+//					String line;
+//					BufferedReader input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+//					while ((line = input.readLine()) != null) {
+//						System.out.println(line);
+//					}
+//					input.close();
 					streamODs(matrices, stdin);
 // 					streamODs(matrices, null);
 				}
@@ -383,7 +383,7 @@ public class wrapNCTCOG {
 	}
 
 	private static void streamODs(Collection<ODMatrix> ods, OutputStream o) {
-		ODMatrixStreamWriter.write(ods, System.out);
+		ODMatrixStreamWriter.write(ods, o);
 	}
 	
 }
