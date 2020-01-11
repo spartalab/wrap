@@ -8,6 +8,7 @@ import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
+import java.util.Collection;
 import java.util.Map;
 
 public interface ModelInput {
@@ -60,6 +61,18 @@ public interface ModelInput {
      */
     Map<MarketSegment, Map<AreaClass, Double>> getAreaClassAttrRates(TripPurpose purpose);
     
+    /**This method provides the market segments that are to be maintained at the
+     * end of the trip generation step. That is to say that trip generation may use
+     * more fine-grained segments for generation, but all will be combined together
+     * at the end of trip generation into the segments provided by this method. If
+     * some segment(s) are used in generation but an enclosing trip purpose is not
+     * provided by this method, this segment's trip data is dropped.
+     * 
+     * @param purpose the trip purpose whose market segments should be returned
+     * @return a collection of market segments which, after trip generation, will contain all trips for the given purpose
+     */
+    Collection<MarketSegment> getSegments(TripPurpose purpose);
+    
     //Peak/off-peak splitting inputs
     /** This method provides sets of data rates for specified trip purposes
      * for peak/off-peak spliting across multiple market segments. These rates
@@ -102,6 +115,14 @@ public interface ModelInput {
     FrictionFactorMap getFrictionFactors(TripPurpose purpose, TimePeriod timePeriod, MarketSegment segment);
     
     //TODO document this and provide implementation
+    /** This method returns q TripDistributor used for trips of a certain TripPurpose-MarketSegment-TimePeriod
+     * combination, including all necessary components for trip distribution
+     * 
+     * @param purpose the relevant TripPurpose which defines the TripDistributor
+     * @param timePeriod the TimePeriod whose costs should be used in the TripDistributor
+     * @param segment the MarketSegment whose FrictionFactorMap should be used in the TripDistributor
+     * @return a TripDistributor for the given trip description
+     */
     TripDistributor getDistributor(TripPurpose purpose, TimePeriod timePeriod, MarketSegment segment);
 
     //Market segmentation inputs

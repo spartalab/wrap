@@ -18,6 +18,7 @@ import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.containers.EmptyAggregatePAMatrix;
 import edu.utexas.wrap.demand.containers.FixedMultiplierPassthroughPAMap;
+import edu.utexas.wrap.demand.containers.FixedSizePAMap;
 import edu.utexas.wrap.distribution.TripDistributor;
 import edu.utexas.wrap.generation.GenerationRate;
 import edu.utexas.wrap.generation.TripGenerator;
@@ -68,7 +69,7 @@ public class BasicTripPurpose extends Thread implements TripPurpose {
 		
 		Collection<MarketSegment> bigSegs = model.getSegments(this);
 		
-		bigSegs.parallelStream().map(bigSeg -> {
+		return bigSegs.parallelStream().map(bigSeg -> {
 			Stream<DemandMap> 
 				prodMaps = prodSegs.entrySet().parallelStream()
 					.filter(entry -> bigSeg.equals(entry.getKey()))
@@ -78,12 +79,9 @@ public class BasicTripPurpose extends Thread implements TripPurpose {
 					.filter(entry -> bigSeg.equals(entry.getKey()))
 					.map(Entry::getValue);
 			
-			//TODO create a way to combine these into a FLAT PAMap
+			return new SimpleEntry<MarketSegment,PAMap>(bigSeg, new FixedSizePAMap(prodMaps,attrMaps));
 		});
 		
-		
-		// TODO Auto-generated method stub
-		return null;
 	}
 
 	@Override
