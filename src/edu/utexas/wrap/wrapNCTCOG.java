@@ -115,27 +115,14 @@ public class wrapNCTCOG {
 					System.out.println("Streaming " + entry.getKey().toString());
 					Collection<ODMatrix> matrices = entry.getValue();
 					ProcessBuilder builder = new ProcessBuilder("./tap",model.getInputs().getProperty("network.graphFile"),"STREAM", model.getInputs().getProperty("ta.conversionTable"));
-//					ProcessBuilder builder = new ProcessBuilder("wrap/src/edu/utexas/wrap/a.out");
-
-//					builder.directory(new File("outputs/"+ entry.getKey().toString() + "/"));
-
                     File out = new File(model.getOutputDirectory() + entry.getKey().toString() + "/log" + System.currentTimeMillis() + ".txt");
                     out.getParentFile().mkdirs();
                     out.createNewFile();
 					builder.redirectOutput(out);
+					builder.redirectError(out);
 					Process proc = builder.start();
 					OutputStream stdin = proc.getOutputStream();
-//					stdin.write("Start".getBytes());
-//					stdin.flush();
-
-//					String line;
-//					BufferedReader input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-//					while ((line = input.readLine()) != null) {
-//						System.out.println(line);
-//					}
-//					input.close();
 					streamODs(matrices, stdin);
-// 					streamODs(matrices, null);
 				}
 			} catch(Exception e) {
 				e.printStackTrace();
