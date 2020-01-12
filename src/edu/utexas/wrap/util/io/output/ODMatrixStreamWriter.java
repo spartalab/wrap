@@ -6,6 +6,10 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.nio.channels.Channel;
+import java.nio.channels.Channels;
+import java.nio.channels.WritableByteChannel;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -50,6 +54,7 @@ public class ODMatrixStreamWriter {
 
             for(TravelSurveyZone orig : origins) {
                 for(TravelSurveyZone dest : demands) {
+                    WritableByteChannel channel = Channels.newChannel(stdin);
                     buffer.clear();
                     buffer.putInt(orig.getNode().getID());
                     buffer.putInt(dest.getNode().getID());
@@ -63,30 +68,69 @@ public class ODMatrixStreamWriter {
 //                        System.out.println(od.getMode() + "_" + od.getVOT());
                     }
 //                    System.out.println("-------------------------------------");
-                    try {
-                        buffer.putFloat(od_info.get("SINGLE_OCC_0.35"));
-                        buffer.putFloat(od_info.get("SINGLE_OCC_0.9"));
-                        buffer.putFloat(od_info.get("HOV_0.35"));
-                        buffer.putFloat(od_info.get("HOV_0.9"));
-                        buffer.putFloat(od_info.get("SINGLE_OCC_0.17"));
-                        buffer.putFloat(od_info.get("SINGLE_OCC_0.45"));
-                        buffer.putFloat(od_info.get("HOV_0.17"));
-                        buffer.putFloat(od_info.get("HOV_0.45"));
-                        // MED_TRUCKS and HEAVY_TRUCKS
-                        buffer.putFloat(0f);
-                        buffer.putFloat(0f);
-                        System.out.println("r:" + orig.getNode().getID() + " s:" + dest.getNode().getID() + " "
-                                            + od_info.get("SINGLE_OCC_0.35") + " " + od_info.get("SINGLE_OCC_0.9"));
 
-                        stdin.write(reverseFourByteSegs(buffer.array(), 48));
-                        stdin.flush();
-                        buffer.clear();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        System.exit(1);
+//                        buffer.putFloat(od_info.get("SINGLE_OCC_0.35"));
+//                        buffer.putFloat(od_info.get("SINGLE_OCC_0.9"));
+//                        buffer.putFloat(od_info.get("HOV_0.35"));
+//                        buffer.putFloat(od_info.get("HOV_0.9"));
+//                        buffer.putFloat(od_info.get("SINGLE_OCC_0.17"));
+//                        buffer.putFloat(od_info.get("SINGLE_OCC_0.45"));
+//                        buffer.putFloat(od_info.get("HOV_0.17"));
+//                        buffer.putFloat(od_info.get("HOV_0.45"));
+                        buffer.putInt(Float.floatToRawIntBits(od_info.get("SINGLE_OCC_0.35")));
+                        buffer.putInt(Float.floatToRawIntBits(od_info.get("SINGLE_OCC_0.9")));
+                        buffer.putInt(Float.floatToRawIntBits(od_info.get("HOV_0.35")));
+                        buffer.putInt(Float.floatToRawIntBits(od_info.get("HOV_0.9")));
+                        buffer.putInt(Float.floatToRawIntBits(od_info.get("SINGLE_OCC_0.17")));
+                        buffer.putInt(Float.floatToRawIntBits(od_info.get("SINGLE_OCC_0.45")));
+                        buffer.putInt(Float.floatToRawIntBits(od_info.get("HOV_0.17")));
+                        buffer.putInt(Float.floatToRawIntBits(od_info.get("HOV_0.45")));
+                        // MED_TRUCKS and HEAVY_TRUCKS
+                        buffer.putFloat(Float.floatToRawIntBits(0f));
+                        buffer.putFloat(Float.floatToRawIntBits(0f));
+//                        System.out.println("r:" + orig.getNode().getID() + " s:" + dest.getNode().getID() + " "
+//                            + od_info.get("SINGLE_OCC_0.35") + " " + od_info.get("SINGLE_OCC_0.9")
+//                            + od_info.get("HOV_0.35") + " " + od_info.get("HOV_0.9")
+//                            + od_info.get("SINGLE_OCC_0.17") + " " + od_info.get("SINGLE_OCC_0.45")
+//                            + od_info.get("HOV_0.17") + " " + od_info.get("HOV_0.45")
+////                            + od_info.get("SINGLE_OCC_0.35") + " " + od_info.get("SINGLE_OCC_0.9")
+//                        );
+//                        String a = "r:" + orig.getNode().getID() + " s:" + dest.getNode().getID() + " "
+//                                + od_info.get("SINGLE_OCC_0.35") + " " + od_info.get("SINGLE_OCC_0.9") + " "
+//                                + od_info.get("HOV_0.35") + " " + od_info.get("HOV_0.9") + " "
+//                                + od_info.get("SINGLE_OCC_0.17") + " " + od_info.get("SINGLE_OCC_0.45") + " "
+//                                + od_info.get("HOV_0.17") + " " + od_info.get("HOV_0.45") + " 0.0 0.0";
+                        try {
+                            buffer.flip();
+
+                            stdin.write(reverseFourByteSegs(buffer.array(), 48));
+//                            int written = 0;
+//                            do {
+//                                written += channel.write(ByteBuffer.wrap(reverseFourByteSegs(buffer.array(),48)).asReadOnlyBuffer());
+//                            } while (written < 48);
+
+//                            String b = "r:" + buffer.getInt() + " s:" + buffer.getInt() + " "
+//                                    + buffer.getFloat() + " " + buffer.getFloat() + " "
+//                                    + buffer.getFloat() + " " + buffer.getFloat() + " "
+//                                    + buffer.getFloat() + " " + buffer.getFloat() + " "
+//                                    + buffer.getFloat() + " " + buffer.getFloat() + " "
+//                                    + buffer.getFloat() + " " + buffer.getFloat();
+//                        stdin.close();
+                            stdin.flush();
+//                            if (!a.equals(b)) {
+//                                    System.out.println(a);
+//                                    System.out.println(b);
+//                                    System.exit(1);
+//                                }
+                        } catch (IOException e) {
+                            if (e.toString().contains("Broken pipe")) {
+                            e.printStackTrace();
+                            System.exit(1);
+                        }
                     }
+//                    stdin.flush();
                 }
-                System.out.println("=============================================");
+//                System.out.println("=============================================");
             }
             stdin.write("Sto".getBytes());
             stdin.flush();
