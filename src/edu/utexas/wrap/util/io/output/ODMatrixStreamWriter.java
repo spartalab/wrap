@@ -15,25 +15,23 @@ import java.util.ArrayList;
 
 public class ODMatrixStreamWriter {
 
-    public static byte[] reverse(byte[] array) {
+    public static byte[] reverseFourByteSegs(byte[] array, int length) {
         if (array == null) {
             return null;
         }
-        int i = 0;
-        int j = array.length - 1;
-        byte tmp;
-        while (j > i) {
-            tmp = array[j];
-            array[j] = array[i];
-            array[i] = tmp;
-            j--;
-            i++;
+        byte [] output = new byte[length];
+        for (int i = 3; i < length; i+=4) {
+            int k = i - 3;
+            while (k <= i) {
+                output[k] = array[i - k];
+                k++;
+            }
         }
-        return array;
+        return output;
     }
 
     public static void write(Collection<ODMatrix> ods, OutputStream stdin) {
-        try{
+        try {
             ByteBuffer buffer = ByteBuffer.allocate(48);
             List<ODMatrix> temp = new ArrayList(ods);
             // Assuming that there is something in the ods
@@ -75,20 +73,23 @@ public class ODMatrixStreamWriter {
                         buffer.putFloat(od_info.get("HOV_0.17"));
                         buffer.putFloat(od_info.get("HOV_0.45"));
                         // MED_TRUCKS and HEAVY_TRUCKS
-                        buffer.putFloat(0);
-                        buffer.putFloat(0);
-                        System.out.println("r: " + orig.getNode().getID() + " s: " + dest.getNode().getID() + " "
+                        buffer.putFloat(0f);
+                        buffer.putFloat(0f);
+                        System.out.println("r:" + orig.getNode().getID() + " s:" + dest.getNode().getID() + " "
                                             + od_info.get("SINGLE_OCC_0.35") + " " + od_info.get("SINGLE_OCC_0.9"));
 
-                        stdin.write(reverse(buffer.array()));
+                        stdin.write(reverseFourByteSegs(buffer.array(), 48));
                         stdin.flush();
                         buffer.clear();
-                    } catch (Exception e) {
+                    } catch (IOException e) {
                         e.printStackTrace();
+                        System.exit(1);
                     }
                 }
                 System.out.println("=============================================");
             }
+            stdin.write("Sto".getBytes());
+            stdin.flush();
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);

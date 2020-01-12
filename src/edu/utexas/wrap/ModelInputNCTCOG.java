@@ -597,4 +597,9 @@ public class ModelInputNCTCOG implements ModelInput {
 		return sb.toString();
 	}
 
+	@Override
+	public Properties getInputs() {
+		return inputs;
+	}
+
 }

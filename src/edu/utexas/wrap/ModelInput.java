@@ -8,6 +8,7 @@ import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 import java.util.Map;
+import java.util.Properties;
 
 public interface ModelInput {
 
@@ -175,4 +176,10 @@ public interface ModelInput {
      * @return a shorthand String representation of the MarketSegment
      */
     String getLabel(MarketSegment segment);
+
+    /**
+     * This method provides access to the properties file that the model input uses
+     * @return Properties object representing properties file
+     */
+    Properties getInputs();
 }

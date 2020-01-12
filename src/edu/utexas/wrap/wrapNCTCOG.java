@@ -112,14 +112,21 @@ public class wrapNCTCOG {
 			try {
 				byte b[] = new byte[100];
 				for (Map.Entry<TimePeriod, Collection<ODMatrix>> entry : reducedODs.entrySet()) {
+					System.out.println("Streaming " + entry.getKey().toString());
 					Collection<ODMatrix> matrices = entry.getValue();
-					ProcessBuilder builder = new ProcessBuilder("./tap","PM_NCTCOG_net.csv","STREAM", "PM_convertertable.csv");
+					ProcessBuilder builder = new ProcessBuilder("./tap",model.getInputs().getProperty("network.graphFile"),"STREAM", model.getInputs().getProperty("ta.conversionTable"));
+//					ProcessBuilder builder = new ProcessBuilder("wrap/src/edu/utexas/wrap/a.out");
+
 //					builder.directory(new File("outputs/"+ entry.getKey().toString() + "/"));
-					builder.redirectOutput(new File("outputs/" + entry.getKey().toString() + "/log.txt"));
+
+                    File out = new File(model.getOutputDirectory() + entry.getKey().toString() + "/log" + System.currentTimeMillis() + ".txt");
+                    out.getParentFile().mkdirs();
+                    out.createNewFile();
+					builder.redirectOutput(out);
 					Process proc = builder.start();
 					OutputStream stdin = proc.getOutputStream();
-					stdin.write("Start".getBytes());
-					stdin.flush();
+//					stdin.write("Start".getBytes());
+//					stdin.flush();
 
 //					String line;
 //					BufferedReader input = new BufferedReader(new InputStreamReader(proc.getInputStream()));
@@ -158,11 +165,11 @@ public class wrapNCTCOG {
 	 */
 	private static Stream<TripPurpose> getPrimaryTripPurposes() {
 		return Stream.of(
-				TripPurpose.HOME_WORK,
-				TripPurpose.HOME_SHOP,
-				TripPurpose.HOME_SRE,
-//				TripPurpose.HOME_K12,
-				TripPurpose.HOME_PBO
+				TripPurpose.HOME_WORK
+				,TripPurpose.HOME_SHOP
+				,TripPurpose.HOME_SRE
+//				,TripPurpose.HOME_K12
+				,TripPurpose.HOME_PBO
 				).parallel();
 	}
 
