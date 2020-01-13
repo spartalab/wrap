@@ -3,6 +3,7 @@ package edu.utexas.wrap.util.io.output;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -29,16 +30,13 @@ public class ODMatrixStreamWriter {
                 System.out.println("ODs has nothing...");
                 System.exit(1);
             }
-
-//            for (ODMatrix od : ods) {
-//                System.out.println(od.getMode() + "_" + od.getVOT());
-//            }
-
-
+            BufferedOutputStream bo = new BufferedOutputStream(stdin);
             Collection<TravelSurveyZone> origins = temp.get(0).getGraph().getTSZs();
             Collection<TravelSurveyZone> demands = temp.get(0).getGraph().getTSZs();
-
+//            System.out.println("There are " + origins.size() + " zones");
+            int count = 0;
             for(TravelSurveyZone orig : origins) {
+                count += 1;
                 for(TravelSurveyZone dest : demands) {
                     buffer.clear();
                     buffer.putInt(orig.getNode().getID());
@@ -69,8 +67,8 @@ public class ODMatrixStreamWriter {
 //                    );
                     try {
                         buffer.flip();
-                        stdin.write(buffer.array());
-                        stdin.flush();
+                        bo.write(buffer.array());
+//                        stdin.flush();
                     } catch (IOException e) {
                         if(e.toString().contains("Broken Pipe")) {
                             System.err.println("TAP-B has an error");
@@ -79,10 +77,12 @@ public class ODMatrixStreamWriter {
                         System.exit(1);
                     }
                 }
+                System.out.println("Finished " + count + "/"+ origins.size() +" zones so far");
+                bo.flush();
 //                System.out.println("=============================================");
             }
-            stdin.write("Sto".getBytes());
-            stdin.flush();
+            bo.write("Sto".getBytes());
+            bo.flush();
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
