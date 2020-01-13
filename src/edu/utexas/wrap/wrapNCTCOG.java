@@ -107,26 +107,28 @@ public class wrapNCTCOG {
 			printTimeStamp();
 			System.out.println("Writing to files");
 			// writeODs(reducedODs, model.getOutputDirectory());
-
-			//TODO eventually, run instances of TA in parallel with writing to files
-			try {
-				byte b[] = new byte[100];
-				for (Map.Entry<TimePeriod, Collection<ODMatrix>> entry : reducedODs.entrySet()) {
+			reducedODs.entrySet().parallelStream().forEach(entry -> {
+				try {
 					System.out.println("Streaming " + entry.getKey().toString());
 					Collection<ODMatrix> matrices = entry.getValue();
 					ProcessBuilder builder = new ProcessBuilder("./tap",model.getInputs().getProperty("network.graphFile"),"STREAM", model.getInputs().getProperty("ta.conversionTable"));
-                    File out = new File(model.getOutputDirectory() + entry.getKey().toString() + "/log" + System.currentTimeMillis() + ".txt");
-                    out.getParentFile().mkdirs();
-                    out.createNewFile();
+					File out = new File(model.getOutputDirectory() + entry.getKey().toString() + "/log" + System.currentTimeMillis() + ".txt");
+					out.getParentFile().mkdirs();
+					out.createNewFile();
 					builder.redirectOutput(out);
 					builder.redirectError(out);
 					Process proc = builder.start();
 					OutputStream stdin = proc.getOutputStream();
 					streamODs(matrices, stdin);
+					proc.waitFor();
+				} catch(IOException e) {
+					System.out.println(entry.getKey() + " unable to stream data");
+					e.printStackTrace();
+				} catch (InterruptedException e) {
+					System.out.println(entry.getKey() + " traffic assignment was interrupted");
+					e.printStackTrace();
 				}
-			} catch(Exception e) {
-				e.printStackTrace();
-			}
+			});
 			printTimeStamp();
 			System.out.println("Done");
 
