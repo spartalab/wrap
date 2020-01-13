@@ -112,6 +112,9 @@ public class wrapNCTCOG {
 					System.out.println("Streaming " + entry.getKey().toString());
 					Collection<ODMatrix> matrices = entry.getValue();
 					ProcessBuilder builder = new ProcessBuilder("./tap",model.getInputs().getProperty("network.graphFile"),"STREAM", model.getInputs().getProperty("ta.conversionTable"));
+					File outputDirectory = new File(model.getOutputDirectory() + entry.getKey().toString() + "/outputs");
+					outputDirectory.mkdirs();
+					builder.directory(outputDirectory);
 					File out = new File(model.getOutputDirectory() + entry.getKey().toString() + "/log" + System.currentTimeMillis() + ".txt");
 					out.getParentFile().mkdirs();
 					out.createNewFile();
