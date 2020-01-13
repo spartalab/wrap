@@ -107,6 +107,8 @@ public class wrapNCTCOG {
 			printTimeStamp();
 			System.out.println("Writing to files");
 			// writeODs(reducedODs, model.getOutputDirectory());
+
+			// Run Traffic Assignment
 			reducedODs.entrySet().parallelStream().forEach(entry -> {
 				try {
 					System.out.println("Streaming " + entry.getKey().toString());
