@@ -121,10 +121,10 @@ class NHBThread extends Thread{
 
 	private Map<TripPurposeEnum, DemandMap> getProds(Map<TripPurposeEnum, TripPurposeEnum> srcPurposes) {
 		Map<TripPurposeEnum,Map<MarketSegment,Double>> secondaryProdRates = srcPurposes.keySet().parallelStream()
-				.collect(Collectors.toMap(Function.identity(), purpose -> model.getGeneralProdRates(purpose)));
+				.collect(Collectors.toMap(Function.identity(), purpose -> model.getProdRates(purpose)));
 		
 		Map<TripPurposeEnum,Map<MarketSegment,Double>> primaryProdRates = srcPurposes.values().parallelStream().distinct()
-				.collect(Collectors.toMap(Function.identity(), purpose -> model.getGeneralProdRates(purpose)));
+				.collect(Collectors.toMap(Function.identity(), purpose -> model.getProdRates(purpose)));
 		
 		Map<TripPurposeEnum, DemandMap> secondaryProds = srcPurposes.entrySet().parallelStream().collect(Collectors.toMap(Entry::getKey, entry ->{
 			Map<MarketSegment,Double> prPuProRates = primaryProdRates.get(entry.getValue());

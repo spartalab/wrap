@@ -21,9 +21,12 @@ public class ODMatrixCollector implements Collector<ODMatrix, CombinedODMatrix, 
 	private Mode mode;
 	
 	public ODMatrixCollector(Mode mode, Double vot) {
-		// TODO Auto-generated constructor stub
 		this.mode = mode;
 		this.vot = vot;
+	}
+	
+	public ODMatrixCollector() {
+		
 	}
 
 	@Override

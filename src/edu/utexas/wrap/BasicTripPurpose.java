@@ -1,8 +1,6 @@
 package edu.utexas.wrap;
 
-import java.util.AbstractMap;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.Map.Entry;
@@ -10,45 +8,64 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import edu.utexas.wrap.balancing.TripBalancer;
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.PAMap;
-import edu.utexas.wrap.demand.containers.EmptyAggregatePAMatrix;
-import edu.utexas.wrap.demand.containers.FixedMultiplierPassthroughPAMap;
 import edu.utexas.wrap.demand.containers.FixedSizePAMap;
-import edu.utexas.wrap.distribution.TripDistributor;
 import edu.utexas.wrap.generation.GenerationRate;
 import edu.utexas.wrap.generation.TripGenerator;
 import edu.utexas.wrap.marketsegmentation.IncomeGroupSegmenter;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.modechoice.FixedProportionSplitter;
 import edu.utexas.wrap.modechoice.Mode;
-import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.util.AggregatePAMatrixCollector;
 import edu.utexas.wrap.util.DepartureArrivalConverter;
 
 public class BasicTripPurpose extends Thread implements TripPurpose {
 	
-	ModelInput model;
-	TripGenerator productionGenerator, attractionGenerator;
-	TripBalancer balancer;
-	TripDistributor peakDistributor, offPeakDistributor;
-
+	private ModelInput model;
+	private String name;
+	private Map<TimePeriod,Map<MarketSegment,Collection<ODMatrix>>> odMtxs;
+	
+	public void run() {
+		Stream<Entry<MarketSegment,GenerationRate>> 
+			prodRates = getProductionRates(),
+			attrRates = getAttractionRates();
+		
+		Stream<Entry<MarketSegment,DemandMap>> 
+			prods = getProductions(prodRates),
+			attrs = getAttractions(attrRates);
+		
+		//TODO implement secondary trip purposes here
+		
+		Stream<Entry<MarketSegment,PAMap>> maps = buildProductionAttractionMaps(prods,attrs);
+		
+		maps = balance(maps);
+		
+		Stream<Entry<MarketSegment,AggregatePAMatrix>> aggMtxs = distribute(maps);
+		
+		Stream<Entry<MarketSegment,Collection<ModalPAMatrix>>> modalMtxs = modeChoice(aggMtxs);
+		
+		odMtxs = convertToOD(modalMtxs).entrySet().parallelStream()
+				.collect(Collectors.toMap(Entry::getKey, 
+						entry -> entry.getValue().collect(Collectors.toMap(Entry::getKey, Entry::getValue))));
+	}
+	
 	@Override
 	public Stream<Entry<MarketSegment, GenerationRate>> getProductionRates() {
-		return model.getGeneralProdRates(this).entrySet().parallelStream();
+		return model.getProdRates(this).entrySet().parallelStream();
 	}
 
 	@Override
 	public Stream<Entry<MarketSegment, GenerationRate>> getAttractionRates() {
-		return model.getAreaClassAttrRates(this).entrySet().parallelStream();
+		return model.getAttrRates(this).entrySet().parallelStream();
 	}
 
 	@Override
 	public Stream<Entry<MarketSegment, DemandMap>> getProductions(Stream<Entry<MarketSegment, GenerationRate>> prodRates) {
+		TripGenerator productionGenerator = model.getProductionGenerator(this);
 		return prodRates.map(entry -> new SimpleEntry<MarketSegment, DemandMap>(
 				entry.getKey(),
 				productionGenerator.generate(entry.getValue())));
@@ -56,6 +73,7 @@ public class BasicTripPurpose extends Thread implements TripPurpose {
 
 	@Override
 	public Stream<Entry<MarketSegment, DemandMap>> getAttractions(Stream<Entry<MarketSegment, GenerationRate>> attrRates) {
+		TripGenerator attractionGenerator = model.getAttractionGenerator(this);
 		return attrRates.map(entry -> new SimpleEntry<MarketSegment,DemandMap>(
 				entry.getKey(),
 				attractionGenerator.generate(entry.getValue())));
@@ -89,7 +107,7 @@ public class BasicTripPurpose extends Thread implements TripPurpose {
 			Stream<Entry<MarketSegment, PAMap>> paMaps) {
 		return paMaps.map(entry -> new SimpleEntry<MarketSegment,PAMap>(
 				entry.getKey(),
-				balancer.balance(entry.getValue())
+				model.getBalancer(this).balance(entry.getValue())
 				));
 	}
 
@@ -153,4 +171,13 @@ public class BasicTripPurpose extends Thread implements TripPurpose {
 		})));
 	}
 
+	@Override
+	public String toString() {
+		return name;
+	}
+
+	@Override
+	public Map<MarketSegment,Collection<ODMatrix>> getODMap(TimePeriod tp){
+		return odMtxs.get(tp);
+	}
 }

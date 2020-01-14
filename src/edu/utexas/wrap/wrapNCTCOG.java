@@ -142,7 +142,7 @@ public class wrapNCTCOG {
 	 */
 	private static Map<TripPurposeEnum, Map<MarketSegment, Double>> getProdRates(ModelInput model) {
 		return getPrimaryTripPurposes().collect(Collectors.toMap(Function.identity(), //for each trip purpose,
-				purpose -> model.getGeneralProdRates(purpose)));	//map the purpose to the model's production rates
+				purpose -> model.getProdRates(purpose)));	//map the purpose to the model's production rates
 	}
 
 	/**This method generates mappings from each trip purpose and market segment to 
@@ -321,7 +321,7 @@ public class wrapNCTCOG {
 						.collect(new ODMatrixCollector(mode,vots.get(tripPurpose).get(mode).get(false)))
 					);
 			
-					//Next, handle the Work IG4 and Nonwork cases
+					//Next, handle the Work IG4 and Non-work cases
 					ret.add(
 							Stream.concat(	//Combine two types of maps
 									hbODs.get(timePeriod)	//home-based trips from this time period

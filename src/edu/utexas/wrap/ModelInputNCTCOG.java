@@ -265,7 +265,7 @@ public class ModelInputNCTCOG implements ModelInput {
     }
 
     @Override
-    public synchronized Map<MarketSegment, Double> getGeneralProdRates(TripPurpose purpose) {
+    public synchronized Map<MarketSegment, Double> getProdRates(TripPurpose purpose) {
         if(productionRates != null && productionRates.containsKey(purpose))
             return productionRates.get(purpose);
         
@@ -278,7 +278,7 @@ public class ModelInputNCTCOG implements ModelInput {
     }
 
     @Override
-    public synchronized Map<MarketSegment, Map<AreaClass, Double>> getAreaClassProdRates(TripPurpose purpose) {
+    public synchronized Map<MarketSegment, Map<AreaClass, Double>> getProdRates(TripPurpose purpose) {
         if (areaClassProdRates == null) areaClassProdRates = new ConcurrentHashMap<TripPurpose,Map<MarketSegment,Map<AreaClass,Double>>>();
         else if (areaClassProdRates.containsKey(purpose))
             return areaClassProdRates.get(purpose);
@@ -290,7 +290,7 @@ public class ModelInputNCTCOG implements ModelInput {
     }
 
     @Override
-    public synchronized Map<MarketSegment, Double> getGeneralAttrRates(TripPurpose purpose) {
+    public synchronized Map<MarketSegment, Double> getAttrRates(TripPurpose purpose) {
         if (attractionRates == null) attractionRates = new HashMap<TripPurpose,Map<MarketSegment,Double>>();
         else if (attractionRates.containsKey(purpose))
             return attractionRates.get(purpose);

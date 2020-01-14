@@ -1,10 +1,12 @@
 package edu.utexas.wrap;
 
+import edu.utexas.wrap.balancing.TripBalancer;
 import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.distribution.TripDistributor;
+import edu.utexas.wrap.generation.GenerationRate;
+import edu.utexas.wrap.generation.TripGenerator;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.modechoice.Mode;
-import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
@@ -19,6 +21,8 @@ public interface ModelInput {
      * @return the network model as a Graph object
      */
     Graph getNetwork();
+    
+    Collection<TripPurpose> getTripPurposes();
 
     //Trip Generation Inputs
     /** This method provides sets of data rates for specified trip purposes
@@ -29,18 +33,12 @@ public interface ModelInput {
      * @param purpose the trip purpose whose general production rates should be retrieved
      * @return a Map from each applicable MarketSegment to a general production rate
      */
-    Map<MarketSegment,Double> getGeneralProdRates(TripPurpose purpose);
+    Map<MarketSegment,GenerationRate> getProdRates(TripPurpose purpose);
 
-    /** This method provides sets of data rates for specified trip purposes
-     * for trip production across multiple market segments. These production
-     * rates vary depending on a zone's area class, and define the rate at which
-     * each market segment's attribute data generates trip productions
-     * 
-     * @param purpose the trip purpose whose area class-specific production rates should be retrieved
-     * @return a Map from each applicable MarketSegment to a Map from each area class to a production rate
-     */
-    Map<MarketSegment, Map<AreaClass, Double>> getAreaClassProdRates(TripPurpose purpose);
-
+    TripGenerator getProductionGenerator(TripPurpose purpose);
+    
+    TripGenerator getAttractionGenerator(TripPurpose purpose);
+    
     /** This method provides sets of data rates for specified trip purposes
      * for trip attraction across multiple market segments. These attraction rates
      * are consistent across all area classes, and define the rate at which each market
@@ -49,18 +47,8 @@ public interface ModelInput {
      * @param purpose the trip purpose whose general attraction rates should be retrieved
      * @return a Map from each applicable MarketSegment to a general attraction rate
      */
-    Map<MarketSegment, Double> getGeneralAttrRates(TripPurpose purpose);
+    Map<MarketSegment, GenerationRate> getAttrRates(TripPurpose purpose);
 
-    /** This method provides sets of data rates for specified trip purposes
-     * for trip attraction across multiple market segments. These attraction
-     * rates vary depending on a zone's area class, and define the rate at which
-     * each market segment's attribute data generates trip attractions
-     * 
-     * @param purpose the trip purpose whose area class-specific attraction rates should be retrieved
-     * @return a Map from each applicable MarketSegment to a Map from each area class to an attraction rate
-     */
-    Map<MarketSegment, Map<AreaClass, Double>> getAreaClassAttrRates(TripPurpose purpose);
-    
     /**This method provides the market segments that are to be maintained at the
      * end of the trip generation step. That is to say that trip generation may use
      * more fine-grained segments for generation, but all will be combined together
@@ -72,6 +60,14 @@ public interface ModelInput {
      * @return a collection of market segments which, after trip generation, will contain all trips for the given purpose
      */
     Collection<MarketSegment> getSegments(TripPurpose purpose);
+    
+    
+    /** This method provides the trip balancer for a specified TripPurpose
+     * 
+     * @param purpose the TripPurpose whose TripBalancer should be returned
+     * @return a TripBalancer that meets this TripPurpose's model specification
+     */
+    TripBalancer getBalancer(TripPurpose purpose);
     
     //Peak/off-peak splitting inputs
     /** This method provides sets of data rates for specified trip purposes
@@ -202,4 +198,8 @@ public interface ModelInput {
      * @return a shorthand String representation of the MarketSegment
      */
     String getLabel(MarketSegment segment);
+    
+    Collection<TimePeriod> getUsedTimePeriods();
+    
+    double getVOT(TripPurpose purpose, MarketSegment segment, Mode mode);
 }
