@@ -201,5 +201,5 @@ public interface ModelInput {
     
     Collection<TimePeriod> getUsedTimePeriods();
     
-    double getVOT(TripPurpose purpose, MarketSegment segment, Mode mode);
+    Float getVOT(TripPurpose purpose, MarketSegment segment, Mode mode);
 }

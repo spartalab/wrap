@@ -10,6 +10,7 @@ import java.nio.file.StandardOpenOption;
 
 import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.demand.ODMatrix;
+import edu.utexas.wrap.modechoice.Mode;
 
 /**This class includes a method to write OD matrices to a file named using the following pattern:
  * 		./{outputDirectory}/{timePeriod}/{matrix.getVOT()}.bmtx
@@ -23,11 +24,16 @@ import edu.utexas.wrap.demand.ODMatrix;
  *
  */
 public class ODMatrixBINWriter {
+	
 	public static void write(String outputDirectory, TimePeriod timePeriod, ODMatrix matrix) {
+		write(outputDirectory,timePeriod,matrix.getMode(),matrix.getVOT(),matrix);
+	}
+	
+	public static void write(String outputDirectory, TimePeriod timePeriod, Mode mode, Float vot, ODMatrix matrix) {
 		Path path = Paths.get(outputDirectory, 
 				timePeriod.toString(), 
-				matrix.getMode().toString(), 
-				matrix.getVOT().toString()+".bmtx");
+				mode.toString(), 
+				vot.toString()+".bmtx");
 		try{
 			Files.createDirectories(path.getParent());
 			OutputStream out = Files.newOutputStream(path,

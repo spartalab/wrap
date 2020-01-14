@@ -10,6 +10,7 @@ import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.util.ODMatrixCollector;
+import edu.utexas.wrap.util.io.output.ODMatrixBINWriter;
 
 import java.util.AbstractMap.SimpleEntry;
 
@@ -35,7 +36,7 @@ public class wrapTP {
 				}
 			});
 
-		Map<TimePeriod,Map<Double,Map<Mode,ODMatrix>>> ods = 
+		Map<TimePeriod,Map<Float,Map<Mode,ODMatrix>>> ods = 
 			model.getUsedTimePeriods().parallelStream().collect(
 				Collectors.toMap(
 					Function.identity(),
@@ -99,8 +100,25 @@ public class wrapTP {
 						)
 				);
 		
-		//TODO write OD matrices to files here
 		
+		ods.entrySet().parallelStream().forEach(
+			tpEntry -> 
+		
+				tpEntry.getValue().entrySet().parallelStream().forEach(
+					votEntry ->
+						votEntry.getValue().entrySet().parallelStream()
+						.forEach(
+							modeEntry ->
+								ODMatrixBINWriter.write(
+										model.getOutputDirectory(),
+										tpEntry.getKey(),
+										modeEntry.getKey(),
+										votEntry.getKey(),
+										modeEntry.getValue()
+									)
+							)
+					)
+			);
 	}
 
 }
