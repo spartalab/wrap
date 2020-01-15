@@ -24,6 +24,7 @@ public class StreamTestScript {
         File out = new File(outputDirectory.getAbsolutePath() + "/log" + System.currentTimeMillis() + ".txt");
         out.getParentFile().mkdirs();
         out.createNewFile();
+        builder.redirectOutput(out);
         builder.redirectError(out);
         Process proc = builder.start();
         OutputStream stdin = proc.getOutputStream();
