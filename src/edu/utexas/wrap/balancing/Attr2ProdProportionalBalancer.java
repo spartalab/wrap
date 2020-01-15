@@ -22,7 +22,7 @@ public class Attr2ProdProportionalBalancer implements TripBalancer {
 	private Set<RegionalAreaAnalysisZone> raas;
 	
 	@Override
-	public void balance(PAMap paMap) {
+	public PAMap balance(PAMap paMap) {
 		if (raas != null) raas.parallelStream().forEach(raa -> {
 			float prods = (float) raa.getTSZs().parallelStream().mapToDouble(tsz ->paMap.getProductions(tsz)).sum();
 			float attrs = (float) raa.getTSZs().parallelStream().mapToDouble(tsz -> paMap.getAttractions(tsz)).sum();
@@ -37,7 +37,7 @@ public class Attr2ProdProportionalBalancer implements TripBalancer {
 			double scale = prods/attrs;
 			paMap.getAttractors().parallelStream().forEach(attr -> paMap.putAttractions(attr, (float) (paMap.getAttractions(attr)*scale)));
 		}
-		
+		return paMap;
 	}
 
 }

@@ -18,7 +18,14 @@ public class wrapTP {
 
 	public static void main(String[] args) {
 		
-		final ModelInput model = new ModelInputNCTCOG("tp.properties");
+		if (args.length == 0) {
+			System.err.println("No model input file supplied");
+			System.exit(1);
+		}
+		
+		ModelInput model = new ModelInputNCTCOG(args[0]);
+		
+		model.getNetwork();
 		
 		Collection<TripPurpose> purposes = model.getTripPurposes();
 		

@@ -17,6 +17,9 @@ import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.PAMatrix;
 import edu.utexas.wrap.demand.containers.AggregatePAHashMap;
 import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
+import edu.utexas.wrap.generation.AreaClassGenerationRate;
+import edu.utexas.wrap.generation.GeneralGenerationRate;
+import edu.utexas.wrap.generation.GenerationRate;
 import edu.utexas.wrap.marketsegmentation.*;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
@@ -27,16 +30,17 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  */
 public class ProductionAttractionFactory {
 
-	public static Map<MarketSegment, Double> readGeneralRates(String file, ModelInput model) {
+	public static Map<MarketSegment, GenerationRate> readGeneralRates(String file, ModelInput model) {
 		BufferedReader in = null;
-		Map<MarketSegment,Double> map = new ConcurrentHashMap<MarketSegment,Double>();
+		Map<MarketSegment,GenerationRate> map = new ConcurrentHashMap<MarketSegment,GenerationRate>();
 		try {
 			in = Files.newBufferedReader(Paths.get(file));
 			String header = in.readLine().trim().replaceAll("[^\\x00-\\xff]", ""); //weird file IO kludge
 			String[] headers = header.split(",");
 			StringBuilder key = new StringBuilder();
 			for(int i = 0;i < headers.length-1; i++) {
-				key.append(headers[i]).append(",");
+				key.append(headers[i]);
+				if (i < headers.length-2) key.append(",");
 			}
 			Class<? extends MarketSegment> seg = model.getSegmenterByString(key.toString());
 			in.lines().parallel().forEach(line -> {
@@ -47,7 +51,7 @@ public class ProductionAttractionFactory {
 				}
 				try {
 					Object segment = seg.getConstructor(String.class).newInstance(arg.toString());
-					map.put((MarketSegment) segment, Double.parseDouble(args[args.length-1]));
+					map.put((MarketSegment) segment, new GeneralGenerationRate(Double.parseDouble(args[args.length-1])));
 				} catch (InstantiationException | IllegalAccessException | NoSuchMethodException | InvocationTargetException e) {
 					System.err.println("Unable to generate market segment");
 					e.printStackTrace();
@@ -61,16 +65,17 @@ public class ProductionAttractionFactory {
 		return map;
 	}
 
-	public static Map<MarketSegment, Map<AreaClass, Double>> readAreaRates(String purposeDetailsFile, ModelInput model) {
+	public static Map<MarketSegment, GenerationRate> readAreaRates(String purposeDetailsFile, ModelInput model) {
 		BufferedReader in = null;
-		Map<MarketSegment,Map<AreaClass,Double>> map = new ConcurrentHashMap<MarketSegment,Map<AreaClass,Double>>();
+		Map<MarketSegment,AreaClassGenerationRate> map = new ConcurrentHashMap<MarketSegment,AreaClassGenerationRate>();
 		try {
 			in = Files.newBufferedReader(Paths.get(purposeDetailsFile));
 			String header = in.readLine().trim().replaceAll("[^\\x00-\\xff]", "");
 			String[] headers = header.split(",");
 			StringBuilder key = new StringBuilder();
 			for(int i = 0;i < headers.length-2; i++) {
-				key.append(headers[i]).append(",");
+				key.append(headers[i]);
+				if (i < headers.length-3) key.append(",");
 			}
 			Class<? extends MarketSegment> seg = model.getSegmenterByString(key.toString());
 			in.lines().parallel().forEach(line -> {
@@ -108,14 +113,15 @@ public class ProductionAttractionFactory {
 				}
 
 				// If we don't have the market segment we add it
-				map.computeIfAbsent(segment, k -> new HashMap<AreaClass,Double>()).put(areaClass, Double.parseDouble(args[args.length-1]));
+				map.computeIfAbsent(segment, k -> new AreaClassGenerationRate())
+					.put(areaClass, Double.parseDouble(args[args.length-1]));
 
 			});
 			in.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		return map;
+		return new HashMap<MarketSegment,GenerationRate>(map);
 	}
 
 	/**

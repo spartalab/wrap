@@ -14,7 +14,6 @@ import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.containers.FixedSizePAMap;
-import edu.utexas.wrap.generation.GenerationRate;
 import edu.utexas.wrap.generation.TripGenerator;
 import edu.utexas.wrap.marketsegmentation.IncomeGroupSegmenter;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
@@ -27,16 +26,19 @@ public class BasicTripPurpose extends Thread implements TripPurpose {
 	
 	private ModelInput model;
 	private String name;
-	private Map<TimePeriod,Map<MarketSegment,Collection<ODMatrix>>> odMtxs;
+	private Map<MarketSegment,Map<TimePeriod,Collection<ODMatrix>>> odMtxs;
+	
+	public BasicTripPurpose(String name, ModelInput model) {
+		this.name = name;
+		this.model = model;
+	}
 	
 	public void run() {
-		Stream<Entry<MarketSegment,GenerationRate>> 
-			prodRates = getProductionRates(),
-			attrRates = getAttractionRates();
+
 		
 		Stream<Entry<MarketSegment,DemandMap>> 
-			prods = getProductions(prodRates),
-			attrs = getAttractions(attrRates);
+			prods = getProductions(),
+			attrs = getAttractions();
 		
 		//TODO implement secondary trip purposes here
 		
@@ -45,43 +47,38 @@ public class BasicTripPurpose extends Thread implements TripPurpose {
 		maps = balance(maps);
 		
 		Stream<Entry<MarketSegment,AggregatePAMatrix>> aggMtxs = distribute(maps);
-		
+				
 		Stream<Entry<MarketSegment,Collection<ModalPAMatrix>>> modalMtxs = modeChoice(aggMtxs);
 		
-		odMtxs = convertToOD(modalMtxs).entrySet().parallelStream()
-				.collect(Collectors.toMap(Entry::getKey, 
-						entry -> entry.getValue().collect(Collectors.toMap(Entry::getKey, Entry::getValue))));
-	}
-	
-	@Override
-	public Stream<Entry<MarketSegment, GenerationRate>> getProductionRates() {
-		return model.getProdRates(this).entrySet().parallelStream();
+		odMtxs = convertToOD(modalMtxs)
+				//FIXME the collector below breaks when passed a null MarketSegment
+				.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 	}
 
 	@Override
-	public Stream<Entry<MarketSegment, GenerationRate>> getAttractionRates() {
-		return model.getAttrRates(this).entrySet().parallelStream();
-	}
-
-	@Override
-	public Stream<Entry<MarketSegment, DemandMap>> getProductions(Stream<Entry<MarketSegment, GenerationRate>> prodRates) {
+	public Stream<Entry<MarketSegment, DemandMap>> getProductions() {
 		TripGenerator productionGenerator = model.getProductionGenerator(this);
-		return prodRates.map(entry -> new SimpleEntry<MarketSegment, DemandMap>(
-				entry.getKey(),
-				productionGenerator.generate(entry.getValue())));
+		
+		return model.getProductionSegments(this)
+				.map(entry -> new SimpleEntry<MarketSegment, DemandMap>(
+						entry,
+						productionGenerator.generate(entry)));
 	}
 
 	@Override
-	public Stream<Entry<MarketSegment, DemandMap>> getAttractions(Stream<Entry<MarketSegment, GenerationRate>> attrRates) {
+	public Stream<Entry<MarketSegment, DemandMap>> getAttractions() {
 		TripGenerator attractionGenerator = model.getAttractionGenerator(this);
-		return attrRates.map(entry -> new SimpleEntry<MarketSegment,DemandMap>(
-				entry.getKey(),
-				attractionGenerator.generate(entry.getValue())));
+		
+		return model.getAttractionSegments(this)
+				.map(entry -> new SimpleEntry<MarketSegment,DemandMap>(
+						entry,
+						attractionGenerator.generate(entry)));
 	}
 
 	@Override
 	public Stream<Entry<MarketSegment, PAMap>> buildProductionAttractionMaps(
 			Stream<Entry<MarketSegment, DemandMap>> prods, Stream<Entry<MarketSegment, DemandMap>> attrs) {
+		//FIXME the collectors below break when passed a null MarketSegment
 		Map<MarketSegment,DemandMap> prodSegs = prods.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 		Map<MarketSegment,DemandMap> attrSegs = attrs.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 		
@@ -137,12 +134,11 @@ public class BasicTripPurpose extends Thread implements TripPurpose {
 	@Override
 	public Stream<Entry<MarketSegment, Collection<ModalPAMatrix>>> modeChoice(
 			Stream<Entry<MarketSegment, AggregatePAMatrix>> paMatrices) {
-		// TODO change this from Integer to something more meaningful
-		Map<Integer,Map<Mode,Double>> shares = model.getModeShares(this); 
+		Map<MarketSegment,Map<Mode,Double>> shares = model.getModeShares(this); 
 		
 		return paMatrices.map(entry ->{
 		
-			Map<Mode,Double> ms = shares.get(((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup());
+			Map<Mode,Double> ms = shares.get(((IncomeGroupSegmenter) entry.getKey()));
 			return new SimpleEntry<MarketSegment,Collection<ModalPAMatrix>>(
 					entry.getKey(),
 					new FixedProportionSplitter(ms).split(entry.getValue()).collect(Collectors.toSet()));
@@ -151,24 +147,34 @@ public class BasicTripPurpose extends Thread implements TripPurpose {
 	}
 
 	@Override
-	public Map<TimePeriod,Stream<Entry<MarketSegment, Collection<ODMatrix>>>> convertToOD(
+	public Stream<Entry<MarketSegment, Map<TimePeriod,Collection<ODMatrix>>>> convertToOD(
 			Stream<Entry<MarketSegment, Collection<ModalPAMatrix>>> paMatrices) {
 		
-		return Stream.of(TimePeriod.values()).collect(
-				Collectors.toMap(Function.identity(), 
-						time -> paMatrices.map(entry ->{
-							DepartureArrivalConverter converter = new DepartureArrivalConverter(
-									model.getDepartureRates(this, 
-											((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup()).get(time),
-									model.getArrivalRates(this, 
-											((IncomeGroupSegmenter) entry.getKey()).getIncomeGroup()).get(time)
-									);
-							return new SimpleEntry<MarketSegment,Collection<ODMatrix>>(entry.getKey()
-									,entry.getValue().parallelStream()
-									.map(mtx -> converter.convert(mtx, 
-											model.getOccupancyRates().get(mtx.getMode())))
-									.collect(Collectors.toSet()));
-		})));
+		return paMatrices.map(entry ->
+		new SimpleEntry<MarketSegment,Map<TimePeriod,Collection<ODMatrix>>>(
+				
+				entry.getKey(),
+				
+				Stream.of(TimePeriod.values())
+				.collect(
+						Collectors.toMap(Function.identity(), 
+								time -> {
+									DepartureArrivalConverter converter = new DepartureArrivalConverter(
+											model.getDepartureRates(this, 
+													((IncomeGroupSegmenter) entry.getKey())).get(time),
+											model.getArrivalRates(this, 
+													((IncomeGroupSegmenter) entry.getKey())).get(time)
+											);
+									return entry.getValue().parallelStream()
+											.map(mtx -> converter.convert(mtx, 
+													model.getOccupancyRates().get(mtx.getMode()))
+													)
+													.collect(Collectors.toSet());
+								}
+							)
+						)
+				)
+				);
 	}
 
 	@Override
@@ -178,6 +184,9 @@ public class BasicTripPurpose extends Thread implements TripPurpose {
 
 	@Override
 	public Map<MarketSegment,Collection<ODMatrix>> getODMap(TimePeriod tp){
-		return odMtxs.get(tp);
+		
+		return odMtxs.entrySet().parallelStream()
+				//FIXME the collector below breaks in Java 8 when passed a null MarketSegment
+			.collect(Collectors.toMap(Entry::getKey, entry -> entry.getValue().get(tp)));
 	}
 }

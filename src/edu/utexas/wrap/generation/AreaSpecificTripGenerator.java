@@ -11,6 +11,7 @@ import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
+@Deprecated //Use BasicTripGenerator with AreaClassGenerationRate instead
 public class AreaSpecificTripGenerator extends BasicTripGenerator {
 
 	private Map<MarketSegment,Map<AreaClass,Double>> areaRates;

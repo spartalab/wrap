@@ -45,8 +45,8 @@ public class IncomeGroupSegment implements IncomeGroupSegmenter {
 	@Override
 	public boolean equals(Object obj) {
 		try {
-			IncomeGroupSegment other = (IncomeGroupSegment) obj;
-			return other.incomeGroup == incomeGroup;
+			IncomeGroupSegmenter other = (IncomeGroupSegmenter) obj;
+			return other.getIncomeGroup() == incomeGroup;
 		} catch (ClassCastException e) {
 			return false;
 		}
