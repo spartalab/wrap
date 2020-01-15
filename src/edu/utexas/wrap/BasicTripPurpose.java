@@ -35,13 +35,12 @@ public class BasicTripPurpose extends Thread implements TripPurpose {
 	}
 	
 	public void run() {
-		System.out.println("Starting "+toString());
+//		System.out.println("Starting "+toString());
 		
 		Stream<Entry<MarketSegment,DemandMap>> 
 			prods = getProductions(),
 			attrs = getAttractions();
 		
-		//TODO implement secondary trip purposes here
 		
 		Stream<Entry<MarketSegment,PAMap>> maps = buildProductionAttractionMaps(prods,attrs);
 		

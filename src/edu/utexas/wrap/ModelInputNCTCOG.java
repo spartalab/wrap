@@ -302,6 +302,12 @@ public class ModelInputNCTCOG implements ModelInput {
 		//TODO generalize for other forms of generation rates
 
 		String rateType = inputs.getProperty("tripPurpose."+purpose+".prodRateType");
+		if (rateType==null) {
+			System.err.println("No production rate type specified for "+purpose);
+			System.exit(8);
+			throw new RuntimeException();
+		}
+		
 		String prodRateFile = inputs.getProperty("tripPurpose."+purpose+".prodRateFile");
 		Map<MarketSegment, GenerationRate> rates; 
 		
@@ -324,6 +330,11 @@ public class ModelInputNCTCOG implements ModelInput {
 
 
 		String rateType=inputs.getProperty("tripPurpose."+purpose+".attrRateType");
+		if (rateType==null) {
+			System.err.println("No attraction rate type specified for "+purpose);
+			System.exit(8);
+			throw new RuntimeException();
+		}
 		String attrRateFile = inputs.getProperty("tripPurpose."+purpose+".attrRateFile");
 
 		Map<MarketSegment, GenerationRate> rates;
@@ -638,6 +649,11 @@ public class ModelInputNCTCOG implements ModelInput {
 	public TripGenerator getProductionGenerator(TripPurpose purpose) {
 		String genName = inputs.getProperty("tripPurpose."+purpose+".prodGenerator");
 		
+		if (genName==null) {
+			System.err.println("No production generator specified for "+purpose);
+			System.exit(4);
+		}
+		
 		if (genName.toLowerCase().equals("basic")) 
 			return new BasicTripGenerator(getNetwork(),getProdRates(purpose));
 		
@@ -658,6 +674,11 @@ public class ModelInputNCTCOG implements ModelInput {
 	@Override
 	public TripGenerator getAttractionGenerator(TripPurpose purpose) {
 		String genName = inputs.getProperty("tripPurpose."+purpose+".attrGenerator");
+		
+		if (genName==null) {
+			System.err.println("No attraction generator specified for "+purpose);
+			System.exit(4);
+		}
 		
 		if (genName.toLowerCase().equals("basic")) 
 			return new BasicTripGenerator(getNetwork(),getAttrRates(purpose));
