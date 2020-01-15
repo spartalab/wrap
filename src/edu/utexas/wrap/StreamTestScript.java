@@ -14,11 +14,16 @@ public class StreamTestScript {
 
     public static void main(String[] args) throws IOException, InterruptedException {
         ModelInput model = new ModelInputNCTCOG("inputs.properties");
-        ProcessBuilder builder = new ProcessBuilder("./tap",model.getInputs().getProperty("network.graphFile"),"STREAM", model.getInputs().getProperty("ta.conversionTable"));
-        File out = new File("testing" + "/log" + System.currentTimeMillis() + ".txt");
+        String tapExec = new File("./tap").getAbsolutePath();
+        String netFile = new File(model.getInputs().getProperty("network.graphFile")).getAbsolutePath();
+        String convTable = new File(model.getInputs().getProperty("ta.conversionTable")).getAbsolutePath();
+        ProcessBuilder builder = new ProcessBuilder(tapExec,netFile,"STREAM",convTable);
+        File outputDirectory = new File(model.getOutputDirectory() + "testing" + "/");
+        outputDirectory.mkdirs();
+        builder.directory(outputDirectory);
+        File out = new File(outputDirectory.getAbsolutePath() + "/log" + System.currentTimeMillis() + ".txt");
         out.getParentFile().mkdirs();
         out.createNewFile();
-        builder.redirectOutput(out);
         builder.redirectError(out);
         Process proc = builder.start();
         OutputStream stdin = proc.getOutputStream();

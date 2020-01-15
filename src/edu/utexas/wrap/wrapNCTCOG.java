@@ -113,19 +113,23 @@ public class wrapNCTCOG {
 				try {
 					System.out.println("Streaming " + entry.getKey().toString());
 					Collection<ODMatrix> matrices = entry.getValue();
-					ProcessBuilder builder = new ProcessBuilder("./tap",model.getInputs().getProperty("network.graphFile"),"STREAM", model.getInputs().getProperty("ta.conversionTable"));
-					File outputDirectory = new File(model.getOutputDirectory() + entry.getKey().toString() + "/outputs");
+					String tapExec = new File("./tap").getAbsolutePath();
+					String netFile = new File(model.getInputs().getProperty("network.graphFile")).getAbsolutePath();
+					String convTable = new File(model.getInputs().getProperty("ta.conversionTable")).getAbsolutePath();
+					ProcessBuilder builder = new ProcessBuilder(tapExec,netFile,"STREAM",convTable);
+					File outputDirectory = new File(model.getOutputDirectory() + entry.getKey().toString() + "/");
 					outputDirectory.mkdirs();
 					builder.directory(outputDirectory);
-					File out = new File(model.getOutputDirectory() + entry.getKey().toString() + "/log" + System.currentTimeMillis() + ".txt");
+					File out = new File(outputDirectory.getAbsolutePath() + "/log" + System.currentTimeMillis() + ".txt");
 					out.getParentFile().mkdirs();
 					out.createNewFile();
 					builder.redirectOutput(out);
 					builder.redirectError(out);
 					Process proc = builder.start();
 					OutputStream stdin = proc.getOutputStream();
-					streamODs(matrices, stdin);
-					proc.waitFor();
+					streamODs(entry, stdin);
+					int exit = proc.waitFor();
+					System.out.println("Process finished with exit code "+ exit);
 				} catch(IOException e) {
 					System.out.println(entry.getKey() + " unable to stream data");
 					e.printStackTrace();
@@ -383,8 +387,8 @@ public class wrapNCTCOG {
 			.forEach(matrix -> ODMatrixBINWriter.write(outputDir,todEntry.getKey(), matrix)));
 	}
 
-	private static void streamODs(Collection<ODMatrix> ods, OutputStream o) {
-		ODMatrixStreamWriter.write(ods, o);
+	private static void streamODs(Entry<TimePeriod, Collection<ODMatrix>> ods, OutputStream o) {
+		ODMatrixStreamWriter.write(ods.getKey().toString(), ods.getValue(), o);
 	}
 	
 }

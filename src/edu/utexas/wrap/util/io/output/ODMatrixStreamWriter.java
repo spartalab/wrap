@@ -21,9 +21,9 @@ import java.util.ArrayList;
 public class ODMatrixStreamWriter {
 
 
-    public static void write(Collection<ODMatrix> ods, OutputStream stdin) {
+    public static void write(String timePeriod, Collection<ODMatrix> ods, OutputStream stdin) {
         try {
-            ByteBuffer buffer = ByteBuffer.allocate(48).order(ByteOrder.LITTLE_ENDIAN);;
+            ByteBuffer buffer = ByteBuffer.allocate(48).order(ByteOrder.LITTLE_ENDIAN);
             List<ODMatrix> temp = new ArrayList(ods);
             // Assuming that there is something in the ods
             if (temp.size() == 0) {
@@ -77,7 +77,7 @@ public class ODMatrixStreamWriter {
                         System.exit(1);
                     }
                 }
-                System.out.println("Finished " + count + "/"+ origins.size() +" zones so far");
+                System.out.println(timePeriod + ":Finished " + count + "/"+ origins.size() +" zones so far");
                 bo.flush();
 //                System.out.println("=============================================");
             }
