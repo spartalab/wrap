@@ -8,6 +8,7 @@ import edu.utexas.wrap.distribution.GravityDistributor;
 import edu.utexas.wrap.distribution.TripDistributor;
 import edu.utexas.wrap.generation.BasicTripGenerator;
 import edu.utexas.wrap.generation.GenerationRate;
+import edu.utexas.wrap.generation.RateProportionTripGenerator;
 import edu.utexas.wrap.generation.TripGenerator;
 import edu.utexas.wrap.marketsegmentation.ChildSegment;
 import edu.utexas.wrap.marketsegmentation.CollegeSegment;
@@ -300,12 +301,18 @@ public class ModelInputNCTCOG implements ModelInput {
 
 		//TODO generalize for other forms of generation rates
 
-		Boolean generalRates = Boolean.parseBoolean(inputs.getProperty("tripPurpose."+purpose+".generalProdRates"));
+		String rateType = inputs.getProperty("tripPurpose."+purpose+".prodRateType");
 		String prodRateFile = inputs.getProperty("tripPurpose."+purpose+".prodRateFile");
-		Map<MarketSegment, GenerationRate> rates = 
-				generalRates ? ProductionAttractionFactory.readGeneralRates(prodRateFile, this)
-						: ProductionAttractionFactory.readAreaRates(prodRateFile, this);
-				
+		Map<MarketSegment, GenerationRate> rates; 
+		
+		if (rateType.toLowerCase().equals("general")) rates = ProductionAttractionFactory.readGeneralRates(prodRateFile, this);
+		else if (rateType.toLowerCase().equals("areaspecific")) rates = ProductionAttractionFactory.readAreaRates(prodRateFile, this);
+		else {
+			System.err.println("Invalid prodRateType for "+purpose+": "+rateType);
+			System.exit(8);
+			throw new RuntimeException();
+		}
+		
 		productionRates.put(purpose, rates);
 		return rates;
 	}
@@ -316,11 +323,18 @@ public class ModelInputNCTCOG implements ModelInput {
 		else if (attractionRates.containsKey(purpose)) return attractionRates.get(purpose);
 
 
-		Boolean generalRates = Boolean.parseBoolean(inputs.getProperty("tripPurpose."+purpose+".generalAttrRates"));
+		String rateType=inputs.getProperty("tripPurpose."+purpose+".attrRateType");
 		String attrRateFile = inputs.getProperty("tripPurpose."+purpose+".attrRateFile");
-		Map<MarketSegment, GenerationRate> rates = 
-				generalRates ? ProductionAttractionFactory.readGeneralRates(attrRateFile, this)
-						: ProductionAttractionFactory.readAreaRates(attrRateFile, this);
+
+		Map<MarketSegment, GenerationRate> rates;
+		
+		if (rateType.toLowerCase().equals("general")) rates = ProductionAttractionFactory.readGeneralRates(attrRateFile, this);
+		else if (rateType.toLowerCase().equals("areaspecific")) rates = ProductionAttractionFactory.readAreaRates(attrRateFile, this);
+		else {
+			System.err.println("Invalid attrRateType for "+purpose+": "+rateType);
+			System.exit(8);
+			throw new RuntimeException();
+		}
 
 		attractionRates.put(purpose, rates);
 		return rates;
@@ -409,7 +423,7 @@ public class ModelInputNCTCOG implements ModelInput {
 		occupancyRates = new HashMap<Mode,Double>();
 		occupancyRates.put(Mode.SINGLE_OCC, 1.0);
 		occupancyRates.put(Mode.HOV_2_PSGR, 0.5);
-		occupancyRates.put(Mode.HOV_3_PSGR, Double.parseDouble(inputs.getProperty("modeChoice.occupancyRate.HOV3")));
+		occupancyRates.put(Mode.HOV_3_PSGR, Double.parseDouble(inputs.getProperty("general.occupancyRate.HOV3")));
 
 		return occupancyRates;
 	}
@@ -425,7 +439,7 @@ public class ModelInputNCTCOG implements ModelInput {
 		if (!departureRates.containsKey(purpose)) departureRates.put(purpose, new HashMap<MarketSegment,Map<TimePeriod,Double>>());
 		
 
-		String depFile = inputs.getProperty("tripPurpose."+purpose+".pa2od.deps");
+		String depFile = inputs.getProperty("tripPurpose."+purpose+".pa2od.deps"+(segment == null? "" : "."+getLabel(segment)));
 
 		try {
 			Map<TimePeriod,Double> rates = Files.lines(Paths.get(depFile))
@@ -459,7 +473,7 @@ public class ModelInputNCTCOG implements ModelInput {
 		if (!arrivalRates.containsKey(purpose)) arrivalRates.put(purpose, new HashMap<MarketSegment,Map<TimePeriod,Double>>());
 		
 
-		String arrFile = inputs.getProperty("tripPurpose."+purpose+".pa2od.arrs");
+		String arrFile = inputs.getProperty("tripPurpose."+purpose+".pa2od.arrs"+(segment == null? "" : "."+getLabel(segment)));
 
 		try {
 			Map<TimePeriod,Double> rates = Files.lines(Paths.get(arrFile))
@@ -558,7 +572,7 @@ public class ModelInputNCTCOG implements ModelInput {
 
 	@Override
 	public String getOutputDirectory() {
-		return inputs.getProperty("outputDirectory");
+		return inputs.getProperty("general.outputDirectory");
 	}
 
 	@Override
@@ -610,6 +624,17 @@ public class ModelInputNCTCOG implements ModelInput {
 		
 		if (genName.toLowerCase().equals("basic")) 
 			return new BasicTripGenerator(getNetwork(),getProdRates(purpose));
+		else if (genName.toLowerCase().equals("rateproportion")) {
+			String srcName = inputs.getProperty("tripPurpose."+purpose+".prodSource");
+			if (srcName == null) {
+				System.err.println("No source provided for "+purpose+" rate proportional generator");
+				System.exit(4);
+			}
+			
+			TripPurpose source = new BasicTripPurpose(srcName,this);
+			
+			return new RateProportionTripGenerator(getNetwork(),getProdRates(source),getProdRates(purpose),source.getProductions());
+		}
 		throw new RuntimeException("TripGenerator loading not yet implemented for "+genName);
 	}
 
@@ -625,8 +650,11 @@ public class ModelInputNCTCOG implements ModelInput {
 	@Override
 	public Collection<MarketSegment> getSegments(TripPurpose purpose) {
 		String label = inputs.getProperty("tripPurpose."+purpose+".segmenter");
-		Class<? extends MarketSegment> segmenter = getSegmenterByString(label);
 		
+		if (label == null) return null;
+		
+		Class<? extends MarketSegment> segmenter = getSegmenterByString(label);
+
 		try {
 			Constructor<? extends MarketSegment> constructor = segmenter.getConstructor(String.class);
 			return Stream.of(
@@ -724,14 +752,17 @@ public class ModelInputNCTCOG implements ModelInput {
 
 	@Override
 	public Collection<TimePeriod> getUsedTimePeriods() {
-		// TODO Auto-generated method stub
-		return null;
+		String property = inputs.getProperty("general.timePeriods");
+		return Stream.of(property.split(",")).map(string -> TimePeriod.valueOf(string)).collect(Collectors.toSet());
 	}
 
 	@Override
 	public Float getVOT(TripPurpose purpose, MarketSegment segment, Mode mode) {
-		// TODO Auto-generated method stub
-		return null;
+		return Float.parseFloat(
+				inputs.getProperty(
+						"tripPurpose."+purpose
+						+".vot."+mode
+						+(segment == null? "" : "."+getLabel(segment))));
 	}
 
 }

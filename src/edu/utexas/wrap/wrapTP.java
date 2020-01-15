@@ -29,6 +29,7 @@ public class wrapTP {
 		
 		Collection<TripPurpose> purposes = model.getTripPurposes();
 		
+		System.out.println("Generating OD matrices");
 		purposes.parallelStream()
 			.filter(purpose -> purpose instanceof Thread)
 			.forEach(purpose -> {
@@ -43,6 +44,7 @@ public class wrapTP {
 				}
 			});
 
+		System.out.println("Consolidating OD Matrices");
 		Map<TimePeriod,Map<Float,Map<Mode,ODMatrix>>> ods = 
 			model.getUsedTimePeriods().parallelStream().collect(
 				Collectors.toMap(
@@ -107,7 +109,11 @@ public class wrapTP {
 						)
 				);
 		
+		//TODO combine all off-peak trips
 		
+		//TODO combine all HOV trips
+		
+		System.out.println("Writing OD matrices");
 		ods.entrySet().parallelStream().forEach(
 			tpEntry -> 
 		
@@ -126,6 +132,7 @@ public class wrapTP {
 							)
 					)
 			);
+		System.out.println("Done");
 	}
 
 }

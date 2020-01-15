@@ -33,7 +33,7 @@ import edu.utexas.wrap.util.PAMapCollector;
 import edu.utexas.wrap.util.io.output.ODMatrixBINWriter;
 import edu.utexas.wrap.util.io.output.ODMatrixCSVWriter;
 
-
+@Deprecated
 public class wrapNCTCOG {
 
 	public static long startMS = System.currentTimeMillis();

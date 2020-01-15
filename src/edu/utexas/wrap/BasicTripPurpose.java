@@ -34,7 +34,7 @@ public class BasicTripPurpose extends Thread implements TripPurpose {
 	}
 	
 	public void run() {
-
+		System.out.println("Starting "+toString());
 		
 		Stream<Entry<MarketSegment,DemandMap>> 
 			prods = getProductions(),
@@ -46,6 +46,7 @@ public class BasicTripPurpose extends Thread implements TripPurpose {
 		
 		maps = balance(maps);
 		
+		System.out.println("Distributing "+toString());
 		Stream<Entry<MarketSegment,AggregatePAMatrix>> aggMtxs = distribute(maps);
 				
 		Stream<Entry<MarketSegment,Collection<ModalPAMatrix>>> modalMtxs = modeChoice(aggMtxs);
@@ -53,6 +54,7 @@ public class BasicTripPurpose extends Thread implements TripPurpose {
 		odMtxs = convertToOD(modalMtxs)
 				//FIXME the collector below breaks when passed a null MarketSegment
 				.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+		System.out.println(toString()+" Done");
 	}
 
 	@Override
@@ -83,6 +85,16 @@ public class BasicTripPurpose extends Thread implements TripPurpose {
 		Map<MarketSegment,DemandMap> attrSegs = attrs.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 		
 		Collection<MarketSegment> bigSegs = model.getSegments(this);
+		
+		if (bigSegs == null) return Stream.of(
+					new SimpleEntry<MarketSegment,PAMap>(
+							null,
+							new FixedSizePAMap(
+									prodSegs.values().parallelStream(),
+									attrSegs.values().parallelStream()
+									)
+							)
+					);
 		
 		return bigSegs.parallelStream().map(bigSeg -> {
 			Stream<DemandMap> 

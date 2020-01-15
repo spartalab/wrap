@@ -7,7 +7,6 @@ import java.io.PrintStream;
 import java.util.Set;
 
 import edu.utexas.wrap.assignment.bush.AlgorithmBOptimizer;
-import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.bush.BushOptimizer;
 import edu.utexas.wrap.assignment.bush.BushOriginFactory;
 import edu.utexas.wrap.assignment.bush.BushOrigin;

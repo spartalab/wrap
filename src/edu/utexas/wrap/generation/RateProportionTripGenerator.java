@@ -29,33 +29,36 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  * @author William
  *
  */
-public class RateProportionTripGenerator {
+public class RateProportionTripGenerator implements TripGenerator {
 	
 	private Map<TravelSurveyZone, Double> totalProds;
 	Map<MarketSegment,Map<TravelSurveyZone,Double>> shares;
 	Map<MarketSegment,Map<TravelSurveyZone,Double>> rates;
+	Map<MarketSegment,DemandMap> primaryMaps;
 	
 	public RateProportionTripGenerator(Graph g, 
-			Map<MarketSegment,Double> primaryProductionRates, 
-			Map<MarketSegment,Double> secondaryProductionRates, 
-			Map<MarketSegment,DemandMap> primaryProds) {
+			Map<MarketSegment,GenerationRate> primaryProductionRates, 
+			Map<MarketSegment,GenerationRate> secondaryProductionRates, 
+			Stream<Entry<MarketSegment,DemandMap>> primaryStream) {
+		
+		primaryMaps = primaryStream.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 		
 		totalProds = g.getTSZs().parallelStream().collect(Collectors.toMap(Function.identity(), 
-				tsz -> primaryProds.values().parallelStream()
+				tsz -> primaryMaps.values().parallelStream()
 				.mapToDouble(
 						map -> map.get(tsz)
 						).sum()
 				));
 		
-		shares = getTripShares(g, primaryProds);
+		shares = getTripShares(g, primaryMaps);
 		
 		calculateRelativeRates(g, primaryProductionRates, secondaryProductionRates);
 		
 	}
 
 	private void calculateRelativeRates(Graph g, 
-			Map<MarketSegment, Double> primaryProductionRates,
-			Map<MarketSegment, Double> secondaryProductionRates) {
+			Map<MarketSegment, GenerationRate> primaryProductionRates,
+			Map<MarketSegment, GenerationRate> secondaryProductionRates) {
 		
 		//Calculate relative production rates
 
@@ -72,11 +75,12 @@ public class RateProportionTripGenerator {
 											)
 									.mapToDouble(secondaryRate -> 
 
-										secondaryRate.getValue() / primaryProductionRates.entrySet().parallelStream()
+										secondaryRate.getValue().getRate(tszEntry.getKey()) 
+											/ primaryProductionRates.entrySet().parallelStream()
 										.filter(primaryEntry ->
 										compareByLooserMS(segEntry.getKey(), primaryEntry.getKey())
 												)
-										.mapToDouble(Entry::getValue).sum()
+										.mapToDouble(entry-> entry.getValue().getRate(tszEntry.getKey())).sum()
 
 											)
 									.sum()
@@ -115,7 +119,8 @@ public class RateProportionTripGenerator {
 				);
 	}
 
-	public DemandMap generate(DemandMap demandMap, MarketSegment segment) {
+	public DemandMap generate(MarketSegment segment) {
+		DemandMap demandMap = primaryMaps.get(segment);
 		
 		Map<TravelSurveyZone, Double> rate = rates.get(segment);
 		DemandMap ret = new FixedSizeDemandMap(demandMap.getGraph());

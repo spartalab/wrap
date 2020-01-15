@@ -14,10 +14,11 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 public class Prod2AttrCopyBalancer implements TripBalancer {
 
 	@Override
-	public void balance(PAMap paMap) {
+	public PAMap balance(PAMap paMap) {
 		Collection<TravelSurveyZone> nodes = paMap.getAttractors();
 		nodes.addAll(paMap.getProducers());
 		nodes.parallelStream().forEach(n -> paMap.putProductions(n, paMap.getAttractions(n)));
+		return paMap;
 	}
 
 }
