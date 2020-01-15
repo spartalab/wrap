@@ -341,10 +341,26 @@ public class ModelInputNCTCOG implements ModelInput {
 	}
 
 	public Stream<MarketSegment> getProductionSegments(TripPurpose purpose){
+		
+		String genType = inputs.getProperty("tripPurpose."+purpose+".prodGenerator");
+		
+		if (genType.toLowerCase().equals("rateproportion")) {
+			
+			String source = inputs.getProperty("tripPurpose."+purpose+".prodSource");
+			return getProductionSegments(new BasicTripPurpose(source,this));
+			
+		}
+		
 		return getProdRates(purpose).keySet().parallelStream();
 	}
 	
 	public Stream<MarketSegment> getAttractionSegments(TripPurpose purpose){
+		String genType = inputs.getProperty("tripPurpose."+purpose+".attrGenerator");
+		if (genType.toLowerCase().equals("rateproportion")) {
+			String source = inputs.getProperty("tripPurpose."+purpose+".attrSource");
+			return getAttractionSegments(new BasicTripPurpose(source,this));
+		}
+		
 		return getAttrRates(purpose).keySet().parallelStream();
 	}
 	
@@ -624,10 +640,11 @@ public class ModelInputNCTCOG implements ModelInput {
 		
 		if (genName.toLowerCase().equals("basic")) 
 			return new BasicTripGenerator(getNetwork(),getProdRates(purpose));
+		
 		else if (genName.toLowerCase().equals("rateproportion")) {
 			String srcName = inputs.getProperty("tripPurpose."+purpose+".prodSource");
 			if (srcName == null) {
-				System.err.println("No source provided for "+purpose+" rate proportional generator");
+				System.err.println("No source provided for "+purpose+" rate proportion generator");
 				System.exit(4);
 			}
 			
@@ -707,6 +724,8 @@ public class ModelInputNCTCOG implements ModelInput {
 	@Override
 	public synchronized Map<TimePeriod, Double> getDistributionShares(TripPurpose purpose, MarketSegment segment) {
 
+		segment = segment == null? new IncomeGroupSegment(0) : segment;
+		
 		if (timeCostShares == null) timeCostShares = new HashMap<TripPurpose, Map<MarketSegment, Map<TimePeriod, Double>>>();
 		if (timeCostShares.containsKey(purpose)) return timeCostShares.get(purpose).get(segment);
 		

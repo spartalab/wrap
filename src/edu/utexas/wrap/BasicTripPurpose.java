@@ -15,6 +15,7 @@ import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.containers.FixedSizePAMap;
 import edu.utexas.wrap.generation.TripGenerator;
+import edu.utexas.wrap.marketsegmentation.IncomeGroupSegment;
 import edu.utexas.wrap.marketsegmentation.IncomeGroupSegmenter;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.modechoice.FixedProportionSplitter;
@@ -150,7 +151,7 @@ public class BasicTripPurpose extends Thread implements TripPurpose {
 		
 		return paMatrices.map(entry ->{
 		
-			Map<Mode,Double> ms = shares.get(((IncomeGroupSegmenter) entry.getKey()));
+			Map<Mode,Double> ms = shares.get( entry.getKey() == null? new IncomeGroupSegment(0) : ((IncomeGroupSegmenter) entry.getKey()));
 			return new SimpleEntry<MarketSegment,Collection<ModalPAMatrix>>(
 					entry.getKey(),
 					new FixedProportionSplitter(ms).split(entry.getValue()).collect(Collectors.toSet()));
@@ -200,5 +201,19 @@ public class BasicTripPurpose extends Thread implements TripPurpose {
 		return odMtxs.entrySet().parallelStream()
 				//FIXME the collector below breaks in Java 8 when passed a null MarketSegment
 			.collect(Collectors.toMap(Entry::getKey, entry -> entry.getValue().get(tp)));
+	}
+	
+	@Override
+	public boolean equals(Object other) {
+		try {
+			return ((BasicTripPurpose) other).name.equals(name);
+		} catch (ClassCastException e) {
+			return false;
+		}
+	}
+	
+	@Override
+	public int hashCode() {
+		return name.hashCode();
 	}
 }
