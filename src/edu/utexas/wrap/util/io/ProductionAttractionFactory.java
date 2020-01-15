@@ -339,7 +339,7 @@ public class ProductionAttractionFactory {
 			}
 			in.lines().parallel().forEach(line -> {
 				String[] args = line.split(",");
-				int workers = Integer.parseInt((args[0]));
+//				int workers = Integer.parseInt((args[0]));
 				int householdSize = Integer.parseInt((args[1]));
 				Double prods = 0.0;
 				for (Integer index : indices) {

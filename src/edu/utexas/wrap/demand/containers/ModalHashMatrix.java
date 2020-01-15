@@ -2,6 +2,7 @@ package edu.utexas.wrap.demand.containers;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ModalPAMatrix;
@@ -9,8 +10,6 @@ import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 	
@@ -22,7 +21,7 @@ public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 	public ModalHashMatrix(Graph g, Mode mode) {
 		this.g = g;
 		this.m = mode;
-		map = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<TravelSurveyZone, DemandMap>());
+		map = new ConcurrentHashMap<TravelSurveyZone, DemandMap>();
 	}
 
  	/* (non-Javadoc)

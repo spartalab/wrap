@@ -1,11 +1,13 @@
-package edu.utexas.wrap.util;
+package edu.utexas.wrap.tests;
 
 import static org.junit.jupiter.api.Assertions.*;
 import org.junit.jupiter.api.Test;
 
 import edu.utexas.wrap.net.Node;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import edu.utexas.wrap.util.FibonacciHeap;
+import edu.utexas.wrap.util.FibonacciLeaf;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
@@ -15,7 +17,7 @@ class FibonacciHeapTest {
 	void test() throws Exception {
 		Integer numCases = 50000;
 		FibonacciHeap<Node> heap = new FibonacciHeap<Node>();
-		Map<Integer, Node> map = new Int2ObjectOpenHashMap<Node>();
+		Map<Integer, Node> map = new HashMap<Integer,Node>();
 		random.setSeed(90210L);
 		
 		for (Integer i = 0; i < numCases; i++) {

@@ -1,6 +1,8 @@
-package edu.utexas.wrap.util.io;
+package edu.utexas.wrap.tests;
 
 import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.util.io.GraphFactory;
+
 import org.junit.Test;
 
 import java.io.File;

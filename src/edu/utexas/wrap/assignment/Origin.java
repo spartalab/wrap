@@ -17,14 +17,12 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 public abstract class Origin {
 	//The network node with which the origin is associated
 	private final Node self;
-	private TravelSurveyZone parent;
 	
 	/**
 	 * @param self the Node from whence a set of assignment containers originate
 	 */
 	public Origin(TravelSurveyZone self) {
 		this.self = self.getNode();
-		parent = self;
 	}
 	
 	/**

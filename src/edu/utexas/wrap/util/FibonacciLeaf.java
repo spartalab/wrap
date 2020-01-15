@@ -1,8 +1,7 @@
 package edu.utexas.wrap.util;
 
+import java.util.ArrayList;
 import java.util.List;
-
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 
 public class FibonacciLeaf<E>{
 	public E n;
@@ -17,7 +16,7 @@ public class FibonacciLeaf<E>{
 		this.key = d;
 		degree = 0;
 		parent = null;
-		child = new ObjectArrayList<FibonacciLeaf<E>>();
+		child = new ArrayList<FibonacciLeaf<E>>();
 		mark = false;
 	}
 

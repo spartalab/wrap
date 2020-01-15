@@ -4,11 +4,10 @@ import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
-import it.unimi.dsi.fastutil.objects.Object2FloatMaps;
-import it.unimi.dsi.fastutil.objects.Object2FloatOpenHashMap;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Rishabh
@@ -25,8 +24,8 @@ public class AggregatePAHashMap implements PAMap {
 
     public AggregatePAHashMap(Graph graph) {
         this.g = graph;
-        attractors = Object2FloatMaps.synchronize(new Object2FloatOpenHashMap<TravelSurveyZone>());
-        producers = Object2FloatMaps.synchronize(new Object2FloatOpenHashMap<TravelSurveyZone>());
+        attractors = new ConcurrentHashMap<TravelSurveyZone,Float>();
+        producers = new ConcurrentHashMap<TravelSurveyZone,Float>();
     }
     
     /* (non-Javadoc)

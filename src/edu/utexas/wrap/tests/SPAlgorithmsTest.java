@@ -1,4 +1,4 @@
-package edu.utexas.wrap.util;
+package edu.utexas.wrap.tests;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -13,6 +13,7 @@ import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TolledBPRLink;
+import edu.utexas.wrap.util.SPAlgorithms;
 
 class SPAlgorithmsTest {
 	static Graph graph;

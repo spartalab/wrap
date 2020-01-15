@@ -1,18 +1,15 @@
 package edu.utexas.wrap.util;
 
 import java.util.AbstractQueue;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
-
-import it.unimi.dsi.fastutil.ints.Int2ObjectMaps;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectLists;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 	private Integer n;
@@ -32,8 +29,8 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 		n = 0;
 		min = null;
 //		rootList = new ConcurrentLinkedQueue<FibonacciLeaf<E>>();
-		map = new Object2ObjectOpenHashMap<E,FibonacciLeaf<E>>(size,loadFactor);
-		rootList = ObjectLists.synchronize(new ObjectArrayList<FibonacciLeaf<E>>());
+		map = new HashMap<E,FibonacciLeaf<E>>(size,loadFactor);
+		rootList = new ArrayList<FibonacciLeaf<E>>();
 	}
 	
 	public boolean add(E node, Double d) {
@@ -58,8 +55,8 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 
 
 	private void consolidate() {
-		Map<Integer, FibonacciLeaf<E>> A = Int2ObjectMaps.synchronize(new Int2ObjectOpenHashMap<FibonacciLeaf<E>>());
-		Set<FibonacciLeaf<E>> ignore = (new ObjectOpenHashSet<FibonacciLeaf<E>>());
+		Map<Integer, FibonacciLeaf<E>> A = new ConcurrentHashMap<Integer,FibonacciLeaf<E>>();
+		Set<FibonacciLeaf<E>> ignore = (new HashSet<FibonacciLeaf<E>>());
 		rootList.parallelStream().filter(x -> !ignore.contains(x)).sequential().forEach(w->{
 			FibonacciLeaf<E> x = w;
 			Integer d = x.degree;
@@ -85,7 +82,7 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 			FibonacciLeaf<E> ai = A.get(i);
 			if (ai != null) {
 				if (min == null) {
-					rootList = ObjectLists.synchronize(new ObjectArrayList<FibonacciLeaf<E>>());
+					rootList = new ArrayList<FibonacciLeaf<E>>();
 					rootList.add(ai);
 					min = ai;
 				}

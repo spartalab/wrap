@@ -9,7 +9,6 @@ import java.util.Set;
 import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class BushOriginLoader extends BushOriginBuilder {

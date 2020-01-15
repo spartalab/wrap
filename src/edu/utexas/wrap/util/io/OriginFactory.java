@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -13,18 +14,14 @@ import edu.utexas.wrap.assignment.AssignmentLoader;
 import edu.utexas.wrap.demand.containers.AutoODHashMatrix;
 import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.demand.DemandMap;
-import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.containers.AutoDemandHashMap;
 import edu.utexas.wrap.demand.containers.AutoFixedSizeDemandMap;
-import edu.utexas.wrap.demand.containers.AutoFixedSizeMatrix;
 import edu.utexas.wrap.demand.containers.DemandHashMap;
 import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
-import it.unimi.dsi.fastutil.doubles.Double2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 /**
  * This class provides static methods to read infomration relating to demand in a network
@@ -247,7 +244,7 @@ public class OriginFactory {
 		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
 		String line;
 		
-		Map<Double, AutoODHashMatrix> ods = new Double2ObjectOpenHashMap<AutoODHashMatrix>();
+		Map<Double, AutoODHashMatrix> ods = new HashMap<Double,AutoODHashMatrix>();
 		int numZones = 0;
 		
 		do { // Move past headers in the file
@@ -329,7 +326,7 @@ public class OriginFactory {
 		} while (!line.equals(""));
 		vf.close();
 
-		Map<Node, List<Double[]>> votMap = new Object2ObjectOpenHashMap<Node, List<Double[]>>();
+		Map<Node, List<Double[]>> votMap = new HashMap<Node, List<Double[]>>();
 		for (Node n : g.getNodes()) {
 			votMap.put(n, VOTs);
 		}

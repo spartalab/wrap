@@ -51,6 +51,7 @@ public class R2ErrorCalculator {
                 numProds += 1;
             }
             y_bar = y_bar/numProds;
+            prodin.close();
             prodin = new BufferedReader(new FileReader(productionFile));
             prodin.readLine();
             prodLine = prodin.readLine();
@@ -116,12 +117,13 @@ public class R2ErrorCalculator {
                 numProds += 1;
             }
             y_bar = y_bar/numProds;
+            prodin.close();
             prodin = new BufferedReader(new FileReader(productionFile));
             prodin.readLine();
             prodLine = prodin.readLine();
             while (prodLine != null) {
                 String[] args = prodLine.split(",");
-                TravelSurveyZone tsz = g.getNode(Integer.parseInt(args[0])).getZone();
+//                TravelSurveyZone tsz = g.getNode(Integer.parseInt(args[0])).getZone();
                 for(MarketSegment m: paProdSegs) {
                     double ig_total = 0.0;
                     for (MarketSegment pSeg: prodSegs) {
@@ -182,6 +184,7 @@ public class R2ErrorCalculator {
                 numAttrs += 1;
             }
             y_bar = y_bar/numAttrs;
+            attrin.close();
             attrin = new BufferedReader(new FileReader(attractionFile));
             attrin.readLine();
             attrLine = attrin.readLine();

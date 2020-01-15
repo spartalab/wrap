@@ -10,6 +10,7 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 
 import edu.utexas.wrap.modechoice.Mode;
@@ -20,7 +21,6 @@ import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TolledBPRLink;
 import edu.utexas.wrap.net.TolledEnhancedLink;
 import edu.utexas.wrap.net.TravelSurveyZone;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 /**
  * This class provides static methods to read Graph information
@@ -45,7 +45,7 @@ public class GraphFactory {
 			String line;
 			Graph g = new Graph();
 			BufferedReader lf = new BufferedReader(new InputStreamReader(dis));
-			Map<Integer, Node> nodes = new Int2ObjectOpenHashMap<Node>();
+			Map<Integer, Node> nodes = new HashMap<Integer,Node>();
 			Integer ftn = 1;
 			do { // Move past headers in the file
 				line = lf.readLine();
@@ -117,7 +117,7 @@ public class GraphFactory {
 		int numZones = 0;
 		DigestInputStream dis = new DigestInputStream(new FileInputStream(f), md);
 		BufferedReader lf = new BufferedReader(new InputStreamReader(dis));
-		Map<Integer, Node> nodes = new Int2ObjectOpenHashMap<Node>();
+		Map<Integer, Node> nodes = new HashMap<Integer,Node>();
 		lf.readLine(); // skip header
 		
 		while (true) {

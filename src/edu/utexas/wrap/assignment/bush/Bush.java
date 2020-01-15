@@ -8,8 +8,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -20,9 +23,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.Path;
 import edu.utexas.wrap.demand.AutoDemandMap;
@@ -174,8 +174,8 @@ public class Bush implements AssignmentContainer {
 			return start;
 
 		//Store the nodes seen on the paths in reverse order
-		List<Node> lNodes = new ObjectArrayList<Node>();
-		List<Node> uNodes = new ObjectArrayList<Node>();
+		List<Node> lNodes = new ArrayList<Node>();
+		List<Node> uNodes = new ArrayList<Node>();
 
 		//Iterate backwards through the shortest and longest paths until one runs out of links
 		Link uLink = getqLong(start);
@@ -791,7 +791,7 @@ public class Bush implements AssignmentContainer {
 		Map<TravelSurveyZone,Double> tszFlow = demand.doubleClone();
 		Map<Node,Double> nodeFlow = tszFlow.keySet().parallelStream().collect(Collectors.toMap(x -> x.getNode(), x -> tszFlow.get(x)));
 		Node[] iter = getTopologicalOrder(false);
-		Map<Link,Double> ret = new Object2DoubleOpenHashMap<Link>(numLinks,1.0f);
+		Map<Link,Double> ret = new HashMap<Link,Double>(numLinks,1.0f);
 
 		//For each node in reverse topological order
 		for (int i = iter.length - 1; i >= 0; i--) {
@@ -904,7 +904,7 @@ public class Bush implements AssignmentContainer {
 		prune();	//Remove unused links
 
 		AtomicBoolean modified = new AtomicBoolean(false);
-		Set<Link> unusedLinks = new ObjectOpenHashSet<Link>(network.getLinks());
+		Set<Link> unusedLinks = new HashSet<Link>(network.getLinks());
 		unusedLinks.removeAll(getUsedLinks());
 //		Set<Link> unusedLinks = network.getLinks().parallelStream().filter(x -> !contains(x)).collect(Collectors.toCollection(ObjectOpenHashSet<Link>::new));
 

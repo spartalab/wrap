@@ -2,14 +2,13 @@ package edu.utexas.wrap.demand.containers;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.PAMatrix;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
-import it.unimi.dsi.fastutil.objects.Object2ObjectMaps;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 
 public class AggregatePAHashMatrix implements AggregatePAMatrix {
 
@@ -18,13 +17,12 @@ public class AggregatePAHashMatrix implements AggregatePAMatrix {
 
 	public AggregatePAHashMatrix(Graph g) {
 		this.g = g;
-		matrix = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<TravelSurveyZone,DemandMap>(g.numZones(),1.0f));
+		matrix = new ConcurrentHashMap<TravelSurveyZone,DemandMap>(g.numZones(),1.0f);
 	}
 
 	public AggregatePAHashMatrix(PAMatrix hbwSum, Map<TravelSurveyZone, Float> map) {
-		// TODO Auto-generated constructor stub
 		g = hbwSum.getGraph();
-		matrix = Object2ObjectMaps.synchronize(new Object2ObjectOpenHashMap<TravelSurveyZone,DemandMap>(g.numZones(),1.0f));
+		matrix = new ConcurrentHashMap<TravelSurveyZone,DemandMap>(g.numZones(),1.0f);
 		hbwSum.getProducers().parallelStream().forEach(prod ->{
 			matrix.put(prod, new FixedMultiplierPassthroughDemandMap(hbwSum.getDemandMap(prod),map.getOrDefault(prod,0.0f)));
 		});

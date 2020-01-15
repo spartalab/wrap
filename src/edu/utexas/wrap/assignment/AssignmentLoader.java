@@ -5,7 +5,6 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 /** A method of loading an origin-destination matrix or individual

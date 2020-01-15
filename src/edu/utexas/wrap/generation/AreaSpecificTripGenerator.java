@@ -1,15 +1,12 @@
 package edu.utexas.wrap.generation;
 
 import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.TravelSurveyZone;
 
 @Deprecated //Use BasicTripGenerator with AreaClassGenerationRate instead
 public class AreaSpecificTripGenerator extends BasicTripGenerator {

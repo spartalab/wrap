@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -17,10 +18,6 @@ import java.util.stream.IntStream;
 
 import edu.utexas.wrap.assignment.sensitivity.DerivativeLink;
 import edu.utexas.wrap.marketsegmentation.IndustryClass;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
 
 public class Graph {
 	
@@ -41,11 +38,11 @@ public class Graph {
 	
 	
 	public Graph() {
-		outLinks = (new Object2ObjectOpenHashMap<Node, Set<Link>>());
-		inLinks = (new Object2ObjectOpenHashMap<Node, Set<Link>>());
-		nodeMap = (new Int2ObjectOpenHashMap<Node>());
-		order = (new ObjectArrayList<Node>());
-		links = new ObjectOpenHashSet<Link>();
+		outLinks = (new HashMap<Node, Set<Link>>());
+		inLinks = (new HashMap<Node, Set<Link>>());
+		nodeMap = (new HashMap<Integer,Node>());
+		order = (new ArrayList<Node>());
+		links = new HashSet<Link>();
 		numZones = 0;
 		numNodes = 0;
 		numLinks = 0;
@@ -70,8 +67,8 @@ public class Graph {
 		Node head = link.getHead();
 		Node tail = link.getTail();
 
-		Set<Link> headIns = inLinks.getOrDefault(head, (new ObjectOpenHashSet<Link>()));
-		Set<Link> tailOuts= outLinks.getOrDefault(tail,  (new ObjectOpenHashSet<Link>()));
+		Set<Link> headIns = inLinks.getOrDefault(head, (new HashSet<Link>()));
+		Set<Link> tailOuts= outLinks.getOrDefault(tail,  (new HashSet<Link>()));
 
 		altered |= headIns.add(link);
 		altered |= tailOuts.add(link);

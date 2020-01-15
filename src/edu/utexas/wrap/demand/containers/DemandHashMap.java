@@ -2,12 +2,11 @@ package edu.utexas.wrap.demand.containers;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
-import it.unimi.dsi.fastutil.objects.Object2DoubleMaps;
-import it.unimi.dsi.fastutil.objects.Object2DoubleOpenHashMap;
 
 public class DemandHashMap implements DemandMap {
 
@@ -16,12 +15,12 @@ public class DemandHashMap implements DemandMap {
 
 	public DemandHashMap(Graph g) {
 		this.g = g;
-		map = Object2DoubleMaps.synchronize(new Object2DoubleOpenHashMap<TravelSurveyZone>(g.numZones()),1.0f);
+		map = new ConcurrentHashMap<TravelSurveyZone,Double>(g.numZones(),1.0f);
 	}
 	
 	protected DemandHashMap(DemandHashMap d) {
 		this.g = d.getGraph();
-		map = Object2DoubleMaps.synchronize(new Object2DoubleOpenHashMap<TravelSurveyZone>(d.map));
+		map = new ConcurrentHashMap<TravelSurveyZone,Double>(d.map);
 	}
 	
 	/* (non-Javadoc)
@@ -66,7 +65,7 @@ public class DemandHashMap implements DemandMap {
 
 	@Override
 	public Map<TravelSurveyZone, Double> doubleClone() {
-		Map<TravelSurveyZone,Double> ret = new Object2DoubleOpenHashMap<TravelSurveyZone>(map.size());
+		Map<TravelSurveyZone,Double> ret = new ConcurrentHashMap<TravelSurveyZone,Double>(map.size());
 		for (TravelSurveyZone key : map.keySet()) ret.put(key, get(key).doubleValue());
 		return ret;
 	}
