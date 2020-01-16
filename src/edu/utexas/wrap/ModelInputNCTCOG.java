@@ -576,7 +576,7 @@ public class ModelInputNCTCOG implements ModelInput {
 //	}
 
 	@Override
-	public String getOutputDirectory() {
+	public String getOutputDirectory() { 
 		return inputs.getProperty("general.outputDirectory");
 	}
 
@@ -794,4 +794,15 @@ public class ModelInputNCTCOG implements ModelInput {
 						+(segment == null? "" : "."+getLabel(segment))));
 	}
 
+	public Mode getAggregateMode(Mode input) {
+		String outputName = inputs.getProperty("general.modeAggregation."+input);
+		if (outputName == null) return input;
+		else return Mode.valueOf(outputName);
+	}
+	
+	public TimePeriod getAggregateTimePeriod(TimePeriod input) {
+		String outputName = inputs.getProperty("general.timePeriodAggregation."+input);
+		if (outputName == null) return input;
+		else return TimePeriod.valueOf(outputName);
+	}
 }

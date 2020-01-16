@@ -195,11 +195,11 @@ public class BasicTripPurpose extends Thread implements TripPurpose {
 	}
 
 	@Override
-	public Map<MarketSegment,Collection<ODMatrix>> getODMap(TimePeriod tp){
+	public Stream<Entry<MarketSegment,Map<TimePeriod,Collection<ODMatrix>>>> getODMaps(){
 		
-		return odMtxs.entrySet().parallelStream()
+		return odMtxs.entrySet().parallelStream();
 				//FIXME the collector below breaks in Java 8 when passed a null MarketSegment
-			.collect(Collectors.toMap(Entry::getKey, entry -> entry.getValue().get(tp)));
+//			.collect(Collectors.toMap(Entry::getKey, entry -> entry.getValue().get(tp)));
 	}
 	
 	@Override

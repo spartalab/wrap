@@ -3,10 +3,11 @@ package edu.utexas.wrap;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import edu.utexas.wrap.demand.ODMatrix;
+import edu.utexas.wrap.demand.containers.FixedSizeODMatrix;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.util.ODMatrixCollector;
@@ -14,106 +15,61 @@ import edu.utexas.wrap.util.io.output.ODMatrixBINWriter;
 
 import java.util.AbstractMap.SimpleEntry;
 
+/**This main class reads in a network's information, then
+ * launches threads to create OD matrices for a specified
+ * set of trip purposes, according to a given ModelInput
+ * file. These purposes are then combined together according
+ * to their VOT, mode, and time of day, creating matrices
+ * that are then output to files.
+ * 
+ * @author William Alexander
+ *
+ */
 public class wrapTP {
 
 	public static void main(String[] args) {
 		
+		//Get the name of the ModelInput source
 		if (args.length == 0) {
 			System.err.println("No model input file supplied");
 			System.exit(1);
 		}
-		
+		//and instantiate it as a ModelInput object
 		ModelInput model = new ModelInputNCTCOG(args[0]);
 		
+		//Load the model's network
 		model.getNetwork();
 		
+		//Retrieve the collection of trip purposes to be created
 		Collection<TripPurpose> purposes = model.getTripPurposes();
 		
-		
+		//Launch each trip purpose that operates as a Thread
 		System.out.println("Generating OD matrices");
 		purposes.parallelStream()
+			//here, it's possible that not all TripPurposes are threads, so we ignore those
 			.filter(purpose -> purpose instanceof Thread)
 			.forEach(purpose -> {
-				
+				//Start the thread which generates TripPurposes
 				((Thread) purpose).start();
 				
+				//then wait until it completes or is interrupted
 				try {
 					((Thread) purpose).join();
 				} catch (InterruptedException e) {
+					//if it is interrupted, for now we just ignore it 
+					//(this could cause issues later. FIXME)
 					System.err.println("Error in "+purpose+" thread; ignoring results");
 					e.printStackTrace();
 				}
 			});
 
 		
+		
+		Map<TimePeriod,Map<Float,Map<Mode,ODMatrix>>> ods = combineMatrices(model, purposes);
+		
+		Map<TimePeriod,Collection<ODMatrix>> flatODs = flatten(ods);
+
 		System.out.println("Consolidating OD Matrices");
-		Map<TimePeriod,Map<Float,Map<Mode,ODMatrix>>> ods = 
-			model.getUsedTimePeriods().parallelStream().collect(
-				Collectors.toMap(
-					Function.identity(),
-					
-					tp ->
-				
-						purposes.parallelStream().flatMap(
-								
-							purpose -> 
-							
-								purpose.getODMap(tp)
-								.entrySet().parallelStream()
-								.flatMap(
-										
-									entry -> 
-									
-										entry.getValue().parallelStream()
-										.map(
-												
-											od -> 
-											
-												new SimpleEntry<TripPurpose,Entry<MarketSegment,ODMatrix>>(
-														
-													purpose, 
-													
-													new SimpleEntry<MarketSegment,ODMatrix>(
-														entry.getKey(),
-														od)
-													
-													)
-											)
-									)
-							)
-						.collect(
-							Collectors.groupingBy(
-				
-								outerEntry -> 
-									model.getVOT(
-											
-										outerEntry.getKey(),
-										outerEntry.getValue().getKey(),
-										outerEntry.getValue().getValue().getMode()
-										
-										),
-				
-								Collectors.groupingBy(
-										
-										outerEntry -> 
-											outerEntry.getValue().getValue().getMode(),
-											
-										Collectors.mapping(
-											
-											entry -> 
-												entry.getValue().getValue(),
-											new ODMatrixCollector()
-											
-											)
-									)
-								)
-							)
-						)
-				);
-		
-		//TODO combine all off-peak trips
-		
-		//TODO combine all HOV trips
 		
 		System.out.println("Writing OD matrices");
 		ods.entrySet().parallelStream().forEach(
@@ -135,6 +91,94 @@ public class wrapTP {
 					)
 			);
 		System.out.println("Done");
+	}
+
+	private static Map<TimePeriod, Collection<ODMatrix>> flatten(Map<TimePeriod, Map<Float, Map<Mode, ODMatrix>>> ods) {
+		return ods.entrySet().parallelStream()
+		.collect(
+				Collectors.toMap(
+						Entry::getKey, 
+						outerEntry -> outerEntry.getValue().entrySet().parallelStream()
+						.flatMap(middleEntry -> middleEntry.getValue().entrySet().parallelStream()
+								.map(
+										innerEntry -> new SimpleEntry<Float,Entry<Mode,ODMatrix>>(
+												middleEntry.getKey(),
+												innerEntry
+												)
+										)
+								)
+						.map(
+								entry -> {
+									Float vot = entry.getKey();
+									Mode mode = entry.getValue().getKey();
+									ODMatrix od = entry.getValue().getValue();
+									
+									return new FixedSizeODMatrix(od,vot,mode);
+								}
+								)
+						.collect(Collectors.toSet())
+						)
+				);
+	}
+
+	private static Map<TimePeriod, Map<Float, Map<Mode, ODMatrix>>> combineMatrices(ModelInput model,
+			Collection<TripPurpose> purposes) {
+		return expand(purposes).collect(
+				Collectors.groupingBy(
+						entry -> model.getAggregateTimePeriod(entry.getValue().getValue().getKey()),
+						Collectors.groupingBy(
+								entry -> model.getVOT(
+										entry.getKey(),
+										entry.getValue().getKey(),
+										entry.getValue().getValue().getValue().getKey()),
+								Collectors.groupingBy(
+										entry -> entry.getValue().getValue().getValue().getKey(),
+										Collectors.mapping(
+												entry -> entry.getValue().getValue().getValue().getValue(), 
+												new ODMatrixCollector())
+										)
+								)
+						)
+				);
+	}
+
+	private static Stream<SimpleEntry<TripPurpose, Entry<MarketSegment, Entry<TimePeriod, Entry<Mode, ODMatrix>>>>> expand(Collection<TripPurpose> purposes) {
+		return purposes.parallelStream()
+		.flatMap(
+				purpose -> purpose.getODMaps()
+				.map( entry -> 
+				new SimpleEntry<TripPurpose, Entry<MarketSegment, Map<TimePeriod,Collection<ODMatrix>>>>(
+						purpose,
+						entry
+						))
+				)
+		.flatMap(
+				outerEntry -> outerEntry.getValue().getValue().entrySet().parallelStream()
+				.map(innerEntry -> new SimpleEntry<TripPurpose, Entry<MarketSegment, Entry<TimePeriod,Collection<ODMatrix>>>>(
+						outerEntry.getKey(),
+						new SimpleEntry<MarketSegment, Entry<TimePeriod,Collection<ODMatrix>>>(
+								outerEntry.getValue().getKey(),
+								innerEntry
+								)
+						)
+						)		
+				)
+		.flatMap(
+				outerEntry-> outerEntry.getValue().getValue().getValue().parallelStream()
+				.map(innerEntry -> new SimpleEntry<TripPurpose,Entry<MarketSegment,Entry<TimePeriod,Entry<Mode,ODMatrix>>>>(
+						outerEntry.getKey(),
+						new SimpleEntry<MarketSegment,Entry<TimePeriod,Entry<Mode,ODMatrix>>>(
+								outerEntry.getValue().getKey(),
+								new SimpleEntry<TimePeriod,Entry<Mode,ODMatrix>>(
+										outerEntry.getValue().getValue().getKey(),
+										new SimpleEntry<Mode,ODMatrix>(
+												innerEntry.getMode(),
+												innerEntry
+												)
+										)
+								)
+						))
+				);
 	}
 
 }

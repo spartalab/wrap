@@ -36,6 +36,6 @@ public interface TripPurpose {
 	
 	public String toString();
 
-	public Map<MarketSegment,Collection<ODMatrix>> getODMap(TimePeriod tp);
+	public Stream<Entry<MarketSegment,Map<TimePeriod,Collection<ODMatrix>>>> getODMaps();
 	
 }

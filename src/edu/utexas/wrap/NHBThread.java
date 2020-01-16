@@ -32,6 +32,7 @@ import edu.utexas.wrap.util.AggregatePAMatrixCollector;
 import edu.utexas.wrap.util.DemandMapCollector;
 import edu.utexas.wrap.util.DepartureArrivalConverter;
 
+@Deprecated
 class NHBThread extends Thread{
 	private Graph graph;
 	private Map<TimePeriod,Map<TripPurposeEnum,Collection<ODMatrix>>> nhbODs;

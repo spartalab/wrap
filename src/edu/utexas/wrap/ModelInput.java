@@ -246,4 +246,19 @@ public interface ModelInput {
 	 * @return a Float representing the cost of each time unit for the specified OD matrix attributes
 	 */
 	Float getVOT(TripPurpose purpose, MarketSegment segment, Mode mode);
+	
+	
+	/**This method allows for the transformation of Modes into other Modes, if needed for aggregation
+	 * 
+	 * @param input a Mode which is used in initial phases of model development 
+	 * @return the corresponding Mode which should be used in later phases of model development
+	 */
+	Mode getAggregateMode(Mode input);
+	
+	/**This method allows for the transformation of TimePeriods into other TimePeriods, if needed for aggregation
+	 * 
+	 * @param input a TimePeriod which is used in initial phases of model development
+	 * @return the corresponding TimePeriod which should be used in later phases of model development
+	 */
+	TimePeriod getAggregateTimePeriod(TimePeriod input);
 }

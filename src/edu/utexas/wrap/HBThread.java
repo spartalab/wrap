@@ -27,6 +27,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+@Deprecated
 class HBThread extends Thread{
 	private Graph graph;
 	private Map<TimePeriod, Map<TripPurposeEnum, Map<MarketSegment, Collection<ODMatrix>>>> hbODs;
