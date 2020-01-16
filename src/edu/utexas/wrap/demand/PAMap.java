@@ -32,13 +32,13 @@ public interface PAMap {
 	 * @param z the Node to which trips are attracted
 	 * @return the number of trips attracted to the Node
 	 */
-	public Float getAttractions(TravelSurveyZone z);
+	public float getAttractions(TravelSurveyZone z);
 
 	/**
 	 * @param z the Node from which trips are produced
 	 * @return the number of trips produced at the Node
 	 */
-	public Float getProductions(TravelSurveyZone z);
+	public float getProductions(TravelSurveyZone z);
 
 	/**
 	 * @return the Graph to which the PA map is tied

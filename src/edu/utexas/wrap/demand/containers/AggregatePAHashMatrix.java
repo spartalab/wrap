@@ -41,17 +41,8 @@ public class AggregatePAHashMatrix implements AggregatePAMatrix {
 	 * @see edu.utexas.wrap.demand.PAMatrix#getDemand(edu.utexas.wrap.net.Node, edu.utexas.wrap.net.Node)
 	 */
 	@Override
-	public Float getDemand(TravelSurveyZone producer, TravelSurveyZone attractor) {
-		// TODO Auto-generated method stub
-		return matrix.get(producer) == null ? 0.0F : matrix.get(producer).getOrDefault(attractor, 0.0).floatValue();
-	}
-
-	/* (non-Javadoc)
-	 * @see edu.utexas.wrap.demand.PAMatrix#getVOT()
-	 */
- 	public float getVOT() {
-		// TODO Auto-generated method stub
-		return 0;
+	public float getDemand(TravelSurveyZone producer, TravelSurveyZone attractor) {
+		return matrix.get(producer) == null ? 0.0F : matrix.get(producer).get(attractor);
 	}
 
 	/* (non-Javadoc)
@@ -68,19 +59,17 @@ public class AggregatePAHashMatrix implements AggregatePAMatrix {
 	@Override
 	public void put(TravelSurveyZone producer, TravelSurveyZone attractor, Float demand) {
 		matrix.putIfAbsent(producer,new DemandHashMap(g));
-		((DemandMap) matrix.get(producer)).put(attractor,demand.doubleValue());
+		((DemandMap) matrix.get(producer)).put(attractor,demand);
 		
 	}
 
 	@Override
 	public DemandMap getDemandMap(TravelSurveyZone producer) {
-		// TODO Auto-generated method stub
 		return matrix.get(producer);
 	}
 
 	@Override
 	public Collection<TravelSurveyZone> getProducers() {
-		// TODO Auto-generated method stub
 		return matrix.keySet();
 	}
 

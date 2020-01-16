@@ -15,14 +15,13 @@ public class AutoDemandPassthroughMap implements AutoDemandMap {
 	private Mode mode;
 	private float vot;
 	public AutoDemandPassthroughMap(DemandMap map, Mode mode, Float vot) {
-		// TODO Auto-generated constructor stub
 		this.map = map;
 		this.mode = mode;
 		this.vot = vot;
 	}
 
 	@Override
-	public Double get(TravelSurveyZone dest) {
+	public float get(TravelSurveyZone dest) {
 		return map.get(dest);
 	}
 
@@ -36,14 +35,9 @@ public class AutoDemandPassthroughMap implements AutoDemandMap {
 		return map.getZones();
 	}
 
-	@Override
-	public Double getOrDefault(TravelSurveyZone node, Double f) {
-		return map.getOrDefault(node, f);
-	}
 
 	@Override
-	public Double put(TravelSurveyZone dest, Double demand) {
-		// TODO Auto-generated method stub
+	public Float put(TravelSurveyZone dest, Float demand) {
 		return null;
 	}
 

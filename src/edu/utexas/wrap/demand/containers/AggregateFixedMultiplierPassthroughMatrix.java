@@ -29,7 +29,7 @@ public class AggregateFixedMultiplierPassthroughMatrix implements AggregatePAMat
 	}
 
 	@Override
-	public Float getDemand(TravelSurveyZone producer, TravelSurveyZone attractor) {
+	public float getDemand(TravelSurveyZone producer, TravelSurveyZone attractor) {
 		return multip*base.getDemand(producer, attractor);
 	}
 

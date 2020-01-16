@@ -5,9 +5,9 @@ import java.util.HashSet;
 
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.ODMatrix;
-import edu.utexas.wrap.demand.ODPassthroughMatrix;
-import edu.utexas.wrap.demand.TransposeModalPAMatrix;
 import edu.utexas.wrap.demand.containers.ModalFixedMultiplierPassthroughMatrix;
+import edu.utexas.wrap.demand.containers.ODPassthroughMatrix;
+import edu.utexas.wrap.demand.containers.TransposeModalPAMatrix;
 
 public class DepartureArrivalConverter {
 	

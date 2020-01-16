@@ -11,16 +11,16 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 public class DemandHashMap implements DemandMap {
 
 	Graph g;
-	private Map<TravelSurveyZone,Double> map; 
+	private Map<TravelSurveyZone,Float> map; 
 
 	public DemandHashMap(Graph g) {
 		this.g = g;
-		map = new ConcurrentHashMap<TravelSurveyZone,Double>(g.numZones(),1.0f);
+		map = new ConcurrentHashMap<TravelSurveyZone,Float>(g.numZones(),1.0f);
 	}
 	
 	protected DemandHashMap(DemandHashMap d) {
 		this.g = d.getGraph();
-		map = new ConcurrentHashMap<TravelSurveyZone,Double>(d.map);
+		map = new ConcurrentHashMap<TravelSurveyZone,Float>(d.map);
 	}
 	
 	/* (non-Javadoc)
@@ -35,8 +35,8 @@ public class DemandHashMap implements DemandMap {
 	 * @see edu.utexas.wrap.demand.DemandMap#get(edu.utexas.wrap.net.Node)
 	 */
 	@Override
-	public Double get(TravelSurveyZone dest) {
-		return this.getOrDefault(dest, 0.0);
+	public float get(TravelSurveyZone dest) {
+		return map.getOrDefault(dest, 0.0f);
 	}
 
 	/* (non-Javadoc)
@@ -55,23 +55,15 @@ public class DemandHashMap implements DemandMap {
 		return map.keySet();
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.utexas.wrap.demand.DemandMap#getOrDefault(edu.utexas.wrap.net.Node, float)
-	 */
-	@Override
-	public Double getOrDefault(TravelSurveyZone attrZone, Double f) {
-		return map.getOrDefault(attrZone, f);
-	}
-
 	@Override
 	public Map<TravelSurveyZone, Double> doubleClone() {
-		Map<TravelSurveyZone,Double> ret = new ConcurrentHashMap<TravelSurveyZone,Double>(map.size());
-		for (TravelSurveyZone key : map.keySet()) ret.put(key, get(key).doubleValue());
+		Map<TravelSurveyZone, Double> ret = new ConcurrentHashMap<TravelSurveyZone,Double>(map.size());
+		for (TravelSurveyZone key : map.keySet()) ret.put(key, (double) get(key));
 		return ret;
 	}
 
 	@Override
-	public Double put(TravelSurveyZone attr, Double demand) {
+	public Float put(TravelSurveyZone attr, Float demand) {
 		return map.put(attr, demand);
 	}
 

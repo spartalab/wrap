@@ -34,8 +34,8 @@ public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.demand.ODMatrix#getDemand(edu.utexas.wrap.net.Node, edu.utexas.wrap.net.Node)
 	 */
-	public Float getDemand(TravelSurveyZone origin, TravelSurveyZone destination) {
-		return map.get(origin) == null? 0.0F : map.get(origin).getOrDefault(destination,0.0).floatValue();
+	public float getDemand(TravelSurveyZone origin, TravelSurveyZone destination) {
+		return map.get(origin) == null? 0.0F : map.get(origin).get(destination);
 	}
 
 	/* (non-Javadoc)
@@ -44,7 +44,7 @@ public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 	@Override
 	public void put(TravelSurveyZone prod, TravelSurveyZone attr, Float demand) {
 		map.putIfAbsent(prod, new DemandHashMap(getGraph()));
-		map.get(prod).put(attr, demand.doubleValue());
+		map.get(prod).put(attr, demand);
 		
 	}
 

@@ -22,7 +22,7 @@ public class FixedSizeODMatrix implements ODMatrix {
 		graph.getTSZs().forEach(origin -> {
 			FixedSizeDemandMap dm = new FixedSizeDemandMap(graph);
 			
-			graph.getTSZs().forEach(destination -> dm.put(destination, od.getDemand(origin, destination).doubleValue()));
+			graph.getTSZs().forEach(destination -> dm.put(destination, od.getDemand(origin, destination)));
 			
 			demandMaps[origin.getOrder()] = dm;
 		});
@@ -35,15 +35,13 @@ public class FixedSizeODMatrix implements ODMatrix {
 	}
 
 	@Override
-	public Float getDemand(TravelSurveyZone origin, TravelSurveyZone destination) {
-		// TODO Auto-generated method stub
-		return null;
+	public float getDemand(TravelSurveyZone origin, TravelSurveyZone destination) {
+		return 	demandMaps[origin.getOrder()].get(destination);
 	}
 
 	@Override
 	public void put(TravelSurveyZone origin, TravelSurveyZone destination, Float demand) {
-		// TODO Auto-generated method stub
-		
+		demandMaps[origin.getOrder()].put(destination, demand);
 	}
 
 	@Override

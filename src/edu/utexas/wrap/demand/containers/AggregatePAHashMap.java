@@ -48,7 +48,7 @@ public class AggregatePAHashMap implements PAMap {
      * @see edu.utexas.wrap.demand.PAMap#getAttractions(edu.utexas.wrap.net.Node)
      */
     @Override
-    public Float getAttractions(TravelSurveyZone z) {
+    public float getAttractions(TravelSurveyZone z) {
         return attractors.getOrDefault(z, 0.0f);
     }
 
@@ -56,7 +56,7 @@ public class AggregatePAHashMap implements PAMap {
      * @see edu.utexas.wrap.demand.PAMap#getProductions(edu.utexas.wrap.net.Node)
      */
     @Override
-    public Float getProductions(TravelSurveyZone z) {
+    public float getProductions(TravelSurveyZone z) {
         return producers.getOrDefault(z, 0.0f);
     }
 

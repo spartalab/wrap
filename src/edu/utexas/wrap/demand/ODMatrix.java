@@ -25,7 +25,7 @@ public interface ODMatrix {
 	 * @param destination the Node to which trips travel
 	 * @return the demand from the origin to the destination
 	 */
-	public Float getDemand(TravelSurveyZone origin, TravelSurveyZone destination);
+	public float getDemand(TravelSurveyZone origin, TravelSurveyZone destination);
 	
 	/**
 	 * @param origin the Node from which trips originate

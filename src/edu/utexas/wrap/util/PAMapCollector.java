@@ -77,12 +77,12 @@ class CombinedPAMap implements PAMap {
 	}
 
 	@Override
-	public Float getAttractions(TravelSurveyZone z) {
+	public float getAttractions(TravelSurveyZone z) {
 		return (float) children.parallelStream().mapToDouble(map -> map.getAttractions(z)).sum();
 	}
 
 	@Override
-	public Float getProductions(TravelSurveyZone z) {
+	public float getProductions(TravelSurveyZone z) {
 		return (float) children.parallelStream().mapToDouble(map -> map.getProductions(z)).sum();
 	}
 
@@ -104,14 +104,14 @@ class CombinedPAMap implements PAMap {
 	@Override
 	public DemandMap getProductionMap() {
 		DemandMap ret = new FixedSizeDemandMap(getGraph());
-		getProducers().parallelStream().forEach(producer -> ret.put(producer, getProductions(producer).doubleValue()));
+		getProducers().parallelStream().forEach(producer -> ret.put(producer, getProductions(producer)));
 		return ret;
 	}
 
 	@Override
 	public DemandMap getAttractionMap() {
 		DemandMap ret = new FixedSizeDemandMap(getGraph());
-		getAttractors().parallelStream().forEach(attractor -> ret.put(attractor, getAttractions(attractor).doubleValue()));
+		getAttractors().parallelStream().forEach(attractor -> ret.put(attractor, getAttractions(attractor)));
 		return ret;
 	}
 	

@@ -12,9 +12,9 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 public class PerProductionZoneMultiplierPassthroughMatrix implements AggregatePAMatrix {
 
 	AggregatePAMatrix parent;
-	Map<TravelSurveyZone,Double> rates;
+	Map<TravelSurveyZone,Float> rates;
 	
-	public PerProductionZoneMultiplierPassthroughMatrix(AggregatePAMatrix initialMatrix, Map<TravelSurveyZone, Double> perZoneRates) {
+	public PerProductionZoneMultiplierPassthroughMatrix(AggregatePAMatrix initialMatrix, Map<TravelSurveyZone, Float> perZoneRates) {
 		parent = initialMatrix;
 		rates = perZoneRates;
 	}
@@ -31,7 +31,7 @@ public class PerProductionZoneMultiplierPassthroughMatrix implements AggregatePA
 	}
 
 	@Override
-	public Float getDemand(TravelSurveyZone producer, TravelSurveyZone attractor) {
+	public float getDemand(TravelSurveyZone producer, TravelSurveyZone attractor) {
 		return (float) (rates.get(producer)*parent.getDemand(producer,attractor));
 	}
 

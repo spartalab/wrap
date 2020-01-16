@@ -27,7 +27,7 @@ public class EmptyAggregatePAMatrix implements AggregatePAMatrix {
 	}
 
 	@Override
-	public Float getDemand(TravelSurveyZone producer, TravelSurveyZone attractor) {
+	public float getDemand(TravelSurveyZone producer, TravelSurveyZone attractor) {
 		return 0.0f;
 	}
 

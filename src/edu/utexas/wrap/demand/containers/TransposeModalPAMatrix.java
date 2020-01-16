@@ -1,7 +1,9 @@
-package edu.utexas.wrap.demand;
+package edu.utexas.wrap.demand.containers;
 
 import java.util.Collection;
 
+import edu.utexas.wrap.demand.DemandMap;
+import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
@@ -20,12 +22,11 @@ public class TransposeModalPAMatrix implements ModalPAMatrix {
 
 	@Override
 	public void put(TravelSurveyZone producer, TravelSurveyZone attractor, Float demand) {
-		// TODO Auto-generated method stub
 		throw new RuntimeException("Writing to read-only matrix");
 	}
 
 	@Override
-	public Float getDemand(TravelSurveyZone producer, TravelSurveyZone attractor) {
+	public float getDemand(TravelSurveyZone producer, TravelSurveyZone attractor) {
 		return base.getDemand(attractor, producer);
 	}
 
@@ -43,7 +44,6 @@ public class TransposeModalPAMatrix implements ModalPAMatrix {
 
 	@Override
 	public Mode getMode() {
-		// TODO Auto-generated method stub
 		return base.getMode();
 	}
 

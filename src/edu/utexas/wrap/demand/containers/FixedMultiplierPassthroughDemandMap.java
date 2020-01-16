@@ -17,7 +17,7 @@ public class FixedMultiplierPassthroughDemandMap implements DemandMap {
 	}
 
 	@Override
-	public Double get(TravelSurveyZone dest) {
+	public float get(TravelSurveyZone dest) {
 		return multiplier*parent.get(dest);
 	}
 
@@ -32,13 +32,7 @@ public class FixedMultiplierPassthroughDemandMap implements DemandMap {
 	}
 
 	@Override
-	public Double getOrDefault(TravelSurveyZone zone, Double f) {
-		Double d = parent.get(zone);
-		return d == null? f : d*multiplier;
-	}
-
-	@Override
-	public Double put(TravelSurveyZone dest, Double demand) {
+	public Float put(TravelSurveyZone dest, Float demand) {
 		return parent.put(dest, demand/multiplier);
 	}
 

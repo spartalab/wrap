@@ -36,8 +36,8 @@ public class GravityDistributor extends TripDistributor {
 //		Map<TravelSurveyZone, Double> a = Object2DoubleMaps.synchronize(new Object2DoubleOpenHashMap<TravelSurveyZone>(g.numZones(),1.0f));
 //		Map<TravelSurveyZone, Double> b = Object2DoubleMaps.synchronize(new Object2DoubleOpenHashMap<TravelSurveyZone>(g.numZones(),1.0f));
 
-		Double[] a1 = new Double[g.numZones()];
-		Double[] b1 = new Double[g.numZones()];
+		Float[] a1 = new Float[g.numZones()];
+		Float[] b1 = new Float[g.numZones()];
 		
 		AtomicBoolean converged = new AtomicBoolean(false);
 		//While the previous iteration made changes
@@ -61,7 +61,7 @@ public class GravityDistributor extends TripDistributor {
 				if (a1[i.getOrder()] == null || !converged(a1[i.getOrder()] == null? 1.0 : a1[i.getOrder()], 1.0/denom)) {
 					//Write a new A value for this producer
 					converged.set(false);
-					a1[i.getOrder()] = 1.0/denom;
+					a1[i.getOrder()] = (float) (1.0/denom);
 //					a.put(i, 1.0/denom);
 				}
 			});
@@ -80,7 +80,7 @@ public class GravityDistributor extends TripDistributor {
 				if (b1[j.getOrder()] == null || !converged(b1[j.getOrder()] == null? 1.0 : b1[j.getOrder()], 1.0/denom)) {
 					//Write a new B value for this attractor
 					converged.set(false);
-					b1[j.getOrder()] = 1.0/denom;
+					b1[j.getOrder()] =(float) (1.0/denom);
 //					b.put(j, 1.0/denom);
 				}	
 			});
@@ -96,7 +96,7 @@ public class GravityDistributor extends TripDistributor {
 			//For each attractor
 			for (TravelSurveyZone attractor : pa.getAttractors()) {
 				//Calculate the number of trips between these two as a*productions*b*attractions*impedance
-				Double Tij = 
+				Float Tij = 
 //						a.get(producer)
 						a1[producer.getOrder()]
 						*pa.getProductions(producer)

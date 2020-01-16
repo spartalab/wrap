@@ -26,15 +26,15 @@ public class AutoFixedSizeMatrix implements ODMatrix {
 	}
 
 	@Override
-	public Float getDemand(TravelSurveyZone origin, TravelSurveyZone destination) {
+	public float getDemand(TravelSurveyZone origin, TravelSurveyZone destination) {
 		DemandMap orig = origins[origin.getOrder()];
-		return orig == null? 0.0f : orig.get(destination).floatValue();
+		return orig == null? 0.0f : orig.get(destination);
 	}
 
 	@Override
 	public void put(TravelSurveyZone origin, TravelSurveyZone destination, Float demand) {
 		if (origins[origin.getOrder()] == null) origins[origin.getOrder()] = new FixedSizeDemandMap(graph);
-		origins[origin.getOrder()].put(destination, demand.doubleValue());
+		origins[origin.getOrder()].put(destination, demand);
 	}
 
 	@Override

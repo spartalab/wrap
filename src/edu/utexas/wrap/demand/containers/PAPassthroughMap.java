@@ -29,13 +29,13 @@ public class PAPassthroughMap implements PAMap {
 	}
 
 	@Override
-	public Float getAttractions(TravelSurveyZone z) {
-		return attrs == null? 0.0f : attrs.get(z).floatValue();
+	public float getAttractions(TravelSurveyZone z) {
+		return attrs == null? 0.0f : attrs.get(z);
 	}
 
 	@Override
-	public Float getProductions(TravelSurveyZone z) {
-		return prods == null? 0.0f : prods.get(z).floatValue();
+	public float getProductions(TravelSurveyZone z) {
+		return prods == null? 0.0f : prods.get(z);
 	}
 
 	@Override
@@ -45,12 +45,12 @@ public class PAPassthroughMap implements PAMap {
 
 	@Override
 	public void putAttractions(TravelSurveyZone z, Float amt) {
-		attrs.put(z, amt.doubleValue());
+		attrs.put(z, amt);
 	}
 
 	@Override
 	public void putProductions(TravelSurveyZone z, Float amt) {
-		prods.put(z, amt.doubleValue());
+		prods.put(z, amt);
 	}
 
 	@Override

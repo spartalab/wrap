@@ -67,7 +67,7 @@ public class wrapTP {
 		
 		Map<TimePeriod,Map<Float,Map<Mode,ODMatrix>>> ods = combineMatrices(model, purposes);
 		
-		Map<TimePeriod,Collection<ODMatrix>> flatODs = flatten(ods);
+//		Map<TimePeriod,Collection<ODMatrix>> flatODs = flatten(ods);
 
 		System.out.println("Consolidating OD Matrices");
 		

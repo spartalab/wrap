@@ -125,8 +125,8 @@ public class RateProportionTripGenerator implements TripGenerator {
 		Map<TravelSurveyZone, Double> rate = rates.get(segment);
 		DemandMap ret = new FixedSizeDemandMap(demandMap.getGraph());
 		demandMap.getZones().parallelStream().forEach( 
-				entry -> ret.put(entry, demandMap.get(entry)
-						*rate.getOrDefault(entry,0.0))
+				entry -> ret.put(entry, (float) (demandMap.get(entry)
+						*rate.getOrDefault(entry,0.0)))
 		);
 		return ret;
 	}

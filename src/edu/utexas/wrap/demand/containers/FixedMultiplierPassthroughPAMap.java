@@ -12,7 +12,6 @@ public class FixedMultiplierPassthroughPAMap implements PAMap {
 	private double rate;
 
 	public FixedMultiplierPassthroughPAMap(PAMap baseMap, double rate) {
-		// TODO Auto-generated constructor stub
 		base = baseMap;
 		this.rate = rate;
 	}
@@ -28,12 +27,12 @@ public class FixedMultiplierPassthroughPAMap implements PAMap {
 	}
 
 	@Override
-	public Float getAttractions(TravelSurveyZone z) {
+	public float getAttractions(TravelSurveyZone z) {
 		return (float) (rate*base.getAttractions(z));
 	}
 
 	@Override
-	public Float getProductions(TravelSurveyZone z) {
+	public float getProductions(TravelSurveyZone z) {
 		return (float) rate*base.getProductions(z);
 	}
 

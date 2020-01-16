@@ -61,7 +61,8 @@ public class Graph {
 		//TODO: duplicate zones
 	}
 	
-	public Boolean add(Link link) {
+	//TODO improve concurrency availability here
+	public synchronized Boolean add(Link link) {
 		numLinks++;
 		Boolean altered = links.add(link);
 		Node head = link.getHead();

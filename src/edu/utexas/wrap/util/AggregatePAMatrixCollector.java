@@ -68,7 +68,7 @@ class CombinedAggregatePAMatrix implements AggregatePAMatrix {
 	}
 
 	@Override
-	public Float getDemand(TravelSurveyZone producer, TravelSurveyZone attractor) {
+	public float getDemand(TravelSurveyZone producer, TravelSurveyZone attractor) {
 		return (float) children.parallelStream().mapToDouble(mtx -> mtx.getDemand(producer, attractor)).sum();
 	}
 

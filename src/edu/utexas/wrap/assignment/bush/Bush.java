@@ -227,7 +227,7 @@ public class Bush implements AssignmentContainer {
 			if (bv == null) continue;
 			TravelSurveyZone tsz = bv.getHead().getZone();
 			if (tsz == null) continue;
-			Double x = demand.getOrDefault(tsz, 0.0);
+			Float x = demand.get(tsz);
 			if (x <= 0.0) continue;
 			dumpFlow(tsz.getNode(),x.doubleValue());	//recursively push flow onto the bush
 		}
@@ -360,7 +360,7 @@ public class Bush implements AssignmentContainer {
 	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getDemand(edu.utexas.wrap.net.Node)
 	 */
 	public Float getDemand(Node node) {
-		return demand.get(node.getZone()).floatValue();
+		return demand.get(node.getZone());
 	}
 	
 	/**
@@ -1301,7 +1301,7 @@ public class Bush implements AssignmentContainer {
 				//And which doesn't originate from this node
 				.filter(e -> !e.getKey().getTail().equals(origin.getNode()))
 				//And has more demand on it than the destination demand
-				.filter(e -> e.getValue() > demand.getOrDefault(e.getKey().getHead().getZone(), 0.0))
+				.filter(e -> e.getValue() > demand.get(e.getKey().getHead().getZone()))
 				//Then something is wrong and this connector is allowing through too much demand
 				.findAny().isPresent()) throw new RuntimeException("Invalid Centroid Connector usage in Bush");
 		

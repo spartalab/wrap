@@ -23,7 +23,7 @@ public class BasicTripGenerator implements TripGenerator {
 		g.getTSZs().parallelStream().forEach(	//For each TSZ in parallel,
 				 tsz ->	//the TSZ maps to a value:
 					//The data rate for this market segment times the market segment's value for this TSZ
-						ret.put(tsz, rate.getRate(tsz)*segment.attributeDataGetter().applyAsDouble(tsz)));
+						ret.put(tsz, (float) (rate.getRate(tsz)*segment.attributeDataGetter().applyAsDouble(tsz))));
 		return ret;
 	}
 	

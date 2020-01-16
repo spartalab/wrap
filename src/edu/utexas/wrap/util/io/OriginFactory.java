@@ -28,11 +28,11 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  */
 public class OriginFactory {
 	
-	private static Double parse(String s) {
+	private static Float parse(String s) {
 		try {
-			return Double.parseDouble(s);
+			return Float.parseFloat(s);
 		} catch (NumberFormatException e) {
-			return 0.0;
+			return 0.0f;
 		}
 	}
 
@@ -67,7 +67,7 @@ public class OriginFactory {
 						g.getNode(destID).setTravelSurveyZone(tsz);
 						g.addZone(tsz);
 					}
-					dests.put(tsz, demand.doubleValue());
+					dests.put(tsz, demand);
 				}
 			}
 		}
@@ -144,7 +144,7 @@ public class OriginFactory {
 				g.addZone(destZone);
 			}
 
-			Double da35 = parse(args[2]),
+			Float da35 = parse(args[2]),
 			 da90 = parse(args[3]),
 			sr35 = parse(args[4]),
 			sr90 = parse(args[5]),
@@ -236,7 +236,7 @@ public class OriginFactory {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public static void readTNTPOriginSpecificProportionalVOTDemand(File odMatrix, Map<Node, List<Double[]>> map, Graph g, AssignmentLoader dl)
+	public static void readTNTPOriginSpecificProportionalVOTDemand(File odMatrix, Map<Node, List<Float[]>> map, Graph g, AssignmentLoader dl)
 			throws FileNotFoundException, IOException {
 		/////////////////////////////////////
 		// Read OD Matrix and assign flows
@@ -244,7 +244,7 @@ public class OriginFactory {
 		BufferedReader of = new BufferedReader(new FileReader(odMatrix));
 		String line;
 		
-		Map<Double, AutoODHashMatrix> ods = new HashMap<Double,AutoODHashMatrix>();
+		Map<Float, AutoODHashMatrix> ods = new HashMap<Float,AutoODHashMatrix>();
 		int numZones = 0;
 		
 		do { // Move past headers in the file
@@ -270,7 +270,7 @@ public class OriginFactory {
 			System.out.print("\rReading demand for origin " + origID);
 			DemandHashMap unified = readDestinationDemand(of, g, numZones);
 			
-			for (Double[] entry : map.get(root)) {
+			for (Float[] entry : map.get(root)) {
 				ods.putIfAbsent(entry[0], new AutoODHashMatrix(g, entry[0].floatValue(), null)); //Ensure a parent OD matrix exists
 				AutoDemandMap split = new AutoFixedSizeDemandMap(g, ods.get(entry[0]));	//Attach the parent OD
 				
@@ -307,10 +307,10 @@ public class OriginFactory {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	private static Map<Node, List<Double[]>> readUniformVOTDistrib(File VOTfile, Graph g) throws FileNotFoundException, IOException {
+	private static Map<Node, List<Float[]>> readUniformVOTDistrib(File VOTfile, Graph g) throws FileNotFoundException, IOException {
 
 		BufferedReader vf = new BufferedReader(new FileReader(VOTfile));
-		LinkedList<Double[]> VOTs = new LinkedList<Double[]>();
+		LinkedList<Float[]> VOTs = new LinkedList<Float[]>();
 
 		String line;
 		vf.readLine(); // Ignore header line
@@ -319,14 +319,14 @@ public class OriginFactory {
 			if (line == null)
 				break;
 			String[] args = line.split("\t");
-			Double vot = parse(args[0]);
-			Double vProp = parse(args[1]);
-			Double[] entry = { vot, vProp };
+			Float vot = parse(args[0]);
+			Float vProp = parse(args[1]);
+			Float[] entry = { vot, vProp };
 			VOTs.add(entry);
 		} while (!line.equals(""));
 		vf.close();
 
-		Map<Node, List<Double[]>> votMap = new HashMap<Node, List<Double[]>>();
+		Map<Node, List<Float[]>> votMap = new HashMap<Node, List<Float[]>>();
 		for (Node n : g.getNodes()) {
 			votMap.put(n, VOTs);
 		}

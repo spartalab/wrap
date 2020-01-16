@@ -38,7 +38,7 @@ public interface PAMatrix {
 	 * @param attractor the Node attracting trips
 	 * @return the number of trips from producer to attractor
 	 */
-	public Float getDemand(TravelSurveyZone producer, TravelSurveyZone attractor);
+	public float getDemand(TravelSurveyZone producer, TravelSurveyZone attractor);
 
 	/**
 	 * @param producer the Node from which trips are produced

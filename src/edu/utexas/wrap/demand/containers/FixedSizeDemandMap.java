@@ -12,33 +12,33 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class FixedSizeDemandMap implements DemandMap {
 	private final Graph graph;
-	private double[] demand;
+	private float[] demand;
 	
 	public FixedSizeDemandMap(Graph g) {
 		graph = g;
-		demand = new double[g.numZones()];
+		demand = new float[g.numZones()];
 	}
 	
 	public FixedSizeDemandMap(DemandMap base) {
 		graph = base.getGraph();
-		demand = new double[graph.numZones()];
+		demand = new float[graph.numZones()];
 		base.getZones().parallelStream().forEach(tsz -> demand[tsz.getOrder()] = base.get(tsz));
 	}
 	
 	public FixedSizeDemandMap(Stream<DemandMap> baseMapStream) {
 		Collection<DemandMap> baseMaps = baseMapStream.collect(Collectors.toSet());
 		graph = baseMaps.parallelStream().map(DemandMap::getGraph).findAny().get();
-		demand = new double[graph.numZones()];
-		graph.getTSZs().forEach(tsz -> demand[tsz.getOrder()] = 
+		demand = new float[graph.numZones()];
+		graph.getTSZs().forEach(tsz -> demand[tsz.getOrder()] = (float)
 				baseMaps.parallelStream()
-				.mapToDouble(dm -> dm.get(tsz))
+				.mapToDouble(dm -> (double) dm.get(tsz))
 				.sum()
 			);
 		
 	}
 
 	@Override
-	public Double get(TravelSurveyZone dest) {
+	public float get(TravelSurveyZone dest) {
 		return demand[dest.getOrder()];
 	}
 
@@ -55,24 +55,16 @@ public class FixedSizeDemandMap implements DemandMap {
 	}
 
 	@Override
-	public Double getOrDefault(TravelSurveyZone node, Double f) {
-		int index = node.getOrder();
-		if (index == -1) 
-			throw new RuntimeException();
-		return demand[index];
-	}
-
-	@Override
-	public Double put(TravelSurveyZone dest, Double put) {
+	public Float put(TravelSurveyZone dest, Float put) {
 		int idx = dest.getOrder();
-		Double d = demand[idx];
+		Float d = demand[idx];
 		demand[idx] = put;
 		return d;
 	}
 
 	@Override
 	public boolean isEmpty() {
-		for (Double d : demand) if (d > 0) return false;
+		for (Float d : demand) if (d > 0) return false;
 		return true;
 	}
 

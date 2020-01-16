@@ -71,8 +71,8 @@ class CombinedDemandMap implements DemandMap {
 	}
 	
 	@Override
-	public Double get(TravelSurveyZone dest) {
-		return children.parallelStream().mapToDouble(map -> map.get(dest)).sum();
+	public float get(TravelSurveyZone dest) {
+		return (float) children.parallelStream().mapToDouble(map -> map.get(dest)).sum();
 	}
 
 	@Override
@@ -86,13 +86,7 @@ class CombinedDemandMap implements DemandMap {
 	}
 
 	@Override
-	public Double getOrDefault(TravelSurveyZone node, Double f) {
-		//FIXME this doesn't handle the default case correctly
-		return children.parallelStream().mapToDouble(map -> map.get(node)).sum();
-	}
-
-	@Override
-	public Double put(TravelSurveyZone dest, Double demand) {
+	public Float put(TravelSurveyZone dest, Float demand) {
 		throw new RuntimeException("Writing to read-only map");
 	}
 
@@ -103,7 +97,7 @@ class CombinedDemandMap implements DemandMap {
 
 	@Override
 	public Map<TravelSurveyZone, Double> doubleClone() {
-		return getZones().parallelStream().collect(Collectors.toMap(Function.identity(), zone -> get(zone).doubleValue()));
+		return getZones().parallelStream().collect(Collectors.toMap(Function.identity(), zone -> (double) get(zone)));
 	}
 	
 }
