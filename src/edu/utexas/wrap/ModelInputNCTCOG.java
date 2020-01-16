@@ -68,15 +68,11 @@ public class ModelInputNCTCOG implements ModelInput {
 	private Map<TimePeriod, float[][]> skimFactors;
 	private Map<TripPurpose, Map<TimePeriod, Map<MarketSegment, FrictionFactorMap>>> frictionFactors;
 	private Map<TripPurpose, Map<MarketSegment, Map<Mode, Double>>> modalShares;
-	private Map<TripPurpose, Map<MarketSegment, Map<MarketSegment, Map<TravelSurveyZone,Double>>>> subsegmentations;
+//	private Map<TripPurpose, Map<MarketSegment, Map<MarketSegment, Map<TravelSurveyZone,Double>>>> subsegmentations;
 	private Map<Mode,Double> occupancyRates;
 	private Map<TripPurpose, Map<MarketSegment, Map<TimePeriod, Double>>> departureRates;
 	private Map<TripPurpose, Map<MarketSegment, Map<TimePeriod, Double>>> arrivalRates;
 	private Map<String, Class<? extends MarketSegment>> headerToSegment;
-
-
-
-
 
 	public ModelInputNCTCOG(String inputFile) {
 		InputStream input;
@@ -84,7 +80,7 @@ public class ModelInputNCTCOG implements ModelInput {
 			input = new FileInputStream(inputFile);
 		} catch (FileNotFoundException e) {
 			System.err.println("ModelInput file not found");
-			System.exit(2);
+			System.exit(-2);
 			input = null;
 		}
 
@@ -92,9 +88,8 @@ public class ModelInputNCTCOG implements ModelInput {
 		try {
 			inputs.load(input);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			System.err.println("IOException when reading ModelInput file. Ensure file is formatted correctly");
-			System.exit(3);
+			System.exit(-3);
 		}
 
 		headerToSegment = new HashMap<String,Class<? extends MarketSegment>>();
@@ -113,7 +108,6 @@ public class ModelInputNCTCOG implements ModelInput {
 	}
 
 	private static void readHouseholdData(Graph graph, Path igFile, Path igWkrVehFile, Path sizeWkrIGFile, Path wkrIGChildFile) throws IOException {
-		// TODO Auto-generated method stub
 		Files.lines(igFile).parallel().filter(line -> !line.startsWith("TSZ")).forEach(line ->{
 			String[] args = line.split(",");
 			int tszID = Integer.parseInt(args[0]);
@@ -304,7 +298,7 @@ public class ModelInputNCTCOG implements ModelInput {
 		String rateType = inputs.getProperty("tripPurpose."+purpose+".prodRateType");
 		if (rateType==null) {
 			System.err.println("No production rate type specified for "+purpose);
-			System.exit(8);
+			System.exit(3);
 			throw new RuntimeException();
 		}
 		
@@ -315,7 +309,7 @@ public class ModelInputNCTCOG implements ModelInput {
 		else if (rateType.toLowerCase().equals("areaspecific")) rates = ProductionAttractionFactory.readAreaRates(prodRateFile, this);
 		else {
 			System.err.println("Invalid prodRateType for "+purpose+": "+rateType);
-			System.exit(8);
+			System.exit(3);
 			throw new RuntimeException();
 		}
 		
@@ -332,7 +326,7 @@ public class ModelInputNCTCOG implements ModelInput {
 		String rateType=inputs.getProperty("tripPurpose."+purpose+".attrRateType");
 		if (rateType==null) {
 			System.err.println("No attraction rate type specified for "+purpose);
-			System.exit(8);
+			System.exit(2);
 			throw new RuntimeException();
 		}
 		String attrRateFile = inputs.getProperty("tripPurpose."+purpose+".attrRateFile");
@@ -343,7 +337,7 @@ public class ModelInputNCTCOG implements ModelInput {
 		else if (rateType.toLowerCase().equals("areaspecific")) rates = ProductionAttractionFactory.readAreaRates(attrRateFile, this);
 		else {
 			System.err.println("Invalid attrRateType for "+purpose+": "+rateType);
-			System.exit(8);
+			System.exit(2);
 			throw new RuntimeException();
 		}
 
@@ -523,79 +517,63 @@ public class ModelInputNCTCOG implements ModelInput {
 		}
 	}
 
-	@Override
-	public synchronized Map<MarketSegment, Double> getPeakShares(TripPurpose purpose) {
-		try {
-			String shareFile = inputs.getProperty("splitting.peakShares");
-			return Files.lines(Paths.get(shareFile)).parallel().filter(line -> !line.startsWith("I"))
-					.map(line -> line.split(","))
-					.collect(Collectors.toMap(
-							args ->	new IncomeGroupSegment(Integer.parseInt(args[0])),
-							args -> Double.parseDouble(args[1])));
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(-6);
-			return null;
-		}
-	}
-
-	@Override
-	public synchronized Map<MarketSegment, Map<TravelSurveyZone, Double>> getWorkerVehicleSplits(MarketSegment segment, TripPurpose purpose) {
-		// TODO the outer map is mostly redundant - almost all trip purposes use the same data 
-		if (subsegmentations != null
-				&& subsegmentations.get(purpose) != null 
-				&& subsegmentations.get(purpose).get(segment) != null) 
-			return subsegmentations.get(purpose).get(segment);
-		if (subsegmentations == null) subsegmentations = new ConcurrentHashMap<TripPurpose,Map<MarketSegment,Map<MarketSegment,Map<TravelSurveyZone,Double>>>>();
-		if (subsegmentations.get(purpose) == null) subsegmentations.put(purpose, new ConcurrentHashMap<MarketSegment,Map<MarketSegment,Map<TravelSurveyZone,Double>>>());
-
-		final Map<MarketSegment,Map<TravelSurveyZone,Double>> map =  new ConcurrentHashMap<MarketSegment,Map<TravelSurveyZone,Double>>();
-		map.put(new IncomeGroupWorkerVehicleSegment(((IncomeGroupSegmenter) segment).getIncomeGroup(),0,0), new ConcurrentHashMap<TravelSurveyZone,Double>(graph.numZones()));
-		map.put(new IncomeGroupWorkerVehicleSegment(((IncomeGroupSegmenter) segment).getIncomeGroup(),2,1), new ConcurrentHashMap<TravelSurveyZone,Double>(graph.numZones()));
-		map.put(new IncomeGroupWorkerVehicleSegment(((IncomeGroupSegmenter) segment).getIncomeGroup(),1,1), new ConcurrentHashMap<TravelSurveyZone,Double>(graph.numZones()));
-		subsegmentations.get(purpose).put(segment, map);
-
-
-
-		String splitFile = inputs.getProperty("splitting.wkrVehSplits."+purpose.toString());
-		final int ig;
-		if (segment instanceof IncomeGroupSegmenter) {
-			ig = ((IncomeGroupSegmenter) segment).getIncomeGroup();
-		} else {
-			throw new RuntimeException();
-		}
-		try {
-			Files.lines(Paths.get(splitFile)).parallel().filter(line -> !line.startsWith("T")).forEach(line ->{
-				String[] args = line.split(",");
-				TravelSurveyZone tsz = graph.getNode(Integer.parseInt(args[0])).getZone();
-
-				double veh0 = Double.parseDouble(args[ig]);
-				double vehLtWk = Double.parseDouble(args[4+ig]);
-				double vehGeWk = Double.parseDouble(args[8+ig]);
-
-				map.entrySet().parallelStream().filter(seg -> 
-				seg.getKey() instanceof VehicleSegmenter && ((VehicleSegmenter) seg.getKey())
-				.getNumberOfVehicles() == 0).findFirst().get().getValue().put(tsz, veh0);
-				map.entrySet().parallelStream().filter(seg -> 
-				seg.getKey() instanceof VehicleSegmenter 
-				&& seg.getKey() instanceof WorkerSegmenter 
-				&& ((VehicleSegmenter) seg.getKey()).getNumberOfVehicles() < ((WorkerSegmenter) seg.getKey()).getNumberOfWorkers())
-				.findFirst().get().getValue().put(tsz, vehLtWk);
-				map.entrySet().parallelStream().filter(seg -> 
-				seg.getKey() instanceof VehicleSegmenter 
-				&& seg.getKey() instanceof WorkerSegmenter 
-				&& ((VehicleSegmenter) seg.getKey()).getNumberOfVehicles() >= ((WorkerSegmenter) seg.getKey()).getNumberOfWorkers())
-				.findFirst().get().getValue().put(tsz, vehGeWk);
-
-
-			});
-			return map;
-		} catch (IOException e) {
-			e.printStackTrace();
-			System.exit(-9);
-			return null;
-		}
-	}
+//	@Override
+//	public synchronized Map<MarketSegment, Map<TravelSurveyZone, Double>> getWorkerVehicleSplits(MarketSegment segment, TripPurpose purpose) {
+//		// TODO the outer map is mostly redundant - almost all trip purposes use the same data 
+//		if (subsegmentations != null
+//				&& subsegmentations.get(purpose) != null 
+//				&& subsegmentations.get(purpose).get(segment) != null) 
+//			return subsegmentations.get(purpose).get(segment);
+//		if (subsegmentations == null) subsegmentations = new ConcurrentHashMap<TripPurpose,Map<MarketSegment,Map<MarketSegment,Map<TravelSurveyZone,Double>>>>();
+//		if (subsegmentations.get(purpose) == null) subsegmentations.put(purpose, new ConcurrentHashMap<MarketSegment,Map<MarketSegment,Map<TravelSurveyZone,Double>>>());
+//
+//		final Map<MarketSegment,Map<TravelSurveyZone,Double>> map =  new ConcurrentHashMap<MarketSegment,Map<TravelSurveyZone,Double>>();
+//		map.put(new IncomeGroupWorkerVehicleSegment(((IncomeGroupSegmenter) segment).getIncomeGroup(),0,0), new ConcurrentHashMap<TravelSurveyZone,Double>(graph.numZones()));
+//		map.put(new IncomeGroupWorkerVehicleSegment(((IncomeGroupSegmenter) segment).getIncomeGroup(),2,1), new ConcurrentHashMap<TravelSurveyZone,Double>(graph.numZones()));
+//		map.put(new IncomeGroupWorkerVehicleSegment(((IncomeGroupSegmenter) segment).getIncomeGroup(),1,1), new ConcurrentHashMap<TravelSurveyZone,Double>(graph.numZones()));
+//		subsegmentations.get(purpose).put(segment, map);
+//
+//
+//
+//		String splitFile = inputs.getProperty("splitting.wkrVehSplits."+purpose.toString());
+//		final int ig;
+//		if (segment instanceof IncomeGroupSegmenter) {
+//			ig = ((IncomeGroupSegmenter) segment).getIncomeGroup();
+//		} else {
+//			throw new RuntimeException();
+//		}
+//		try {
+//			Files.lines(Paths.get(splitFile)).parallel().filter(line -> !line.startsWith("T")).forEach(line ->{
+//				String[] args = line.split(",");
+//				TravelSurveyZone tsz = graph.getNode(Integer.parseInt(args[0])).getZone();
+//
+//				double veh0 = Double.parseDouble(args[ig]);
+//				double vehLtWk = Double.parseDouble(args[4+ig]);
+//				double vehGeWk = Double.parseDouble(args[8+ig]);
+//
+//				map.entrySet().parallelStream().filter(seg -> 
+//				seg.getKey() instanceof VehicleSegmenter && ((VehicleSegmenter) seg.getKey())
+//				.getNumberOfVehicles() == 0).findFirst().get().getValue().put(tsz, veh0);
+//				map.entrySet().parallelStream().filter(seg -> 
+//				seg.getKey() instanceof VehicleSegmenter 
+//				&& seg.getKey() instanceof WorkerSegmenter 
+//				&& ((VehicleSegmenter) seg.getKey()).getNumberOfVehicles() < ((WorkerSegmenter) seg.getKey()).getNumberOfWorkers())
+//				.findFirst().get().getValue().put(tsz, vehLtWk);
+//				map.entrySet().parallelStream().filter(seg -> 
+//				seg.getKey() instanceof VehicleSegmenter 
+//				&& seg.getKey() instanceof WorkerSegmenter 
+//				&& ((VehicleSegmenter) seg.getKey()).getNumberOfVehicles() >= ((WorkerSegmenter) seg.getKey()).getNumberOfWorkers())
+//				.findFirst().get().getValue().put(tsz, vehGeWk);
+//
+//
+//			});
+//			return map;
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//			System.exit(-9);
+//			return null;
+//		}
+//	}
 
 	@Override
 	public String getOutputDirectory() {
@@ -651,7 +629,7 @@ public class ModelInputNCTCOG implements ModelInput {
 		
 		if (genName==null) {
 			System.err.println("No production generator specified for "+purpose);
-			System.exit(4);
+			System.exit(5);
 		}
 		
 		if (genName.toLowerCase().equals("basic")) 
@@ -661,7 +639,7 @@ public class ModelInputNCTCOG implements ModelInput {
 			String srcName = inputs.getProperty("tripPurpose."+purpose+".prodSource");
 			if (srcName == null) {
 				System.err.println("No source provided for "+purpose+" rate proportion generator");
-				System.exit(4);
+				System.exit(5);
 			}
 			
 			TripPurpose source = new BasicTripPurpose(srcName,this);
@@ -682,6 +660,17 @@ public class ModelInputNCTCOG implements ModelInput {
 		
 		if (genName.toLowerCase().equals("basic")) 
 			return new BasicTripGenerator(getNetwork(),getAttrRates(purpose));
+		else if (genName.toLowerCase().equals("rateproportion")) {
+			String srcName = inputs.getProperty("tripPurpose."+purpose+".attrSource");
+			if (srcName == null) {
+				System.err.println("No source provided for "+purpose+" rate proportion generator");
+				System.exit(4);
+			}
+			
+			TripPurpose source = new BasicTripPurpose(srcName,this);
+			
+			return new RateProportionTripGenerator(getNetwork(),getProdRates(source),getProdRates(purpose),source.getProductions());
+		}
 		throw new RuntimeException("TripGenerator loading not yet implemented for "+genName);
 	}
 
@@ -721,7 +710,7 @@ public class ModelInputNCTCOG implements ModelInput {
 		} catch (NoSuchMethodException | SecurityException e) {
 			System.err.println("MarketSegment label "+label+" unknown or not available");
 			e.printStackTrace();
-			System.exit(5);
+			System.exit(-1);
 		}
 
 		return null;
@@ -738,7 +727,7 @@ public class ModelInputNCTCOG implements ModelInput {
 			return new Attr2ProdProportionalBalancer();
 		
 		System.err.println("Unknown trip balancer for "+purpose+": "+balancerName);
-		System.exit(5);
+		System.exit(6);
 		throw new RuntimeException();
 	}
 
@@ -777,7 +766,7 @@ public class ModelInputNCTCOG implements ModelInput {
 		} catch (IOException e) {
 			System.err.println("IOException when reading distribution time splits for "+purpose);
 			System.err.println("Split file may be invalid: "+splitFile);
-			System.exit(6);
+			System.exit(7);
 		}
 		return timeCostShares.get(purpose).get(segment);
 	}

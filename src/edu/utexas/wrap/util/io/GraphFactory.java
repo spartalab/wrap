@@ -12,6 +12,8 @@ import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.CentroidConnector;
@@ -112,18 +114,15 @@ public class GraphFactory {
 	public static Graph readEnhancedGraph(File f, Integer thruNode) throws FileNotFoundException, IOException {
 		try {
 		MessageDigest md = MessageDigest.getInstance("MD5");
-		String line;
 		Graph g = new Graph();
-		int numZones = 0;
+		AtomicInteger numZones = new AtomicInteger(0);
 		DigestInputStream dis = new DigestInputStream(new FileInputStream(f), md);
 		BufferedReader lf = new BufferedReader(new InputStreamReader(dis));
-		Map<Integer, Node> nodes = new HashMap<Integer,Node>();
-		lf.readLine(); // skip header
+		Map<Integer, Node> nodes = new ConcurrentHashMap<Integer,Node>();
 		
-		while (true) {
-			line = lf.readLine();
-			if (line == null || line.equals(""))
-				break;
+		lf.lines().parallel()
+		.filter(line -> line != null && !line.startsWith("I") && !line.equals(""))
+		.forEach(line -> {
 
 			String[] args = line.split(",");
 
@@ -133,7 +132,7 @@ public class GraphFactory {
 			if (!nodes.containsKey(nodeA)) {
 				if (nodeA < thruNode) {
 					Node a = new Node(nodeA, true, nodes.size());
-					TravelSurveyZone tszA = new TravelSurveyZone(a,numZones++,null);
+					TravelSurveyZone tszA = new TravelSurveyZone(a,numZones.getAndIncrement(),null);
 					a.setTravelSurveyZone(tszA);
 					g.addZone(tszA);
 					nodes.put(nodeA, a);
@@ -144,11 +143,11 @@ public class GraphFactory {
 			if (!nodes.containsKey(nodeB)) {
 				if (nodeB < thruNode) {
 					Node b = new Node(nodeB, true, nodes.size());
-					TravelSurveyZone tszB = new TravelSurveyZone(b,numZones++,null);
+					TravelSurveyZone tszB = new TravelSurveyZone(b,numZones.getAndIncrement(),null);
 					b.setTravelSurveyZone(tszB);
 					g.addZone(tszB);
 					nodes.put(nodeB, b);
-					numZones++;
+					numZones.getAndIncrement();
 				} else
 					nodes.put(nodeB, new Node(nodeB, false, nodes.size()));
 
@@ -206,7 +205,6 @@ public class GraphFactory {
 			allowed[Mode.HVY_TRUCK.ordinal()] = a;
 			allowed[Mode.MED_TRUCK.ordinal()] = a;
 
-//			if (aCap > 0.0) {
 				Link AB = null;
 				if (aCap > 0 && satFlowA > 0) {
 					AB = new TolledEnhancedLink(nodes.get(nodeA), nodes.get(nodeB), aCap, length, ffTimeA, alpha,
@@ -216,7 +214,6 @@ public class GraphFactory {
 							opCostA.floatValue());
 				}
 				g.add(AB);
-//			}
 
 			if (bCap > 0.0) {
 				Link BA = null;
@@ -229,9 +226,9 @@ public class GraphFactory {
 				}
 				g.add(BA);
 			}
-		}
+		});
 		lf.close();
-		g.setNumZones(numZones);
+		g.setNumZones(numZones.get());
 		g.setMD5(md.digest());
 		g.complete();
 		return g;

@@ -8,7 +8,7 @@ import edu.utexas.wrap.generation.TripGenerator;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.TravelSurveyZone;
+//import edu.utexas.wrap.net.TravelSurveyZone;
 
 import java.util.Collection;
 import java.util.Map;
@@ -117,8 +117,6 @@ public interface ModelInput {
 	 * @return a Map from each applicable MarketSegment to the corresponding time period's share
 	 */
 	Map<TimePeriod,Double> getDistributionShares(TripPurpose purpose, MarketSegment segment);
-	@Deprecated
-	Map<MarketSegment,Double> getPeakShares(TripPurpose purpose);
 
 	//Trip Distribution Inputs
 	/**This method provides a matrix of costs between all pairs of TravelSurveyZones
@@ -168,7 +166,7 @@ public interface ModelInput {
 	 * @return a Map from each subsegmented MarketSegment to a Map from each TravelSurveyZone to the
 	 * share of that TSZ's trips that fall into the given subsegmented MarketSegment
 	 */
-	Map<MarketSegment,Map<TravelSurveyZone,Double>> getWorkerVehicleSplits(MarketSegment segment, TripPurpose purpose);
+//	Map<MarketSegment,Map<TravelSurveyZone,Double>> getWorkerVehicleSplits(MarketSegment segment, TripPurpose purpose);
 
 	//Mode Choice Inputs
 	/** This method provides details on each IncomeGroup's mode choice shares
@@ -234,7 +232,18 @@ public interface ModelInput {
 	 */
 	String getLabel(MarketSegment segment);
 
+	/**
+	 * @return a collection of TimePeriods whose OD matrices should be output
+	 */
 	Collection<TimePeriod> getUsedTimePeriods();
 
+	/** This method gets the value-of-time of trips for a specified purpose in a specified 
+	 * segment using a specified mode
+	 * 
+	 * @param purpose the TripPurpose of an OD matrix whose VOT should be returned
+	 * @param segment the MarketSegment of an OD matrix whose VOT should be returned
+	 * @param mode the Mode of an OD matrix whose VOT should be returned
+	 * @return a Float representing the cost of each time unit for the specified OD matrix attributes
+	 */
 	Float getVOT(TripPurpose purpose, MarketSegment segment, Mode mode);
 }
