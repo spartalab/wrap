@@ -17,7 +17,8 @@ import edu.utexas.wrap.util.calc.AverageExcessCostCalculator;
  * @author William
  *
  */
-public abstract class Optimizer {
+@Deprecated
+public abstract class OldOptimizer {
 	//Loop control variables
 	public boolean shuttingDown = false;
 	protected Integer iteration = 1;
@@ -32,7 +33,7 @@ public abstract class Optimizer {
 	protected AverageExcessCostCalculator ac;
 	protected LowestCostPathCostCalculator lc;
 	protected long ttime;
-	public Optimizer(Graph g) {
+	public OldOptimizer(Graph g) {
 		graph = g;
 	}
 	

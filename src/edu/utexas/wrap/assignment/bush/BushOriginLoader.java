@@ -11,7 +11,7 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-public class BushOriginLoader extends BushOriginBuilder {
+public class BushOriginLoader extends OldBushOriginBuilder {
 	Boolean print = true;
 	
 	public BushOriginLoader(Graph g, TravelSurveyZone zone, Set<BushOrigin> origins) {

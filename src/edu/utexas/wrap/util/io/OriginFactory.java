@@ -10,7 +10,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import edu.utexas.wrap.assignment.AssignmentLoader;
+import edu.utexas.wrap.assignment.OldAssignmentLoader;
 import edu.utexas.wrap.demand.containers.AutoODHashMatrix;
 import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.demand.DemandMap;
@@ -24,7 +24,7 @@ import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**
- * This class provides static methods to read infomration relating to demand in a network
+ * This class provides static methods to read information relating to demand in a network
  */
 public class OriginFactory {
 	
@@ -82,7 +82,7 @@ public class OriginFactory {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public static void readEnhancedTrips(File odMatrix, Graph g, AssignmentLoader dl) throws FileNotFoundException, IOException {
+	public static void readEnhancedTrips(File odMatrix, Graph g, OldAssignmentLoader dl) throws FileNotFoundException, IOException {
 		int numZones = 0;
 		BufferedReader matrixFile = new BufferedReader(new FileReader(odMatrix));
 		String line;
@@ -236,7 +236,7 @@ public class OriginFactory {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public static void readTNTPOriginSpecificProportionalVOTDemand(File odMatrix, Map<Node, List<Float[]>> map, Graph g, AssignmentLoader dl)
+	public static void readTNTPOriginSpecificProportionalVOTDemand(File odMatrix, Map<Node, List<Float[]>> map, Graph g, OldAssignmentLoader dl)
 			throws FileNotFoundException, IOException {
 		/////////////////////////////////////
 		// Read OD Matrix and assign flows
@@ -290,7 +290,7 @@ public class OriginFactory {
 
 	}
 
-	public static void readTNTPUniformVOTtrips(File VOTfile, File odMatrix, Graph g, AssignmentLoader dl) throws FileNotFoundException {
+	public static void readTNTPUniformVOTtrips(File VOTfile, File odMatrix, Graph g, OldAssignmentLoader dl) throws FileNotFoundException {
 		if (g == null)
 			throw new RuntimeException("Graph must be constructed before reading OD matrix");
 		try {

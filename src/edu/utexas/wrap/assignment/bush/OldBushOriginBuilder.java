@@ -9,12 +9,13 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-/**Child threads created by {@link edu.utexas.wrap.assignment.BushOriginFactory}
+/**Child threads created by {@link edu.utexas.wrap.assignment.OldBushOriginFactory}
  * to build the initial bush for each origin
  * @author William
  *
  */
-public class BushOriginBuilder extends Thread {
+@Deprecated
+public class OldBushOriginBuilder extends Thread {
 	Map<Mode, Map<Float, AutoDemandMap>> map;
 	TravelSurveyZone zone;
 	Graph g;
@@ -26,7 +27,7 @@ public class BushOriginBuilder extends Thread {
 	 * @param o the origin node
 	 * @param origins 
 	 */ 
-	public BushOriginBuilder(Graph g, TravelSurveyZone o, Set<BushOrigin> origins) {
+	public OldBushOriginBuilder(Graph g, TravelSurveyZone o, Set<BushOrigin> origins) {
 		this.zone = o;
 		this.map = new HashMap<Mode, Map<Float, AutoDemandMap>>();
 		this.g = g;

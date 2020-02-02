@@ -7,17 +7,17 @@ import java.util.Set;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import edu.utexas.wrap.assignment.bush.AlgorithmBOptimizer;
 import edu.utexas.wrap.assignment.bush.AlternateSegmentPair;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.bush.BushOrigin;
+import edu.utexas.wrap.assignment.bush.algoB.OldAlgoBOptimizer;
 import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.demand.containers.EmptyDemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 
-public class SensitivityAnalyzer extends AlgorithmBOptimizer {
+public class SensitivityAnalyzer extends OldAlgoBOptimizer {
 	
 	public SensitivityAnalyzer(Graph g, Set<BushOrigin> o) {
 		super(g, o);
@@ -72,7 +72,7 @@ public class SensitivityAnalyzer extends AlgorithmBOptimizer {
 				Node cur;
 				b.shortTopoSearch();
 				b.longTopoSearch(false);
-				Map<Link,Double> bushFlows = b.getFlows(); 
+				Map<Link,Double> bushFlows = b.flows(); 
 				for (int i = to.length-1;i >= 0; i--) {
 					cur = to[i];
 					if (cur == null || cur.equals(b.getOrigin().getNode())) continue;
@@ -102,7 +102,7 @@ public class SensitivityAnalyzer extends AlgorithmBOptimizer {
 	}
 
 	private Double getNewDeltaH(AlternateSegmentPair asp) {
-		Float vot = asp.getBush().getVOT();
+		Float vot = asp.getBush().valueOfTime();
 		Double denominator = Stream.concat(
 				StreamSupport.stream(asp.longPath().spliterator(), true),
 				StreamSupport.stream(asp.shortPath().spliterator(), true)

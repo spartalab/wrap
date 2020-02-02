@@ -106,7 +106,7 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getVehicleClass()
 	 */
 	@Override
-	public Mode getVehicleClass() {
+	public Mode vehicleClass() {
 		return c;
 	}
 
@@ -114,7 +114,7 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getVOT()
 	 */
 	@Override
-	public Float getVOT() {
+	public Float valueOfTime() {
 		return vot;
 	}
 
@@ -162,7 +162,7 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	 * @return the subPath between the two given points
 	 */
 	public Path subPath(Integer start, Integer end) {
-		Path sp = new Path(getVehicleClass(), getVOT());
+		Path sp = new Path(vehicleClass(), valueOfTime());
 		for (Integer i = start; i < size() && i < end; i++) {
 			sp.add(get(i));
 		}
@@ -190,7 +190,7 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getLinks()
 	 */
 	@Override
-	public Set<Link> getUsedLinks() {
+	public Set<Link> usedLinks() {
 		return new HashSet<Link>(this);
 	}
 
@@ -204,20 +204,9 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 //	}
 
 	@Override
-	public Map<Link, Double> getFlows() {
+	public Map<Link, Double> flows() {
 		//TODO
 		throw new RuntimeException("Not Yet Implemented");
 	}
 
-	@Override
-	public void fromByteStream(InputStream in) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("Not Yet Implemented");
-	}
-
-	@Override
-	public void toByteStream(OutputStream out) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("Not Yet Implemented");
-	}
 }

@@ -16,6 +16,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
+import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.sensitivity.DerivativeLink;
 import edu.utexas.wrap.marketsegmentation.IndustryClass;
 
@@ -401,5 +402,20 @@ public class Graph {
 			tsz.setAreaClass(ac);
 			tsz.setEmploymentByIncomeGroupThenIndustry(empByIGthenIC);
 		});
+	}
+
+	public void loadDemand(AssignmentContainer container) {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("Not yet impelemtned");
+	}
+
+	public String getDirectory() {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("Not yet implemented");
+	}
+
+	public double cheapestCostPossible(AssignmentContainer container) {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("Not yet implemented");
 	}
 }

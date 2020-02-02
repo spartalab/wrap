@@ -56,8 +56,8 @@ public class AlternateSegmentPair {
 	 * @return the difference in path costs between the alternate segments
 	 */
 	public Double priceDiff() {
-		Float vot = bush.getVOT();
-		Mode klass = bush.getVehicleClass();
+		Float vot = bush.valueOfTime();
+		Mode klass = bush.vehicleClass();
 		
 		//For each link in the longest and shortest paths, sum the link prices in parallel through a Stream
 		Double longPrice = StreamSupport.stream(longPath().spliterator(), true).unordered().mapToDouble(x -> x.getPrice(vot, klass)).sum();

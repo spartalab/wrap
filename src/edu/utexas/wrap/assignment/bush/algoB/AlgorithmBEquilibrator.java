@@ -1,86 +1,74 @@
-package edu.utexas.wrap.assignment.bush;
+package edu.utexas.wrap.assignment.bush.algoB;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.assignment.bush.AlternateSegmentPair;
+import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.util.NegativeFlowException;
-import edu.utexas.wrap.util.UnreachableException;
 
-
-/** This class implements Dial's Algorithm B to equilibrate
- * bushes as a bush-based optimizer
- * @author William
- *
- */
-public class AlgorithmBOptimizer extends BushOptimizer{
+public class AlgorithmBEquilibrator {
 	Integer numThreshold = 100;
+	
+	public void equilibrate(Bush bush) {
+		bush.clearLabels();
+		Node[] to = bush.getTopologicalOrder(true);
+		Node cur;
 
-	/**
-	 * @param g the graph on which the Optimizer should operate 
-	 * @param o the set of origins to optimize/equilibrate
-	 */
-	public AlgorithmBOptimizer(Graph g, Set<BushOrigin> o) {
-		super(g,o);
-	}
+//		//Assign the correct back-pointers to BushMerges using topological search
+//		bush.shortTopoSearch();
+//		bush.longTopoSearch(true);
+//		
+		//Get the flows on the current bush
+		Map<Link,Double> bushFlows = bush.flows();
 
-	/** Implement the Algorithm B version of bush equilibration
-	 * @param b a bush to be equilibrated
-	 */
-	protected synchronized void equilibrateBush(Bush b) {
-		try {
-			//Wait for the bush to be idle (it may be being written to a file)
-			b.acquire();
-			//Acquire the topological order of the bush and cahce for later use
-			b.clearLabels();
-			Node[] to = b.getTopologicalOrder(true);
-			Node cur;
-
-			//Assign the correct back-pointers to BushMerges using topological search
-			b.shortTopoSearch();
-			b.longTopoSearch(true);
+		//In reverse topological order,
+		for (int i = to.length - 1; i >= 0; i--) {
+			cur = to[i];
 			
-			//Get the flows on the current bush
-			Map<Link,Double> bushFlows = b.getFlows();
+			//Ignore the origin. Should be same as break if topoOrder is correct 
+			if (cur == null || cur.equals(bush.getOrigin().getNode())) continue;
 
-			//In reverse topological order,
-			for (int i = to.length - 1; i >= 0; i--) {
-				cur = to[i];
-				
-				//Ignore the origin. Should be same as break if topoOrder is correct 
-				if (cur == null || cur.equals(b.getOrigin().getNode())) continue;
+			//Determine the ASP, including the maximum delta that can be shifted
+			AlternateSegmentPair asp = bush.getShortLongASP(cur, bushFlows);
+			if (asp == null) continue; //No ASP exists
 
-				//Determine the ASP, including the maximum delta that can be shifted
-				AlternateSegmentPair asp = b.getShortLongASP(cur, bushFlows);
-				if (asp == null) continue; //No ASP exists
+			//calculate delta h, capping at maxDelta
+			Double deltaH = getDeltaH(asp);
 
-				//calculate delta h, capping at maxDelta
-				Double deltaH = getDeltaH(asp);
-
-				//Modify link flows
-				updateDeltaX(asp, bushFlows, deltaH);
-			}
-
-			//Update bush merge splits for next flow calculation
-			b.updateSplits(bushFlows);
-			//Release cached topological order memory for later use
-			b.clearCache();
-			//The bush can now be written or improved
-			b.release();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (UnreachableException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			//Modify link flows
+			updateDeltaX(asp, bushFlows, deltaH);
 		}
 
+		//Update bush merge splits for next flow calculation
+		bush.updateSplits(bushFlows);
+		//Release cached topological order memory for later use
+		bush.clear();	
 	}
+	
+	/** Calculate the amount of flow to shift. Delta H is defined as the
+	 * difference in the ASP's longest and shortest path costs divided by
+	 * the sum of the first derivatives of the costs for all links in the ASP
+	 * @param asp	The AlternateSegmentPair used to calculate delta H
+	 * @return		The smaller of the calculated delta H or the max delta
+	 */
+	private Double getDeltaH(AlternateSegmentPair asp) {
+		Float vot = asp.getBush().valueOfTime();
+		
+		Double denominator = Stream.concat(
+				//for all links in the longest and shortest paths
+				StreamSupport.stream(asp.shortPath().spliterator(), true),
+				StreamSupport.stream(asp.longPath().spliterator(), true)
+				//In no particular order, sum the price derivatives
+				).unordered().mapToDouble(x -> x.pricePrime(vot)).sum();
 
+		//cut off at the maximum delta
+		return Math.min(asp.maxDelta(), asp.priceDiff()/denominator);
+	}
+	
 	/** Apply link flow changes on an AlternateSegmentPair
 	 * @param asp the pair of long and short links to modify
 	 * @param flows the current flows on the bush
@@ -111,6 +99,7 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 			l.changeFlow(safeDeltaH);
 		});
 	}
+
 
 	/**Given an amount to shift on a link and the bush flows available, calculate
 	 * the numerically safe amount that can be removed.
@@ -147,31 +136,6 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 					+ "\tdelta H: "+td);
 		}
 		return td;
-	}
-
-	/** Calculate the amount of flow to shift. Delta H is defined as the
-	 * difference in the ASP's longest and shortest path costs divided by
-	 * the sum of the first derivatives of the costs for all links in the ASP
-	 * @param asp	The AlternateSegmentPair used to calculate delta H
-	 * @return		The smaller of the calculated delta H or the max delta
-	 */
-	private Double getDeltaH(AlternateSegmentPair asp) {
-		Float vot = asp.getBush().getVOT();
-		
-		Double denominator = Stream.concat(
-				//for all links in the longest and shortest paths
-				StreamSupport.stream(asp.shortPath().spliterator(), true),
-				StreamSupport.stream(asp.longPath().spliterator(), true)
-				//In no particular order, sum the price derivatives
-				).unordered().mapToDouble(x -> x.pricePrime(vot)).sum();
-
-		//cut off at the maximum delta
-		return Math.min(asp.maxDelta(), asp.priceDiff()/denominator);
-	}
-
-	@Override
-	public String toString() {
-		return "Algorithm B Optimizer";
 	}
 
 }

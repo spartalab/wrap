@@ -8,7 +8,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import edu.utexas.wrap.assignment.Optimizer;
+import edu.utexas.wrap.assignment.OldOptimizer;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.util.calc.AverageExcessCostCalculator;
@@ -25,7 +25,8 @@ import edu.utexas.wrap.util.calc.TotalSystemTravelTimeCalculator;
  * @author William
  *
  */
-public abstract class BushOptimizer extends Optimizer {
+@Deprecated
+public abstract class OldBushOptimizer extends OldOptimizer {
 	public static boolean printProgress = true;
 	public static boolean printBushes = true;
 
@@ -38,7 +39,7 @@ public abstract class BushOptimizer extends Optimizer {
 	 * @param g	the graph on which the optimizer should operate
 	 * @param o	the set of BushOrigins to equilibrate
 	 */
-	public BushOptimizer(Graph g, Set<BushOrigin> o) {
+	public OldBushOptimizer(Graph g, Set<BushOrigin> o) {
 		super(g);
 		origins = o;
 	}
@@ -194,7 +195,7 @@ public abstract class BushOptimizer extends Optimizer {
 		Map<Link,Double> linkFlows = graph.getLinks().parallelStream().collect(Collectors.toMap(Function.identity(), l -> l.getFlow()));
 		Map<Link,Double> bushFlows = new HashMap<Link,Double>(graph.numLinks(),1.0f);
 		
-		origins.parallelStream().flatMap(o -> o.getContainers().parallelStream()).map(b -> b.getFlows()).sequential().forEach(m ->{
+		origins.parallelStream().flatMap(o -> o.getContainers().parallelStream()).map(b -> b.flows()).sequential().forEach(m ->{
 			for (Entry<Link, Double> e : m.entrySet()) {
 				bushFlows.put(e.getKey(), bushFlows.getOrDefault(e.getKey(), 0.0) + e.getValue());
 			}
