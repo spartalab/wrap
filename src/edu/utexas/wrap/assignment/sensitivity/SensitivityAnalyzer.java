@@ -9,7 +9,7 @@ import java.util.stream.StreamSupport;
 
 import edu.utexas.wrap.assignment.bush.AlternateSegmentPair;
 import edu.utexas.wrap.assignment.bush.Bush;
-import edu.utexas.wrap.assignment.bush.BushOrigin;
+import edu.utexas.wrap.assignment.bush.OldBushOrigin;
 import edu.utexas.wrap.assignment.bush.algoB.OldAlgoBOptimizer;
 import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.demand.containers.EmptyDemandMap;
@@ -19,7 +19,7 @@ import edu.utexas.wrap.net.Node;
 
 public class SensitivityAnalyzer extends OldAlgoBOptimizer {
 	
-	public SensitivityAnalyzer(Graph g, Set<BushOrigin> o) {
+	public SensitivityAnalyzer(Graph g, Set<OldBushOrigin> o) {
 		super(g, o);
 		// TODO Auto-generated constructor stub
 	}
@@ -44,9 +44,9 @@ public class SensitivityAnalyzer extends OldAlgoBOptimizer {
 			Graph gPrime = graph.getDerivativeGraph(linkMap,nodeMap);
 			AutoDemandMap demand = new EmptyDemandMap(gPrime);
 
-			Set<BushOrigin> newOrigins = new HashSet<BushOrigin>(origins.size(),1.0f);
-			for (BushOrigin oldOrigin : origins) {
-				BushOrigin newOrigin = new BushOrigin(nodeMap.get(oldOrigin.getNode()));
+			Set<OldBushOrigin> newOrigins = new HashSet<OldBushOrigin>(origins.size(),1.0f);
+			for (OldBushOrigin oldOrigin : origins) {
+				OldBushOrigin newOrigin = new OldBushOrigin(nodeMap.get(oldOrigin.getNode()));
 				for (Bush oldBush : oldOrigin.getContainers()) {
 					Bush newBush = new Bush(oldBush,gPrime,demand,linkMap,nodeMap,newOrigin);
 					newOrigin.add(newBush);
@@ -64,8 +64,8 @@ public class SensitivityAnalyzer extends OldAlgoBOptimizer {
 		return true;
 	}
 
-	private void sensitivityIterate(Graph gPrime, Set<BushOrigin> newOrigins) {
-		for (BushOrigin origin : newOrigins) {
+	private void sensitivityIterate(Graph gPrime, Set<OldBushOrigin> newOrigins) {
+		for (OldBushOrigin origin : newOrigins) {
 			for (Bush b : origin.getContainers()) try {
 				b.clearLabels();
 				Node[] to = b.getTopologicalOrder(true);

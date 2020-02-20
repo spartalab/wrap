@@ -14,6 +14,7 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  * @author William
  *
  */
+@Deprecated
 public abstract class Origin {
 	//The network node with which the origin is associated
 	private final Node self;

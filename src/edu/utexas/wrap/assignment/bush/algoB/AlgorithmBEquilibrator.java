@@ -61,9 +61,10 @@ public class AlgorithmBEquilibrator {
 		Double denominator = Stream.concat(
 				//for all links in the longest and shortest paths
 				StreamSupport.stream(asp.shortPath().spliterator(), true),
-				StreamSupport.stream(asp.longPath().spliterator(), true)
+				StreamSupport.stream(asp.longPath().spliterator(), true))
+				
 				//In no particular order, sum the price derivatives
-				).unordered().mapToDouble(x -> x.pricePrime(vot)).sum();
+				.unordered().mapToDouble(x -> x.pricePrime(vot)).sum();
 
 		//cut off at the maximum delta
 		return Math.min(asp.maxDelta(), asp.priceDiff()/denominator);
@@ -111,6 +112,7 @@ public class AlgorithmBEquilibrator {
 	private Double numericalGuard(Link l, Map<Link, Double> bushFlows, Double deltaH) {
 		//This next section handles some numerical instability
 		if (deltaH == null || deltaH == 0.0) return 0.0;
+		
 		Double td = -deltaH;	//Current amount to be subtracted
 		Double ld = -bushFlows.getOrDefault(l,0.0);	//Maximum amount that can be subtracted
 		Double ud = Math.max(Math.ulp(ld),Math.ulp(td)); //Machine epsilon on these two terms (lowest precision available)
@@ -125,6 +127,7 @@ public class AlgorithmBEquilibrator {
 		//Now do the same thing, but this time for link flow
 		ld = -l.getFlow();	//Maximum amount that can be subtracted
 		ud = Math.max(Math.ulp(ld), Math.ulp(td));	//Machine epsilon on the two terms (lowest precision available)
+		
 		if (td < ld) {	//If too much flow is removed from the bush
 			if (ld-td <= numThreshold*ud 
 //					|| (ld-td) < Math.pow(10, -3)
@@ -135,6 +138,7 @@ public class AlgorithmBEquilibrator {
 					+ "Required threshold: "+(ld-td)/ud+"\tLink flow: "+ld
 					+ "\tdelta H: "+td);
 		}
+		
 		return td;
 	}
 

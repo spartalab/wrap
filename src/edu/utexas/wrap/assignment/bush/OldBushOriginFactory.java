@@ -29,7 +29,7 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 public class OldBushOriginFactory extends OldAssignmentLoader {
 	Map<TravelSurveyZone, OldBushOriginBuilder> pool;
 	ExecutorService p; 
-	Set<BushOrigin> origins;
+	Set<OldBushOrigin> origins;
 	
 	/**Default constructor
 	 * @param g the graph onto which Origins should be built
@@ -38,14 +38,14 @@ public class OldBushOriginFactory extends OldAssignmentLoader {
 		super(g);
 		pool = new HashMap<TravelSurveyZone, OldBushOriginBuilder>(g.numZones());
 		p = Executors.newWorkStealingPool();
-		origins = new HashSet<BushOrigin>();
+		origins = new HashSet<OldBushOrigin>();
 	}
 	
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.assignment.AssignmentLoader#add(edu.utexas.wrap.net.Node, edu.utexas.wrap.demand.containers.AutoDemandHashMap)
 	 */
 	public void submit(TravelSurveyZone zone, AutoDemandMap map) {
-		pool.putIfAbsent(zone, new BushOriginLoader(graph,zone,origins));
+		pool.putIfAbsent(zone, new OldBushOriginLoader(graph,zone,origins));
 		pool.get(zone).addMap(map);
 	} 
 	
@@ -68,7 +68,7 @@ public class OldBushOriginFactory extends OldAssignmentLoader {
 	/**Wait until all worker threads have finished. Print updates
 	 * @return the set of completely loaded BushOrigins
 	 */
-	public Set<BushOrigin> finishAll() {
+	public Set<OldBushOrigin> finishAll() {
 		ForkJoinPool p = (ForkJoinPool) this.p;
 		System.out.print("\r                                ");
 		p.shutdown();

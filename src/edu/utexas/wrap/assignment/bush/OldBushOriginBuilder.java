@@ -19,15 +19,15 @@ public class OldBushOriginBuilder extends Thread {
 	Map<Mode, Map<Float, AutoDemandMap>> map;
 	TravelSurveyZone zone;
 	Graph g;
-	public BushOrigin orig;
-	Set<BushOrigin> origins;
+	public OldBushOrigin orig;
+	Set<OldBushOrigin> origins;
 
 	/**Default constructor
 	 * @param g the graph on which the origin should build its bushes
 	 * @param o the origin node
 	 * @param origins 
 	 */ 
-	public OldBushOriginBuilder(Graph g, TravelSurveyZone o, Set<BushOrigin> origins) {
+	public OldBushOriginBuilder(Graph g, TravelSurveyZone o, Set<OldBushOrigin> origins) {
 		this.zone = o;
 		this.map = new HashMap<Mode, Map<Float, AutoDemandMap>>();
 		this.g = g;
@@ -46,7 +46,7 @@ public class OldBushOriginBuilder extends Thread {
 	 * @see java.lang.Thread#run()
 	 */
 	public void run() {
-		orig = new BushOrigin(zone);
+		orig = new OldBushOrigin(zone);
 		for (Mode c : map.keySet()) {
 			for (Float vot : map.get(c).keySet()) {
 				AutoDemandMap odm = map.get(c).get(vot);

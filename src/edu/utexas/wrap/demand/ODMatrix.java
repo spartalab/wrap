@@ -2,7 +2,6 @@ package edu.utexas.wrap.demand;
 
 import java.util.Collection;
 
-import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
@@ -16,7 +15,7 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  * @author William
  *
  */
-public interface ODMatrix<C extends AssignmentContainer> {
+public interface ODMatrix {
 	
 	/**
 	 * @return the Mode associated with this matrix 
@@ -46,5 +45,7 @@ public interface ODMatrix<C extends AssignmentContainer> {
 	
 	public void setVOT(float VOT);
 	
-	public Collection<C> getContainers();
+	public Collection<TravelSurveyZone> getOrigins();
+	
+	public DemandMap getDemandMap(TravelSurveyZone origin);
 }

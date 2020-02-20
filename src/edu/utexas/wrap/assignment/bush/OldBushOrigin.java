@@ -16,14 +16,15 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.FibonacciHeap;
 import edu.utexas.wrap.util.FibonacciLeaf;
 
-public class BushOrigin extends Origin {
+@Deprecated
+public class OldBushOrigin extends Origin {
 	private List<Bush> containers;
 	private BackVector[] initMap;
 
 	/**Default constructor
 	 * @param self the Node from which the Bushes will emanate
 	 */
-	public BushOrigin(TravelSurveyZone self) {
+	public OldBushOrigin(TravelSurveyZone self) {
 		super(self);
 		containers = new ArrayList<Bush>();
 	}

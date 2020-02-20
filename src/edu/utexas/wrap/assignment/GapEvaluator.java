@@ -1,20 +1,25 @@
-package edu.utexas.wrap.assignment.bush;
+package edu.utexas.wrap.assignment;
 
 import java.io.IOException;
 import java.util.stream.Stream;
 
-import edu.utexas.wrap.assignment.AssignmentEvaluator;
-import edu.utexas.wrap.assignment.AssignmentContainer;
-import edu.utexas.wrap.assignment.AssignmentReader;
-import edu.utexas.wrap.assignment.AssignmentWriter;
 import edu.utexas.wrap.net.Graph;
 
-public class AssignmentGapEvaluator<T extends AssignmentContainer> implements AssignmentEvaluator<T> {
+public class GapEvaluator<T extends AssignmentContainer> implements AssignmentEvaluator<T> {
 	
 	private Graph network;
 	private AssignmentReader<T> reader;
 	private AssignmentWriter<T> writer;
 	private Double systemIncurredCost, cheapestPossibleCost; //total system general cost, total cheapest path general cost
+	
+	public GapEvaluator(Graph network,
+			AssignmentReader<T> reader,
+			AssignmentWriter<T> writer) {
+		this.network = network;
+		this.reader = reader;
+		this.writer = writer;
+	}
+	
 
 	@Override
 	public double getValue(Stream<T> containerStream) {

@@ -8,7 +8,7 @@ import java.util.stream.StreamSupport;
 import edu.utexas.wrap.assignment.bush.AlternateSegmentPair;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.bush.OldBushOptimizer;
-import edu.utexas.wrap.assignment.bush.BushOrigin;
+import edu.utexas.wrap.assignment.bush.OldBushOrigin;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
@@ -29,7 +29,7 @@ public class OldAlgoBOptimizer extends OldBushOptimizer{
 	 * @param g the graph on which the Optimizer should operate 
 	 * @param o the set of origins to optimize/equilibrate
 	 */
-	public OldAlgoBOptimizer(Graph g, Set<BushOrigin> o) {
+	public OldAlgoBOptimizer(Graph g, Set<OldBushOrigin> o) {
 		super(g,o);
 	}
 

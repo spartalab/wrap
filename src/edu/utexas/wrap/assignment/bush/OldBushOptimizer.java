@@ -32,14 +32,14 @@ public abstract class OldBushOptimizer extends OldOptimizer {
 
 	private int innerIters = 8;
 	
-	protected Set<BushOrigin> origins;
+	protected Set<OldBushOrigin> origins;
 	protected Integer relativeGapExp = -8;
 
 	/**Default constructor
 	 * @param g	the graph on which the optimizer should operate
 	 * @param o	the set of BushOrigins to equilibrate
 	 */
-	public OldBushOptimizer(Graph g, Set<BushOrigin> o) {
+	public OldBushOptimizer(Graph g, Set<OldBushOrigin> o) {
 		super(g);
 		origins = o;
 	}
@@ -118,7 +118,7 @@ public abstract class OldBushOptimizer extends OldOptimizer {
 		Long imprStart = System.currentTimeMillis();
 //		origins.parallelStream().flatMap(o -> o.getContainers().parallelStream()).forEach(Bush::improve);
 		ForkJoinPool p = new ForkJoinPool();
-		for (BushOrigin o : origins) {
+		for (OldBushOrigin o : origins) {
 			for (Bush b : o.getContainers()) {
 				Thread t = new Thread() {
 					public void run() {
@@ -152,7 +152,7 @@ public abstract class OldBushOptimizer extends OldOptimizer {
 		outer: for (int i = 0; i < innerIters; i++) {
 			int j = 1;
 			start = imprStart != null? imprStart : System.currentTimeMillis();
-			for (BushOrigin o : origins) {
+			for (OldBushOrigin o : origins) {
 				int numBushes = o.getContainers().size();
 
 				int k = 1;

@@ -11,7 +11,6 @@ import java.util.stream.Stream;
 
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.Path;
-import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.CentroidConnector;
@@ -30,13 +29,13 @@ public class Bush implements AssignmentContainer {
 	public static boolean orderCachingEnabled = true;
 	public static boolean flowCachingEnabled = false;
 	// Bush attributes
-	private final BushOrigin origin;
+	private final TravelSurveyZone origin;
 	private final Float vot;
 	private final Mode c;
 	private int numLinks;
 	
 	//Underlying problem characteristics
-	private final AutoDemandMap demand;
+	private final DemandMap demand;
 
 	// Back vector map (i.e. the bush structure)
 	private BackVector[] q;
@@ -50,14 +49,14 @@ public class Bush implements AssignmentContainer {
 	 * @param o the root of the bush
 	 * @param g the graph underlying the bush
 	 * @param vot the value of time
-	 * @param destDemand the demand to be carried on the bush
-	 * @param c the mode of travel for the bush
+	 * @param mode the demand to be carried on the bush
+	 * @param demandMap the mode of travel for the bush
 	 */
-	public Bush(BushOrigin o, Float vot, AutoDemandMap destDemand, Mode c) {
-		origin = o;
+	public Bush(TravelSurveyZone origin, Float vot, Mode mode, DemandMap demandMap) {
+		this.origin = origin;
 		this.vot = vot;
-		this.c = c;
-		demand = destDemand;
+		this.c = mode;
+		demand = demandMap;
 	}
 
 	/** Add a link to the bush
@@ -166,6 +165,10 @@ public class Bush implements AssignmentContainer {
 		throw new RuntimeException("No diverge node found");
 	}
 
+	protected void setQ(BackVector[] q) {
+		this.q = q;
+	}
+	
 //	/**
 //	 * Initialize demand flow on shortest paths Add each destination's demand to the
 //	 * shortest path to that destination
@@ -377,7 +380,7 @@ public class Bush implements AssignmentContainer {
 	/**Get the bush's origin
 	 * @return the origin of the bush
 	 */
-	public BushOrigin getOrigin() {
+	public TravelSurveyZone getOrigin() {
 		return origin;
 	}
 
@@ -558,7 +561,7 @@ public class Bush implements AssignmentContainer {
 	 * @param uv the link to determine candidacy
 	 * @return true if the link can be used in the bush
 	 */
-	public boolean isValidLink(Link uv) {
+	public boolean canUseLink(Link uv) {
 		//If the link is a centroid connector
 		return uv instanceof CentroidConnector? 
 				//that doesn't lead from the origin and
@@ -930,7 +933,7 @@ public class Bush implements AssignmentContainer {
 	/**
 	 * @return a Collection of all Links not used by the bush that could be added
 	 */
-	public Collection<Link> getUnusedLinks(){
+	public Stream<Link> getUnusedLinks(){
 		throw new RuntimeException("Not yet implemented");
 //		return network.getLinks().parallelStream().filter(l -> 
 //			(q[l.getHead().getOrder()] instanceof Link && !q[l.getHead().getOrder()].equals(l))
@@ -1200,7 +1203,8 @@ public class Bush implements AssignmentContainer {
 	/**
 	 * @return the total generalized cost for trips in this bush
 	 */
-	public double getIncurredCosts() {
+	@Override
+	public double incurredCost() {
 		Map<Link,Double> flows = flows();
 		return getUsedLinkStream().parallel().mapToDouble(l -> flows.getOrDefault(l, 0.0)*l.getPrice(vot, c)).sum();
 	}
@@ -1344,9 +1348,4 @@ public class Bush implements AssignmentContainer {
 		throw new RuntimeException("Not yet implemented");
 	}
 
-	@Override
-	public double incurredCost() {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("Not yet implemented");
-	}
 }

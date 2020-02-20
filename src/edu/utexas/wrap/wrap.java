@@ -9,7 +9,7 @@ import java.util.Set;
 import edu.utexas.wrap.assignment.bush.OldBushOptimizer;
 import edu.utexas.wrap.assignment.bush.OldBushOriginFactory;
 import edu.utexas.wrap.assignment.bush.algoB.OldAlgoBOptimizer;
-import edu.utexas.wrap.assignment.bush.BushOrigin;
+import edu.utexas.wrap.assignment.bush.OldBushOrigin;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.util.io.GraphFactory;
 import edu.utexas.wrap.util.io.OriginFactory;
@@ -99,7 +99,7 @@ public class wrap{
 
 	public static void main(String[] args) {
 		Graph g = null; 
-		Set<BushOrigin> origins = null;
+		Set<OldBushOrigin> origins = null;
 		int innerIters = 1;
 		try {
 			//TODO rewrite argument parsing for more flexibility
