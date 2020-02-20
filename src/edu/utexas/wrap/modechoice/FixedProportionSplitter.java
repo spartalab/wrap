@@ -15,7 +15,7 @@ import edu.utexas.wrap.demand.ModalPAMatrix;
  * @author Karthik & Rishabh
  *
  */
-public class FixedProportionSplitter extends TripInterchangeSplitter {
+public class FixedProportionSplitter implements TripInterchangeSplitter {
 
 	private Map<Mode, Double> map;
 

@@ -15,8 +15,8 @@ import edu.utexas.wrap.demand.ModalPAMatrix;
  * @author William
  *
  */
-public abstract class TripInterchangeSplitter {
+public interface TripInterchangeSplitter {
 	
-	public abstract Stream<ModalPAMatrix> split(AggregatePAMatrix aggregate);
+	public Stream<ModalPAMatrix> split(AggregatePAMatrix aggregate);
 	
 }
