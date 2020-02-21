@@ -67,7 +67,7 @@ public class OldBushOrigin extends Origin {
 			FibonacciLeaf<Node> u = Q.poll();
 			
 			
-			for (Link uv : u.n.forwardStar()) {
+			for (Link uv : u.node.forwardStar()) {
 				if (!isValidLink(uv)) continue;
 //				if (!uv.allowsClass(c) || isInvalidConnector(uv)) continue;
 				//If this link doesn't allow this bush's class of driver on the link, don't consider it
@@ -78,7 +78,7 @@ public class OldBushOrigin extends Origin {
 				Double alt = uv.freeFlowTime()+u.key;
 				if (alt<v.key) {
 					Q.decreaseKey(v, alt);
-					initMap[v.n.getOrder()] = uv;
+					initMap[v.node.getOrder()] = uv;
 				}
 			}
 		}

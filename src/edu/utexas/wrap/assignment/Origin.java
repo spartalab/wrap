@@ -23,7 +23,7 @@ public abstract class Origin {
 	 * @param self the Node from whence a set of assignment containers originate
 	 */
 	public Origin(TravelSurveyZone self) {
-		this.self = self.getNode();
+		this.self = self.node();
 	}
 	
 	/**

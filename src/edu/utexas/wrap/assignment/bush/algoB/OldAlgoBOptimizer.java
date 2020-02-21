@@ -57,7 +57,7 @@ public class OldAlgoBOptimizer extends OldBushOptimizer{
 				cur = to[i];
 				
 				//Ignore the origin. Should be same as break if topoOrder is correct 
-				if (cur == null || cur.equals(b.getOrigin().getNode())) continue;
+				if (cur == null || cur.equals(b.root().node())) continue;
 
 				//Determine the ASP, including the maximum delta that can be shifted
 				AlternateSegmentPair asp = b.getShortLongASP(cur, bushFlows);

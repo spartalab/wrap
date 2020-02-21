@@ -47,8 +47,8 @@ public class ODMatrixBINWriter {
 						
 						if (demand > 0)	out.write(
 								ByteBuffer.allocate(2*Integer.BYTES+Float.BYTES)
-								.putInt(orig.getNode().getID())
-								.putInt(dest.getNode().getID())
+								.putInt(orig.node().getID())
+								.putInt(dest.node().getID())
 								.putFloat(demand).array());
 					} catch (IOException e) {
 						// TODO Auto-generated catch block

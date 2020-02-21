@@ -117,7 +117,7 @@ public class Bush implements AssignmentContainer {
 	 */
 	protected Node divergeNode(Node start) {
 		// If the given node is the origin or it has only one backvector, there is no diverge node
-		if (start.equals(origin.getNode()) || !(getBackVector(start) instanceof BushMerge))
+		if (start.equals(origin.node()) || !(getBackVector(start) instanceof BushMerge))
 			return start;
 
 		//Store the nodes seen on the paths in reverse order
@@ -221,7 +221,7 @@ public class Bush implements AssignmentContainer {
 		Node[] to = new Node[q.length];
 		LinkedList<Node> S = new LinkedList<Node>();
 		// "start nodes"
-		S.add(origin.getNode());
+		S.add(origin.node());
 		Node n;
 		int pos = 0;
 
@@ -343,7 +343,7 @@ public class Bush implements AssignmentContainer {
 	 * @return the longest path to that node
 	 */
 	public Path getLongPath(Node n) {
-		return getLongPath(n, origin.getNode());
+		return getLongPath(n, origin.node());
 	}
 
 	/**Assemble the longest path from a given start node to an end node
@@ -364,7 +364,7 @@ public class Bush implements AssignmentContainer {
 			curLink = getqLong(curLink.getTail());
 		}
 		//Check to ensure we made it to the correct node
-		if (curLink == null && !start.equals(origin.getNode())) 
+		if (curLink == null && !start.equals(origin.node())) 
 			throw new RuntimeException("No longest path could be found from "+start.toString()+" to "+end.toString());
 		return p;
 
@@ -380,7 +380,7 @@ public class Bush implements AssignmentContainer {
 	/**Get the bush's origin
 	 * @return the origin of the bush
 	 */
-	public TravelSurveyZone getOrigin() {
+	public TravelSurveyZone root() {
 		return origin;
 	}
 
@@ -474,7 +474,7 @@ public class Bush implements AssignmentContainer {
 	 * @throws UnreachableException if a shortest path can't be constructed
 	 */
 	public Path getShortPath(Node n) throws UnreachableException {
-		return getShortPath(n, origin.getNode());
+		return getShortPath(n, origin.node());
 	}
 
 	/** Assemble the shortest path from the start to the end node
@@ -553,7 +553,7 @@ public class Bush implements AssignmentContainer {
 		int b = 76537;	//	UT 76-5-37 TAMC \m/
 		
 		return (
-				origin.getNode().getID()*a + vot.intValue()
+				origin.node().getID()*a + vot.intValue()
 				)*b + (c == null? 0 : c.hashCode());
 	}
 	
@@ -565,7 +565,7 @@ public class Bush implements AssignmentContainer {
 		//If the link is a centroid connector
 		return uv instanceof CentroidConnector? 
 				//that doesn't lead from the origin and
-				uv.getTail().equals(origin.getNode())? true :
+				uv.getTail().equals(origin.node())? true :
 					//leads from a different centroid instead
 					(uv.getHead().isCentroid() && !uv.getTail().isCentroid())? true:
 						//then we can't use the link in the bush
@@ -740,7 +740,7 @@ public class Bush implements AssignmentContainer {
 		if (cachedFlows != null) return cachedFlows;
 		//Get the reverse topological ordering and a place to store node flows
 		Map<TravelSurveyZone,Double> tszFlow = demand.doubleClone();
-		Map<Node,Double> nodeFlow = tszFlow.keySet().parallelStream().collect(Collectors.toMap(x -> x.getNode(), x -> tszFlow.get(x)));
+		Map<Node,Double> nodeFlow = tszFlow.keySet().parallelStream().collect(Collectors.toMap(x -> x.node(), x -> tszFlow.get(x)));
 		Node[] iter = getTopologicalOrder(false);
 		Map<Link,Double> ret = new HashMap<Link,Double>(numLinks,1.0f);
 
@@ -777,7 +777,7 @@ public class Bush implements AssignmentContainer {
 			}
 
 			//If we've reached a dead end in the topological ordering, throw an exception
-			else if (back == null && !n.equals(origin.getNode())) {
+			else if (back == null && !n.equals(origin.node())) {
 				throw new RuntimeException("Missing backvector for "+n.toString());
 			}
 			
@@ -840,7 +840,7 @@ public class Bush implements AssignmentContainer {
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-		return "ORIG=" + origin.getNode().getID() + "\tVOT=" + vot + "\tCLASS=" + c;
+		return "ORIG=" + origin.node().getID() + "\tVOT=" + vot + "\tCLASS=" + c;
 	}
 
 //	/**Improve the bush by removing unused links and adding shortcut links
@@ -934,7 +934,13 @@ public class Bush implements AssignmentContainer {
 	 * @return a Collection of all Links not used by the bush that could be added
 	 */
 	public Stream<Link> getUnusedLinks(){
-		throw new RuntimeException("Not yet implemented");
+		return Stream.of(q).parallel().flatMap(bv ->{
+			if (bv instanceof Link)
+				return Stream.of(bv.getHead().reverseStar()).filter(link -> link != bv);
+			else if (bv instanceof BushMerge)
+				return Stream.of(bv.getHead().reverseStar()).filter(link -> !((BushMerge) bv).contains(link));
+			else return Stream.empty();
+		});
 //		return network.getLinks().parallelStream().filter(l -> 
 //			(q[l.getHead().getOrder()] instanceof Link && !q[l.getHead().getOrder()].equals(l))
 //			|| (q[l.getHead().getOrder()] instanceof BushMerge && !((BushMerge) q[l.getHead().getOrder()]).contains(l))
@@ -1346,6 +1352,11 @@ public class Bush implements AssignmentContainer {
 	public PathCostCalculator getPathCostCalculator() {
 		// TODO Auto-generated method stub
 		throw new RuntimeException("Not yet implemented");
+	}
+
+	@Override
+	public double demand(Node n) {
+		return n.getZone() == null? 0.0 : demand.get(n.getZone());
 	}
 
 }

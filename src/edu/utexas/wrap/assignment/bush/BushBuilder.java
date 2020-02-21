@@ -34,17 +34,17 @@ public class BushBuilder implements AssignmentBuilder<Bush> {
 		BackVector[] initMap = new BackVector[nodes.size()];
 		FibonacciHeap<Node> Q = new FibonacciHeap<Node>(nodes.size(),1.0f);
 		for (Node n : nodes) {
-			if (!n.equals(bush.getOrigin().getNode())) {
+			if (!n.equals(bush.root().node())) {
 				Q.add(n, Double.MAX_VALUE);
 			}
 		}
-		Q.add(bush.getOrigin().getNode(), 0.0);
+		Q.add(bush.root().node(), 0.0);
 
 		while (!Q.isEmpty()) {
 			FibonacciLeaf<Node> u = Q.poll();
 			
 			
-			for (Link uv : u.n.forwardStar()) {
+			for (Link uv : u.node.forwardStar()) {
 				if (!bush.canUseLink(uv)) continue;
 //				if (!uv.allowsClass(c) || isInvalidConnector(uv)) continue;
 				//If this link doesn't allow this bush's class of driver on the link, don't consider it
@@ -55,7 +55,7 @@ public class BushBuilder implements AssignmentBuilder<Bush> {
 				Double alt = costFunction.applyAsDouble(uv)+u.key;
 				if (alt<v.key) {
 					Q.decreaseKey(v, alt);
-					initMap[v.n.getOrder()] = uv;
+					initMap[v.node.getOrder()] = uv;
 				}
 			}
 		}

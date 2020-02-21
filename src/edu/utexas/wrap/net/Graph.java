@@ -17,8 +17,12 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import edu.utexas.wrap.assignment.AssignmentContainer;
+import edu.utexas.wrap.assignment.bush.BackVector;
+import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.sensitivity.DerivativeLink;
 import edu.utexas.wrap.marketsegmentation.IndustryClass;
+import edu.utexas.wrap.util.FibonacciHeap;
+import edu.utexas.wrap.util.FibonacciLeaf;
 
 public class Graph {
 	
@@ -410,6 +414,41 @@ public class Graph {
 
 	public double cheapestCostPossible(AssignmentContainer container) {
 		// TODO Auto-generated method stub
-		throw new RuntimeException("Not yet implemented");
+		Collection<Node> nodes = getNodes();
+		BackVector[] initMap = new BackVector[nodes.size()];
+		FibonacciHeap<Node> Q = new FibonacciHeap<Node>(nodes.size(),1.0f);
+		
+		Double cost = 0.0;
+		
+		for (Node n : nodes) {
+			if (!n.equals(container.root().node())) {
+				Q.add(n, Double.MAX_VALUE);
+			}
+		}
+		Q.add(container.root().node(), 0.0);
+
+		while (!Q.isEmpty()) {
+			FibonacciLeaf<Node> u = Q.poll();
+			cost += container.demand(u.node) * u.key;
+			
+			for (Link uv : u.node.forwardStar()) {
+				//TODO expand this admissibility check to other implementations of AssignmentContainer
+				if (container instanceof Bush && !((Bush) container).canUseLink(uv)) continue;
+//				if (!uv.allowsClass(c) || isInvalidConnector(uv)) continue;
+				
+				
+				//If this link doesn't allow this bush's class of driver on the link, don't consider it
+				//This was removed to allow flow onto all links for the initial bush, and any illegal
+				//flow will be removed on the first flow shift due to high price
+				
+				FibonacciLeaf<Node> v = Q.getLeaf(uv.getHead());
+				Double alt = uv.getPrice(container)+u.key;
+				if (alt<v.key) {
+					Q.decreaseKey(v, alt);
+					initMap[v.node.getOrder()] = uv;
+				}
+			}
+		}
+		return cost;
 	}
 }

@@ -1,5 +1,6 @@
 package edu.utexas.wrap.net;
 
+import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.modechoice.Mode;
 
 public class TolledBPRLink extends TolledLink {
@@ -94,5 +95,11 @@ public class TolledBPRLink extends TolledLink {
 		}
 		cachedTP = r;
 		return r;
+	}
+
+	@Override
+	protected double getPrice(AssignmentContainer container) {
+		// TODO Auto-generated method stub
+		return getPrice(container.valueOfTime(),container.vehicleClass());
 	}
 }

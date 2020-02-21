@@ -36,7 +36,7 @@ public class OldBushOriginLoader extends OldBushOriginBuilder {
 							sb.append(String.format("%02X", b));
 						}
 
-						File file = new File(sb+"/"+zone.getNode().getID()+"/"+c+"-"+vot+".bush");
+						File file = new File(sb+"/"+zone.node().getID()+"/"+c+"-"+vot+".bush");
 						file.getParentFile().mkdirs();
 						FileOutputStream out = null;
 						try {

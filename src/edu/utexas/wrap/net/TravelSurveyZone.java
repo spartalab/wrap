@@ -31,7 +31,7 @@ public class TravelSurveyZone {
 		this.order = order;
 	}
 	
-	public Node getNode() {
+	public Node node() {
 		return origin;
 	}
 	

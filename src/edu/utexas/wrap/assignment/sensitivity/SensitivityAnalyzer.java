@@ -75,7 +75,7 @@ public class SensitivityAnalyzer extends OldAlgoBOptimizer {
 				Map<Link,Double> bushFlows = b.flows(); 
 				for (int i = to.length-1;i >= 0; i--) {
 					cur = to[i];
-					if (cur == null || cur.equals(b.getOrigin().getNode())) continue;
+					if (cur == null || cur.equals(b.root().node())) continue;
 					AlternateSegmentPair asp = b.getShortLongASP(cur,bushFlows);
 					if (asp == null) continue;
 					Double deltaH = getNewDeltaH(asp);

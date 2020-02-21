@@ -209,4 +209,10 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 		throw new RuntimeException("Not Yet Implemented");
 	}
 
+	@Override
+	public double incurredCost() {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("Not yet implemented");
+	}
+
 }

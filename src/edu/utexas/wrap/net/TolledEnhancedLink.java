@@ -1,5 +1,6 @@
 package edu.utexas.wrap.net;
 
+import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.modechoice.Mode;
 
 /**
@@ -357,6 +358,12 @@ public class TolledEnhancedLink extends TolledLink {
 		// d'(v) == d( m + u*v/c )/dv
 		// == u/c
 		return ((double) u) / getCapacity();
+	}
+
+	@Override
+	protected double getPrice(AssignmentContainer container) {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("Not yet implemented");
 	}
 
 }

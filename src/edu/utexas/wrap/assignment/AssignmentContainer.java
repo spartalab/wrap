@@ -5,6 +5,8 @@ import java.util.Map;
 
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Link;
+import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**A label indicating an object may be associated with a link flow in route 
  * choice. Examples include bushes and paths for bush- and path-based 
@@ -37,4 +39,8 @@ public interface AssignmentContainer {
 
 	public double incurredCost();
 
+	public TravelSurveyZone root();
+	
+	public double demand(Node n);
+	
 }

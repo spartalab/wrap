@@ -1,6 +1,7 @@
 package edu.utexas.wrap.net;
 
 
+import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.bush.BackVector;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.util.NegativeFlowException;
@@ -85,8 +86,6 @@ public abstract class Link implements Priced, BackVector {
 		return length;
 	}
 	
-	public abstract double getPrice(Float vot, Mode c);
-
 	public Node getTail() {
 		return tail;
 	}
@@ -114,5 +113,7 @@ public abstract class Link implements Priced, BackVector {
 	public Link getLongLink() {
 		return this;
 	}
+
+	protected abstract double getPrice(AssignmentContainer container);
 	
 }
