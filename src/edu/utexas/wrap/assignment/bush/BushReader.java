@@ -24,7 +24,7 @@ public class BushReader implements AssignmentReader<Bush> {
 		//Load the bush from the network directory's file matching the bush's hash code
 		InputStream in = Files.newInputStream(
 				Paths.get(
-						network.getDirectory(), 
+						network.toString(), 
 						Integer.toString(bush.hashCode())));
 		readFromStream(bush, in);
 		in.close();
@@ -36,7 +36,7 @@ public class BushReader implements AssignmentReader<Bush> {
 		
 		//ensure that we're not overwriting an older structure
 		bush.clear();
-		
+		BackVector[] q = new BackVector[network.numZones()];
 		
 		byte[] b = new byte[Integer.BYTES*2+Double.BYTES];
 		
@@ -59,8 +59,49 @@ public class BushReader implements AssignmentReader<Bush> {
 			if (!bvo.isPresent()) throw new RuntimeException("Unknown Link econuntered. Node ID: "+nid+"\tHash: "+bvhc);
 			
 			Link bv = bvo.get();
-			bush.add(bv);
-			throw new RuntimeException("Backvector splits aren't implemented yet");
+			
+			if (split >= 1.0) {
+			
+				if (q[n.getOrder()] == null) {
+					q[n.getOrder()] = bv;
+				} 
+				
+				else {
+					if (q[n.getOrder()] instanceof BushMerge) {
+						((BushMerge) q[n.getOrder()]).add(bv);
+						((BushMerge) q[n.getOrder()]).setSplit(bv, split);
+					} else {
+						q[n.getOrder()] = new BushMerge(bush, bv, (Link) q[n.getOrder()]);
+					}
+				}
+			
+			} 
+
+			
+			else if (split >=0.0) {
+				
+				if (q[n.getOrder()] == null) {
+					BushMerge bm = new BushMerge(bush, n);
+					bm.add(bv);
+					q[n.getOrder()] = bm;
+				} 
+				
+				
+				else {
+					
+					if (q[n.getOrder()] instanceof BushMerge) {
+						((BushMerge) q[n.getOrder()]).add(bv);
+						((BushMerge) q[n.getOrder()]).setSplit(bv, split);
+					} 
+					
+					else {
+						q[n.getOrder()] = new BushMerge(bush, bv, (Link) q[n.getOrder()]);
+					}
+				}
+			}
+			bush.setQ(q);
+//			bush.add(bv);
+//			throw new RuntimeException("BackVector splits aren't implemented yet");
 		}
 	}
 

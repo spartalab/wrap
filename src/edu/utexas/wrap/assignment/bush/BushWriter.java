@@ -20,7 +20,7 @@ public class BushWriter implements AssignmentWriter<Bush> {
 	
 	public void writeStructure(Bush bush) throws IOException {
 		OutputStream out = Files.newOutputStream(
-				Paths.get(network.getDirectory(), Integer.toString(bush.hashCode())),
+				Paths.get(network.toString(), Integer.toString(bush.hashCode())),
 				StandardOpenOption.CREATE_NEW, 
 				StandardOpenOption.TRUNCATE_EXISTING
 				);

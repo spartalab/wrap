@@ -30,7 +30,7 @@ public class wrapTNTP {
 		Graph g = GraphFactory.readTNTPGraph(new File(args[0]));
 		
 		if (!Files.exists(Paths.get(g.toString()))) 
-			Files.createDirectory(Paths.get(g.toString()));
+			Files.createDirectories(Paths.get(g.toString()));
 		
 		
 		ODMatrix od = ODMatrixFactory.readTNTPMatrix(new File(args[1]), g);

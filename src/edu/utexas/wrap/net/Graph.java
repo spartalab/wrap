@@ -204,7 +204,7 @@ public class Graph {
 
 	@Override
 	public String toString() {
-		StringBuilder sb = new StringBuilder();
+		StringBuilder sb = new StringBuilder("struct/");
 		for (byte b : getMD5()) {
 			sb.append(String.format("%02X", b));
 		}
@@ -406,11 +406,6 @@ public class Graph {
 
 	public void loadDemand(AssignmentContainer container) {
 		container.flows().entrySet().parallelStream().forEach(pair -> pair.getKey().changeFlow(pair.getValue()));
-	}
-
-	public String getDirectory() {
-		// TODO Auto-generated method stub
-		return toString();
 	}
 
 	public double cheapestCostPossible(AssignmentContainer container) {
