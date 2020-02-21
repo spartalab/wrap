@@ -15,10 +15,17 @@ import edu.utexas.wrap.net.Node;
 
 public class BushReader implements AssignmentReader<Bush> {
 	Graph network;
+	
+	public BushReader(Graph network) {
+		this.network = network;
+	}
 
 	public void readStructure(Bush bush) throws IOException {
 		//Load the bush from the network directory's file matching the bush's hash code
-		InputStream in = Files.newInputStream(Paths.get(network.getDirectory(), Integer.toString(bush.hashCode())));
+		InputStream in = Files.newInputStream(
+				Paths.get(
+						network.getDirectory(), 
+						Integer.toString(bush.hashCode())));
 		readFromStream(bush, in);
 		in.close();
 	}

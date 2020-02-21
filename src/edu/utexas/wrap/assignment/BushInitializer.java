@@ -20,14 +20,17 @@ public class BushInitializer implements AssignmentInitializer<Bush>{
 	public BushInitializer(
 			AssignmentReader<Bush> reader, 
 			AssignmentWriter<Bush> writer, 
-			AssignmentBuilder<Bush> builder) {
+			AssignmentBuilder<Bush> builder,
+			Graph network) {
 		this.reader = reader;
 		this.writer = writer;
 		this.builder = builder;
+		this.network = network;
 	}
 	
 	public void add(ODMatrix matrix) {
-		Stream<Bush> rawBushes = matrix.getOrigins().parallelStream().map(tsz -> new Bush(
+		Stream<Bush> rawBushes = matrix.getOrigins()
+				.parallelStream().map(tsz -> new Bush(
 				tsz, 
 				matrix.getVOT(), 
 				matrix.getMode(),

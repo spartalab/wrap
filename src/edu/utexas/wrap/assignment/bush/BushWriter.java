@@ -14,6 +14,10 @@ import edu.utexas.wrap.net.Link;
 public class BushWriter implements AssignmentWriter<Bush> {
 	private Graph network;
 
+	public BushWriter(Graph network) {
+		this.network = network;
+	}
+	
 	public void writeStructure(Bush bush) throws IOException {
 		OutputStream out = Files.newOutputStream(
 				Paths.get(network.getDirectory(), Integer.toString(bush.hashCode())),

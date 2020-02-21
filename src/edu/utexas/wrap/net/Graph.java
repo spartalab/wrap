@@ -405,13 +405,12 @@ public class Graph {
 	}
 
 	public void loadDemand(AssignmentContainer container) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("Not yet impelemtned");
+		container.flows().entrySet().parallelStream().forEach(pair -> pair.getKey().changeFlow(pair.getValue()));
 	}
 
 	public String getDirectory() {
 		// TODO Auto-generated method stub
-		throw new RuntimeException("Not yet implemented");
+		return toString();
 	}
 
 	public double cheapestCostPossible(AssignmentContainer container) {

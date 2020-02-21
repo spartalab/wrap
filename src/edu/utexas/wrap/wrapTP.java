@@ -105,7 +105,15 @@ public class wrapTP {
 							10E-5)
 					);
 			
-			new Thread(assigner).start();
+			Thread assignmentThread = new Thread(assigner);
+			assignmentThread.start();
+			
+			//Should this allow for multiple assignments at once? depends on success
+			try {
+				assignmentThread.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
 
 		System.out.println("Consolidating OD Matrices");
@@ -152,7 +160,7 @@ public class wrapTP {
 									Mode mode = entry.getValue().getKey();
 									ODMatrix od = entry.getValue().getValue();
 									
-									return new FixedSizeODMatrix(od,vot,mode);
+									return new FixedSizeODMatrix(vot,mode,od);
 								}
 								)
 						.collect(Collectors.toSet())

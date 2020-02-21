@@ -1,23 +1,29 @@
 package edu.utexas.wrap.demand.containers;
 
+import java.util.Collection;
+
+import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-public class FixedSizeODMatrix implements ODMatrix {
+public class FixedSizeODMatrix<T extends DemandMap> implements ODMatrix {
 	
 	private float vot;
 	private final Mode mode;
 	private final Graph graph;
-	private final FixedSizeDemandMap[] demandMaps;
-
-	public FixedSizeODMatrix(ODMatrix od, Float vot, Mode mode) {
-		// TODO Auto-generated constructor stub
+	private final DemandMap[] demandMaps;
+	
+	public FixedSizeODMatrix(Float vot, Mode mode, Graph graph) {
 		this.mode = mode;
 		this.vot = vot;
-		this.graph = od.getGraph();
-		demandMaps = new FixedSizeDemandMap[graph.numZones()];
+		this.graph = graph;
+		this.demandMaps = new DemandMap[graph.numZones()];
+	}
+
+	public FixedSizeODMatrix(Float vot, Mode mode, ODMatrix od) {
+		this(vot,mode, od.getGraph());
 		
 		graph.getTSZs().forEach(origin -> {
 			FixedSizeDemandMap dm = new FixedSizeDemandMap(graph);
@@ -57,6 +63,20 @@ public class FixedSizeODMatrix implements ODMatrix {
 	@Override
 	public void setVOT(float VOT) {
 		this.vot = VOT;
+	}
+
+	@Override
+	public Collection<TravelSurveyZone> getOrigins() {
+		return graph.getTSZs();
+	}
+
+	@Override
+	public DemandMap getDemandMap(TravelSurveyZone origin) {
+		return demandMaps[origin.getOrder()];
+	}
+	
+	public void setDemandMap(TravelSurveyZone origin, T demandMap) {
+		demandMaps[origin.getOrder()] = demandMap;
 	}
 
 }
