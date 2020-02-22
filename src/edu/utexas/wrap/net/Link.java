@@ -114,6 +114,6 @@ public abstract class Link implements Priced, BackVector {
 		return this;
 	}
 
-	protected abstract double getPrice(AssignmentContainer container);
+	public abstract double getPrice(AssignmentContainer container);
 	
 }

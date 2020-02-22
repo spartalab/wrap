@@ -9,13 +9,12 @@ import java.util.stream.Stream;
 import edu.utexas.wrap.assignment.Assigner;
 import edu.utexas.wrap.assignment.AssignmentBuilder;
 import edu.utexas.wrap.assignment.AssignmentInitializer;
-import edu.utexas.wrap.assignment.AssignmentReader;
-import edu.utexas.wrap.assignment.AssignmentWriter;
+import edu.utexas.wrap.assignment.AssignmentProvider;
+import edu.utexas.wrap.assignment.AssignmentConsumer;
 import edu.utexas.wrap.assignment.BushInitializer;
 import edu.utexas.wrap.assignment.GapEvaluator;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.bush.BushBuilder;
-import edu.utexas.wrap.assignment.bush.BushEvaluator;
 import edu.utexas.wrap.assignment.bush.BushGapEvaluator;
 import edu.utexas.wrap.assignment.bush.BushReader;
 import edu.utexas.wrap.assignment.bush.BushWriter;
@@ -26,7 +25,6 @@ import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.util.ODMatrixCollector;
-import edu.utexas.wrap.util.io.output.ODMatrixBINWriter;
 
 import java.util.AbstractMap.SimpleEntry;
 
@@ -87,17 +85,17 @@ public class wrapTP {
 		
 		for (Entry<TimePeriod, Collection<ODMatrix>> entry : flatODs.entrySet()) {
 			
-			AssignmentReader<Bush> reader = new BushReader();
-			AssignmentWriter<Bush> writer = new BushWriter();
+			AssignmentProvider<Bush> reader = new BushReader(network);
+			AssignmentConsumer<Bush> writer = new BushWriter(network);
 			AssignmentBuilder<Bush> builder = new BushBuilder(network);
 			
-			AssignmentInitializer<Bush> initializer = new BushInitializer(reader,writer,builder);
+			AssignmentInitializer<Bush> initializer = new BushInitializer(reader,writer,builder, network);
 			
 			for (ODMatrix od : entry.getValue()) initializer.add(od);
 			
 			Assigner<Bush> assigner = new Assigner<Bush>(
 					initializer,
-					new GapEvaluator<Bush>(network, reader, writer),
+					new GapEvaluator<Bush>(network, reader),
 					new AlgorithmBOptimizer(
 							reader, 
 							writer, 

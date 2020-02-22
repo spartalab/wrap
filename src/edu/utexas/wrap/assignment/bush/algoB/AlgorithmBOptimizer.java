@@ -6,14 +6,14 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Stream;
 
 import edu.utexas.wrap.assignment.AssignmentOptimizer;
-import edu.utexas.wrap.assignment.AssignmentReader;
-import edu.utexas.wrap.assignment.AssignmentWriter;
+import edu.utexas.wrap.assignment.AssignmentProvider;
+import edu.utexas.wrap.assignment.AssignmentConsumer;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.bush.BushEvaluator;
 
 public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
-	private final AssignmentReader<Bush> reader;
-	private final AssignmentWriter<Bush> writer;
+	private final AssignmentProvider<Bush> provider;
+	private final AssignmentConsumer<Bush> consumer;
 	
 	private final AlgorithmBUpdater updater;
 	private final AlgorithmBEquilibrator equilibrator;
@@ -24,13 +24,13 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 	private double threshold;
 	
 	public AlgorithmBOptimizer(
-			AssignmentReader<Bush> reader, 
-			AssignmentWriter<Bush> writer, 
+			AssignmentProvider<Bush> provider, 
+			AssignmentConsumer<Bush> consumer, 
 			BushEvaluator evaluator,
 			double threshold) {
 		
-		this.reader = reader;
-		this.writer = writer;
+		this.provider = provider;
+		this.consumer = consumer;
 		this.evaluator = evaluator;
 		
 		updater = new AlgorithmBUpdater();
@@ -43,7 +43,7 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 		
 		bushStream.forEach( bush -> {
 			try{
-				reader.readStructure(bush);
+				provider.getStructure(bush);
 			} catch (IOException e) {
 				System.err.println("WARN: Could not find source for "+bush+". Ignoring");
 				return;
@@ -52,7 +52,7 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 			updater.update(bush);
 			
 			try {
-				writer.writeStructure(bush);
+				consumer.consumeStructure(bush);
 			} catch (IOException e) {
 				System.err.println("WARN: Could not write structure for "+bush+". Source may be corrupted");
 			}
@@ -67,7 +67,7 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 			.forEach(bush -> {
 	
 				try{
-					reader.readStructure(bush);
+					provider.getStructure(bush);
 				} catch (IOException e) {
 					System.err.println("WARN: Could not find source for "+bush+". Ignoring");
 					return;
@@ -75,11 +75,13 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 				
 				synchronized (this) {
 						equilibrator.equilibrate(bush);
+						if (evaluator.getValue(bush) < threshold) 
+							queue.remove(bush);
 				}
-				if (evaluator.getValue(bush) < threshold) queue.remove(bush);
+				
 				
 				try {
-					writer.writeStructure(bush);
+					consumer.consumeStructure(bush);
 				} catch (IOException e) {
 					System.err.println("WARN: Could not write structure for "+bush+". Source may be corrupted");
 				}

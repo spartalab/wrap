@@ -8,19 +8,19 @@ import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import edu.utexas.wrap.assignment.AssignmentReader;
+import edu.utexas.wrap.assignment.AssignmentProvider;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 
-public class BushReader implements AssignmentReader<Bush> {
+public class BushReader implements AssignmentProvider<Bush> {
 	Graph network;
 	
 	public BushReader(Graph network) {
 		this.network = network;
 	}
 
-	public void readStructure(Bush bush) throws IOException {
+	public void getStructure(Bush bush) throws IOException {
 		//Load the bush from the network directory's file matching the bush's hash code
 		InputStream in = Files.newInputStream(
 				Paths.get(
@@ -99,10 +99,11 @@ public class BushReader implements AssignmentReader<Bush> {
 					}
 				}
 			}
-			bush.setQ(q);
+
 //			bush.add(bv);
 //			throw new RuntimeException("BackVector splits aren't implemented yet");
 		}
+		bush.setQ(q);
 	}
 
 }

@@ -6,6 +6,8 @@ import java.util.stream.StreamSupport;
 
 import edu.utexas.wrap.assignment.bush.AlternateSegmentPair;
 import edu.utexas.wrap.assignment.bush.Bush;
+import edu.utexas.wrap.assignment.bush.BushMerge;
+import edu.utexas.wrap.assignment.bush.PathCostCalculator;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.util.NegativeFlowException;
@@ -14,7 +16,7 @@ public class AlgorithmBEquilibrator {
 	Integer numThreshold = 100;
 	
 	public void equilibrate(Bush bush) {
-		bush.clearLabels();
+		bush.clear();
 		Node[] to = bush.getTopologicalOrder(true);
 		Node cur;
 
@@ -44,7 +46,7 @@ public class AlgorithmBEquilibrator {
 		}
 
 		//Update bush merge splits for next flow calculation
-		bush.updateSplits(bushFlows);
+		updateSplits(bush,bushFlows);
 		//Release cached topological order memory for later use
 		bush.clear();	
 	}
@@ -101,7 +103,6 @@ public class AlgorithmBEquilibrator {
 		});
 	}
 
-
 	/**Given an amount to shift on a link and the bush flows available, calculate
 	 * the numerically safe amount that can be removed.
 	 * @param l
@@ -142,4 +143,36 @@ public class AlgorithmBEquilibrator {
 		return td;
 	}
 
+	/**Update the BushMerges' splits based on current Bush flows
+	 * @param flows the current Bush flows on all Links
+	 */
+	public void updateSplits(Bush bush, Map<Link, Double> flows) {
+		PathCostCalculator pcc = new PathCostCalculator(bush);
+		
+		bush.getQ().parallel()
+		.filter(bv -> bv instanceof BushMerge)
+		.map(bv -> (BushMerge) bv)
+		
+		.forEach(bm ->{
+			double total = bm.getLinks().parallel().mapToDouble(l -> Math.abs(flows.get(l))).sum();
+			//Calculate the total demand through this node
+
+			//If there is flow through the node, set the splits proportionally
+			if (total > 0) bm.getLinks().parallel().forEach(l -> bm.setSplit(l, flows.get(l)/total));
+			//otherwise, dump all (non-existent) flow onto the shortest link
+			else {
+				splitToShortest(pcc, bm);
+			}
+		});
+	}
+
+	private void splitToShortest(PathCostCalculator pcc, BushMerge bm) {
+		
+		
+		//Find the minimum highest-cost-path link
+		Link min = pcc.getShortestPathLink(bm);
+		bm.setSplit(min, 1.0);
+		bm.getLinks().parallel().filter(l -> l != min).forEach(l -> bm.setSplit(l, 0.0));
+	}
+	
 }

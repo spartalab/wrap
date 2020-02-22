@@ -9,8 +9,8 @@ import java.nio.file.Paths;
 import edu.utexas.wrap.assignment.Assigner;
 import edu.utexas.wrap.assignment.AssignmentBuilder;
 import edu.utexas.wrap.assignment.AssignmentInitializer;
-import edu.utexas.wrap.assignment.AssignmentReader;
-import edu.utexas.wrap.assignment.AssignmentWriter;
+import edu.utexas.wrap.assignment.AssignmentProvider;
+import edu.utexas.wrap.assignment.AssignmentConsumer;
 import edu.utexas.wrap.assignment.BushInitializer;
 import edu.utexas.wrap.assignment.GapEvaluator;
 import edu.utexas.wrap.assignment.bush.Bush;
@@ -35,8 +35,8 @@ public class wrapTNTP {
 		
 		ODMatrix od = ODMatrixFactory.readTNTPMatrix(new File(args[1]), g);
 		
-		AssignmentReader<Bush> reader = new BushReader(g);
-		AssignmentWriter<Bush> writer = new BushWriter(g);
+		AssignmentProvider<Bush> reader = new BushReader(g);
+		AssignmentConsumer<Bush> writer = new BushWriter(g);
 		AssignmentBuilder<Bush> builder = new BushBuilder(g);
 		
 		AssignmentInitializer<Bush> initializer = new BushInitializer(reader, writer, builder,g);
@@ -45,7 +45,7 @@ public class wrapTNTP {
 		
 		Assigner<Bush> assigner = new Assigner<Bush>(
 				initializer, 
-				new GapEvaluator<Bush>(g, reader,writer), 
+				new GapEvaluator<Bush>(g, reader), 
 				new AlgorithmBOptimizer(
 						reader, 
 						writer, 

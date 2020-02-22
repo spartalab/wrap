@@ -17,7 +17,7 @@ public class AlgorithmBUpdater {
 		Stream<Link> unusedLinks = bush.getUnusedLinks();
 
 		//Calculate the longest path costs
-		PathCostCalculator pcc = bush.getPathCostCalculator();
+		PathCostCalculator pcc = new PathCostCalculator(bush);
 
 		unusedLinks	//For each unused link
 		.filter(l -> l.allowsClass(bush.vehicleClass()))	//If the link allows this bush's vehicles

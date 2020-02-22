@@ -361,9 +361,8 @@ public class TolledEnhancedLink extends TolledLink {
 	}
 
 	@Override
-	protected double getPrice(AssignmentContainer container) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("Not yet implemented");
+	public double getPrice(AssignmentContainer container) {
+		return getPrice(container.valueOfTime(),container.vehicleClass());
 	}
 
 }

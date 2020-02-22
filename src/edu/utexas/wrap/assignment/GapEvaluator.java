@@ -8,16 +8,13 @@ import edu.utexas.wrap.net.Graph;
 public class GapEvaluator<T extends AssignmentContainer> implements AssignmentEvaluator<T> {
 	
 	private Graph network;
-	private AssignmentReader<T> reader;
-	private AssignmentWriter<T> writer;
+	private AssignmentProvider<T> reader;
 	private Double systemIncurredCost, cheapestPossibleCost; //total system general cost, total cheapest path general cost
 	
 	public GapEvaluator(Graph network,
-			AssignmentReader<T> reader,
-			AssignmentWriter<T> writer) {
+			AssignmentProvider<T> reader) {
 		this.network = network;
 		this.reader = reader;
-		this.writer = writer;
 	}
 	
 
@@ -34,7 +31,7 @@ public class GapEvaluator<T extends AssignmentContainer> implements AssignmentEv
 	private void process(T container) {
 		
 		try{
-			reader.readStructure(container);
+			reader.getStructure(container);
 		} catch (IOException e) {
 			System.err.println("WARN: Could not read source for "+container+". Ignoring");
 			return;
@@ -51,11 +48,7 @@ public class GapEvaluator<T extends AssignmentContainer> implements AssignmentEv
 			cheapestPossibleCost += cheapestContainerCost;
 		}
 		
-		try {
-			writer.writeStructure(container);
-		} catch (IOException e) {
-			System.err.println("WARN: Could not write structure for "+container+". Source may be corrupted");
-		}
+		throw new RuntimeException("Not yet implemented - removing structure from memory");
 	}
 
 }

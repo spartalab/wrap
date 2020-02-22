@@ -7,21 +7,21 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 
-import edu.utexas.wrap.assignment.AssignmentWriter;
+import edu.utexas.wrap.assignment.AssignmentConsumer;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 
-public class BushWriter implements AssignmentWriter<Bush> {
+public class BushWriter implements AssignmentConsumer<Bush> {
 	private Graph network;
 
 	public BushWriter(Graph network) {
 		this.network = network;
 	}
 	
-	public void writeStructure(Bush bush) throws IOException {
+	public void consumeStructure(Bush bush) throws IOException {
 		OutputStream out = Files.newOutputStream(
 				Paths.get(network.toString(), Integer.toString(bush.hashCode())),
-				StandardOpenOption.CREATE_NEW, 
+				StandardOpenOption.CREATE, 
 				StandardOpenOption.TRUNCATE_EXISTING
 				);
 		writeToStream(bush, out);

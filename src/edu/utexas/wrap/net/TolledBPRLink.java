@@ -98,7 +98,7 @@ public class TolledBPRLink extends TolledLink {
 	}
 
 	@Override
-	protected double getPrice(AssignmentContainer container) {
+	public double getPrice(AssignmentContainer container) {
 		// TODO Auto-generated method stub
 		return getPrice(container.valueOfTime(),container.vehicleClass());
 	}
