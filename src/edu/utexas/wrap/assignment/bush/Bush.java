@@ -32,7 +32,6 @@ public class Bush implements AssignmentContainer {
 	private final TravelSurveyZone origin;
 	private final Float vot;
 	private final Mode c;
-	private int numLinks;
 	
 	//Underlying problem characteristics
 	private final DemandMap demand;
@@ -601,7 +600,7 @@ public class Bush implements AssignmentContainer {
 			int size = bm.size();
 			if (size > 1) {
 				bm.remove(l);
-				numLinks--;
+
 				if (size==2){ //If there is only one link left, replace BushMerge with Link
 					setBackVector(l.getHead(),bm.getLinks().findAny().orElseThrow(RuntimeException::new));
 					return true;
@@ -644,7 +643,7 @@ public class Bush implements AssignmentContainer {
 		Map<TravelSurveyZone,Double> tszFlow = demand.doubleClone();
 		Map<Node,Double> nodeFlow = tszFlow.keySet().parallelStream().collect(Collectors.toMap(x -> x.node(), x -> tszFlow.get(x)));
 		Node[] iter = getTopologicalOrder(false);
-		Map<Link,Double> ret = new HashMap<Link,Double>(numLinks,1.0f);
+		Map<Link,Double> ret = new HashMap<Link,Double>(size(),1.0f);
 
 		//For each node in reverse topological order
 		for (int i = iter.length - 1; i >= 0; i--) {

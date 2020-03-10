@@ -15,7 +15,9 @@ public class PathCostCalculator {
 	}
 	
 	public boolean checkForShortcut(Link l) {
-		if (cache == null) getLongestPathCosts(true);
+		synchronized (this) {
+			if (cache == null) getLongestPathCosts(true);
+		}
 
 		double uTail = cache[l.getTail().getOrder()];
 		double uHead = cache[l.getTail().getOrder()];
@@ -25,29 +27,33 @@ public class PathCostCalculator {
 	}
 	
 	public Link getShortestPathLink(BushMerge bm) {
-		if (cache == null) getShortestPathCosts();
-		
+		synchronized (this) {
+			if (cache == null) getShortestPathCosts();
+		}
+
 		return bm.getLinks().parallel().min(Comparator.comparing( (Link x) -> 
-			cache[x.getTail().getOrder()]+x.getPrice(bush)
-			)).orElseThrow(RuntimeException::new);
+		cache[x.getTail().getOrder()]+x.getPrice(bush)
+				)).orElseThrow(RuntimeException::new);
 	}
 
 	private void getShortestPathCosts() {
 		// TODO Auto-generated method stub
 		bush.clear();
 		Node[] to = bush.getTopologicalOrder(false);
-		 cache = new Double[bush.size()];
+		cache = new Double[bush.size()];
 
 		//In topological order,
 		for (Node d : to) {
 			if (d == null) continue;
+			else if (d == bush.root().node()) cache[d.getOrder()] = 0.;
+
 			BackVector bv = bush.getBackVector(d);
 			if (bv instanceof Link) shortRelax((Link) bv);
 			else if (bv instanceof BushMerge) 
-				for (Link l : ((BushMerge) bv).getLinks().collect(Collectors.toSet())) {
-					//Try to relax all incoming links
-					shortRelax(l);
-				}
+				((BushMerge) bv).getLinks().sequential().forEach( l ->
+				//Try to relax all incoming links
+				shortRelax(l)
+						);
 
 		}
 	}
@@ -72,7 +78,7 @@ public class PathCostCalculator {
 		}
 	}
 
-	private Double[] getLongestPathCosts(boolean longestUsed) {
+	private void getLongestPathCosts(boolean longestUsed) {
 		bush.clear();
 		Node[] to = bush.getTopologicalOrder(false);
 		cache = new Double[bush.size()];
@@ -93,8 +99,8 @@ public class PathCostCalculator {
 					longRelax(l);
 			}
 
-		}			
-		return cache;	
+		}		
+		return;
 	}
 	
 	private void longRelax(Link l) {

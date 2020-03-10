@@ -15,6 +15,7 @@ import edu.utexas.wrap.assignment.BushInitializer;
 import edu.utexas.wrap.assignment.GapEvaluator;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.bush.BushBuilder;
+import edu.utexas.wrap.assignment.bush.BushForgetter;
 import edu.utexas.wrap.assignment.bush.BushGapEvaluator;
 import edu.utexas.wrap.assignment.bush.BushReader;
 import edu.utexas.wrap.assignment.bush.BushWriter;
@@ -36,7 +37,9 @@ public class wrapTNTP {
 		ODMatrix od = ODMatrixFactory.readTNTPMatrix(new File(args[1]), g);
 		
 		AssignmentProvider<Bush> reader = new BushReader(g);
-		AssignmentConsumer<Bush> writer = new BushWriter(g);
+		AssignmentConsumer<Bush> writer = new BushWriter(g),
+				forgetter = new BushForgetter();
+		
 		AssignmentBuilder<Bush> builder = new BushBuilder(g);
 		
 		AssignmentInitializer<Bush> initializer = new BushInitializer(reader, writer, builder,g);
@@ -45,11 +48,11 @@ public class wrapTNTP {
 		
 		Assigner<Bush> assigner = new Assigner<Bush>(
 				initializer, 
-				new GapEvaluator<Bush>(g, reader), 
+				new GapEvaluator<Bush>(g, reader, forgetter), 
 				new AlgorithmBOptimizer(
 						reader, 
 						writer, 
-						new BushGapEvaluator(), 
+						new BushGapEvaluator(g), 
 						10E-5)
 				);
 		

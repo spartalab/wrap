@@ -1,7 +1,5 @@
 package edu.utexas.wrap.assignment;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -13,6 +11,7 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.Priced;
+import edu.utexas.wrap.net.TravelSurveyZone;
 
 /** A sequential list of {@link edu.utexas.wrap.net.Link} objects.
  * 
@@ -182,8 +181,8 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getDemand(edu.utexas.wrap.net.Node)
 	 */
 	@Override
-	public Float getDemand(Node n) {
-		return null;
+	public double demand(Node n) {
+		return 0.;
 	}
 
 	/* (non-Javadoc)
@@ -213,6 +212,12 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	public double incurredCost() {
 		// TODO Auto-generated method stub
 		throw new RuntimeException("Not yet implemented");
+	}
+
+	@Override
+	public TravelSurveyZone root() {
+		// TODO Auto-generated method stub
+		return node(0).getZone();
 	}
 
 }

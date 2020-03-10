@@ -2,7 +2,7 @@ package edu.utexas.wrap.assignment.bush.algoB;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import edu.utexas.wrap.assignment.AssignmentOptimizer;
@@ -22,6 +22,7 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 	
 	private final BushEvaluator evaluator;
 	private double threshold;
+	private int maxIterations = 10;
 	
 	public AlgorithmBOptimizer(
 			AssignmentProvider<Bush> provider, 
@@ -39,14 +40,12 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 
 	@Override
 	public void optimize(Stream<Bush> bushStream) {
-		queue = new ConcurrentLinkedQueue<Bush>();
-		
-		bushStream.forEach( bush -> {
+		queue = bushStream.map( bush -> {
 			try{
 				provider.getStructure(bush);
 			} catch (IOException e) {
 				System.err.println("WARN: Could not find source for "+bush+". Ignoring");
-				return;
+				return null;
 			}
 			
 			updater.update(bush);
@@ -57,35 +56,39 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 				System.err.println("WARN: Could not write structure for "+bush+". Source may be corrupted");
 			}
 			
-			queue.add(bush);
-		});
+			return bush;
+		}).collect(Collectors.toSet());
+
+		int numIterations = 0;
 		
-		while (!queue.isEmpty()) {
-			Bush[] q = new Bush[queue.size()];
-	
-			Stream.of(queue.toArray(q)).parallel()
-			.forEach(bush -> {
-	
-				try{
-					provider.getStructure(bush);
-				} catch (IOException e) {
-					System.err.println("WARN: Could not find source for "+bush+". Ignoring");
-					return;
-				}
-				
-				synchronized (this) {
-						equilibrator.equilibrate(bush);
-						if (evaluator.getValue(bush) < threshold) 
-							queue.remove(bush);
-				}
-				
-				
-				try {
-					consumer.consumeStructure(bush);
-				} catch (IOException e) {
-					System.err.println("WARN: Could not write structure for "+bush+". Source may be corrupted");
-				}
-			});
+		while (!queue.isEmpty() && numIterations < maxIterations) {
+			numIterations++;
+			queue = queue
+					.parallelStream()
+					.filter(bush -> {
+						boolean isEquilibrated = false;
+						try{
+							provider.getStructure(bush);
+						} catch (IOException e) {
+							System.err.println("WARN: Could not find source for "+bush+". Ignoring");
+							return false;
+						}
+
+						synchronized (this) {
+							equilibrator.equilibrate(bush);
+							isEquilibrated = (evaluator.getValue(bush) < threshold);
+
+						}
+
+
+						try {
+							consumer.consumeStructure(bush);
+						} catch (IOException e) {
+							System.err.println("WARN: Could not write structure for "+bush+". Source may be corrupted");
+						}
+						return !isEquilibrated;
+					})
+					.collect(Collectors.toSet());
 		}
 	}
 }
