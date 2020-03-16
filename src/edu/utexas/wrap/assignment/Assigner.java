@@ -26,7 +26,7 @@ public class Assigner<C extends AssignmentContainer> implements Runnable {
 		double value = evaluator.getValue(containers.parallelStream()); 
 		while (value > threshold && numIterations < maxIterations) {
 			System.out.println("Iteration "+numIterations++ + "\tValue: "+value);
-			optimizer.optimize(containers.parallelStream());
+			optimizer.optimize(containers.stream());
 			value = evaluator.getValue(containers.parallelStream());
 		}
 		System.out.println("Final value: "+value);

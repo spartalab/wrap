@@ -10,6 +10,7 @@ import edu.utexas.wrap.assignment.AssignmentProvider;
 import edu.utexas.wrap.assignment.AssignmentConsumer;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.bush.BushEvaluator;
+import edu.utexas.wrap.net.Graph;
 
 public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 	private final AssignmentProvider<Bush> provider;
@@ -19,7 +20,7 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 	private final AlgorithmBEquilibrator equilibrator;
 
 	private Collection<Bush> queue;
-	
+	private final Graph graph;
 	private final BushEvaluator evaluator;
 	private double threshold;
 	private int maxIterations = 10;
@@ -28,12 +29,14 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 			AssignmentProvider<Bush> provider, 
 			AssignmentConsumer<Bush> consumer, 
 			BushEvaluator evaluator,
-			double threshold) {
+			double threshold,
+			Graph graph) {
 		
 		this.provider = provider;
 		this.consumer = consumer;
 		this.evaluator = evaluator;
 		this.threshold = threshold;
+		this.graph = graph;
 		
 		updater = new AlgorithmBUpdater();
 		equilibrator = new AlgorithmBEquilibrator();
@@ -65,7 +68,7 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 		while (!queue.isEmpty() && numIterations < maxIterations) {
 			numIterations++;
 			queue = queue
-					.parallelStream()
+					.stream()
 					.filter(bush -> {
 						boolean isEquilibrated = false;
 						try{
@@ -92,4 +95,6 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 					.collect(Collectors.toSet());
 		}
 	}
+	
+	
 }

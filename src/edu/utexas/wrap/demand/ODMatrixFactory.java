@@ -58,6 +58,7 @@ public class ODMatrixFactory {
 			line = of.readLine();
 		}
 		of.close();
+		System.out.println();
 		return od;
 	}
 	

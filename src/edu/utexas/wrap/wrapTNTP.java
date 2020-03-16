@@ -11,12 +11,12 @@ import edu.utexas.wrap.assignment.AssignmentBuilder;
 import edu.utexas.wrap.assignment.AssignmentInitializer;
 import edu.utexas.wrap.assignment.AssignmentProvider;
 import edu.utexas.wrap.assignment.AssignmentConsumer;
-import edu.utexas.wrap.assignment.BushInitializer;
 import edu.utexas.wrap.assignment.GapEvaluator;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.bush.BushBuilder;
 import edu.utexas.wrap.assignment.bush.BushForgetter;
 import edu.utexas.wrap.assignment.bush.BushGapEvaluator;
+import edu.utexas.wrap.assignment.bush.BushInitializer;
 import edu.utexas.wrap.assignment.bush.BushReader;
 import edu.utexas.wrap.assignment.bush.BushWriter;
 import edu.utexas.wrap.assignment.bush.algoB.AlgorithmBOptimizer;
@@ -53,7 +53,8 @@ public class wrapTNTP {
 						reader, 
 						writer, 
 						new BushGapEvaluator(g), 
-						10E-5)
+						10E-5, 
+						g)
 				);
 		
 		Thread assignmentThread = new Thread(assigner);

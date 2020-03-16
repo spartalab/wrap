@@ -83,6 +83,7 @@ public class BushReader implements AssignmentProvider<Bush> {
 				if (q[n.getOrder()] == null) {
 					BushMerge bm = new BushMerge(bush, n);
 					bm.add(bv);
+					bm.setSplit(bv, split);
 					q[n.getOrder()] = bm;
 				} 
 				
@@ -95,7 +96,7 @@ public class BushReader implements AssignmentProvider<Bush> {
 					} 
 					
 					else {
-						q[n.getOrder()] = new BushMerge(bush, bv, (Link) q[n.getOrder()]);
+						q[n.getOrder()] = new BushMerge(bush, (Link) q[n.getOrder()], bv);
 					}
 				}
 			}

@@ -26,7 +26,8 @@ public class AlgorithmBEquilibrator {
 //		
 		//Get the flows on the current bush
 		Map<Link,Double> bushFlows = bush.flows();
-
+		PathCostCalculator pcc = new PathCostCalculator(bush);
+		
 		//In reverse topological order,
 		for (int i = to.length - 1; i >= 0; i--) {
 			cur = to[i];
@@ -35,7 +36,7 @@ public class AlgorithmBEquilibrator {
 			if (cur == null || cur.equals(bush.root().node())) continue;
 
 			//Determine the ASP, including the maximum delta that can be shifted
-			AlternateSegmentPair asp = bush.getShortLongASP(cur, bushFlows);
+			AlternateSegmentPair asp = getShortLongASP(bush, cur, bushFlows, pcc);
 			if (asp == null) continue; //No ASP exists
 
 			//calculate delta h, capping at maxDelta
@@ -46,7 +47,7 @@ public class AlgorithmBEquilibrator {
 		}
 
 		//Update bush merge splits for next flow calculation
-		updateSplits(bush,bushFlows);
+		updateSplits(bush, bushFlows, pcc);
 		//Release cached topological order memory for later use
 		bush.clear();	
 	}
@@ -89,7 +90,7 @@ public class AlgorithmBEquilibrator {
 		});
 
 		//subtract delta h from all x values in longest path
-		StreamSupport.stream(asp.longPath().spliterator(), true).unordered().forEach(l->{
+		StreamSupport.stream(asp.longPath().spliterator(), true).sequential().forEach(l->{
 			Double safeDeltaH = numericalGuard(l, flows, deltaH);
 
 			//Safeguard cap at the smaller of the two to ensure bush flow never exceeds link flow
@@ -146,8 +147,7 @@ public class AlgorithmBEquilibrator {
 	/**Update the BushMerges' splits based on current Bush flows
 	 * @param flows the current Bush flows on all Links
 	 */
-	public void updateSplits(Bush bush, Map<Link, Double> flows) {
-		PathCostCalculator pcc = new PathCostCalculator(bush);
+	public void updateSplits(Bush bush, Map<Link, Double> flows, PathCostCalculator pcc) {
 		
 		bush.getQ().parallel()
 		.filter(bv -> bv instanceof BushMerge)
@@ -175,4 +175,59 @@ public class AlgorithmBEquilibrator {
 		bm.getLinks().parallel().filter(l -> l != min).forEach(l -> bm.setSplit(l, 0.0));
 	}
 	
+	/**Assemble the alternate segment pair of longest and shortest paths emanating from the terminus
+	 * @param terminus the node whose longest-shortest ASP should be calculated
+	 * @param bushFlows 
+	 * @return the alternate segment pair consisting of the shortest and longest paths to the terminus
+	 */
+	public AlternateSegmentPair getShortLongASP(
+			Bush bush, 
+			Node terminus, 
+			Map<Link, Double> bushFlows, 
+			PathCostCalculator pcc) {
+		//Iterate through longest paths until reaching a node in shortest path
+
+		//Reiterate through shortest path to build path up to divergence node
+		//The two paths constitute a Pair of Alternate Segments
+		Link shortLink = pcc.getqShort(terminus);
+		Link longLink = pcc.getqLong(terminus);
+
+		// If there is no divergence node, move on to the next topological node
+		if (!(bush.getBackVector(terminus) instanceof BushMerge) || longLink == null || longLink.equals(shortLink))
+			return null;
+
+		// Else calculate divergence node
+		Node diverge = pcc.divergeNode(terminus);
+
+		//Trace back through the longest path
+		Node cur = terminus;
+		Link ll = pcc.getqLong(cur);
+		Double max = null;
+		int lpl = 0;
+		do {
+			//Keep track of the number of links until the diverge
+			lpl++;
+			//Keep track of the maximum bush flow that can be removed
+			if (max == null) max = bushFlows.getOrDefault(ll,0.0);
+			else max = Math.min(max,bushFlows.getOrDefault(ll,0.0));
+//			if (Math.abs(max) <= 0.0) return null;
+			cur = ll.getTail();
+			ll = pcc.getqLong(cur);
+		} while (cur != diverge);
+//		if (Math.abs(max)==0) return null;
+		
+		//Trace back through the shortest path
+		cur = terminus;
+		ll = pcc.getqShort(cur);
+		int spl = 0;
+		do {
+			//Count how many links until the diverge
+			spl++;
+			cur = ll.getTail();
+			ll = pcc.getqShort(cur);
+		} while (cur != diverge);
+		
+		return new AlternateSegmentPair(terminus, diverge, max, pcc, lpl, spl);
+	}
+
 }

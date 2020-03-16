@@ -1,11 +1,14 @@
-package edu.utexas.wrap.assignment;
+package edu.utexas.wrap.assignment.bush;
 
 import java.io.IOException;
 import java.util.Collection;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import edu.utexas.wrap.assignment.bush.Bush;
+import edu.utexas.wrap.assignment.AssignmentBuilder;
+import edu.utexas.wrap.assignment.AssignmentConsumer;
+import edu.utexas.wrap.assignment.AssignmentInitializer;
+import edu.utexas.wrap.assignment.AssignmentProvider;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.net.Graph;
 
@@ -40,23 +43,23 @@ public class BushInitializer implements AssignmentInitializer<Bush>{
 			Stream.concat(containers, rawBushes);
 	}
 	
-	private void loadContainer(Bush container) {
+	private void loadContainer(Bush bush) {
 		boolean needsWriting = false;
 		try{
-			provider.getStructure(container);
+			provider.getStructure(bush);
 		} catch (IOException e) {
 			//TODO this can be wrapped into the same provider inside AssignmentBuilder
-			System.err.println("\r\nINFO: Could not find source for "+container+". Building from free-flow network");
-			builder.buildStructure(container);
+			System.err.println("INFO: Could not find source for "+bush+". Building from free-flow network");
+			builder.buildStructure(bush);
 			needsWriting = true;
 		}
 		
-		network.loadDemand(container);
+		network.loadDemand(bush);
 		
 		if (needsWriting) try{
-			consumer.consumeStructure(container);
+			consumer.consumeStructure(bush);
 		} catch (IOException e) {
-			System.err.println("WARN: Could not write structure for "+container+". Source may be corrupted");
+			System.err.println("WARN: Could not write structure for "+bush+". Source may be corrupted");
 		}
 	}
 	

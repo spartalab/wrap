@@ -19,13 +19,13 @@ import edu.utexas.wrap.net.Node;
 public class AlternateSegmentPair {
 	private Node merge, diverge;
 	private Double maxDelta;
-	private final Bush bush;
+	private final PathCostCalculator pcc;
 	private int longPathLength, shortPathLength;
 
-	public AlternateSegmentPair(Node merge, Node diverge, Double maxDelta, Bush bush, int lpl, int spl) {
+	public AlternateSegmentPair(Node merge, Node diverge, Double maxDelta, PathCostCalculator pcc, int lpl, int spl) {
 		this.diverge = diverge;
 		this.merge = merge;
-		this.bush = bush;
+		this.pcc = pcc;
 		this.maxDelta = maxDelta;
 		longPathLength = lpl;
 		shortPathLength = spl;
@@ -56,8 +56,8 @@ public class AlternateSegmentPair {
 	 * @return the difference in path costs between the alternate segments
 	 */
 	public Double priceDiff() {
-		Float vot = bush.valueOfTime();
-		Mode klass = bush.vehicleClass();
+		Float vot = pcc.getBush().valueOfTime();
+		Mode klass = pcc.getBush().vehicleClass();
 		
 		//For each link in the longest and shortest paths, sum the link prices in parallel through a Stream
 		Double longPrice = StreamSupport.stream(longPath().spliterator(), true).unordered().mapToDouble(x -> x.getPrice(vot, klass)).sum();
@@ -77,7 +77,7 @@ public class AlternateSegmentPair {
 	 * @return the bush containing the ASP
 	 */
 	public Bush getBush() {
-		return bush;
+		return pcc.getBush();
 	}
 
 	/**
@@ -109,13 +109,13 @@ public class AlternateSegmentPair {
 				@Override
 				public boolean hasNext() {
 					//Stop when the diverge is reached or we run out of path
-					return current != diverge && bush.getqShort(current) != null;
+					return current != diverge && pcc.getqShort(current) != null;
 				}
 
 				@Override
 				public Link next() {
 					//advance the current node back up the bush
-					Link qs = bush.getqShort(current);
+					Link qs = pcc.getqShort(current);
 					current = qs.getTail();
 					return qs;
 				}
@@ -144,13 +144,13 @@ public class AlternateSegmentPair {
 				@Override
 				public boolean hasNext() {
 					//Stop when the diverge is reached or we run out of path
-					return current != diverge && bush.getqLong(current) != null;
+					return current != diverge && pcc.getqLong(current) != null;
 				}
 
 				@Override
 				public Link next() {
 					//advance the current node back up the bush
-					Link ql = bush.getqLong(current);
+					Link ql = pcc.getqLong(current);
 					current = ql.getTail();
 					return ql;
 				}
@@ -195,7 +195,7 @@ public class AlternateSegmentPair {
 		@Override
 		public boolean tryAdvance(Consumer<? super Link> action) {
 			if (elapsed == size) return false; //We've reached the diverge node
-			Link v = bush.getqLong(cur);	//Advance to the next link
+			Link v = pcc.getqLong(cur);	//Advance to the next link
 			if (v == null) return false;	//We've reached the end of the road
 			
 			cur = v.getTail();	//Advance the current node
@@ -215,7 +215,7 @@ public class AlternateSegmentPair {
 			
 			//Advance backward halfway, skipping the Links allocated to the new Spliterator
 			for (int i = 0; i < splitPos; i++) {
-				Link v = bush.getqLong(cur);
+				Link v = pcc.getqLong(cur);
 				if (v == null) throw new RuntimeException("Wrong longest-path length");
 				cur = v.getTail();
 				elapsed++;
@@ -258,7 +258,7 @@ public class AlternateSegmentPair {
 		@Override
 		public boolean tryAdvance(Consumer<? super Link> action) {
 			if (elapsed == size) return false;	//we've reached the diverge node
-			Link v = bush.getqShort(cur); //get the next link
+			Link v = pcc.getqShort(cur); //get the next link
 			if (v == null) return false;	//we've run out of path
 			
 			//advance the current node
@@ -279,7 +279,7 @@ public class AlternateSegmentPair {
 			
 			//advance backward halfway, skipping the links allotted to the new Spliterator
 			for (int i = 0; i < splitSize; i++) {
-				Link v = bush.getqShort(cur);
+				Link v = pcc.getqShort(cur);
 				if (v == null) throw new RuntimeException("Wrong shortest-path length");
 				cur = v.getTail();
 				elapsed++;
