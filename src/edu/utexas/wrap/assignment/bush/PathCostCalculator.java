@@ -20,7 +20,7 @@ public class PathCostCalculator {
 		}
 
 		double uTail = cache[l.getTail().getOrder()];
-		double uHead = cache[l.getTail().getOrder()];
+		double uHead = cache[l.getHead().getOrder()];
 		
 		
 		return uTail + l.getPrice(bush) < uHead;

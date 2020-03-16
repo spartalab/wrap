@@ -33,6 +33,7 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 		this.provider = provider;
 		this.consumer = consumer;
 		this.evaluator = evaluator;
+		this.threshold = threshold;
 		
 		updater = new AlgorithmBUpdater();
 		equilibrator = new AlgorithmBEquilibrator();

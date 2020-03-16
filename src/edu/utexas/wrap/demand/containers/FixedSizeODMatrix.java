@@ -1,6 +1,7 @@
 package edu.utexas.wrap.demand.containers;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ODMatrix;
@@ -67,7 +68,9 @@ public class FixedSizeODMatrix<T extends DemandMap> implements ODMatrix {
 
 	@Override
 	public Collection<TravelSurveyZone> getOrigins() {
-		return graph.getTSZs();
+		return graph.getTSZs().parallelStream()
+				.filter(zone -> demandMaps[zone.getOrder()] != null)
+				.collect(Collectors.toSet());
 	}
 
 	@Override

@@ -46,7 +46,7 @@ public class BushInitializer implements AssignmentInitializer<Bush>{
 			provider.getStructure(container);
 		} catch (IOException e) {
 			//TODO this can be wrapped into the same provider inside AssignmentBuilder
-			System.err.println("INFO: Could not find source for "+container+". Building from free-flow network");
+			System.err.println("\r\nINFO: Could not find source for "+container+". Building from free-flow network");
 			builder.buildStructure(container);
 			needsWriting = true;
 		}

@@ -25,7 +25,7 @@ public class BushWriter implements AssignmentConsumer<Bush> {
 				StandardOpenOption.TRUNCATE_EXISTING
 				);
 		writeToStream(bush, out);
-		bush.clear();
+		bush.setQ(null);
 		out.close();
 	}
 	

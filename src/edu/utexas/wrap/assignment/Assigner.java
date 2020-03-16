@@ -29,7 +29,7 @@ public class Assigner<C extends AssignmentContainer> implements Runnable {
 			optimizer.optimize(containers.parallelStream());
 			value = evaluator.getValue(containers.parallelStream());
 		}
-		
+		System.out.println("Final value: "+value);
 	}
 	
 }

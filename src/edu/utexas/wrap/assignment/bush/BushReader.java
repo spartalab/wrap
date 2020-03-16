@@ -36,7 +36,7 @@ public class BushReader implements AssignmentProvider<Bush> {
 		
 		//ensure that we're not overwriting an older structure
 		bush.clear();
-		BackVector[] q = new BackVector[network.numZones()];
+		BackVector[] q = new BackVector[network.numNodes()];
 		
 		byte[] b = new byte[Integer.BYTES*2+Double.BYTES];
 		
