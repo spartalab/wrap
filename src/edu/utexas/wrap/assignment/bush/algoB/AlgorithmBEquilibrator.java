@@ -1,6 +1,8 @@
 package edu.utexas.wrap.assignment.bush.algoB;
 
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -80,7 +82,14 @@ public class AlgorithmBEquilibrator {
 	 */
 	private void updateDeltaX(AlternateSegmentPair asp, Map<Link,Double> flows, Double deltaH) {
 		//add delta h to all x values in the shortest path
-		StreamSupport.stream(asp.shortPath().spliterator(), true).unordered().forEach(l ->{
+		
+		Set<Link> longStream = StreamSupport.stream(asp.longPath().spliterator(), true).collect(Collectors.toSet());
+		Set<Link> shortStream = StreamSupport.stream(asp.shortPath().spliterator(), true).collect(Collectors.toSet());
+
+		shortStream.forEach(l ->{
+			if (flows.getOrDefault(l, 0.0) <0 ) throw new RuntimeException();
+			if (l.getFlow() < 0) throw new RuntimeException();
+			
 			flows.put(l, flows.getOrDefault(l, 0.0)+deltaH); //Modify bush flow
 			l.changeFlow(deltaH);	//Modify total flow on link
 
@@ -90,7 +99,7 @@ public class AlgorithmBEquilibrator {
 		});
 
 		//subtract delta h from all x values in longest path
-		StreamSupport.stream(asp.longPath().spliterator(), true).sequential().forEach(l->{
+		longStream.forEach(l->{
 			Double safeDeltaH = numericalGuard(l, flows, deltaH);
 
 			//Safeguard cap at the smaller of the two to ensure bush flow never exceeds link flow
