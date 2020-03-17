@@ -12,11 +12,13 @@ public class Assigner<C extends AssignmentContainer> implements Runnable {
 	public Assigner(
 			AssignmentInitializer<C> initializer,
 			AssignmentEvaluator<C> evaluator,
-			AssignmentOptimizer<C> optimizer){
+			AssignmentOptimizer<C> optimizer,
+			double threshold){
 		
 		this.containers = initializer.initializeContainers();
 		this.evaluator = evaluator;
 		this.optimizer = optimizer;
+		this.threshold = threshold;
 		maxIterations = 10;
 		
 	}

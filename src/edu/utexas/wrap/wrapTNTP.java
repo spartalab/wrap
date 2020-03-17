@@ -54,7 +54,8 @@ public class wrapTNTP {
 						writer, 
 						new BushGapEvaluator(g), 
 						10E-5, 
-						g)
+						g),
+				10E-6
 				);
 		
 		Thread assignmentThread = new Thread(assigner);

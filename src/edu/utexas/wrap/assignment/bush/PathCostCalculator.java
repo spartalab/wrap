@@ -21,9 +21,10 @@ public class PathCostCalculator {
 			if (longCache == null) getLongestPathCosts(true);
 		}
 
-		double uTail = longCache[l.getTail().getOrder()];
-		double uHead = longCache[l.getHead().getOrder()];
+		Double uTail = longCache[l.getTail().getOrder()];
+		Double uHead = longCache[l.getHead().getOrder()];
 		
+		if (uTail == null || uHead == null) return false;
 		
 		return uTail + l.getPrice(bush) < uHead;
 	}
