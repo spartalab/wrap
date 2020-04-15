@@ -1,5 +1,6 @@
 package edu.utexas.wrap.demand;
 
+import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
@@ -42,5 +43,7 @@ public interface ODMatrix {
 	public Float getVOT();
 	
 	public void setVOT(float VOT);
+
+	public TimePeriod timePeriod();
 	
 }
