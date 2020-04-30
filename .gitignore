@@ -1,3 +1,5 @@
 
 *.DS_Store
 src/edu/utexas/wrap/distribution/dbConfig.properties
+src/edu/utexas/wrap/a.out
+src/edu/utexas/wrap/main.c

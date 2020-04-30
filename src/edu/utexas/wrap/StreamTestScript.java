@@ -25,12 +25,13 @@ public class StreamTestScript {
         out.getParentFile().mkdirs();
         out.createNewFile();
         builder.redirectOutput(out);
-        builder.redirectError(out);
+//        builder.redirectError(out);
+        builder.redirectErrorStream(true);
         Process proc = builder.start();
         OutputStream stdin = proc.getOutputStream();
         ByteBuffer buffer = ByteBuffer.allocate(48).order(ByteOrder.LITTLE_ENDIAN);
         Random r = new Random();
-        for (int i = 0; i < 100000; i++) {
+        for (int i = 0; i < 100; i++) {
             WritableByteChannel channel = Channels.newChannel(stdin);
             buffer.clear();
             buffer.putInt(9697);
@@ -70,7 +71,8 @@ public class StreamTestScript {
         stdin.flush();
         stdin.close();
 
-        proc.waitFor();
+        int output = proc.waitFor();
+        System.out.println("Process finished with exit code "+ output);
     }
 
 }

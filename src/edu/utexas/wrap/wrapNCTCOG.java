@@ -104,41 +104,16 @@ public class wrapNCTCOG {
 			Map<TimePeriod, Collection<ODMatrix>> reducedODs = reduceODMatrices(hb.getODs(), nhb.getODs());
 			
 			//Write OD matrices to files
-			printTimeStamp();
-			System.out.println("Writing to files");
+//			printTimeStamp();
+//			System.out.println("Writing to files");
 			// writeODs(reducedODs, model.getOutputDirectory());
 
 			// Run Traffic Assignment
-			reducedODs.entrySet().parallelStream().forEach(entry -> {
-				try {
-					System.out.println("Streaming " + entry.getKey().toString());
-					Collection<ODMatrix> matrices = entry.getValue();
-					String tapExec = new File("./tap").getAbsolutePath();
-					String netFile = new File(model.getInputs().getProperty("network.graphFile")).getAbsolutePath();
-					String convTable = new File(model.getInputs().getProperty("ta.conversionTable")).getAbsolutePath();
-					ProcessBuilder builder = new ProcessBuilder(tapExec,netFile,"STREAM",convTable);
-					File outputDirectory = new File(model.getOutputDirectory() + entry.getKey().toString() + "/");
-					outputDirectory.mkdirs();
-					builder.directory(outputDirectory);
-					File out = new File(outputDirectory.getAbsolutePath() + "/log" + System.currentTimeMillis() + ".txt");
-					out.getParentFile().mkdirs();
-					out.createNewFile();
-					builder.redirectOutput(out);
-					builder.redirectError(out);
-					Process proc = builder.start();
-					OutputStream stdin = proc.getOutputStream();
-					streamODs(entry, stdin);
-					int exit = proc.waitFor();
-					System.out.println("Process finished with exit code "+ exit);
-				} catch(IOException e) {
-					System.out.println(entry.getKey() + " unable to stream data");
-					e.printStackTrace();
-				} catch (InterruptedException e) {
-					System.out.println(entry.getKey() + " traffic assignment was interrupted");
-					e.printStackTrace();
-				}
-			});
-			printTimeStamp();
+            printTimeStamp();
+            System.out.println("Running Traffic Assignment by Streaming OD");
+            runStreamingTA(model, reducedODs);
+
+            printTimeStamp();
 			System.out.println("Done");
 
 		} catch (FileNotFoundException e) {
@@ -150,7 +125,40 @@ public class wrapNCTCOG {
 		}
 	}
 
-	/**
+    private static void runStreamingTA(ModelInput model, Map<TimePeriod, Collection<ODMatrix>> reducedODs) {
+        reducedODs.entrySet().parallelStream().forEach(entry -> {
+            try {
+
+                System.out.println("Streaming " + entry.getKey().toString());
+                Collection<ODMatrix> matrices = entry.getValue();
+                String tapExec = new File("./tap").getAbsolutePath();
+                String netFile = new File(model.getInputs().getProperty("network.graphFile")).getAbsolutePath();
+                String convTable = new File(model.getInputs().getProperty("ta.conversionTable")).getAbsolutePath();
+                ProcessBuilder builder = new ProcessBuilder(tapExec,netFile,"STREAM",convTable);
+                File outputDirectory = new File(model.getOutputDirectory() + entry.getKey().toString() + "/");
+                outputDirectory.mkdirs();
+                builder.directory(outputDirectory);
+                File out = new File(outputDirectory.getAbsolutePath() + "/log" + System.currentTimeMillis() + ".txt");
+                out.getParentFile().mkdirs();
+                out.createNewFile();
+                builder.redirectOutput(out);
+                builder.redirectError(out);
+                Process proc = builder.start();
+                OutputStream stdin = proc.getOutputStream();
+                streamODs(entry, stdin);
+                int exit = proc.waitFor();
+                System.out.println("Process finished with exit code "+ exit);
+            } catch(IOException e) {
+                System.out.println(entry.getKey() + " unable to stream data");
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                System.out.println(entry.getKey() + " traffic assignment was interrupted");
+                e.printStackTrace();
+            }
+        });
+    }
+
+    /**
 	 * This method writes the current amount of milliseconds that have elapsed since the start of the script
 	 */
 	private static void printTimeStamp() {
