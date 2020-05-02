@@ -17,6 +17,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.ArrayList;
 
+import static edu.utexas.wrap.wrapNCTCOG.printTimeStamp;
+
 
 public class ODMatrixStreamWriter {
 
@@ -77,6 +79,7 @@ public class ODMatrixStreamWriter {
                         System.exit(1);
                     }
                 }
+                printTimeStamp();
                 System.out.println(timePeriod + ":Finished " + count + "/"+ origins.size() +" zones so far");
                 bo.flush();
 //                System.out.println("=============================================");

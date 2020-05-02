@@ -126,7 +126,7 @@ public class wrapNCTCOG {
 	}
 
     private static void runStreamingTA(ModelInput model, Map<TimePeriod, Collection<ODMatrix>> reducedODs) {
-        reducedODs.entrySet().parallelStream().forEach(entry -> {
+        reducedODs.entrySet().forEach(entry -> {
             try {
 
                 System.out.println("Streaming " + entry.getKey().toString());
@@ -161,7 +161,7 @@ public class wrapNCTCOG {
     /**
 	 * This method writes the current amount of milliseconds that have elapsed since the start of the script
 	 */
-	private static void printTimeStamp() {
+	public static void printTimeStamp() {
 		System.out.print((System.currentTimeMillis()-wrapNCTCOG.startMS)+" ms\t");
 	}
 	
