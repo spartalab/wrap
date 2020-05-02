@@ -25,7 +25,6 @@ public class ODMatrixStreamWriter {
 
     public static void write(String timePeriod, Collection<ODMatrix> ods, OutputStream stdin) {
         try {
-            ByteBuffer buffer = ByteBuffer.allocate(48).order(ByteOrder.LITTLE_ENDIAN);
             List<ODMatrix> temp = new ArrayList(ods);
             // Assuming that there is something in the ods
             if (temp.size() == 0) {
@@ -36,6 +35,7 @@ public class ODMatrixStreamWriter {
             Collection<TravelSurveyZone> origins = temp.get(0).getGraph().getTSZs();
             Collection<TravelSurveyZone> demands = temp.get(0).getGraph().getTSZs();
 //            System.out.println("There are " + origins.size() + " zones");
+            ByteBuffer buffer = ByteBuffer.allocate(48 * origins.size()).order(ByteOrder.LITTLE_ENDIAN);
             int count = 0;
             for(TravelSurveyZone orig : origins) {
                 count += 1;
@@ -67,17 +67,17 @@ public class ODMatrixStreamWriter {
 //                        + od_info.get("HOV_0.17") + " " + od_info.get("HOV_0.45")
 ////                            + od_info.get("SINGLE_OCC_0.35") + " " + od_info.get("SINGLE_OCC_0.9")
 //                    );
-                    try {
-                        buffer.flip();
-                        bo.write(buffer.array());
+                }
+                try {
+                    buffer.flip();
+                    bo.write(buffer.array());
 //                        stdin.flush();
-                    } catch (IOException e) {
-                        if(e.toString().contains("Broken Pipe")) {
-                            System.err.println("TAP-B has an error");
-                        }
-                        e.printStackTrace();
-                        System.exit(1);
+                } catch (IOException e) {
+                    if(e.toString().contains("Broken Pipe")) {
+                        System.err.println("TAP-B has an error");
                     }
+                    e.printStackTrace();
+                    System.exit(1);
                 }
                 printTimeStamp();
                 System.out.println(timePeriod + ":Finished " + count + "/"+ origins.size() +" zones so far");
