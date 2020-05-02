@@ -29,38 +29,41 @@ public class StreamTestScript {
         builder.redirectErrorStream(true);
         Process proc = builder.start();
         OutputStream stdin = proc.getOutputStream();
-        ByteBuffer buffer = ByteBuffer.allocate(48).order(ByteOrder.LITTLE_ENDIAN);
+        ByteBuffer buffer = ByteBuffer.allocate(48 * 100).order(ByteOrder.LITTLE_ENDIAN);
         Random r = new Random();
-        for (int i = 0; i < 100; i++) {
-            WritableByteChannel channel = Channels.newChannel(stdin);
+        for (int i = 0; i < 10; i++) {
             buffer.clear();
-            buffer.putInt(9697);
-            buffer.putInt(7616);
-            buffer.putInt(Float.floatToRawIntBits(r.nextFloat()));
-            buffer.putInt(Float.floatToRawIntBits(r.nextFloat()));
-            buffer.putInt(Float.floatToRawIntBits(r.nextFloat()));
-            buffer.putInt(Float.floatToRawIntBits(r.nextFloat()));
-            buffer.putInt(Float.floatToRawIntBits(r.nextFloat()));
-            buffer.putInt(Float.floatToRawIntBits(r.nextFloat()));
-            buffer.putInt(Float.floatToRawIntBits(r.nextFloat()));
-            buffer.putInt(Float.floatToRawIntBits(r.nextFloat()));
-            // MED_TRUCKS and HEAVY_TRUCKS
-            buffer.putFloat(Float.floatToRawIntBits(0f));
-            buffer.putFloat(Float.floatToRawIntBits(0f));
+            for (int j = 0; j < 100; j++) {
+                buffer.putInt(9697);
+                buffer.putInt(7616);
+                buffer.putInt(Float.floatToRawIntBits(r.nextFloat()));
+                buffer.putInt(Float.floatToRawIntBits(r.nextFloat()));
+                buffer.putInt(Float.floatToRawIntBits(r.nextFloat()));
+                buffer.putInt(Float.floatToRawIntBits(r.nextFloat()));
+                buffer.putInt(Float.floatToRawIntBits(r.nextFloat()));
+                buffer.putInt(Float.floatToRawIntBits(r.nextFloat()));
+                buffer.putInt(Float.floatToRawIntBits(r.nextFloat()));
+                buffer.putInt(Float.floatToRawIntBits(r.nextFloat()));
+                // MED_TRUCKS and HEAVY_TRUCKS
+                buffer.putFloat(Float.floatToRawIntBits(0f));
+                buffer.putFloat(Float.floatToRawIntBits(0f));
+            }
             try {
-                buffer.rewind();
-                String b = "r:" + buffer.getInt() + " s:" + buffer.getInt() + " "
-                                    + buffer.getFloat() + " " + buffer.getInt() + " "
-                                    + buffer.getInt() + " " + buffer.getInt() + " "
-                                    + buffer.getInt() + " " + buffer.getInt() + " "
-                                    + buffer.getInt() + " " + buffer.getInt() + " "
-                                    + buffer.getInt() + " " + buffer.getInt();
-                System.out.println(b);
-                buffer.rewind();
+//                buffer.rewind();
+//                String b = "r:" + buffer.getInt() + " s:" + buffer.getInt() + " "
+//                        + buffer.getFloat() + " " + buffer.getInt() + " "
+//                        + buffer.getInt() + " " + buffer.getInt() + " "
+//                        + buffer.getInt() + " " + buffer.getInt() + " "
+//                        + buffer.getInt() + " " + buffer.getInt() + " "
+//                        + buffer.getInt() + " " + buffer.getInt();
+//                System.out.println(b);
+//                buffer.rewind();
+                int written = buffer.position();
+                System.out.println(written);
                 buffer.flip();
-                stdin.write(buffer.array());
+                stdin.write(buffer.array(), 0, written);
                 stdin.flush();
-            }catch (IOException e) {
+            } catch (IOException e) {
                 if (e.toString().contains("Broken pipe")) {
                     e.printStackTrace();
                     System.exit(1);

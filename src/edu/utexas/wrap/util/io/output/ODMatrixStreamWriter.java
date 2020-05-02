@@ -35,12 +35,12 @@ public class ODMatrixStreamWriter {
             Collection<TravelSurveyZone> origins = temp.get(0).getGraph().getTSZs();
             Collection<TravelSurveyZone> demands = temp.get(0).getGraph().getTSZs();
 //            System.out.println("There are " + origins.size() + " zones");
-            ByteBuffer buffer = ByteBuffer.allocate(48 * origins.size()).order(ByteOrder.LITTLE_ENDIAN);
+            ByteBuffer buffer = ByteBuffer.allocate(48 * demands.size()).order(ByteOrder.LITTLE_ENDIAN);
             int count = 0;
             for(TravelSurveyZone orig : origins) {
                 count += 1;
+                buffer.clear();
                 for(TravelSurveyZone dest : demands) {
-                    buffer.clear();
                     buffer.putInt(orig.getNode().getID());
                     buffer.putInt(dest.getNode().getID());
                     Map<String, Float> od_info = new HashMap<>();
@@ -69,8 +69,9 @@ public class ODMatrixStreamWriter {
 //                    );
                 }
                 try {
+                    int position = buffer.position();
                     buffer.flip();
-                    bo.write(buffer.array());
+                    bo.write(buffer.array(), 0, position);
 //                        stdin.flush();
                 } catch (IOException e) {
                     if(e.toString().contains("Broken Pipe")) {
