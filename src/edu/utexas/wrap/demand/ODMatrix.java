@@ -42,5 +42,10 @@ public interface ODMatrix {
 	public Float getVOT();
 	
 	public void setVOT(float VOT);
-	
+
+	/**
+	 * String Represenation of Mode and VOT combination
+	 * @return (mode)_(vot)
+	 */
+	public String getModeVOTString();
 }

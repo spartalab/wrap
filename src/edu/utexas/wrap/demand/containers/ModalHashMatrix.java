@@ -18,7 +18,8 @@ public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 	private Graph g;
 	protected Map<TravelSurveyZone,DemandMap> map;
 	private float vot;
-	
+	private String modvot;
+
 	public ModalHashMatrix(Graph g, Mode mode) {
 		this.g = g;
 		this.m = mode;
@@ -86,6 +87,12 @@ public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 	@Override
 	public void setVOT(float VOT) {
 		vot = VOT;
+	}
+
+	@Override
+	public String getModeVOTString() {
+		if (modvot == null) modvot = getMode() + "_" + getVOT();
+		return modvot;
 	}
 
 

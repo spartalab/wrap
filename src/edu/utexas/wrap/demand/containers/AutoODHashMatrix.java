@@ -11,10 +11,12 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  */
 public class AutoODHashMatrix extends ModalHashMatrix {
 	private final Float vot;
-	
+	private String modvot;
+
 	public AutoODHashMatrix(Graph g, Float vot, Mode c) {
 		super(g, c);
 		this.vot = vot;
+		modvot = getMode() + "_" + getVOT();
 	}
 
 	/* (non-Javadoc)
@@ -31,14 +33,14 @@ public class AutoODHashMatrix extends ModalHashMatrix {
 	 * from the origin to the destination using this (Auto) mode,
 	 * so this method creates a duplicate DemandMap linked to this
 	 * graph (maintains the VOT and graph)
-	 * 
+	 *
 	 * @param origin the Node whose associated demand map should be returned
 	 * @return a copy of the stored demand map
 	 */
 	public AutoDemandMap get(TravelSurveyZone origin) {
 		return (AutoDemandMap) map.get(origin);
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.demand.containers.ModalHashMatrix#put(edu.utexas.wrap.net.Node, edu.utexas.wrap.net.Node, java.lang.Float)
 	 */
@@ -48,4 +50,8 @@ public class AutoODHashMatrix extends ModalHashMatrix {
 		get(origin).put(destination, demand.doubleValue());
 	}
 
+	@Override
+	public String getModeVOTString() {
+		return modvot;
+	}
 }

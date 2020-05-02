@@ -61,11 +61,13 @@ class CombinedODMatrix implements ODMatrix {
 	private Collection<ODMatrix> children;
 	private Float vot;
 	private Mode mode;
+	String modvot;
 	
 	public CombinedODMatrix(Mode mode, Double vot) {
 		children = new HashSet<ODMatrix>();
 		this.vot = vot == null? 0.0f : vot.floatValue();
 		this.mode = mode;
+		modvot = getMode() + "_" + getVOT();
 	}
 	
 	public CombinedODMatrix() {
@@ -109,5 +111,10 @@ class CombinedODMatrix implements ODMatrix {
 	@Override
 	public void setVOT(float VOT) {
 		vot = VOT;
+	}
+
+	@Override
+	public String getModeVOTString() {
+		return modvot;
 	}
 }

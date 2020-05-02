@@ -9,6 +9,7 @@ public class ODPassthroughMatrix implements ODMatrix {
 	
 	private ModalPAMatrix base;
 	private Float vot = null;
+	private String modvot = null;
 	
 	public ODPassthroughMatrix(ModalPAMatrix baseMatrix) {
 		base = baseMatrix;
@@ -43,5 +44,12 @@ public class ODPassthroughMatrix implements ODMatrix {
 	public void setVOT(float VOT) {
 		vot = VOT;
 	}
+
+	@Override
+	public String getModeVOTString() {
+		if (modvot == null) modvot = base.getMode() + "_" + getVOT();
+		return modvot;
+	}
+
 
 }

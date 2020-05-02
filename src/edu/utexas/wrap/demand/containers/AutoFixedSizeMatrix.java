@@ -12,11 +12,13 @@ public class AutoFixedSizeMatrix implements ODMatrix {
 	private Mode mode;
 	private DemandMap[] origins;
 	private float vot;
+	private String modvot;
 	
 	public AutoFixedSizeMatrix(Graph g, Mode mode, Float vot) {
 		graph = g;
 		this.mode = mode;
 		this.vot = vot;
+		modvot = getMode() + "_" + getVOT();
 		origins = new DemandMap[g.numZones()];
 	}
 	
@@ -50,6 +52,11 @@ public class AutoFixedSizeMatrix implements ODMatrix {
 	@Override
 	public void setVOT(float VOT) {
 		vot = VOT;
+	}
+
+	@Override
+	public String getModeVOTString() {
+		return modvot;
 	}
 
 }
