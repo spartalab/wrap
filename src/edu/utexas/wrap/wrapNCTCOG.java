@@ -6,10 +6,7 @@ import java.io.IOException;
 import java.io.BufferedReader;
 import java.io.OutputStream;
 import java.io.InputStreamReader;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -126,6 +123,7 @@ public class wrapNCTCOG {
 	}
 
     private static void runStreamingTA(ModelInput model, Map<TimePeriod, Collection<ODMatrix>> reducedODs) {
+        HashMap<String, Process> tas = new HashMap<String,Process>();
         reducedODs.entrySet().forEach(entry -> {
             try {
 
@@ -146,12 +144,19 @@ public class wrapNCTCOG {
                 Process proc = builder.start();
                 OutputStream stdin = proc.getOutputStream();
                 streamODs(entry, stdin);
-                int exit = proc.waitFor();
-                System.out.println("Process finished with exit code "+ exit);
+                tas.put(entry.getKey().toString(), proc);
             } catch(IOException e) {
-                System.out.println(entry.getKey() + " unable to stream data");
+                System.out.println(entry.getKey().toString() + " unable to stream data");
                 e.printStackTrace();
+            }
+        });
+        tas.entrySet().parallelStream().forEach(entry -> {
+            try {
+                int exit = entry.getValue().waitFor();
+                printTimeStamp();
+                System.out.println(entry + ":TA Process finished with exit code "+ exit);
             } catch (InterruptedException e) {
+                printTimeStamp();
                 System.out.println(entry.getKey() + " traffic assignment was interrupted");
                 e.printStackTrace();
             }
