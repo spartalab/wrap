@@ -101,16 +101,16 @@ public class wrapNCTCOG {
 			Map<TimePeriod, Collection<ODMatrix>> reducedODs = reduceODMatrices(hb.getODs(), nhb.getODs());
 			
 			//Write OD matrices to files
-			printTimeStamp();
-			System.out.println("Writing to files");
-			writeODs(reducedODs, model.getOutputDirectory());
-			printTimeStamp();
-			System.out.println("Finished Writing to files");
+//			printTimeStamp();
+//			System.out.println("Writing to files");
+//			writeODs(reducedODs, model.getOutputDirectory());
+//			printTimeStamp();
+//			System.out.println("Finished Writing to files");
 
 			// Run Traffic Assignment
-//            printTimeStamp();
-//            System.out.println("Running Traffic Assignment by Streaming OD");
-//            runStreamingTA(model, reducedODs);
+            printTimeStamp();
+            System.out.println("Running Traffic Assignment by Streaming OD");
+            runStreamingTA(model, reducedODs);
 
             printTimeStamp();
 			System.out.println("Done");
