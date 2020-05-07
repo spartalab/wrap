@@ -2,6 +2,7 @@ package edu.utexas.wrap.assignment.bush.algoB;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
@@ -18,7 +19,7 @@ import edu.utexas.wrap.util.NegativeFlowException;
 
 public class AlgorithmBEquilibrator {
 	Integer numThreshold = 100;
-	ForkJoinPool pool = new ForkJoinPool();
+//	ForkJoinPool pool = new ForkJoinPool();
 	
 	public void equilibrate(Bush bush) throws InterruptedException, ExecutionException {
 		bush.clear();
@@ -30,7 +31,7 @@ public class AlgorithmBEquilibrator {
 //		bush.longTopoSearch(true);
 //		
 		//Get the flows on the current bush
-		Map<Link,Double> bushFlows = bush.flows();
+		Map<Link,Double> bushFlows = new ConcurrentHashMap<Link, Double>(bush.flows());
 		PathCostCalculator pcc = new PathCostCalculator(bush);
 		
 		//In reverse topological order,
@@ -253,7 +254,7 @@ public class AlgorithmBEquilibrator {
 			ll = pcc.getqShort(cur);
 		} while (cur != diverge);
 		
-		return new AlternateSegmentPair(terminus, diverge, max, pcc, lpl, spl, pool);
+		return new AlternateSegmentPair(terminus, diverge, max, pcc, lpl, spl);
 	}
 
 }

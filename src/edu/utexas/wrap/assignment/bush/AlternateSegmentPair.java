@@ -23,20 +23,17 @@ public class AlternateSegmentPair {
 	private Double maxDelta;
 	private final PathCostCalculator pcc;
 	private int longPathLength, shortPathLength;
-	ForkJoinPool pool;
 
 	public AlternateSegmentPair(
 			Node merge, Node diverge, 
 			Double maxDelta, PathCostCalculator pcc, 
-			int lpl, int spl, 
-			ForkJoinPool pool) {
+			int lpl, int spl) {
 		this.diverge = diverge;
 		this.merge = merge;
 		this.pcc = pcc;
 		this.maxDelta = maxDelta;
 		longPathLength = lpl;
 		shortPathLength = spl;
-		this.pool = pool;
 	}
 	
 	/**
@@ -70,8 +67,10 @@ public class AlternateSegmentPair {
 		Mode klass = pcc.getBush().vehicleClass();
 		
 		//For each link in the longest and shortest paths, sum the link prices in parallel through a Stream
-		Double longPrice = pool.submit(() -> StreamSupport.stream(longPath().spliterator(), false).unordered().mapToDouble(x -> x.getPrice(vot, klass)).sum()).get();
-		Double shortPrice = pool.submit(() -> StreamSupport.stream(shortPath().spliterator(), false).unordered().mapToDouble(x -> x.getPrice(vot, klass)).sum()).get();
+		Double longPrice = StreamSupport.stream(longPath().spliterator(), false)
+				.unordered().mapToDouble(x -> x.getPrice(vot, klass)).sum();
+		Double shortPrice =  StreamSupport.stream(shortPath().spliterator(), false)
+				.unordered().mapToDouble(x -> x.getPrice(vot, klass)).sum();
 
 		//Perform a quick numerical check
 		Double ulp = Math.max(Math.ulp(longPrice),Math.ulp(shortPrice));
