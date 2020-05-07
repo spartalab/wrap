@@ -6,7 +6,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Comparator;
 
+import edu.utexas.wrap.net.FixedSizeNetworkSkim;
 import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**
@@ -23,7 +25,7 @@ public class SkimFactory {
 	 * @return 2d array of floats that can be indexed by the pair of zones storing the skim rates between the zones
 	 * @throws IOException
 	 */
-	public static float[][] readSkimFile(Path file, boolean header, Graph graph) {
+	public static NetworkSkim readSkimFile(Path file, boolean header, Graph graph) {
 		float[][] ret = new float[graph.numZones()][graph.numZones()];
 //		Map<TravelSurveyZone,Map<TravelSurveyZone,Float>> ret = new ConcurrentSkipListMap<TravelSurveyZone, Map<TravelSurveyZone,Float>>(new ZoneComparator());
 		BufferedReader in = null;
@@ -43,7 +45,7 @@ public class SkimFactory {
 					e.printStackTrace();
 				}
 		}
-		return ret;
+		return new FixedSizeNetworkSkim(ret);
 	}
 
 	private static void processLine(Graph graph, float[][] ret, String line) {

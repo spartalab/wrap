@@ -3,9 +3,13 @@ package edu.utexas.wrap.marketsegmentation;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 import edu.utexas.wrap.TimePeriod;
@@ -15,10 +19,10 @@ import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.PAMap;
-import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.demand.containers.FixedSizePAMap;
 import edu.utexas.wrap.distribution.TripDistributor;
 import edu.utexas.wrap.generation.BasicTripGenerator;
+import edu.utexas.wrap.generation.GeneralGenerationRate;
 import edu.utexas.wrap.generation.GenerationRate;
 import edu.utexas.wrap.generation.TripGenerator;
 import edu.utexas.wrap.modechoice.FixedProportionSplitter;
@@ -26,19 +30,18 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.util.AggregatePAMatrixCollector;
-import edu.utexas.wrap.util.DepartureArrivalConverter;
 import edu.utexas.wrap.util.PassengerVehicleTripConverter;
 import edu.utexas.wrap.util.TimeOfDaySplitter;
 
 public class Purpose {
 	PurposeModel model;
 
-	public Purpose(Path purposeFile, Graph network) {
+	public Purpose(Path purposeFile, Graph network) throws IOException {
 		// TODO Auto-generated constructor stub
 		model = new PurposeModel(purposeFile, network);
 	}
 
-	public Stream<ODMatrix> buildODs(Map<TimePeriod,NetworkSkim> skims) {
+	public Stream<ODMatrix> buildODs(Map<String,NetworkSkim> skims) {
 		
 		Stream<DemandMap>
 					productions	= getProductions(),
@@ -75,7 +78,7 @@ public class Purpose {
 		return new FixedProportionSplitter(model.modeShares()).split(aggregateMtx);
 	}
 	
-	private AggregatePAMatrix distribute(PAMap map, Map<TimePeriod,NetworkSkim> skims) {
+	private AggregatePAMatrix distribute(PAMap map, Map<String,NetworkSkim> skims) {
 		return model.distributionShares().entrySet().parallelStream()
 		.map(entry -> 
 			
@@ -133,11 +136,31 @@ class PurposeModel {
 		throw new RuntimeException("Not yet implemented");
 	}
 	
-	private Map<MarketSegment, GenerationRate> getProdRates() {
+	private Map<MarketSubsegment, GenerationRate> getProdRates() {
+		productionSegments().collect(Collectors.toMap(Function.identity(), 
+				segment -> {
+					String key = "prodRate";
+					for (int i = 0; i<segment.depth()-1;i++) {
+						key += "."+segment.index(i);
+					}
+					return new GeneralGenerationRate(Double.parseDouble(properties.getProperty(key)));
+
+				}
+				));
+		
+
 		throw new RuntimeException("Not yet implemented");
 	}
 
 	public Stream<MarketSubsegment> productionSegments(){
+		long keyDepth = properties.keySet().stream()
+				.filter(key -> ((String) key).startsWith("prodRate")).count();
+
+		List<String> keys = LongStream.range(0,keyDepth)
+				.mapToObj(idx -> properties.getProperty("prodKey."+idx))
+				.collect(Collectors.toList());
+		
+		
 		throw new RuntimeException("Not yet implemented");
 	}
 	
@@ -153,7 +176,7 @@ class PurposeModel {
 		throw new RuntimeException("Not yet implemented");
 	}
 	
-	public Map<TimePeriod,Double> distributionShares(){
+	public Map<String,Double> distributionShares(){
 		throw new RuntimeException("Not yet implemented");
 	}
 	

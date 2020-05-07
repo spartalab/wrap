@@ -5,19 +5,20 @@ import java.util.Map;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
+import edu.utexas.wrap.marketsegmentation.MarketSubsegment;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
 
 public class BasicTripGenerator implements TripGenerator {
 	protected Graph g;
-	private Map<MarketSegment, GenerationRate> rates;
+	private Map<MarketSubsegment, GenerationRate> rates;
 	
-	public BasicTripGenerator(Graph graph, Map<MarketSegment,GenerationRate> rateMap) {
+	public BasicTripGenerator(Graph graph, Map<MarketSubsegment, GenerationRate> map) {
 		g = graph;
-		rates = rateMap;
+		rates = map;
 	}
 	
-	public DemandMap generate(MarketSegment segment){
+	public DemandMap generate(MarketSubsegment segment){
 		GenerationRate rate = rates.get(segment);
 		DemandMap ret = new FixedSizeDemandMap(g);
 		g.getTSZs().parallelStream().forEach(	//For each TSZ in parallel,
