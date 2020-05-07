@@ -53,8 +53,7 @@ public class wrapTNTP {
 						reader, 
 						writer, 
 						new BushGapEvaluator(g), 
-						10E-5, 
-						g),
+						10E-3),
 				10E-6
 				);
 		

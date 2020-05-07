@@ -65,8 +65,8 @@ public class AlgorithmBEquilibrator {
 		
 		Double denominator = Stream.concat(
 				//for all links in the longest and shortest paths
-				StreamSupport.stream(asp.shortPath().spliterator(), true),
-				StreamSupport.stream(asp.longPath().spliterator(), true))
+				StreamSupport.stream(asp.shortPath().spliterator(), false),
+				StreamSupport.stream(asp.longPath().spliterator(), false))
 				
 				//In no particular order, sum the price derivatives
 				.unordered().mapToDouble(x -> x.pricePrime(vot)).sum();
@@ -83,8 +83,8 @@ public class AlgorithmBEquilibrator {
 	private void updateDeltaX(AlternateSegmentPair asp, Map<Link,Double> flows, Double deltaH) {
 		//add delta h to all x values in the shortest path
 		
-		Set<Link> longStream = StreamSupport.stream(asp.longPath().spliterator(), true).collect(Collectors.toSet());
-		Set<Link> shortStream = StreamSupport.stream(asp.shortPath().spliterator(), true).collect(Collectors.toSet());
+		Set<Link> longStream = StreamSupport.stream(asp.longPath().spliterator(), false).collect(Collectors.toSet());
+		Set<Link> shortStream = StreamSupport.stream(asp.shortPath().spliterator(), false).collect(Collectors.toSet());
 
 		shortStream.forEach(l ->{
 			if (flows.getOrDefault(l, 0.0) <0 ) throw new RuntimeException();
@@ -141,7 +141,7 @@ public class AlgorithmBEquilibrator {
 		
 		if (td < ld) {	//If too much flow is removed from the bush
 			if (ld-td <= numThreshold*ud 
-//					|| (ld-td) < Math.pow(10, -3)
+					|| (ld-td) < Math.pow(10, -5)
 					) {	//See if it's within the numerical tolerance
 				td = ld;	//Cap at the smaller amount if so
 			}
@@ -158,16 +158,21 @@ public class AlgorithmBEquilibrator {
 	 */
 	public void updateSplits(Bush bush, Map<Link, Double> flows, PathCostCalculator pcc) {
 		
-		bush.getQ().parallel()
+		bush.getQ()
+//		.parallel()
 		.filter(bv -> bv instanceof BushMerge)
 		.map(bv -> (BushMerge) bv)
 		
 		.forEach(bm ->{
-			double total = bm.getLinks().parallel().mapToDouble(l -> Math.abs(flows.get(l))).sum();
+			double total = bm.getLinks()
+//					.parallel()
+					.mapToDouble(l -> Math.abs(flows.get(l))).sum();
 			//Calculate the total demand through this node
 
 			//If there is flow through the node, set the splits proportionally
-			if (total > 0) bm.getLinks().parallel().forEach(l -> bm.setSplit(l, flows.get(l)/total));
+			if (total > 0) bm.getLinks()
+//			.parallel()
+			.forEach(l -> bm.setSplit(l, flows.get(l)/total));
 			//otherwise, dump all (non-existent) flow onto the shortest link
 			else {
 				splitToShortest(pcc, bm);

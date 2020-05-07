@@ -41,6 +41,8 @@ public class Graph {
 	private Link[][] forwardStar;
 	private Link[][] reverseStar;
 	
+	private Map<Integer,Link> hashes = new HashMap<Integer,Link>();
+	
 	
 	public Graph() {
 		outLinks = (new HashMap<Node, Set<Link>>());
@@ -68,6 +70,10 @@ public class Graph {
 	
 	//TODO improve concurrency availability here
 	public synchronized Boolean add(Link link) {
+		
+		if (hashes.containsKey(link.hashCode())) throw new RuntimeException("Hash collision");
+		else hashes.put(link.hashCode(),link);
+		
 		numLinks++;
 		Boolean altered = links.add(link);
 		Node head = link.getHead();

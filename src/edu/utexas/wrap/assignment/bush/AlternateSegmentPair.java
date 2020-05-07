@@ -60,8 +60,8 @@ public class AlternateSegmentPair {
 		Mode klass = pcc.getBush().vehicleClass();
 		
 		//For each link in the longest and shortest paths, sum the link prices in parallel through a Stream
-		Double longPrice = StreamSupport.stream(longPath().spliterator(), true).unordered().mapToDouble(x -> x.getPrice(vot, klass)).sum();
-		Double shortPrice = StreamSupport.stream(shortPath().spliterator(), true).unordered().mapToDouble(x -> x.getPrice(vot, klass)).sum();
+		Double longPrice = StreamSupport.stream(longPath().spliterator(), false).unordered().mapToDouble(x -> x.getPrice(vot, klass)).sum();
+		Double shortPrice = StreamSupport.stream(shortPath().spliterator(), false).unordered().mapToDouble(x -> x.getPrice(vot, klass)).sum();
 
 		//Perform a quick numerical check
 		Double ulp = Math.max(Math.ulp(longPrice),Math.ulp(shortPrice));
