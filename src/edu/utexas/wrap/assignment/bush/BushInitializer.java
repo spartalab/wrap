@@ -33,7 +33,9 @@ public class BushInitializer implements AssignmentInitializer<Bush>{
 	
 	public void add(ODMatrix matrix) {
 		Stream<Bush> rawBushes = matrix.getOrigins()
-				.parallelStream().map(tsz -> new Bush(
+				.parallelStream()
+				.filter(tsz -> !matrix.getDemandMap(tsz).isEmpty())
+				.map(tsz -> new Bush(
 				tsz, 
 				matrix.getVOT(), 
 				matrix.getMode(),

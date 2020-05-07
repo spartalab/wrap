@@ -91,75 +91,6 @@ public class Bush implements AssignmentContainer {
 		q[head.getOrder()] = backvector;
 	}
 
-	/**Determine whether a link is active in the bush
-	 * @param i the link which should be checked
-	 * @return whether the given link is in the bush structure
-	 */
-//	private boolean contains(Link i) {
-//		BackVector back = getBackVector(i.getHead());
-//		//Look at the head node's backvector
-//		return back instanceof BushMerge? 
-//				//If it's a merge, determine if the merge contains the link
-//				((BushMerge) back).contains(i) : 
-//					//Otherwise, determine if the back vector is the same link
-//					back != null && back.equals(i);
-//	} 
-
-//	/** Calculates the divergence between the shortest and longest paths from two nodes
-//	 * @param l the node from which the shortest path should trace back
-//	 * @param u the node from which the longest path should trace back
-//	 * @return the diverge node
-//	 */
-//	protected Node divergeNode(Node start) {
-//		// If the given node is the origin or it has only one backvector, there is no diverge node
-//		if (start.equals(origin.node()) || !(getBackVector(start) instanceof BushMerge))
-//			return start;
-//
-//		//Store the nodes seen on the paths in reverse order
-//		List<Node> lNodes = new ArrayList<Node>();
-//		List<Node> uNodes = new ArrayList<Node>();
-//
-//		//Iterate backwards through the shortest and longest paths until one runs out of links
-//		Link uLink = getqLong(start);
-//		Link lLink = getqShort(start);
-//		while (lLink != null && uLink != null) {
-//
-//			Node lNode = lLink.getTail();
-//			Node uNode = uLink.getTail();
-//
-//			//If the next node in both is the same, return that node
-//			if (lNode.equals(uNode)) return lNode;
-//			//If the shortest path just got to a node that was already seen in the longest path, return it
-//			else if (uNodes.contains(lNode)) return lNode;
-//			//If the longest path just got to a node that was already seen in the shortest path, return it
-//			else if (lNodes.contains(uNode)) return uNode;
-//			//Otherwise, add both to the lists of seen nodes
-//			else {
-//				lNodes.add(lLink.getTail());
-//				uNodes.add(uLink.getTail());
-//			}
-//			
-//			lLink = getqShort(lNode);
-//			uLink = getqLong(uNode);
-//		}
-//		//If there are still more links to examine on the longest path, do so
-//		while (uLink != null) {
-//			Node uNode = uLink.getTail();
-//			//If the longest path just got to a node that was already seen in the shortest path, return it
-//			if (lNodes.contains(uNode)) return uNode;
-//			uLink = getqLong(uNode);
-//		}
-//		//If there are still more links to examine on the shortest path, do so
-//		while (lLink != null) {
-//			Node lNode = lLink.getTail();
-//			//If the shortest path just got to a node that was already seen in the longest path, return it
-//			if (uNodes.contains(lNode))	return lNode;
-//			lLink = getqShort(lNode);
-//		}
-//		//Something went wrong - the two paths never intersected
-//		throw new RuntimeException("No diverge node found");
-//	}
-
 	protected void setQ(BackVector[] q) {
 		this.q = q;
 	}
@@ -220,54 +151,6 @@ public class Bush implements AssignmentContainer {
 		return to;
 	}
 
-//	/**Recursively calculate the shortest path cost to a node using a cache
-//	 * @param n the node to calculate the cost of the shortest path to
-//	 * @param cache the cache used to avoid recomputing
-//	 * @return the cost of the shortest path to the given node
-//	 * @throws UnreachableException if a node can't be reached
-//	 */
-//	public Double getCachedL(Node n, Double[] cache) throws UnreachableException {
-//		Link back = getqShort(n); //Next link on the shortest path
-//		if (n.equals(origin.getNode())) //Return 0 at the origin
-//			return 0.0;
-//		else if (back == null)	//Something went wrong - can't find a backvector
-//			throw new UnreachableException(n, this);
-//		else if (cache[n.getOrder()] != null)	//If the value's been calculated before,
-//			return cache[n.getOrder()];	//return the cached value
-//		else {	//Calculate the value recursively, adding to the prior value
-//			Double newL = getCachedL(back.getTail(), cache) + back.getPrice(vot, c);
-//			cache[n.getOrder()] = newL;	//Store this value in the cache
-//			return newL;
-//		}
-//	}
-//
-//	/**Recursively calculate the longest path cost to a node using a cache
-//	 * @param n the node to calculate the cost of the longest path to
-//	 * @param cache the cache used to avoid recomputing
-//	 * @return the cost of the longest path to the given node
-//	 * @throws UnreachableException if a node can't be reached
-//	 */
-//	public Double getCachedU(Node n, Double[] cache) throws UnreachableException {
-//		Link back = getqLong(n);	//The next link in the longest path
-//		int pos = n.getOrder();
-//		if (n.equals(origin.getNode()))	//Return 0 at the origin
-//			return 0.0;
-//		else if (back == null) {	//Something went wrong - can't find the longest path
-//			if (getDemand(n) > 0.0) throw new UnreachableException(n, this);
-//			else {
-//				cache[pos] = Double.MAX_VALUE;
-//				return Double.MAX_VALUE;
-//			}
-//		}
-//		else if (cache[pos] != null)	//If this value was already calculated,
-//			return cache[pos];	//return the cached value
-//		else {	//calculate from scratch, adding to the prior link's value
-//			Double newU = getCachedU(back.getTail(), cache) + back.getPrice(vot, c);
-//			cache[pos] = newU;	//store this value in the cache
-//			return newU;
-//		}
-//	}
-
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getDemand(edu.utexas.wrap.net.Node)
 	 */
@@ -282,90 +165,12 @@ public class Bush implements AssignmentContainer {
 		return demand;
 	}
 	
-//	/**Recursively calculate the shortest path cost to a node
-//	 * @param n the node to calculate the cost of the shortest path to
-//	 * @return the cost of the shortest path to the given node
-//	 * @throws UnreachableException if a node can't be reached
-//	 */
-//	@Deprecated
-//	public Double getL(Node n) throws UnreachableException {
-//
-//		Link back = getqShort(n);
-//		if (n.equals(origin.getNode()))
-//			return 0.0;
-//		else if (back == null)
-//			throw new UnreachableException(n, this);
-//		else
-//			return getL(back.getTail()) + back.getPrice(vot, c);
-//	}
-
-//	/**Assemble the longest path from the origin to a node
-//	 * @param n the node to assemble the longest path to
-//	 * @return the longest path to that node
-//	 */
-//	public Path getLongPath(Node n) {
-//		return getLongPath(n, origin.node());
-//	}
-//
-//	/**Assemble the longest path from a given start node to an end node
-//	 * @param end the node to assemble the longest path to
-//	 * @param start the node to assemble the longest path from
-//	 * @return the longest path from the start to the end node
-//	 */
-//	public Path getLongPath(Node end, Node start) {
-//
-//		Path p = new Path();
-//		if (end.equals(start))	//The path from a node to itself is empty
-//			return p;
-//		Link curLink = getqLong(end);	//Start from the prior link on the longest path
-//		//Until you run out of road,
-//		while (curLink != null && !curLink.getHead().equals(start)) {
-//			//Keep adding to the path the prior longest cost path link
-//			p.addFirst(curLink);
-//			curLink = getqLong(curLink.getTail());
-//		}
-//		//Check to ensure we made it to the correct node
-//		if (curLink == null && !start.equals(origin.node())) 
-//			throw new RuntimeException("No longest path could be found from "+start.toString()+" to "+end.toString());
-//		return p;
-//
-//	}
-
-//	/**Get all the nodes used in the bush
-//	 * @return all nodes used in the bush
-//	 */
-//	public Collection<Node> getNodes() {
-//		return network.getNodes();
-//	}
-
 	/**Get the bush's origin
 	 * @return the origin of the bush
 	 */
 	public TravelSurveyZone root() {
 		return origin;
 	}
-
-//	/**Get the longest path backvector from a given node
-//	 * @param n the node whose longest path backvector should be returned
-//	 * @return the last link in the longest path to the given node
-//	 */
-//	public Link getqLong(Node n) {
-//		BackVector qq = getBackVector(n);
-//		return qq instanceof Link? (Link) qq :	//If the BackVector is a Link, it's the only candidate
-//			qq instanceof BushMerge? ((BushMerge) qq).getLongLink() :	//Else delegate to the BushMerge
-//				null;	//This shouldn't happen
-//	}
-//
-//	/**Get the shortest path backvector from a given node
-//	 * @param n the node whose shortest path backvector should be returned
-//	 * @return the last link in the shortest path to the given node
-//	 */
-//	public Link getqShort(Node n) {
-//		BackVector qq = getBackVector(n);
-//		return qq instanceof Link? (Link) qq :	//If the BackVector is a Link, it's the only candidate
-//			qq instanceof BushMerge ? ((BushMerge) qq).getShortLink() :	//Otherwise, delegate to the BushMerge
-//				null;	//This shouldn't happen
-//	}
 
 	/**Get the backvector at a given node
 	 * @param node where the BackVector leads
@@ -378,37 +183,6 @@ public class Bush implements AssignmentContainer {
 		return q[index];
 	}
 
-//	/** Assemble the shortest path from the origin to a given node
-//	 * @param n the final node in the path
-//	 * @return the shortest path between the origin and given node
-//	 * @throws UnreachableException if a shortest path can't be constructed
-//	 */
-//	public Path getShortPath(Node n) throws UnreachableException {
-//		return getShortPath(n, origin.node());
-//	}
-
-//	/** Assemble the shortest path from the start to the end node
-//	 * @param end the final node in the path
-//	 * @param start the first node in the path
-//	 * @return the shortest path between the start and end nodes
-//	 * @throws UnreachableException if a shortest path can't be constructed
-//	 */
-//	public Path getShortPath(Node end, Node start) throws UnreachableException {
-//		Path p = new Path();
-//		if (end.equals(start))	//The path from a node to itself is empty
-//			return p;
-//		Link curLink = getqShort(end);	//Start with the previous shortest cost path link
-//		while (curLink != null && !curLink.getHead().equals(start)) {
-//			//Keep adding the next shortest cost path link until you run out of road
-//			p.addFirst(curLink);
-//			curLink = getqShort(curLink.getTail());
-//		}
-//		//Check to ensure we made it to the start node
-//		if (p.isEmpty() || !p.getFirst().getTail().equals(start))
-//			throw new UnreachableException();
-//		return p;
-//	}
-
 	/**
 	 * Calculate a topological order using Kahn's algorithm
 	 * 
@@ -420,24 +194,6 @@ public class Bush implements AssignmentContainer {
 	public synchronized Node[] getTopologicalOrder(boolean toCache) {
 		return (cachedTopoOrder != null) ? cachedTopoOrder : generateTopoOrder(toCache);
 	}
-
-//	/**Recursively calculate the longest path to a node
-//	 * @param n the node to calculate cost of the longest path to
-//	 * @return the cost of the longest path to the node
-//	 * @throws UnreachableException if a node can't be reached
-//	 */
-//	@Deprecated
-//	public Double getU(Node n) throws UnreachableException {
-//
-//		Link back = getqLong(n);
-//		if (n.equals(origin.getNode()))
-//			return 0.0;
-//		else if (back == null)
-//			throw new UnreachableException(n, this);
-//		else
-//			return getU(back.getTail()) + back.getPrice(vot, c);
-//
-//	}
 
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getVehicleClass()
@@ -733,76 +489,6 @@ public class Bush implements AssignmentContainer {
 ////			}
 ////		}
 //		return true;
-//	}
-//	
-//	/**
-//	 * @return the total amount of trip demand from this origin
-//	 */
-//	public double totalDemand() {
-//		return demand.doubleClone().values().parallelStream().mapToDouble(Double::doubleValue).sum();
-//	}
-//
-//	/**
-//	 * @return an array of costs for the lowest-cost path to each node in node order
-//	 */
-//	public Double[] lowestCostPathCosts() {
-//		//Starting from the origin node, perform Dijkstra's algorithm
-//		Node orig = getOrigin().getNode();
-//		Collection<Node> nodes = network.getNodes();
-//		FibonacciHeap<Node> Q = new FibonacciHeap<Node>(nodes.size(),1.0f);
-//		Double[] cache = new Double[nodes.size()];
-//		
-//		nodes.stream().filter(n -> !n.equals(orig)).forEach(n -> Q.add(n,Double.MAX_VALUE));
-//		Q.add(orig,0.0);
-//		
-//		while (!Q.isEmpty()) {
-//			FibonacciLeaf<Node> u = Q.poll();
-//			if (u.key < Double.MAX_VALUE) {
-//				cache[u.n.getOrder()] = u.key;
-//			}
-//			
-//			for (Link uv : u.n.forwardStar()) {
-//				if (!uv.allowsClass(vehicleClass())) continue;
-//				if (!isValidLink(uv)) continue;
-//				FibonacciLeaf<Node> v = Q.getLeaf(uv.getHead());
-//				Double alt = uv.getPrice(valueOfTime(),vehicleClass())+u.key;
-//				
-//				if (alt < v.key) {
-//					Q.decreaseKey(v, alt);
-//				}
-//			}
-//		}
-//		return cache;
-////		return ret;
-//	}
-//	
-//	/**
-//	 * @return the total cost incurred by this bush's flows if all flow was on the current shortest path
-//	 */
-//	public double lowestCostPathCost() {
-//		Double[] cache = lowestCostPathCosts();
-//		return getNodes().parallelStream().mapToDouble(x -> cache[x.getOrder()] == null ? 0.0 : getDemand(x)*cache[x.getOrder()]).sum();
-//	}
-//	
-//	/**
-//	 * @return this bush's average excess cost, i.e. the average difference between the
-//	 * current assignment's total incurred costs and the lowest cost option where all
-//	 * trips are routed onto the current shortest path and costs held steady
-//	 */
-//	public double AEC() {
-//		return (getIncurredCosts() - lowestCostPathCost())/totalDemand();
-//	}
-//	
-//	/**
-//	 * @return a Set of Nodes whose longest path costs are more than 0.01% higher than
-//	 * the lowest cost paths to those nodes
-//	 * @throws UnreachableException
-//	 */
-//	public Set<Node> unequilibratedNodes() throws UnreachableException{
-//		Double[] lowCache = lowestCostPathCosts();
-//		Double[] hiCache = longTopoSearch(false);
-//
-//		return getNodes().parallelStream().filter(x -> x != getOrigin().getNode() && hiCache[x.getOrder()] > 1.0001*lowCache[x.getOrder()]).collect(Collectors.toSet());
 //	}
 
 	public BushEvaluator getEvaluator(Class<? extends BushEvaluator> calcClass) {

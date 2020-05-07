@@ -2,6 +2,7 @@ package edu.utexas.wrap.assignment.bush.algoB;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -75,9 +76,17 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 						}
 
 						synchronized (this) {
-							equilibrator.equilibrate(bush);
+							try {
+								equilibrator.equilibrate(bush);
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							} catch (ExecutionException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
 							Double val = evaluator.getValue(bush);
-							System.out.println(val);
+//							System.out.println(val);
 							isEquilibrated = (val < threshold);
 
 						}

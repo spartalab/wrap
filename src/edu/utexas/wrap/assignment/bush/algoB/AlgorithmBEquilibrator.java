@@ -2,6 +2,8 @@ package edu.utexas.wrap.assignment.bush.algoB;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -16,8 +18,9 @@ import edu.utexas.wrap.util.NegativeFlowException;
 
 public class AlgorithmBEquilibrator {
 	Integer numThreshold = 100;
+	ForkJoinPool pool = new ForkJoinPool();
 	
-	public void equilibrate(Bush bush) {
+	public void equilibrate(Bush bush) throws InterruptedException, ExecutionException {
 		bush.clear();
 		Node[] to = bush.getTopologicalOrder(true);
 		Node cur;
@@ -59,8 +62,10 @@ public class AlgorithmBEquilibrator {
 	 * the sum of the first derivatives of the costs for all links in the ASP
 	 * @param asp	The AlternateSegmentPair used to calculate delta H
 	 * @return		The smaller of the calculated delta H or the max delta
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 */
-	private Double getDeltaH(AlternateSegmentPair asp) {
+	private Double getDeltaH(AlternateSegmentPair asp) throws InterruptedException, ExecutionException {
 		Float vot = asp.getBush().valueOfTime();
 		
 		Double denominator = Stream.concat(
@@ -79,8 +84,10 @@ public class AlgorithmBEquilibrator {
 	 * @param asp the pair of long and short links to modify
 	 * @param flows the current flows on the bush
 	 * @param deltaH the amount by which flows should be changed
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 */
-	private void updateDeltaX(AlternateSegmentPair asp, Map<Link,Double> flows, Double deltaH) {
+	private void updateDeltaX(AlternateSegmentPair asp, Map<Link,Double> flows, Double deltaH) throws InterruptedException, ExecutionException {
 		//add delta h to all x values in the shortest path
 		
 		Set<Link> longStream = StreamSupport.stream(asp.longPath().spliterator(), false).collect(Collectors.toSet());
@@ -129,10 +136,15 @@ public class AlgorithmBEquilibrator {
 		Double ud = Math.max(Math.ulp(ld),Math.ulp(td)); //Machine epsilon on these two terms (lowest precision available)
 
 		if (td < ld) { //If too much flow is removed from the bush
-			if (ld-td <= numThreshold*ud) {	//See if it's within the numerical tolerance
+			if (ld-td <= numThreshold*ud
+					|| (ld-td) < Math.pow(10, -5)
+					) {	//See if it's within the numerical tolerance
 				td = ld;	//Cap at the smaller amount if so
 			}
-			else throw new NegativeFlowException("Too much bush flow removed. Required threshold: "+(ld-td)/ud);
+			else 
+				throw new  NegativeFlowException("Too much link flow removed. "
+					+ "Required threshold: "+(ld-td)/ud+"\tBush flow: "+ld
+					+ "\tdelta H: "+td);
 		}
 
 		//Now do the same thing, but this time for link flow
@@ -241,7 +253,7 @@ public class AlgorithmBEquilibrator {
 			ll = pcc.getqShort(cur);
 		} while (cur != diverge);
 		
-		return new AlternateSegmentPair(terminus, diverge, max, pcc, lpl, spl);
+		return new AlternateSegmentPair(terminus, diverge, max, pcc, lpl, spl, pool);
 	}
 
 }

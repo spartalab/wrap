@@ -2,6 +2,8 @@ package edu.utexas.wrap.assignment.bush;
 
 import java.util.Iterator;
 import java.util.Spliterator;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
 import java.util.function.Consumer;
 import java.util.stream.StreamSupport;
 
@@ -21,14 +23,20 @@ public class AlternateSegmentPair {
 	private Double maxDelta;
 	private final PathCostCalculator pcc;
 	private int longPathLength, shortPathLength;
+	ForkJoinPool pool;
 
-	public AlternateSegmentPair(Node merge, Node diverge, Double maxDelta, PathCostCalculator pcc, int lpl, int spl) {
+	public AlternateSegmentPair(
+			Node merge, Node diverge, 
+			Double maxDelta, PathCostCalculator pcc, 
+			int lpl, int spl, 
+			ForkJoinPool pool) {
 		this.diverge = diverge;
 		this.merge = merge;
 		this.pcc = pcc;
 		this.maxDelta = maxDelta;
 		longPathLength = lpl;
 		shortPathLength = spl;
+		this.pool = pool;
 	}
 	
 	/**
@@ -54,14 +62,16 @@ public class AlternateSegmentPair {
 	
 	/**
 	 * @return the difference in path costs between the alternate segments
+	 * @throws ExecutionException 
+	 * @throws InterruptedException 
 	 */
-	public Double priceDiff() {
+	public Double priceDiff() throws InterruptedException, ExecutionException {
 		Float vot = pcc.getBush().valueOfTime();
 		Mode klass = pcc.getBush().vehicleClass();
 		
 		//For each link in the longest and shortest paths, sum the link prices in parallel through a Stream
-		Double longPrice = StreamSupport.stream(longPath().spliterator(), false).unordered().mapToDouble(x -> x.getPrice(vot, klass)).sum();
-		Double shortPrice = StreamSupport.stream(shortPath().spliterator(), false).unordered().mapToDouble(x -> x.getPrice(vot, klass)).sum();
+		Double longPrice = pool.submit(() -> StreamSupport.stream(longPath().spliterator(), false).unordered().mapToDouble(x -> x.getPrice(vot, klass)).sum()).get();
+		Double shortPrice = pool.submit(() -> StreamSupport.stream(shortPath().spliterator(), false).unordered().mapToDouble(x -> x.getPrice(vot, klass)).sum()).get();
 
 		//Perform a quick numerical check
 		Double ulp = Math.max(Math.ulp(longPrice),Math.ulp(shortPrice));

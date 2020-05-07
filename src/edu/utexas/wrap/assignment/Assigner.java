@@ -19,7 +19,7 @@ public class Assigner<C extends AssignmentContainer> implements Runnable {
 		this.evaluator = evaluator;
 		this.optimizer = optimizer;
 		this.threshold = threshold;
-		maxIterations = 10;
+		maxIterations = 100;
 		
 	}
 	

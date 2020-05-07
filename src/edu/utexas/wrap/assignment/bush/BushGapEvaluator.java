@@ -12,8 +12,12 @@ public class BushGapEvaluator implements BushEvaluator {
 
 	@Override
 	public double getValue(Bush bush) {
-		//TODO determine whether the denominator should actually only depend on used paths rather than all paths
-		return bush.incurredCost()/graph.cheapestCostPossible(bush);
+		//TODO the denominator should actually only depend on used paths rather than all paths
+		Double num = bush.incurredCost();
+		Double denom = graph.cheapestCostPossible(bush);
+		if (num.isNaN() || denom.isNaN() || ((Double) (num/denom)).isNaN()) 
+			throw new RuntimeException();
+		return num/denom - 1.0;
 	}
 
 }
