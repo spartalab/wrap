@@ -36,7 +36,7 @@ public abstract class Link implements Priced, BackVector {
 		int c = 76537;	//	UT 76-5-37 TAMC \m/
 		int b = 1831;	//	Founding of Univ. of Alabama
 		int a = 2017;	//	Year of inception for this project
-		hc = (((head.getID()*a + tail.getID())*b + capacity.intValue())*c + fftime.intValue());
+		hc = (((head.getID()*a + tail.getID())*b + capacity.hashCode())*c + fftime.hashCode());
 	}
 
 	public abstract Boolean allowsClass(Mode c);
