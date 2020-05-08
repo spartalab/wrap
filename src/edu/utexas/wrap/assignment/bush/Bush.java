@@ -155,7 +155,7 @@ public class Bush implements AssignmentContainer {
 	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getDemand(edu.utexas.wrap.net.Node)
 	 */
 	public Float getDemand(Node node) {
-		return demand.get(node.getZone());
+		return node.getZone() == null ? 0.0f : demand.get(node.getZone());
 	}
 	
 	/**
