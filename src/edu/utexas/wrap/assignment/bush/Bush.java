@@ -221,7 +221,7 @@ public class Bush implements AssignmentContainer {
 		int b = 76537;	//	UT 76-5-37 TAMC \m/
 		
 		return (
-				origin.node().getID()*a + vot.intValue()
+				origin.node().getID()*a + vot.hashCode()
 				)*b + (c == null? 0 : c.hashCode());
 	}
 	
