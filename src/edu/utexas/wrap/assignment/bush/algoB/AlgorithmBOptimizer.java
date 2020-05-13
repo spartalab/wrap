@@ -63,7 +63,7 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 		int numIterations = 0;
 		
 		while (!queue.isEmpty() && numIterations < maxIterations) {
-			System.out.println("Inner iteration "+numIterations+++"\tQueue length: "+queue.size());
+			System.out.print("Inner iteration "+numIterations+++"\tQueue length: "+queue.size()+"     \r");
 			queue = queue
 					.parallelStream()
 					.filter(bush -> {

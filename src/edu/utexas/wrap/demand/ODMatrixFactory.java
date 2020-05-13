@@ -2,11 +2,15 @@ package edu.utexas.wrap.demand;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Collection;
+import java.util.HashSet;
 
 import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.demand.containers.FixedSizeODMatrix;
+import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
@@ -17,6 +21,7 @@ public class ODMatrixFactory {
 		BufferedReader of = Files.newBufferedReader(file.toPath());
 		int numZones = 0;
 		String line;
+		
 		do {
 			line = of.readLine();
 			if (line.toUpperCase().contains("NUMBER OF ZONES")) {
@@ -99,4 +104,79 @@ public class ODMatrixFactory {
 		}
 		return dests;
 	}
+	
+	public static Collection<ODMatrix> readConicTrips(File odMatrix, Graph g) throws FileNotFoundException,IOException {
+		
+		BufferedReader matrixFile = Files.newBufferedReader(odMatrix.toPath());
+		
+		FixedSizeODMatrix<FixedSizeDemandMap> 
+		solo17 = new FixedSizeODMatrix<FixedSizeDemandMap>(0.17f, Mode.SINGLE_OCC, g), 
+		solo35 = new FixedSizeODMatrix<FixedSizeDemandMap>(0.35f, Mode.SINGLE_OCC, g), 
+		solo45 = new FixedSizeODMatrix<FixedSizeDemandMap>(0.45f, Mode.SINGLE_OCC, g), 
+		solo90 = new FixedSizeODMatrix<FixedSizeDemandMap>(0.90f, Mode.SINGLE_OCC, g),
+
+		hov17 = new FixedSizeODMatrix<FixedSizeDemandMap>(0.17f, Mode.HOV, g), 
+		hov35 = new FixedSizeODMatrix<FixedSizeDemandMap>(0.35f, Mode.HOV, g), 
+		hov45 = new FixedSizeODMatrix<FixedSizeDemandMap>(0.45f, Mode.HOV, g), 
+		hov90 = new FixedSizeODMatrix<FixedSizeDemandMap>(0.90f, Mode.HOV, g),
+
+		medTrucks = new FixedSizeODMatrix<FixedSizeDemandMap>(1f, Mode.MED_TRUCK, g), 
+		hvyTrucks = new FixedSizeODMatrix<FixedSizeDemandMap>(1f, Mode.MED_TRUCK, g);
+		
+
+		matrixFile.lines().sequential().forEach(line -> {
+			if (line == null || line.trim().equals("")) return;
+			String[] args = line.split(",");
+//			System.out.print("\rLoading origin "+args[0]);
+			TravelSurveyZone orig = g.getNode(Integer.parseInt(args[0])).getZone();
+			TravelSurveyZone dest = g.getNode(Integer.parseInt(args[1])).getZone();
+			
+			put(solo17, orig, dest, args[6]);
+//			put(solo35, orig, dest, args[2]);
+//			put(solo45, orig, dest, args[7]);
+//			put(solo90, orig, dest, args[3]);
+//
+//			put(hov17, orig, dest, args[8]);
+//			put(hov35, orig, dest, args[4]);
+//			put(hov45, orig, dest, args[9]);
+//			put(hov90, orig, dest, args[5]);
+//
+//			put(medTrucks, orig, dest, args[10]);
+//			put(hvyTrucks, orig, dest, args[11]);
+
+			
+		});
+		
+		Collection<ODMatrix> ret = new HashSet<ODMatrix>();
+		ret.add(solo17);
+//		ret.add(solo35);
+//		ret.add(solo45);
+//		ret.add(solo90);
+//		
+//		ret.add(hov17);
+//		ret.add(hov35);
+//		ret.add(hov45);
+//		ret.add(hov90);
+//		
+//		ret.add(medTrucks);
+//		ret.add(hvyTrucks);
+		
+		matrixFile.close();
+		return ret;
+	}
+
+	private static void put(FixedSizeODMatrix<FixedSizeDemandMap> matrix, TravelSurveyZone orig,
+			TravelSurveyZone dest, String demand) {
+		Float da17;
+		try {
+			da17 = Float.parseFloat(demand);
+		} catch (NumberFormatException e) {
+			da17 = 0.0f;
+		}
+		
+		if (matrix.getDemandMap(orig) == null) 
+			matrix.setDemandMap(orig, new FixedSizeDemandMap(matrix.getGraph()));
+		matrix.put(orig, dest, da17);
+	}
+
 }

@@ -2,8 +2,10 @@ package edu.utexas.wrap.assignment.bush;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -389,24 +391,34 @@ public class Bush implements AssignmentContainer {
 		cachedTopoOrder = null;
 	}
 
-//	public boolean cycleCheck() {
-//		Node[] visited = new Node[network.numNodes()];
-//		int index = 0;
-//		Set<Node> stack = new HashSet<Node>(network.numNodes(),1.0f);
-//		for (Node node : network.getNodes()) {
-//			if (cycleCheck(node,visited,stack,index)) return true;
-//		}
-//		return false;
-//	}
-//
-//	private boolean cycleCheck(Node node, Node[] visited, Set<Node> stack, int nextIndex) {
-//		// TODO explore modifying Set to Deque
-//		if (stack.contains(node)) return true;
-//		
-//		if (Arrays.stream(visited).parallel().anyMatch(x -> x.equals(node))) return false;
-//		visited[nextIndex++] = node;
-//		stack.add(node);
-//		
+	public boolean cycleCheck() {
+		Set<Node> visited = new HashSet<Node>(demand.getGraph().numNodes(),1.0f);
+		Set<Node> stack = new HashSet<Node>(demand.getGraph().numNodes(),1.0f);
+		for (Node node : getNodes()) {
+//			if (node.equals(origin.node())) continue;
+			if (cycleCheck(node,visited,stack)) return true;
+		}
+		return false;
+	}
+
+	private boolean cycleCheck(Node node, Set<Node> visited, Set<Node> stack) {
+		// TODO explore modifying Set to Deque
+		if (stack.contains(node)) 
+			return true;
+		
+		if (visited.contains(node)) 
+			return false;
+		visited.add(node);
+		stack.add(node);
+
+		
+		for (Link l : node.forwardStar()) {
+			if (contains(l)) {
+				if (cycleCheck(l.getHead(),visited,stack)) return true;
+			}
+		}
+		stack.remove(node);
+		return false;
 //		BackVector bv = getBackVector(node);
 //		if (bv instanceof Link) {
 //			if (cycleCheck(((Link) bv).getTail(),visited,stack,nextIndex)) return true;
@@ -414,14 +426,15 @@ public class Bush implements AssignmentContainer {
 //			return false;
 //		}
 //		else if (bv instanceof BushMerge) {
-//			for (Link l : (BushMerge) bv) {
+//			for (Link l : ((BushMerge) bv).getLinks().collect(Collectors.toSet())) {
 //				if (cycleCheck(l.getTail(),visited,stack,nextIndex)) return true;
 //				stack.remove(node);
 //				return false;
 //			}
 //		}
+//		else if (bv == null && node.equals(origin.node())) return false;
 //		throw new RuntimeException();
-//	}
+	}
 
 	/**
 	 * @return the total generalized cost for trips in this bush
@@ -501,4 +514,22 @@ public class Bush implements AssignmentContainer {
 		return n.getZone() == null? 0.0 : demand.get(n.getZone());
 	}
 
+	public Collection<Node> getNodes(){
+		Collection<Node> nodes = getQ().filter(x -> x != null).map(BackVector::getHead).collect(Collectors.toSet());
+		nodes.add(origin.node());
+		return nodes;
+	}
+	
+	private boolean contains(Link l) {
+		BackVector bv =  q[l.getHead().getOrder()];
+		
+		if (bv == null || 
+				((bv instanceof Link) && !((Link)bv).equals(l)) ||
+				((bv instanceof BushMerge) && !((BushMerge) bv).contains(l))) return false;
+		return true;
+	}
+	
+	Collection<Node> outOnly(){
+		return demand.getGraph().getNodes().parallelStream().filter(node -> q[node.getOrder()] == null).collect(Collectors.toSet());
+	}
 }

@@ -264,7 +264,7 @@ public class ModelInputNCTCOG implements ModelInput {
 		String hhWkrIGChild = inputs.getProperty("network.hhWkrIGChild");
 
 		try {
-			graph = GraphFactory.readEnhancedGraph(new File(graphFile),Integer.parseInt(thruNode));
+			graph = GraphFactory.readConicGraph(new File(graphFile),Integer.parseInt(thruNode));
 		} catch (IOException e) {
 			System.err.println("Error in reading network file");
 			e.printStackTrace();

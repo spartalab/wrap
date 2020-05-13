@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Collection;
 
 import edu.utexas.wrap.assignment.Assigner;
 import edu.utexas.wrap.assignment.AssignmentBuilder;
@@ -28,13 +29,20 @@ import edu.utexas.wrap.util.io.GraphFactory;
 public class wrapTNTP {
 
 	public static void main(String[] args) throws FileNotFoundException, IOException {
-		Graph g = GraphFactory.readTNTPGraph(new File(args[0]));
+		boolean isConic = args[0].equals("-e");
+		Graph g = null;
+		
+		if (isConic) {
+			g = GraphFactory.readConicGraph(new File(args[1]), Integer.parseInt(args[2]));
+		} 
+		else g = GraphFactory.readTNTPGraph(new File(args[0]));
+		
+		
 		
 		if (!Files.exists(Paths.get(g.toString()))) 
 			Files.createDirectories(Paths.get(g.toString()));
 		
 		
-		ODMatrix od = ODMatrixFactory.readTNTPMatrix(new File(args[1]), g);
 		
 		AssignmentProvider<Bush> reader = new BushReader(g);
 		AssignmentConsumer<Bush> writer = new BushWriter(g),
@@ -43,9 +51,17 @@ public class wrapTNTP {
 		AssignmentBuilder<Bush> builder = new BushBuilder(g);
 		
 		AssignmentInitializer<Bush> initializer = new BushInitializer(reader, writer, builder,g);
+
 		
-		initializer.add(od);
 		
+		if (isConic) {
+			Collection<ODMatrix> mtxs = ODMatrixFactory.readConicTrips(new File(args[3]), g);
+			mtxs.forEach(mtx -> initializer.add(mtx));
+		}
+		else { 
+			initializer.add(ODMatrixFactory.readTNTPMatrix(new File(args[1]), g));
+		}
+
 		Assigner<Bush> assigner = new Assigner<Bush>(
 				initializer, 
 				new GapEvaluator<Bush>(g, reader, forgetter), 

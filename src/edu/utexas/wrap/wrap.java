@@ -115,7 +115,7 @@ public class wrap{
 				Integer firstThruNode = Integer.parseInt(args[3]);
 				
 				System.out.print("Reading network... ");
-				g = GraphFactory.readEnhancedGraph(links, firstThruNode);
+				g = GraphFactory.readConicGraph(links, firstThruNode);
 				StringBuilder sb = new StringBuilder("MD5 hash: ");
 				for (byte b : g.getMD5()) {
 					sb.append(String.format("%02X", b));

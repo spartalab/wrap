@@ -111,11 +111,12 @@ public class GraphFactory {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public static Graph readEnhancedGraph(File f, Integer thruNode) throws FileNotFoundException, IOException {
+	public static Graph readConicGraph(File f, Integer thruNode) throws FileNotFoundException, IOException {
 		try {
 		MessageDigest md = MessageDigest.getInstance("MD5");
 		Graph g = new Graph();
-		AtomicInteger numZones = new AtomicInteger(0);
+		AtomicInteger numZones = new AtomicInteger(0), 
+				numNodes = new AtomicInteger(0);
 		DigestInputStream dis = new DigestInputStream(new FileInputStream(f), md);
 		BufferedReader lf = new BufferedReader(new InputStreamReader(dis));
 		Map<Integer, Node> nodes = new ConcurrentHashMap<Integer,Node>();
@@ -131,25 +132,16 @@ public class GraphFactory {
 
 			if (!nodes.containsKey(nodeA)) {
 				if (nodeA < thruNode) {
-					Node a = new Node(nodeA, true, nodes.size());
-					TravelSurveyZone tszA = new TravelSurveyZone(a,numZones.getAndIncrement(),null);
-					a.setTravelSurveyZone(tszA);
-					g.addZone(tszA);
-					nodes.put(nodeA, a);
+					newZone(g, numZones, numNodes, nodes, nodeA);
 				} else
-					nodes.put(nodeA, new Node(nodeA, false, nodes.size()));
+					nodes.put(nodeA, new Node(nodeA, false, numNodes.getAndIncrement()));
 			}
 
 			if (!nodes.containsKey(nodeB)) {
 				if (nodeB < thruNode) {
-					Node b = new Node(nodeB, true, nodes.size());
-					TravelSurveyZone tszB = new TravelSurveyZone(b,numZones.getAndIncrement(),null);
-					b.setTravelSurveyZone(tszB);
-					g.addZone(tszB);
-					nodes.put(nodeB, b);
-					numZones.getAndIncrement();
+					newZone(g, numZones, numNodes, nodes, nodeB);
 				} else
-					nodes.put(nodeB, new Node(nodeB, false, nodes.size()));
+					nodes.put(nodeB, new Node(nodeB, false, numNodes.getAndIncrement()));
 
 			}
 			
@@ -237,6 +229,14 @@ public class GraphFactory {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	private static void newZone(Graph g, AtomicInteger numZones, AtomicInteger numNodes, Map<Integer, Node> nodes, Integer nodeID) {
+		Node node = new Node(nodeID, true, numNodes.getAndIncrement());
+		TravelSurveyZone tsz = new TravelSurveyZone(node,numZones.getAndIncrement(),null);
+		node.setTravelSurveyZone(tsz);
+		g.addZone(tsz);
+		nodes.put(nodeID, node);
 	}
 
 	private static Float parse(String s) {
