@@ -21,7 +21,7 @@ public class AlgorithmBEquilibrator {
 	Integer numThreshold = 100;
 //	ForkJoinPool pool = new ForkJoinPool();
 	
-	public void equilibrate(Bush bush) throws InterruptedException, ExecutionException {
+	public void equilibrate(Bush bush, PathCostCalculator pcc) throws InterruptedException, ExecutionException {
 		bush.clear();
 		Node[] to = bush.getTopologicalOrder(true);
 		Node cur;
@@ -32,26 +32,26 @@ public class AlgorithmBEquilibrator {
 //		
 		//Get the flows on the current bush
 		Map<Link,Double> bushFlows = new ConcurrentHashMap<Link, Double>(bush.flows());
-		PathCostCalculator pcc = new PathCostCalculator(bush);
-		
-		//In reverse topological order,
-		for (int i = to.length - 1; i >= 0; i--) {
-			cur = to[i];
-			
-			//Ignore the origin. Should be same as break if topoOrder is correct 
-			if (cur == null || cur.equals(bush.root().node())) continue;
+//		PathCostCalculator pcc = new PathCostCalculator(bush);
+		synchronized (this) {
+			//In reverse topological order,
+			for (int i = to.length - 1; i >= 0; i--) {
+				cur = to[i];
 
-			//Determine the ASP, including the maximum delta that can be shifted
-			AlternateSegmentPair asp = getShortLongASP(bush, cur, bushFlows, pcc);
-			if (asp == null) continue; //No ASP exists
+				//Ignore the origin. Should be same as break if topoOrder is correct 
+				if (cur == null || cur.equals(bush.root().node())) continue;
 
-			//calculate delta h, capping at maxDelta
-			Double deltaH = getDeltaH(asp);
+				//Determine the ASP, including the maximum delta that can be shifted
+				AlternateSegmentPair asp = getShortLongASP(bush, cur, bushFlows, pcc);
+				if (asp == null) continue; //No ASP exists
 
-			//Modify link flows
-			updateDeltaX(asp, bushFlows, deltaH);
+				//calculate delta h, capping at maxDelta
+				Double deltaH = getDeltaH(asp);
+
+				//Modify link flows
+				updateDeltaX(asp, bushFlows, deltaH);
+			}
 		}
-
 		//Update bush merge splits for next flow calculation
 		updateSplits(bush, bushFlows, pcc);
 		//Release cached topological order memory for later use

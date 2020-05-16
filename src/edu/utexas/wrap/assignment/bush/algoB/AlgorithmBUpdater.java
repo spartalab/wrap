@@ -10,14 +10,14 @@ import edu.utexas.wrap.net.Link;
 
 public class AlgorithmBUpdater {
 
-	public boolean update(Bush bush) {
+	public boolean update(Bush bush, PathCostCalculator pcc) {
 		bush.prune();	//Remove unused links
 
 		AtomicBoolean modified = new AtomicBoolean(false);
 		Stream<Link> unusedLinks = bush.getUnusedLinks();
 
 		//Calculate the longest path costs
-		PathCostCalculator pcc = new PathCostCalculator(bush);
+//		PathCostCalculator pcc = new PathCostCalculator(bush);
 
 		unusedLinks	//For each unused link
 		.filter(l -> l.allowsClass(bush.vehicleClass()))	//If the link allows this bush's vehicles

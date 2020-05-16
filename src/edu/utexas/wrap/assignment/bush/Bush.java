@@ -220,9 +220,9 @@ public class Bush implements AssignmentContainer {
 		int a = 2017;	//	Year of inception for this project
 		int b = 76537;	//	UT 76-5-37 TAMC \m/
 		
-		return (
-				origin.node().getID()*a + vot.hashCode()
-				)*b + (c == null? 0 : c.hashCode());
+		return (origin.node().getID()*a 
+				+ vot.hashCode())*b 
+				+ (c == null? 0 : c.hashCode());
 	}
 	
 	/**Determine whether a link can be used in the bush

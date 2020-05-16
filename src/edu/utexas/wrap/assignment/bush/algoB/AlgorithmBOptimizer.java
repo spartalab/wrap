@@ -11,6 +11,7 @@ import edu.utexas.wrap.assignment.AssignmentProvider;
 import edu.utexas.wrap.assignment.AssignmentConsumer;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.bush.BushEvaluator;
+import edu.utexas.wrap.assignment.bush.PathCostCalculator;
 
 public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 	private final AssignmentProvider<Bush> provider;
@@ -41,24 +42,26 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 
 	@Override
 	public void optimize(Stream<Bush> bushStream) {
-		queue = bushStream.map( bush -> {
-			try{
-				provider.getStructure(bush);
-			} catch (IOException e) {
-				System.err.println("WARN: Could not find source for "+bush+". Ignoring");
-				return null;
-			}
-			
-			updater.update(bush);
-			
-			try {
-				consumer.consumeStructure(bush);
-			} catch (IOException e) {
-				System.err.println("WARN: Could not write structure for "+bush+". Source may be corrupted");
-			}
-			
-			return bush;
-		}).collect(Collectors.toSet());
+		queue = bushStream
+//				.map( bush -> {
+//					try{
+//						provider.getStructure(bush);
+//					} catch (IOException e) {
+//						System.err.println("WARN: Could not find source for "+bush+". Ignoring");
+//						return null;
+//					}
+//
+//					updater.update(bush);
+//
+//					try {
+//						consumer.consumeStructure(bush);
+//					} catch (IOException e) {
+//						System.err.println("WARN: Could not write structure for "+bush+". Source may be corrupted");
+//					}
+//
+//					return bush;
+//				})
+				.collect(Collectors.toSet());
 
 		int numIterations = 0;
 		
@@ -75,9 +78,11 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 							return false;
 						}
 
-						synchronized (this) {
+						PathCostCalculator pcc = new PathCostCalculator(bush);
+						updater.update(bush, pcc);
+
 							try {
-								equilibrator.equilibrate(bush);
+								equilibrator.equilibrate(bush, pcc);
 							} catch (InterruptedException e) {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
@@ -89,7 +94,8 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 //							System.out.println(val);
 							isEquilibrated = (val < threshold);
 
-						}
+//						synchronized (this) {
+//						}
 
 
 						try {
