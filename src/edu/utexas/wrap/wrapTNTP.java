@@ -1,10 +1,12 @@
 package edu.utexas.wrap;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 
 import edu.utexas.wrap.assignment.Assigner;
@@ -31,7 +33,7 @@ public class wrapTNTP {
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 		boolean isConic = args[0].equals("-e");
 		Graph g = null;
-		
+		System.out.println("Reading graph");
 		if (isConic) {
 			g = GraphFactory.readConicGraph(new File(args[1]), Integer.parseInt(args[2]));
 		} 
@@ -53,7 +55,7 @@ public class wrapTNTP {
 		AssignmentInitializer<Bush> initializer = new BushInitializer(reader, writer, builder,g);
 
 		
-		
+		System.out.println("Reading OD Matrices");
 		if (isConic) {
 			Collection<ODMatrix> mtxs = ODMatrixFactory.readConicTrips(new File(args[3]), g);
 			mtxs.forEach(mtx -> initializer.add(mtx));
@@ -61,7 +63,8 @@ public class wrapTNTP {
 		else { 
 			initializer.add(ODMatrixFactory.readTNTPMatrix(new File(args[1]), g));
 		}
-
+		
+		System.out.println("Loading initial solution");
 		Assigner<Bush> assigner = new Assigner<Bush>(
 				initializer, 
 				new GapEvaluator<Bush>(g, reader, forgetter), 
@@ -69,10 +72,14 @@ public class wrapTNTP {
 						reader, 
 						writer, 
 						new BushGapEvaluator(g), 
-						10E-5),
-				10E-6
+						10E-3),
+				10E-4
 				);
-		
+//		
+//		System.out.println("Writing link flows");
+//		printFlows(g);
+//		
+		System.out.println("Beginning assignment");
 		Thread assignmentThread = new Thread(assigner);
 		assignmentThread.start();
 		
@@ -83,4 +90,22 @@ public class wrapTNTP {
 		}
 	}
 
+	private static void printFlows(Graph g) {
+		try {
+			BufferedWriter writer = Files.newBufferedWriter(Paths.get("flows.csv"),StandardOpenOption.CREATE);
+			g.getLinks().parallelStream()
+			.map(link -> link.getFlow()+","+link.getTravelTime()+"\r\n")
+			.forEach(line -> {
+				try {
+					writer.write(line);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			});
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }
