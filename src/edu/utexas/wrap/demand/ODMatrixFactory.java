@@ -132,14 +132,14 @@ public class ODMatrixFactory {
 			TravelSurveyZone dest = g.getNode(Integer.parseInt(args[1])).getZone();
 			
 			put(solo17, orig, dest, args[6]);
-//			put(solo35, orig, dest, args[2]);
-//			put(solo45, orig, dest, args[7]);
-//			put(solo90, orig, dest, args[3]);
-//
-//			put(hov17, orig, dest, args[8]);
-//			put(hov35, orig, dest, args[4]);
-//			put(hov45, orig, dest, args[9]);
-//			put(hov90, orig, dest, args[5]);
+			put(solo35, orig, dest, args[2]);
+			put(solo45, orig, dest, args[7]);
+			put(solo90, orig, dest, args[3]);
+
+			put(hov17, orig, dest, args[8]);
+			put(hov35, orig, dest, args[4]);
+			put(hov45, orig, dest, args[9]);
+			put(hov90, orig, dest, args[5]);
 //
 //			put(medTrucks, orig, dest, args[10]);
 //			put(hvyTrucks, orig, dest, args[11]);
@@ -149,14 +149,14 @@ public class ODMatrixFactory {
 		
 		Collection<ODMatrix> ret = new HashSet<ODMatrix>();
 		ret.add(solo17);
-//		ret.add(solo35);
-//		ret.add(solo45);
-//		ret.add(solo90);
-//		
-//		ret.add(hov17);
-//		ret.add(hov35);
-//		ret.add(hov45);
-//		ret.add(hov90);
+		ret.add(solo35);
+		ret.add(solo45);
+		ret.add(solo90);
+		
+		ret.add(hov17);
+		ret.add(hov35);
+		ret.add(hov45);
+		ret.add(hov90);
 //		
 //		ret.add(medTrucks);
 //		ret.add(hvyTrucks);
