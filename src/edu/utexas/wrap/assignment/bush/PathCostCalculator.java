@@ -203,4 +203,10 @@ public class PathCostCalculator {
 	public Bush getBush() {
 		return bush;
 	}
+
+	public void clear() {
+		// TODO Auto-generated method stub
+		shortCache = null;
+		longCache = null;
+	}
 }

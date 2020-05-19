@@ -26,6 +26,7 @@ public class BushWriter implements AssignmentConsumer<Bush> {
 				);
 		writeToStream(bush, out);
 		bush.setQ(null);
+		bush.clear();
 		out.close();
 	}
 	

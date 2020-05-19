@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
+//import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
@@ -19,24 +19,20 @@ import edu.utexas.wrap.util.NegativeFlowException;
 
 public class AlgorithmBEquilibrator {
 	Integer numThreshold = 100;
-//	ForkJoinPool pool = new ForkJoinPool();
 	
 	public void equilibrate(Bush bush, PathCostCalculator pcc) throws InterruptedException, ExecutionException {
-		bush.clear();
-		Node[] to = bush.getTopologicalOrder(true);
+//		bush.clear();
+		Node[] topoOrder = bush.getTopologicalOrder(true);
 		Node cur;
 
-//		//Assign the correct back-pointers to BushMerges using topological search
-//		bush.shortTopoSearch();
-//		bush.longTopoSearch(true);
-//		
+		//Assign the correct back-pointers to BushMerges using topological search
 		//Get the flows on the current bush
 		Map<Link,Double> bushFlows = new ConcurrentHashMap<Link, Double>(bush.flows());
 //		PathCostCalculator pcc = new PathCostCalculator(bush);
 		synchronized (this) {
 			//In reverse topological order,
-			for (int i = to.length - 1; i >= 0; i--) {
-				cur = to[i];
+			for (int i = topoOrder.length - 1; i >= 0; i--) {
+				cur = topoOrder[i];
 
 				//Ignore the origin. Should be same as break if topoOrder is correct 
 				if (cur == null || cur.equals(bush.root().node())) continue;
@@ -55,7 +51,7 @@ public class AlgorithmBEquilibrator {
 		//Update bush merge splits for next flow calculation
 		updateSplits(bush, bushFlows, pcc);
 		//Release cached topological order memory for later use
-		bush.clear();	
+//		bush.clear();	
 	}
 	
 	/** Calculate the amount of flow to shift. Delta H is defined as the

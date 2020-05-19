@@ -6,6 +6,7 @@ public class BushForgetter implements AssignmentConsumer<Bush> {
 
 	@Override
 	public void consumeStructure(Bush container) {
+		container.clear();
 		container.setQ(null);
 	}
 
