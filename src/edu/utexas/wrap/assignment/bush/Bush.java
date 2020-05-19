@@ -148,7 +148,7 @@ public class Bush implements AssignmentContainer {
 			}
 		}
 		if (!currentLinks.isEmpty())
-			throw new RuntimeException("Cyclic graph error");
+			throw new RuntimeException("Cyclic graph error: "+Integer.toString(hashCode()));
 		if (Bush.orderCachingEnabled || toCache) cachedTopoOrder = to;
 		return to;
 	}

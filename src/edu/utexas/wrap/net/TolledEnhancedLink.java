@@ -105,8 +105,8 @@ public class TolledEnhancedLink extends TolledLink {
 	@Override
 	public double getTravelTime() {
 		// T == T_0 + c(v) + s(v) + u(v)
-		if (cachedTT == null) cachedTT = freeFlowTime() + conicalDelay() + signalDelay() + unsignalizedDelay();	
-		return cachedTT;
+		return freeFlowTime() + conicalDelay() + signalDelay() + unsignalizedDelay();	
+//		return cachedTT;
 	}
 
 	private double gIntegral() {

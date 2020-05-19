@@ -64,7 +64,7 @@ public class wrapTNTP {
 			initializer.add(ODMatrixFactory.readTNTPMatrix(new File(args[1]), g));
 		}
 		
-		System.out.println("Loading initial solution");
+		System.out.println("Initializing solution");
 		Assigner<Bush> assigner = new Assigner<Bush>(
 				initializer, 
 				new GapEvaluator<Bush>(g, reader, forgetter), 
@@ -75,10 +75,10 @@ public class wrapTNTP {
 						10E-3),
 				10E-4
 				);
-//		
-//		System.out.println("Writing link flows");
-//		printFlows(g);
-//		
+		
+		System.out.println("Writing link flows");
+		printFlows(g);
+		
 		System.out.println("Beginning assignment");
 		Thread assignmentThread = new Thread(assigner);
 		assignmentThread.start();
@@ -103,6 +103,7 @@ public class wrapTNTP {
 					e.printStackTrace();
 				}
 			});
+			writer.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

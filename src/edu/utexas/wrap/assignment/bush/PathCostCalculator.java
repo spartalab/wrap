@@ -112,8 +112,7 @@ public class PathCostCalculator {
 					longRelax(l);
 			}
 
-		}		
-		return;
+		}
 	}
 	
 	private void longRelax(Link l) {
