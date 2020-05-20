@@ -296,7 +296,7 @@ public class Bush implements AssignmentContainer {
 		//Get the reverse topological ordering and a place to store node flows
 		Map<TravelSurveyZone,Double> tszFlow = demand.doubleClone();
 		Map<Node,Double> nodeFlow = tszFlow.keySet().parallelStream().collect(Collectors.toMap(x -> x.node(), x -> tszFlow.get(x)));
-		Node[] iter = getTopologicalOrder(false);
+		Node[] iter = getTopologicalOrder(true);
 		Map<Link,Double> ret = new HashMap<Link,Double>(size(),1.0f);
 
 		//For each node in reverse topological order

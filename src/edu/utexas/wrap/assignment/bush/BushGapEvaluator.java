@@ -22,7 +22,7 @@ public class BushGapEvaluator implements BushEvaluator {
 	}
 	
 	private Double cheapestCostPossible(Bush bush) {
-		Node[] to = bush.getTopologicalOrder(false);
+		Node[] to = bush.getTopologicalOrder(true);
 		double[] latent = new double[graph.numNodes()];
 		PathCostCalculator pcc = new PathCostCalculator(bush);
 		

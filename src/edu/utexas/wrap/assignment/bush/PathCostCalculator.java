@@ -41,8 +41,8 @@ public class PathCostCalculator {
 
 	private void getShortestPathCosts() {
 		// TODO Auto-generated method stub
-		bush.clear();
-		Node[] to = bush.getTopologicalOrder(false);
+//		bush.clear();
+		Node[] to = bush.getTopologicalOrder(true);
 		shortCache = new Double[bush.size()];
 
 		//In topological order,
@@ -92,8 +92,8 @@ public class PathCostCalculator {
 	}
 	
 	private void getLongestPathCosts(boolean longestUsed) {
-		bush.clear();
-		Node[] to = bush.getTopologicalOrder(false);
+//		bush.clear();
+		Node[] to = bush.getTopologicalOrder(true);
 		longCache = new Double[bush.size()];
 
 		//In topological order,
