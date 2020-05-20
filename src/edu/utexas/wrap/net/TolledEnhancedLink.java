@@ -103,10 +103,18 @@ public class TolledEnhancedLink extends TolledLink {
 	}
 
 	@Override
-	public double getTravelTime() {
+	public synchronized double getTravelTime() {
 		// T == T_0 + c(v) + s(v) + u(v)
-		return freeFlowTime() + conicalDelay() + signalDelay() + unsignalizedDelay();	
-//		return cachedTT;
+		try {
+			ttSem.acquire();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		if (cachedTT == null) cachedTT = freeFlowTime() + conicalDelay() + signalDelay() + unsignalizedDelay();	
+		double ret = cachedTT;
+		ttSem.release();
+		return ret;
 	}
 
 	private double gIntegral() {

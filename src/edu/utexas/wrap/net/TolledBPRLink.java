@@ -52,9 +52,17 @@ public class TolledBPRLink extends TolledLink {
 	 * @return travel time for the link at current flow
 	 */
 	public double getTravelTime() {
+		try {
+			ttSem.acquire();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		if (cachedTT == null) cachedTT = freeFlowTime()*(1+
 				b*Math.pow(getFlow()/getCapacity(), power));
-		return cachedTT;
+		double ret = cachedTT;
+		ttSem.release();
+		return ret;
 	}
 	
 	public double pricePrime(Float vot) {
