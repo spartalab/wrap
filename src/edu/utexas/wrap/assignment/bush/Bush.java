@@ -257,10 +257,11 @@ public class Bush implements AssignmentContainer {
 
 				if (size==2){ //If there is only one link left, replace BushMerge with Link
 					setBackVector(l.getHead(),bm.getLinks().findAny().orElseThrow(RuntimeException::new));
-					return true;
 				} 
+				return true;
+
 			}
-			return false;
+			else return false;
 		}
 		else if (b instanceof Link && l.equals((Link) b)) return false;
 		// If something unusual happened, throw a Runtime exception
@@ -281,7 +282,7 @@ public class Bush implements AssignmentContainer {
 			.filter(l -> remove(l))
 			.forEach(l -> {
 				//If so, try to remove the Link
-				cachedTopoOrder = null;
+//				cachedTopoOrder = null;
 //				numLinks--;
 			});
 		});
