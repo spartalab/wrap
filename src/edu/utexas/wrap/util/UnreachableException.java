@@ -16,9 +16,9 @@ public class UnreachableException extends Exception {
 	}
 	
 	public UnreachableException(Node to, Bush from) {
-		this(to.toString()+" unreachable from "+from.getOrigin().getNode().toString()+", demand="+from.getDemand(to));
+		this(to.toString()+" unreachable from "+from.root().node().toString()+", demand="+from.getDemand(to));
 		this.to = to;
-		this.from = from.getOrigin().getNode();
+		this.from = from.root().node();
 		demand = from.getDemand(to);
 	}
 

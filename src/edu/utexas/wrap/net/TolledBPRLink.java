@@ -1,5 +1,6 @@
 package edu.utexas.wrap.net;
 
+import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.modechoice.Mode;
 
 public class TolledBPRLink extends TolledLink {
@@ -51,9 +52,17 @@ public class TolledBPRLink extends TolledLink {
 	 * @return travel time for the link at current flow
 	 */
 	public double getTravelTime() {
+		try {
+			ttSem.acquire();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		if (cachedTT == null) cachedTT = freeFlowTime()*(1+
 				b*Math.pow(getFlow()/getCapacity(), power));
-		return cachedTT;
+		double ret = cachedTT;
+		ttSem.release();
+		return ret;
 	}
 	
 	public double pricePrime(Float vot) {
@@ -94,5 +103,11 @@ public class TolledBPRLink extends TolledLink {
 		}
 		cachedTP = r;
 		return r;
+	}
+
+	@Override
+	public double getPrice(AssignmentContainer container) {
+		// TODO Auto-generated method stub
+		return getPrice(container.valueOfTime(),container.vehicleClass());
 	}
 }

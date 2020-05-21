@@ -29,7 +29,7 @@ public class IncomeGroupWorkerVehicleSegment implements IncomeGroupSegmenter, Ve
 		return tsz -> {
 			Double val = tsz.getHouseholdsByIncomeGroupThenWorkersThenVehicles(incomeGroup,workerCount,vehicleCount);
 			if (val == null) {
-				System.out.println(tsz.getNode().getID());
+				System.out.println(tsz.node().getID());
 			}
 			return val;
 		};

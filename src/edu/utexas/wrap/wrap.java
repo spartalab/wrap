@@ -6,10 +6,10 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Set;
 
-import edu.utexas.wrap.assignment.bush.AlgorithmBOptimizer;
-import edu.utexas.wrap.assignment.bush.BushOptimizer;
-import edu.utexas.wrap.assignment.bush.BushOriginFactory;
-import edu.utexas.wrap.assignment.bush.BushOrigin;
+import edu.utexas.wrap.assignment.bush.OldBushOptimizer;
+import edu.utexas.wrap.assignment.bush.OldBushOriginFactory;
+import edu.utexas.wrap.assignment.bush.algoB.OldAlgoBOptimizer;
+import edu.utexas.wrap.assignment.bush.OldBushOrigin;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.util.io.GraphFactory;
 import edu.utexas.wrap.util.io.OriginFactory;
@@ -99,7 +99,7 @@ public class wrap{
 
 	public static void main(String[] args) {
 		Graph g = null; 
-		Set<BushOrigin> origins = null;
+		Set<OldBushOrigin> origins = null;
 		int innerIters = 1;
 		try {
 			//TODO rewrite argument parsing for more flexibility
@@ -107,7 +107,7 @@ public class wrap{
 				printHelp();
 			}
 //			if (args[args.length-1].trim().startsWith("-") && args[args.length-1].trim().contains("d")) Bush.cachingAllowed = false;
-			if (args[args.length-1].trim().startsWith("-") && args[args.length-1].trim().contains("p")) BushOptimizer.printProgress = false;
+			if (args[args.length-1].trim().startsWith("-") && args[args.length-1].trim().contains("p")) OldBushOptimizer.printProgress = false;
 			
 			if ((args[0].trim().equals("-e") || args[0].trim().equals("--enhanced"))) {
 				File links		= new File(args[1]);
@@ -115,14 +115,14 @@ public class wrap{
 				Integer firstThruNode = Integer.parseInt(args[3]);
 				
 				System.out.print("Reading network... ");
-				g = GraphFactory.readEnhancedGraph(links, firstThruNode);
+				g = GraphFactory.readConicGraph(links, firstThruNode);
 				StringBuilder sb = new StringBuilder("MD5 hash: ");
 				for (byte b : g.getMD5()) {
 					sb.append(String.format("%02X", b));
 				}
 				System.out.println(sb);
 				
-				BushOriginFactory dl = new BushOriginFactory(g);
+				OldBushOriginFactory dl = new OldBushOriginFactory(g);
 				System.out.println("Reading trips...");				
 				OriginFactory.readEnhancedTrips(odMatrix, g, dl);
 				origins = dl.finishAll();
@@ -144,7 +144,7 @@ public class wrap{
 				System.out.println(sb);
 				
 				System.out.println("Reading trips...");
-				BushOriginFactory dl = new BushOriginFactory(g);
+				OldBushOriginFactory dl = new OldBushOriginFactory(g);
 				OriginFactory.readTNTPUniformVOTtrips(votFile, odMatrix, g, dl);
 				origins = dl.finishAll();
 			}
@@ -161,7 +161,7 @@ public class wrap{
 			return;
 		}
 		
-		BushOptimizer opt = new AlgorithmBOptimizer(g, origins);
+		OldBushOptimizer opt = new OldAlgoBOptimizer(g, origins);
 		opt.setInnerIters(innerIters);
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {

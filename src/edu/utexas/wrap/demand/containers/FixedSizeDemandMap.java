@@ -39,7 +39,11 @@ public class FixedSizeDemandMap implements DemandMap {
 
 	@Override
 	public float get(TravelSurveyZone dest) {
-		return demand[dest.getOrder()];
+		try{
+			return demand[dest.getOrder()];
+		} catch (NullPointerException e) {
+			return 0.0f;
+		}
 	}
 
 	@Override

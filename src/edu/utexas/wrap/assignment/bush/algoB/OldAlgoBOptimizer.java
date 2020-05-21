@@ -1,10 +1,14 @@
-package edu.utexas.wrap.assignment.bush;
+package edu.utexas.wrap.assignment.bush.algoB;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import edu.utexas.wrap.assignment.bush.AlternateSegmentPair;
+import edu.utexas.wrap.assignment.bush.Bush;
+import edu.utexas.wrap.assignment.bush.OldBushOptimizer;
+import edu.utexas.wrap.assignment.bush.OldBushOrigin;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
@@ -17,14 +21,15 @@ import edu.utexas.wrap.util.UnreachableException;
  * @author William
  *
  */
-public class AlgorithmBOptimizer extends BushOptimizer{
+@Deprecated
+public class OldAlgoBOptimizer extends OldBushOptimizer{
 	Integer numThreshold = 100;
 
 	/**
 	 * @param g the graph on which the Optimizer should operate 
 	 * @param o the set of origins to optimize/equilibrate
 	 */
-	public AlgorithmBOptimizer(Graph g, Set<BushOrigin> o) {
+	public OldAlgoBOptimizer(Graph g, Set<OldBushOrigin> o) {
 		super(g,o);
 	}
 
@@ -35,7 +40,7 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 		try {
 			//Wait for the bush to be idle (it may be being written to a file)
 			b.acquire();
-			//Acquire the topological order of the bush and cahce for later use
+			//Acquire the topological order of the bush and cache for later use
 			b.clearLabels();
 			Node[] to = b.getTopologicalOrder(true);
 			Node cur;
@@ -45,14 +50,14 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 			b.longTopoSearch(true);
 			
 			//Get the flows on the current bush
-			Map<Link,Double> bushFlows = b.getFlows();
+			Map<Link,Double> bushFlows = b.flows();
 
 			//In reverse topological order,
 			for (int i = to.length - 1; i >= 0; i--) {
 				cur = to[i];
 				
 				//Ignore the origin. Should be same as break if topoOrder is correct 
-				if (cur == null || cur.equals(b.getOrigin().getNode())) continue;
+				if (cur == null || cur.equals(b.root().node())) continue;
 
 				//Determine the ASP, including the maximum delta that can be shifted
 				AlternateSegmentPair asp = b.getShortLongASP(cur, bushFlows);
@@ -68,7 +73,7 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 			//Update bush merge splits for next flow calculation
 			b.updateSplits(bushFlows);
 			//Release cached topological order memory for later use
-			b.clearCache();
+			b.clear();
 			//The bush can now be written or improved
 			b.release();
 		} catch (InterruptedException e) {
@@ -156,7 +161,7 @@ public class AlgorithmBOptimizer extends BushOptimizer{
 	 * @return		The smaller of the calculated delta H or the max delta
 	 */
 	private Double getDeltaH(AlternateSegmentPair asp) {
-		Float vot = asp.getBush().getVOT();
+		Float vot = asp.getBush().valueOfTime();
 		
 		Double denominator = Stream.concat(
 				//for all links in the longest and shortest paths

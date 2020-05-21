@@ -6,12 +6,25 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import edu.utexas.wrap.assignment.Assigner;
+import edu.utexas.wrap.assignment.AssignmentBuilder;
+import edu.utexas.wrap.assignment.AssignmentInitializer;
+import edu.utexas.wrap.assignment.AssignmentProvider;
+import edu.utexas.wrap.assignment.AssignmentConsumer;
+import edu.utexas.wrap.assignment.GapEvaluator;
+import edu.utexas.wrap.assignment.bush.Bush;
+import edu.utexas.wrap.assignment.bush.BushBuilder;
+import edu.utexas.wrap.assignment.bush.BushGapEvaluator;
+import edu.utexas.wrap.assignment.bush.BushInitializer;
+import edu.utexas.wrap.assignment.bush.BushReader;
+import edu.utexas.wrap.assignment.bush.BushWriter;
+import edu.utexas.wrap.assignment.bush.algoB.AlgorithmBOptimizer;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.containers.FixedSizeODMatrix;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.modechoice.Mode;
+import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.util.ODMatrixCollector;
-import edu.utexas.wrap.util.io.output.ODMatrixBINWriter;
 
 import java.util.AbstractMap.SimpleEntry;
 
@@ -38,7 +51,7 @@ public class wrapTP {
 		ModelInput model = new ModelInputNCTCOG(args[0]);
 		
 		//Load the model's network
-		model.getNetwork();
+		Graph network = model.getNetwork();
 		
 		//Retrieve the collection of trip purposes to be created
 		Collection<TripPurpose> purposes = model.getTripPurposes();
@@ -67,29 +80,61 @@ public class wrapTP {
 		
 		Map<TimePeriod,Map<Float,Map<Mode,ODMatrix>>> ods = combineMatrices(model, purposes);
 		
-//		Map<TimePeriod,Collection<ODMatrix>> flatODs = flatten(ods);
+		//TODO redo this method to streamline
+		Map<TimePeriod,Collection<ODMatrix>> flatODs = flatten(ods);
+		
+		for (Entry<TimePeriod, Collection<ODMatrix>> entry : flatODs.entrySet()) {
+			
+			AssignmentProvider<Bush> reader = new BushReader(network);
+			AssignmentConsumer<Bush> writer = new BushWriter(network);
+			AssignmentBuilder<Bush> builder = new BushBuilder(network);
+			
+			AssignmentInitializer<Bush> initializer = new BushInitializer(reader,writer,builder, network);
+			
+			for (ODMatrix od : entry.getValue()) initializer.add(od);
+			
+			Assigner<Bush> assigner = new Assigner<Bush>(
+					initializer,
+					new GapEvaluator<Bush>(network, reader),
+					new AlgorithmBOptimizer(
+							reader, 
+							writer, 
+							new BushGapEvaluator(),
+							10E-5)
+					);
+			
+			Thread assignmentThread = new Thread(assigner);
+			assignmentThread.start();
+			
+			//Should this allow for multiple assignments at once? depends on success
+			try {
+				assignmentThread.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 
 		System.out.println("Consolidating OD Matrices");
 		
-		System.out.println("Writing OD matrices");
-		ods.entrySet().parallelStream().forEach(
-			tpEntry -> 
-		
-				tpEntry.getValue().entrySet().parallelStream().forEach(
-					votEntry ->
-						votEntry.getValue().entrySet().parallelStream()
-						.forEach(
-							modeEntry ->
-								ODMatrixBINWriter.write(
-										model.getOutputDirectory(),
-										tpEntry.getKey(),
-										modeEntry.getKey(),
-										votEntry.getKey(),
-										modeEntry.getValue()
-									)
-							)
-					)
-			);
+//		System.out.println("Writing OD matrices");
+//		ods.entrySet().parallelStream().forEach(
+//			tpEntry -> 
+//		
+//				tpEntry.getValue().entrySet().parallelStream().forEach(
+//					votEntry ->
+//						votEntry.getValue().entrySet().parallelStream()
+//						.forEach(
+//							modeEntry ->
+//								ODMatrixBINWriter.write(
+//										model.getOutputDirectory(),
+//										tpEntry.getKey(),
+//										modeEntry.getKey(),
+//										votEntry.getKey(),
+//										modeEntry.getValue()
+//									)
+//							)
+//					)
+//			);
 		System.out.println("Done");
 	}
 
@@ -113,7 +158,7 @@ public class wrapTP {
 									Mode mode = entry.getValue().getKey();
 									ODMatrix od = entry.getValue().getValue();
 									
-									return new FixedSizeODMatrix(od,vot,mode);
+									return new FixedSizeODMatrix(vot,mode,od);
 								}
 								)
 						.collect(Collectors.toSet())

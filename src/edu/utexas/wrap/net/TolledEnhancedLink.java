@@ -1,5 +1,6 @@
 package edu.utexas.wrap.net;
 
+import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.modechoice.Mode;
 
 /**
@@ -102,10 +103,18 @@ public class TolledEnhancedLink extends TolledLink {
 	}
 
 	@Override
-	public double getTravelTime() {
+	public synchronized double getTravelTime() {
 		// T == T_0 + c(v) + s(v) + u(v)
+		try {
+			ttSem.acquire();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		if (cachedTT == null) cachedTT = freeFlowTime() + conicalDelay() + signalDelay() + unsignalizedDelay();	
-		return cachedTT;
+		double ret = cachedTT;
+		ttSem.release();
+		return ret;
 	}
 
 	private double gIntegral() {
@@ -357,6 +366,11 @@ public class TolledEnhancedLink extends TolledLink {
 		// d'(v) == d( m + u*v/c )/dv
 		// == u/c
 		return ((double) u) / getCapacity();
+	}
+
+	@Override
+	public double getPrice(AssignmentContainer container) {
+		return getPrice(container.valueOfTime(),container.vehicleClass());
 	}
 
 }

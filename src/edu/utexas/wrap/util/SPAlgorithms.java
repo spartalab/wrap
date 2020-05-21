@@ -27,12 +27,12 @@ public class SPAlgorithms {
 		
 		while (!Q.isEmpty()) {
 			FibonacciLeaf<Node> u = Q.poll();
-			for (Link uv : u.n.forwardStar()) {
+			for (Link uv : u.node.forwardStar()) {
 				FibonacciLeaf<Node> v = Q.getLeaf(uv.getHead());
 				Double alt = uv.getTravelTime() + u.key;
 				if (alt < v.key) {
 					Q.decreaseKey(v, alt);
-					back.put(v.n, uv);
+					back.put(v.node, uv);
 				}
 			}
 		}

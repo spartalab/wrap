@@ -25,7 +25,7 @@ public class DBGravityDistributor extends TripDistributor {
     @Override
     public AggregatePAMatrix distribute(PAMap pa) {
         DBPAMap dbpaMap = (DBPAMap) pa;
-        DBPAMatrix dbmtx = new DBPAMatrix(g,db,MarketSegment.paMtxPrefix+dbpaMap.getMarketSeg(), pa.getVOT());
+        DBPAMatrix dbmtx = new DBPAMatrix(g,db,MarketSegment.paMtxPrefix+dbpaMap.getMarketSeg(), pa.valueOfTime());
         sqlDistribute(dbpaMap, dbmtx);
         return dbmtx;
     }

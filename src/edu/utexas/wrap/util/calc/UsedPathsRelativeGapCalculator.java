@@ -3,7 +3,7 @@ package edu.utexas.wrap.util.calc;
 import java.util.Set;
 import java.util.concurrent.atomic.DoubleAdder;
 
-import edu.utexas.wrap.assignment.bush.BushOrigin;
+import edu.utexas.wrap.assignment.bush.OldBushOrigin;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
@@ -12,10 +12,10 @@ import edu.utexas.wrap.util.UnreachableException;
 public class UsedPathsRelativeGapCalculator extends Thread {
 	public Double val;
 	Graph graph;
-	Set<BushOrigin> origins;
+	Set<OldBushOrigin> origins;
 	TotalSystemGeneralizedCostCalculator cc;
 	
-	public UsedPathsRelativeGapCalculator(Graph g, Set<BushOrigin> o, TotalSystemGeneralizedCostCalculator tc) {
+	public UsedPathsRelativeGapCalculator(Graph g, Set<OldBushOrigin> o, TotalSystemGeneralizedCostCalculator tc) {
 		graph = g;
 		origins = o;
 	}

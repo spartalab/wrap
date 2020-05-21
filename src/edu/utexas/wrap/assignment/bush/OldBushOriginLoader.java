@@ -11,16 +11,16 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-public class BushOriginLoader extends BushOriginBuilder {
+public class OldBushOriginLoader extends OldBushOriginBuilder {
 	Boolean print = true;
 	
-	public BushOriginLoader(Graph g, TravelSurveyZone zone, Set<BushOrigin> origins) {
+	public OldBushOriginLoader(Graph g, TravelSurveyZone zone, Set<OldBushOrigin> origins) {
 		super(g, zone, origins);
 	}
 
 	@Override
 	public void run() {
-		orig = new BushOrigin(zone);
+		orig = new OldBushOrigin(zone);
 		for (Mode c : map.keySet()) {
 			for (Float vot : map.get(c).keySet()) {
 				AutoDemandMap odm = map.get(c).get(vot);
@@ -36,7 +36,7 @@ public class BushOriginLoader extends BushOriginBuilder {
 							sb.append(String.format("%02X", b));
 						}
 
-						File file = new File(sb+"/"+zone.getNode().getID()+"/"+c+"-"+vot+".bush");
+						File file = new File(sb+"/"+zone.node().getID()+"/"+c+"-"+vot+".bush");
 						file.getParentFile().mkdirs();
 						FileOutputStream out = null;
 						try {
