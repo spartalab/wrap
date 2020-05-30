@@ -29,11 +29,13 @@ public class StreamTestScript {
         builder.redirectErrorStream(true);
         Process proc = builder.start();
         OutputStream stdin = proc.getOutputStream();
-        ByteBuffer buffer = ByteBuffer.allocate(48 * 100).order(ByteOrder.LITTLE_ENDIAN);
+        long start = System.currentTimeMillis();
+        System.out.print((System.currentTimeMillis()-start)+" ms\t");
+        ByteBuffer buffer = ByteBuffer.allocate(48 * 5200).order(ByteOrder.LITTLE_ENDIAN);
         Random r = new Random();
-        for (int i = 0; i < 10; i++) {
+        for (int i = 0; i < 5200; i++) {
             buffer.clear();
-            for (int j = 0; j < 100; j++) {
+            for (int j = 0; j < 5200; j++) {
                 buffer.putInt(9697);
                 buffer.putInt(7616);
                 buffer.putInt(Float.floatToRawIntBits(r.nextFloat()));
@@ -47,6 +49,15 @@ public class StreamTestScript {
                 // MED_TRUCKS and HEAVY_TRUCKS
                 buffer.putFloat(Float.floatToRawIntBits(0f));
                 buffer.putFloat(Float.floatToRawIntBits(0f));
+//                buffer.rewind();
+//                String b = "r:" + buffer.getInt() + " s:" + buffer.getInt() + " "
+//                        + buffer.getFloat() + " " + buffer.getInt() + " "
+//                        + buffer.getInt() + " " + buffer.getInt() + " "
+//                        + buffer.getInt() + " " + buffer.getInt() + " "
+//                        + buffer.getInt() + " " + buffer.getInt() + " "
+//                        + buffer.getInt() + " " + buffer.getInt();
+//                System.out.println(b);
+//                buffer.rewind();
             }
             try {
 //                buffer.rewind();
@@ -59,7 +70,7 @@ public class StreamTestScript {
 //                System.out.println(b);
 //                buffer.rewind();
                 int written = buffer.position();
-                System.out.println(written);
+//                System.out.println(written);
                 buffer.flip();
                 stdin.write(buffer.array(), 0, written);
                 stdin.flush();
@@ -69,7 +80,9 @@ public class StreamTestScript {
                     System.exit(1);
                 }
             }
+            System.out.println("Hi " + i);
         }
+        System.out.print((System.currentTimeMillis()-start)+" ms\t");
         stdin.write("Sto".getBytes());
         stdin.flush();
         stdin.close();

@@ -69,7 +69,7 @@ class CombinedModalPAMatrix implements ModalPAMatrix {
 
 	@Override
 	public Float getDemand(TravelSurveyZone producer, TravelSurveyZone attractor) {
-		return (float) children.parallelStream().mapToDouble(mtx -> mtx.getDemand(producer, attractor)).sum();
+		return (float) children.stream().mapToDouble(mtx -> mtx.getDemand(producer, attractor)).sum();
 	}
 
 	@Override

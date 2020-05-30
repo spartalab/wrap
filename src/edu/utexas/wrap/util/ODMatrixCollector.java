@@ -90,7 +90,7 @@ class CombinedODMatrix implements ODMatrix {
 
 	@Override
 	public Float getDemand(TravelSurveyZone origin, TravelSurveyZone destination) {
-		return (float) children.parallelStream().mapToDouble(mtx -> mtx.getDemand(origin, destination)).sum();
+		return (float) children.stream().mapToDouble(mtx -> mtx.getDemand(origin, destination)).sum();
 	}
 
 	@Override

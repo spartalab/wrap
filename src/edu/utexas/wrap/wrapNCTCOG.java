@@ -156,7 +156,7 @@ public class wrapNCTCOG {
             try {
                 int exit = entry.getValue().waitFor();
                 printTimeStamp();
-                System.out.println(entry + ":TA Process finished with exit code "+ exit);
+                System.out.println(entry.getKey() + ":TA Process finished with exit code "+ exit);
             } catch (InterruptedException e) {
                 printTimeStamp();
                 System.out.println(entry.getKey() + " traffic assignment was interrupted");
