@@ -128,7 +128,7 @@ public class wrapNCTCOG {
         HashMap<String, Process> tas = new HashMap<String,Process>();
         reducedODs.entrySet().forEach(entry -> {
             try {
-
+//				if(!entry.getKey().equals(TimePeriod.AM_PK)) return;
                 System.out.println("Streaming " + entry.getKey().toString());
                 Collection<ODMatrix> matrices = entry.getValue();
                 String tapExec = new File("./tap").getAbsolutePath();
