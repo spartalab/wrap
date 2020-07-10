@@ -6,21 +6,10 @@ import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import edu.utexas.wrap.assignment.Assigner;
-import edu.utexas.wrap.assignment.AssignmentBuilder;
-import edu.utexas.wrap.assignment.AssignmentInitializer;
-import edu.utexas.wrap.assignment.AssignmentProvider;
-import edu.utexas.wrap.assignment.AssignmentConsumer;
-import edu.utexas.wrap.assignment.GapEvaluator;
-import edu.utexas.wrap.assignment.bush.Bush;
-import edu.utexas.wrap.assignment.bush.BushBuilder;
-import edu.utexas.wrap.assignment.bush.BushGapEvaluator;
-import edu.utexas.wrap.assignment.bush.BushInitializer;
-import edu.utexas.wrap.assignment.bush.BushReader;
-import edu.utexas.wrap.assignment.bush.BushWriter;
-import edu.utexas.wrap.assignment.bush.algoB.AlgorithmBOptimizer;
+import edu.utexas.wrap.assignment.bush.StreamPassthroughAssigner;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.containers.FixedSizeODMatrix;
+import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
@@ -83,25 +72,29 @@ public class wrapTP {
 		//TODO redo this method to streamline
 		Map<TimePeriod,Collection<ODMatrix>> flatODs = flatten(ods);
 		
-		for (Entry<TimePeriod, Collection<ODMatrix>> entry : flatODs.entrySet()) {
+//		for (Entry<TimePeriod, Collection<ODMatrix>> entry : flatODs.entrySet()) {
 			
-			AssignmentProvider<Bush> reader = new BushReader(network);
-			AssignmentConsumer<Bush> writer = new BushWriter(network);
-			AssignmentBuilder<Bush> builder = new BushBuilder(network);
+//			AssignmentProvider<Bush> reader = new BushReader(network);
+//			AssignmentConsumer<Bush> writer = new BushWriter(network),
+//					forgetter = new BushForgetter();
+//			AssignmentBuilder<Bush> builder = new BushBuilder(network);
+//			
+//			AssignmentInitializer<Bush> initializer = new BushInitializer(reader,writer,builder, network);
+//			
+//			for (ODMatrix od : entry.getValue()) initializer.add(od);
+//			
+//			Assigner<Bush> assigner = new Assigner<Bush>(
+//					initializer,
+//					new GapEvaluator<Bush>(network, reader, forgetter),
+//					new AlgorithmBOptimizer(
+//							reader, 
+//							writer, 
+//							new BushGapEvaluator(network),
+//							10E-3), 10E-4
+//					);
 			
-			AssignmentInitializer<Bush> initializer = new BushInitializer(reader,writer,builder, network);
 			
-			for (ODMatrix od : entry.getValue()) initializer.add(od);
-			
-			Assigner<Bush> assigner = new Assigner<Bush>(
-					initializer,
-					new GapEvaluator<Bush>(network, reader),
-					new AlgorithmBOptimizer(
-							reader, 
-							writer, 
-							new BushGapEvaluator(),
-							10E-5)
-					);
+			StreamPassthroughAssigner assigner = new StreamPassthroughAssigner(model, flatODs);
 			
 			Thread assignmentThread = new Thread(assigner);
 			assignmentThread.start();
@@ -112,7 +105,7 @@ public class wrapTP {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-		}
+//		}
 
 		System.out.println("Consolidating OD Matrices");
 		
@@ -158,7 +151,7 @@ public class wrapTP {
 									Mode mode = entry.getValue().getKey();
 									ODMatrix od = entry.getValue().getValue();
 									
-									return new FixedSizeODMatrix(vot,mode,od);
+									return (ODMatrix) new FixedSizeODMatrix<FixedSizeDemandMap>(vot,mode,od);
 								}
 								)
 						.collect(Collectors.toSet())

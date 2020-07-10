@@ -805,4 +805,16 @@ public class ModelInputNCTCOG implements ModelInput {
 		if (outputName == null) return input;
 		else return TimePeriod.valueOf(outputName);
 	}
+
+	@Override
+	public String getNetFile() {
+		// TODO Auto-generated method stub
+		return inputs.getProperty("network.graphFile");
+	}
+
+	@Override
+	public String getConversionTableFile() {
+		// TODO Auto-generated method stub
+		return inputs.getProperty("ta.conversionTable");
+	}
 }

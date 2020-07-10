@@ -82,4 +82,8 @@ public class FixedSizeODMatrix<T extends DemandMap> implements ODMatrix {
 		demandMaps[origin.getOrder()] = demandMap;
 	}
 
+	
+	public String toString() {
+		return mode + "_" + getVOT();
+	}
 }

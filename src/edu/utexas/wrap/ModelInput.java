@@ -261,4 +261,8 @@ public interface ModelInput {
 	 * @return the corresponding TimePeriod which should be used in later phases of model development
 	 */
 	TimePeriod getAggregateTimePeriod(TimePeriod input);
+	
+	String getNetFile();
+	
+	String getConversionTableFile();
 }
