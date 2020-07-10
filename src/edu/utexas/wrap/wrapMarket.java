@@ -15,6 +15,7 @@ import java.util.stream.Stream;
 
 import edu.utexas.wrap.assignment.Assigner;
 import edu.utexas.wrap.demand.ODMatrix;
+import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.marketsegmentation.Market;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.NetworkSkim;
@@ -51,18 +52,20 @@ public class wrapMarket {
 		
 		Map<String,NetworkSkim> skims = getSeedSkims();
 		
-		Map<TimePeriod,Assigner> assigners = getAssigners();
+		Collection<Assigner> assigners = getAssigners();
 		int numFeedbacks = 1;
 		
 		for (int i = 0; i < numFeedbacks; i++) {
-			Stream<ODMatrix> stream =
+			Stream<ODProfile> stream =
 			markets.parallelStream()
 				.flatMap(market -> market.buildODs(skims));
 			stream
-				.forEach(od -> assigners.get(od.timePeriod()).attach(od));
+				.forEach(od -> 
+				assigners.stream().forEach(assigner -> assigner.process(od))
+				);
 
 			
-			assigners.values().stream().forEach(Assigner::assign);
+			assigners.stream().forEach(Assigner::run);
 			
 //			assigners.entrySet().parallelStream().forEach(entry -> skims.put(entry.getKey(),entry.getValue().getSkim()));
 		}
@@ -102,7 +105,7 @@ public class wrapMarket {
 		return proj;
 	}
 
-	private static Map<TimePeriod, Assigner> getAssigners() {
+	private static Collection<Assigner> getAssigners() {
 		return null;
 //		throw new RuntimeException("Not yet implemented");
 	}

@@ -18,6 +18,7 @@ import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.ODMatrix;
+import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.containers.FixedSizePAMap;
 import edu.utexas.wrap.distribution.TripDistributor;
@@ -41,7 +42,7 @@ public class Purpose {
 		model = new PurposeModel(purposeFile, network);
 	}
 
-	public Stream<ODMatrix> buildODs(Map<String,NetworkSkim> skims) {
+	public Stream<ODProfile> buildODs(Map<String,NetworkSkim> skims) {
 		
 		Stream<DemandMap>
 					productions	= getProductions(),
@@ -55,17 +56,19 @@ public class Purpose {
 		Stream<ModalPAMatrix>
 					modalPAMtxs	= chooseModes(aggPAMtx);
 		
-		Stream<ODMatrix>
-					odMtxs		= convertToOD(modalPAMtxs);
+		Stream<ODProfile>
+					odProfiles		= convertToOD(modalPAMtxs);
 		
-		return odMtxs;
+		return odProfiles;
 	}
 
-	private Stream<ODMatrix> convertToOD(Stream<ModalPAMatrix> modalPAMtxs) {
+	private Stream<ODProfile> convertToOD(Stream<ModalPAMatrix> modalPAMtxs) {
 		
+		//One daily ODMatrix per mode
 		Stream<ODMatrix> dailyODs = new PassengerVehicleTripConverter().convert(modalPAMtxs);
 		
-		Stream<ODMatrix> temporalODs = new TimeOfDaySplitter(
+		//One OD profile (consisting of multiple TimePeriods' ODMatrices) per mode
+		Stream<ODProfile> temporalODs = new TimeOfDaySplitter(
 				model.departureRates(),
 				model.arrivalRates())
 				.split(dailyODs);

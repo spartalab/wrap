@@ -2,20 +2,23 @@ package edu.utexas.wrap.assignment;
 
 import java.util.Collection;
 
-public class ConstructedAssigner<C extends AssignmentContainer> implements Assigner {
+import edu.utexas.wrap.TimePeriod;
+import edu.utexas.wrap.demand.ODProfile;
+
+public class BasicStaticAssigner<C extends AssignmentContainer> implements Assigner {
 	private AssignmentEvaluator<C> evaluator;
 	private AssignmentOptimizer<C> optimizer;
+	private AssignmentInitializer<C> initializer;
 	private Collection<C> containers;
 	private double threshold;
 	private final int maxIterations;
 	
-	public ConstructedAssigner(
+	public BasicStaticAssigner(
 			AssignmentInitializer<C> initializer,
 			AssignmentEvaluator<C> evaluator,
 			AssignmentOptimizer<C> optimizer,
 			double threshold){
-		
-		this.containers = initializer.initializeContainers();
+		this.initializer = initializer;
 		this.evaluator = evaluator;
 		this.optimizer = optimizer;
 		this.threshold = threshold;
@@ -23,7 +26,11 @@ public class ConstructedAssigner<C extends AssignmentContainer> implements Assig
 		
 	}
 	
+
+	
 	public void run() {
+		this.containers = initializer.initializeContainers();
+
 		int numIterations = 0;
 		double value = evaluator.getValue(containers.parallelStream()); 
 		while (value > threshold && numIterations < maxIterations) {
@@ -32,6 +39,16 @@ public class ConstructedAssigner<C extends AssignmentContainer> implements Assig
 			value = evaluator.getValue(containers.parallelStream());
 		}
 		System.out.println("Final value: "+value);
+	}
+
+
+
+	@Override
+	public void process(ODProfile profile) {
+		// TODO Auto-generated method stub
+		TimePeriod timePeriod = TimePeriod.AM_PK;
+		
+		initializer.add(profile.getMatrix(timePeriod));
 	}
 	
 }

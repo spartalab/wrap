@@ -5,6 +5,7 @@ import java.util.stream.Stream;
 
 import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.demand.ODMatrix;
+import edu.utexas.wrap.demand.ODProfile;
 
 public class TimeOfDaySplitter {
 
@@ -12,7 +13,7 @@ public class TimeOfDaySplitter {
 		throw new RuntimeException("Not yet implemented");
 	}
 
-	public Stream<ODMatrix> split(Stream<ODMatrix> dailyODs) {
+	public Stream<ODProfile> split(Stream<ODMatrix> dailyODs) {
 		throw new RuntimeException("Not yet implemented");
 	}
 

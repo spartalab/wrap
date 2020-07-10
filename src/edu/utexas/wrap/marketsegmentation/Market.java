@@ -9,7 +9,7 @@ import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import edu.utexas.wrap.demand.ODMatrix;
+import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.NetworkSkim;
 
@@ -25,7 +25,8 @@ public class Market {
 		purposes = getPurposes();
 	}
 
-	public Stream<ODMatrix> buildODs(Map<String,NetworkSkim> skims) {
+	public Stream<ODProfile> buildODs(Map<String,NetworkSkim> skims) {
+		//combine all purposes' per-mode profiles into a single stream
 		return purposes.parallelStream().flatMap(purpose -> purpose.buildODs(skims));
 	}
 	
