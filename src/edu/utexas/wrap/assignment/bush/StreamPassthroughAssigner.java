@@ -9,12 +9,12 @@ import java.util.Map;
 
 import edu.utexas.wrap.ModelInput;
 import edu.utexas.wrap.TimePeriod;
-import edu.utexas.wrap.assignment.Assigner;
+import edu.utexas.wrap.assignment.StaticAssigner;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.util.io.output.ODMatrixStreamWriter;
 
-public class StreamPassthroughAssigner implements Assigner {
+public class StreamPassthroughAssigner implements StaticAssigner {
 	ModelInput model;
 	Collection<ODMatrix> mtxs;
 	TimePeriod period;
@@ -68,6 +68,8 @@ public class StreamPassthroughAssigner implements Assigner {
 		mtxs.add(profile.getMatrix(period));
 	}
 
-
+	public TimePeriod getTimePeriod() {
+		return period;
+	}
 
 }

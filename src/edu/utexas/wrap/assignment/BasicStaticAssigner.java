@@ -5,7 +5,7 @@ import java.util.Collection;
 import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.demand.ODProfile;
 
-public class BasicStaticAssigner<C extends AssignmentContainer> implements Assigner {
+public class BasicStaticAssigner<C extends AssignmentContainer> implements StaticAssigner {
 	private AssignmentEvaluator<C> evaluator;
 	private AssignmentOptimizer<C> optimizer;
 	private AssignmentInitializer<C> initializer;
@@ -45,10 +45,11 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Assig
 
 	@Override
 	public void process(ODProfile profile) {
-		// TODO Auto-generated method stub
-		TimePeriod timePeriod = TimePeriod.AM_PK;
-		
-		initializer.add(profile.getMatrix(timePeriod));
+		initializer.add(profile.getMatrix(getTimePeriod()));
+	}
+	
+	public TimePeriod getTimePeriod() {
+		return TimePeriod.AM_PK;
 	}
 	
 }
