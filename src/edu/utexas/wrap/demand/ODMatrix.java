@@ -45,7 +45,11 @@ public interface ODMatrix {
 	
 	public void setVOT(float VOT);
 	
-	public Collection<TravelSurveyZone> getOrigins();
+	public default Collection<TravelSurveyZone> getOrigins(){
+		throw new RuntimeException();
+	};
 	
-	public DemandMap getDemandMap(TravelSurveyZone origin);
+	public default DemandMap getDemandMap(TravelSurveyZone origin) {
+		throw new RuntimeException();
+	};
 }
