@@ -10,10 +10,11 @@ import java.util.Map.Entry;
 
 import edu.utexas.wrap.ModelInput;
 import edu.utexas.wrap.TimePeriod;
+import edu.utexas.wrap.assignment.Assigner;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.util.io.output.ODMatrixStreamWriter;
 
-public class StreamPassthroughAssigner implements Runnable {
+public class StreamPassthroughAssigner implements Assigner {
 	ModelInput model;
 	Map<TimePeriod, Collection<ODMatrix>> reducedODs;
 

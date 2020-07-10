@@ -31,6 +31,7 @@ import edu.utexas.wrap.marketsegmentation.WorkerVehicleSegment;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.io.FrictionFactorFactory;
 import edu.utexas.wrap.util.io.GraphFactory;
@@ -65,7 +66,7 @@ public class ModelInputNCTCOG implements ModelInput {
 	private Map<TripPurpose, Map<MarketSegment, GenerationRate>> productionRates;
 	private Map<TripPurpose, Map<MarketSegment, GenerationRate>> attractionRates;
 	private Map<TripPurpose, Map<MarketSegment, Map<TimePeriod,Double>>> timeCostShares;
-	private Map<TimePeriod, float[][]> skimFactors;
+	private Map<TimePeriod, NetworkSkim> skimFactors;
 	private Map<TripPurpose, Map<TimePeriod, Map<MarketSegment, FrictionFactorMap>>> frictionFactors;
 	private Map<TripPurpose, Map<MarketSegment, Map<Mode, Double>>> modalShares;
 //	private Map<TripPurpose, Map<MarketSegment, Map<MarketSegment, Map<TravelSurveyZone,Double>>>> subsegmentations;
@@ -370,14 +371,14 @@ public class ModelInputNCTCOG implements ModelInput {
 	}
 	
 	@Override
-	public float[][] getRoadwaySkim(TimePeriod timePeriod) {
+	public NetworkSkim defaultNetworkSkim(TimePeriod timePeriod) {
 		synchronized(timePeriod) {
 			if (skimFactors != null && skimFactors.containsKey(timePeriod)) 
 				return skimFactors.get(timePeriod);
-			if (skimFactors == null) skimFactors = new HashMap<TimePeriod,float[][]>();
+			if (skimFactors == null) skimFactors = new HashMap<TimePeriod,NetworkSkim>();
 
 			String skimFile = inputs.getProperty("network.skims."+timePeriod.toString());
-			float[][] skim = SkimFactory.readSkimFile(Paths.get(skimFile.trim()), false, graph);
+			NetworkSkim skim = SkimFactory.readSkimFile(Paths.get(skimFile.trim()), false, graph);
 			skimFactors.put(timePeriod, skim);
 			return skim;
 		}
@@ -399,7 +400,7 @@ public class ModelInputNCTCOG implements ModelInput {
 
 		String frictionFile = inputs.getProperty("tripPurpose."+purpose.toString()+".fricFacts."+timePeriod.toString()+
 				(segment == null? "" : "."+getLabel(segment)));
-		float[][] skim = getRoadwaySkim(timePeriod);
+		NetworkSkim skim = defaultNetworkSkim(timePeriod);
 		FrictionFactorMap map = FrictionFactorFactory.readFactorFile(Paths.get(frictionFile), true, skim);
 		frictionFactors.get(purpose).get(timePeriod).put(segment,map);
 

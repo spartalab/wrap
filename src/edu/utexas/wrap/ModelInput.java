@@ -9,6 +9,7 @@ import edu.utexas.wrap.marketsegmentation.MarketSegment;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 //import edu.utexas.wrap.net.TravelSurveyZone;
+import edu.utexas.wrap.net.NetworkSkim;
 
 import java.util.Collection;
 import java.util.Map;
@@ -129,7 +130,7 @@ public interface ModelInput {
 	 * 
 	 * TODO modify this return type to a clearer structure based on TSZ maps
 	 */
-	float[][] getRoadwaySkim(TimePeriod timePeriod);
+	NetworkSkim defaultNetworkSkim(TimePeriod timePeriod);
 
 	/** This method returns a FrictionFactorMap for trips for a given purpose in a given
 	 * time period of a specified MarketSegment. These FrictionFactorMaps define the impedance

@@ -13,6 +13,7 @@ import edu.utexas.wrap.assignment.Assigner;
 import edu.utexas.wrap.assignment.AssignmentBuilder;
 import edu.utexas.wrap.assignment.AssignmentInitializer;
 import edu.utexas.wrap.assignment.AssignmentProvider;
+import edu.utexas.wrap.assignment.ConstructedAssigner;
 import edu.utexas.wrap.assignment.AssignmentConsumer;
 import edu.utexas.wrap.assignment.GapEvaluator;
 import edu.utexas.wrap.assignment.bush.Bush;
@@ -65,7 +66,7 @@ public class wrapTNTP {
 		}
 		
 		System.out.println("Initializing solution");
-		Assigner<Bush> assigner = new Assigner<Bush>(
+		ConstructedAssigner<Bush> assigner = new ConstructedAssigner<Bush>(
 				initializer, 
 				new GapEvaluator<Bush>(g, reader, forgetter), 
 				new AlgorithmBOptimizer(

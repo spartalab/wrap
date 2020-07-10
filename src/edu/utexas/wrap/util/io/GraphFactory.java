@@ -152,28 +152,28 @@ public class GraphFactory {
 			Float ffTimeA = parse(args[6]);
 			Float ffTimeB = parse(args[7]);
 
-			Float alpha = (parse(args[8]));
-			Float epsilon = (parse(args[9]));
-			Float sParA = (parse(args[10]));
-			Float sParB = (parse(args[11]));
-			Float satFlowA = (parse(args[12]));
-			Float satFlowB = (parse(args[13]));
+			Float alpha = parse(args[8]);
+			Float epsilon = parse(args[9]);
+			Float sParA = parse(args[10]);
+			Float sParB = parse(args[11]);
+			Float satFlowA = parse(args[12]);
+			Float satFlowB = parse(args[13]);
 
-			Float caA = (parse(args[14]));
-			Float cbA = (parse(args[15]));
-			Float ccA = (parse(args[16]));
-			Float cdA = (parse(args[17]));
+			Float caA = parse(args[14]);
+			Float cbA = parse(args[15]);
+			Float ccA = parse(args[16]);
+			Float cdA = parse(args[17]);
 
-			Float caB = (parse(args[18]));
-			Float cbB = (parse(args[19]));
-			Float ccB = (parse(args[20]));
-			Float cdB = (parse(args[21]));
+			Float caB = parse(args[18]);
+			Float cbB = parse(args[19]);
+			Float ccB = parse(args[20]);
+			Float cdB = parse(args[21]);
 
-			Float minDel = (parse(args[22]));
-			Float uParA = (parse(args[23]));
-			Float uParB = (parse(args[24]));
-			Float opCostA = (parse(args[25]));
-			Float opCostB = (parse(args[26]));
+			Float minDel = parse(args[22]);
+			Float uParA = parse(args[23]);
+			Float uParB = parse(args[24]);
+			Float opCostA = parse(args[25]);
+			Float opCostB = parse(args[26]);
 
 			float[] tollA = new float[Mode.values().length];
 			float[] tollB = new float[Mode.values().length];
@@ -181,14 +181,14 @@ public class GraphFactory {
 //			Map<Mode, Float> tollsA = new Object2FloatOpenHashMap<Mode>(4,1.0f);
 //			Map<Mode, Float> tollsB = new Object2FloatOpenHashMap<Mode>(4,1.0f);
 
-			tollA[Mode.SINGLE_OCC.ordinal()] = (parse(args[27]));
-			tollB[Mode.SINGLE_OCC.ordinal()] = (parse(args[28]));
-			tollA[Mode.HOV_2_PSGR.ordinal()] = (parse(args[29]));
-			tollB[Mode.HOV_2_PSGR.ordinal()] = (parse(args[30]));
-			tollA[Mode.MED_TRUCK.ordinal()] = (parse(args[31]));
-			tollB[Mode.MED_TRUCK.ordinal()] = (parse(args[32]));
-			tollA[Mode.HVY_TRUCK.ordinal()] = (parse(args[33]));
-			tollB[Mode.HVY_TRUCK.ordinal()] = (parse(args[34]));
+			tollA[Mode.SINGLE_OCC.ordinal()] = parse(args[27]);
+			tollB[Mode.SINGLE_OCC.ordinal()] = parse(args[28]);
+			tollA[Mode.HOV_2_PSGR.ordinal()] = parse(args[29]);
+			tollB[Mode.HOV_2_PSGR.ordinal()] = parse(args[30]);
+			tollA[Mode.MED_TRUCK.ordinal()] = parse(args[31]);
+			tollB[Mode.MED_TRUCK.ordinal()] = parse(args[32]);
+			tollA[Mode.HVY_TRUCK.ordinal()] = parse(args[33]);
+			tollB[Mode.HVY_TRUCK.ordinal()] = parse(args[34]);
 
 			boolean[] allowed = new boolean[Mode.values().length];
 			Arrays.fill(allowed, true);

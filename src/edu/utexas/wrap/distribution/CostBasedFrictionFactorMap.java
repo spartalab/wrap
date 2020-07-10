@@ -2,6 +2,7 @@ package edu.utexas.wrap.distribution;
 
 import java.util.NavigableMap;
 
+import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**A friction factor map that depends on a cost skim and
@@ -15,18 +16,18 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  */
 public class CostBasedFrictionFactorMap implements FrictionFactorMap {
 
-	private float[][] travelCosts;
+	private NetworkSkim travelCosts;
 	private NavigableMap<Integer, Float> costFactors;
 
 
-	public CostBasedFrictionFactorMap(float[][] costSkim, NavigableMap<Integer, Float> factors) {
-		travelCosts = costSkim;
+	public CostBasedFrictionFactorMap(NetworkSkim skim, NavigableMap<Integer, Float> factors) {
+		travelCosts = skim;
 		costFactors = factors;
 	}
 	
 	@Override
 	public Float get(TravelSurveyZone producer, TravelSurveyZone attractor) {
-		Float cost = travelCosts[producer.getOrder()][attractor.getOrder()];
+		Float cost = travelCosts.getCost(producer, attractor);
 		if (cost < 0) throw new RuntimeException("Negative travel cost");
 		
 		//Get the nearest costFactors to this cost

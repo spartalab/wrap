@@ -1,3 +1,4 @@
+
 package edu.utexas.wrap;
 
 import java.io.File;
@@ -35,7 +36,7 @@ import edu.utexas.wrap.util.io.output.ODMatrixBINWriter;
 import edu.utexas.wrap.util.io.output.ODMatrixCSVWriter;
 import edu.utexas.wrap.util.io.output.ODMatrixStreamWriter;
 
-
+@Deprecated
 public class wrapNCTCOG {
 
 	public static long startMS = System.currentTimeMillis();

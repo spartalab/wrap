@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentSkipListMap;
 
 import edu.utexas.wrap.distribution.CostBasedFrictionFactorMap;
 import edu.utexas.wrap.distribution.FrictionFactorMap;
+import edu.utexas.wrap.net.NetworkSkim;
 
 /**
  * This class provides static methods to read FrictionFactor information.
@@ -24,7 +25,7 @@ public class FrictionFactorFactory {
 	 * @return A FrictionFactorMap
 	 * @throws IOException
 	 */
-	public static FrictionFactorMap readFactorFile(Path file, boolean header, float[][] skim) {
+	public static FrictionFactorMap readFactorFile(Path file, boolean header, NetworkSkim skim) {
 		NavigableMap<Integer, Float> tree = new ConcurrentSkipListMap<Integer, Float>();
 		BufferedReader in = null;
 
