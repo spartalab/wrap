@@ -15,10 +15,11 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  * @author William
  *
  */
-public abstract class AssignmentLoader {
+@Deprecated
+public abstract class OldAssignmentLoader {
 	protected Graph graph;
 	
-	protected AssignmentLoader(Graph g) {
+	protected OldAssignmentLoader(Graph g) {
 		this.graph = g;
 	}
 	

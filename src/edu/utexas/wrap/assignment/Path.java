@@ -1,7 +1,5 @@
 package edu.utexas.wrap.assignment;
 
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -13,6 +11,7 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.Priced;
+import edu.utexas.wrap.net.TravelSurveyZone;
 
 /** A sequential list of {@link edu.utexas.wrap.net.Link} objects.
  * 
@@ -106,7 +105,7 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getVehicleClass()
 	 */
 	@Override
-	public Mode getVehicleClass() {
+	public Mode vehicleClass() {
 		return c;
 	}
 
@@ -114,7 +113,7 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getVOT()
 	 */
 	@Override
-	public Float getVOT() {
+	public Float valueOfTime() {
 		return vot;
 	}
 
@@ -162,7 +161,7 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	 * @return the subPath between the two given points
 	 */
 	public Path subPath(Integer start, Integer end) {
-		Path sp = new Path(getVehicleClass(), getVOT());
+		Path sp = new Path(vehicleClass(), valueOfTime());
 		for (Integer i = start; i < size() && i < end; i++) {
 			sp.add(get(i));
 		}
@@ -182,15 +181,15 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getDemand(edu.utexas.wrap.net.Node)
 	 */
 	@Override
-	public Float getDemand(Node n) {
-		return null;
+	public double demand(Node n) {
+		return 0.;
 	}
 
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getLinks()
 	 */
 	@Override
-	public Set<Link> getUsedLinks() {
+	public Set<Link> usedLinks() {
 		return new HashSet<Link>(this);
 	}
 
@@ -204,20 +203,21 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 //	}
 
 	@Override
-	public Map<Link, Double> getFlows() {
+	public Map<Link, Double> flows() {
 		//TODO
 		throw new RuntimeException("Not Yet Implemented");
 	}
 
 	@Override
-	public void fromByteStream(InputStream in) {
+	public double incurredCost() {
 		// TODO Auto-generated method stub
-		throw new RuntimeException("Not Yet Implemented");
+		throw new RuntimeException("Not yet implemented");
 	}
 
 	@Override
-	public void toByteStream(OutputStream out) {
+	public TravelSurveyZone root() {
 		// TODO Auto-generated method stub
-		throw new RuntimeException("Not Yet Implemented");
+		return node(0).getZone();
 	}
+
 }

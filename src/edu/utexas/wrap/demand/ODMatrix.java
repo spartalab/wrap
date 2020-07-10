@@ -1,5 +1,7 @@
 package edu.utexas.wrap.demand;
 
+import java.util.Collection;
+
 import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
@@ -44,6 +46,15 @@ public interface ODMatrix {
 	
 	public void setVOT(float VOT);
 
-	public TimePeriod timePeriod();
+	public default TimePeriod timePeriod() {
+		throw new RuntimeException();
+	};
 	
+	public default Collection<TravelSurveyZone> getOrigins(){
+		throw new RuntimeException();
+	};
+	
+	public default DemandMap getDemandMap(TravelSurveyZone origin) {
+		throw new RuntimeException();
+	};
 }

@@ -51,7 +51,7 @@ public class DBTripGenerator extends PrimaryTripGenerator {
      */
     @Override
     public PAMap generate(MarketSegment marketSegment) {
-        PAMap paMap = new DBPAMap(g, db, marketSegment.toString() ,marketSegment.getPAMapTable(), marketSegment.getVOT());
+        PAMap paMap = new DBPAMap(g, db, marketSegment.toString() ,marketSegment.getPAMapTable(), marketSegment.valueOfTime());
         String generatePA = "INSERT INTO "+marketSegment.getPAMapTable()+" (node, productions, attractions)\n" +
                 "SELECT node, sum(p.rate * dp.value), sum(a.rate * dp.value)\n" +
                 "  FROM ((SELECT * from "+attributesTable+") as dp INNER JOIN (SELECT * FROM "+productionWeightsTable+" WHERE seg=?) as p ON\n" +

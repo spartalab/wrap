@@ -29,9 +29,9 @@ public class ODMatrixCSVWriter {
 						float demand = matrix.getDemand(orig, dest);
 						if (demand > 0) {
 							StringBuilder sb = new StringBuilder();
-							sb.append(orig.getNode().getID());
+							sb.append(orig.node().getID());
 							sb.append(",");
-							sb.append(dest.getNode().getID());
+							sb.append(dest.node().getID());
 							sb.append(",");
 							sb.append(demand);
 							sb.append("\r\n");

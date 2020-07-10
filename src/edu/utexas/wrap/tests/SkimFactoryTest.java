@@ -12,7 +12,7 @@ public class SkimFactoryTest {
 
     @Test
     public void testSkimReader() throws IOException {
-        Graph graph = GraphFactory.readEnhancedGraph(new File("../nctcogFiles/NCTCOG_net.csv"),50000);
+        Graph graph = GraphFactory.readConicGraph(new File("../nctcogFiles/NCTCOG_net.csv"),50000);
         //Map<TravelSurveyZone, Map<TravelSurveyZone, Float>> skim = SkimFactory.readSkimFile(new File("../nctcogFiles/PKNOHOV.csv"), false, graph);
     }
 }

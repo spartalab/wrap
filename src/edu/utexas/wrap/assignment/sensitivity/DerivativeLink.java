@@ -2,6 +2,7 @@ package edu.utexas.wrap.assignment.sensitivity;
 
 import java.util.Map;
 
+import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
@@ -64,5 +65,11 @@ public class DerivativeLink extends Link {
 	@Override
 	public Double getFlow() {
 		return flo;
+	}
+
+	@Override
+	public double getPrice(AssignmentContainer container) {
+		// TODO Auto-generated method stub
+		return getTravelTime();
 	}
 }

@@ -45,7 +45,7 @@ public class DBAutoDemandMap implements AutoDemandMap {
 			conn = DriverManager.getConnection(url, props);
 			ps = conn.prepareStatement(query);
 			ps.setInt(1, origID);
-			ps.setInt(2, dest.getNode().getID());
+			ps.setInt(2, dest.node().getID());
 			rs = ps.executeQuery();
 			r = rs.next()? rs.getFloat(columnName) : 0.0F;
 			
@@ -109,7 +109,7 @@ public class DBAutoDemandMap implements AutoDemandMap {
 			conn = DriverManager.getConnection(url, props);
 			ps = conn.prepareStatement(query);
 			ps.setInt(1, origID);
-			ps.setInt(2, node.getNode().getID());
+			ps.setInt(2, node.node().getID());
 			rs = ps.executeQuery();
 			r = rs.next()? rs.getFloat(columnName) : f;
 			

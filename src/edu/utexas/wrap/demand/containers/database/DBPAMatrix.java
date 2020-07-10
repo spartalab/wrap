@@ -54,12 +54,12 @@ public class DBPAMatrix implements AggregatePAMatrix {
 				tableName+".producer = ? " +
 				"AND "+tableName+".attractor = ?";
 		try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
-			ps.setInt(1, prod.getNode().getID());
-			ps.setInt(2, attr.getNode().getID());
+			ps.setInt(1, prod.node().getID());
+			ps.setInt(2, attr.node().getID());
 			ps.setFloat(3, demand);
 			ps.setFloat(4,demand);
-			ps.setInt(5, prod.getNode().getID());
-			ps.setInt(6, attr.getNode().getID());
+			ps.setInt(5, prod.node().getID());
+			ps.setInt(6, attr.node().getID());
 			ps.executeUpdate();
 		} catch (SQLException s) {
 			s.printStackTrace();
@@ -72,8 +72,8 @@ public class DBPAMatrix implements AggregatePAMatrix {
 		Float output = 0.0f;
 		String weightsQuery = "SELECT demand FROM "+tableName+" WHERE origin=? AND destination=?";
 		try(PreparedStatement ps = db.prepareStatement(weightsQuery)) {
-			ps.setInt(1, prod.getNode().getID());
-			ps.setInt(2, attr.getNode().getID());
+			ps.setInt(1, prod.node().getID());
+			ps.setInt(2, attr.node().getID());
 			ResultSet rs = ps.executeQuery();
 			if (rs.next()) {
 				output = rs.getFloat("demand");

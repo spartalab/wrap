@@ -22,7 +22,7 @@ public class GravityDistributionTest {
 
 		try {
 			System.out.println("Reading graph");
-			Graph g = GraphFactory.readEnhancedGraph(new File(args[0]), 50000);
+			Graph g = GraphFactory.readConicGraph(new File(args[0]), 50000);
 			System.out.println("Reading skim");
 			Map<Node,Map<Node, Float>> skim = SkimFactory.readSkimFile(new File(args[1]), false, g);
 			System.out.println("Reading friction factors");

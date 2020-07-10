@@ -2,17 +2,17 @@ package edu.utexas.wrap.util.calc;
 
 import java.util.Set;
 
-import edu.utexas.wrap.assignment.bush.BushOrigin;
+import edu.utexas.wrap.assignment.bush.OldBushOrigin;
 import edu.utexas.wrap.net.Graph;
 
 public class AllPathsRelativeGapCalculator extends Thread {
 	public Double val;
 	Graph graph;
-	Set<BushOrigin> origins;
+	Set<OldBushOrigin> origins;
 	LowestCostPathCostCalculator lc;
 	TotalSystemGeneralizedCostCalculator cc;
 	
-	public AllPathsRelativeGapCalculator(Graph g, Set<BushOrigin> o, TotalSystemGeneralizedCostCalculator tc, LowestCostPathCostCalculator lc) {
+	public AllPathsRelativeGapCalculator(Graph g, Set<OldBushOrigin> o, TotalSystemGeneralizedCostCalculator tc, LowestCostPathCostCalculator lc) {
 		graph = g;
 		origins = o;
 	}

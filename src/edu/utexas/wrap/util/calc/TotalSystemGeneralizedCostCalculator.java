@@ -20,6 +20,6 @@ public class TotalSystemGeneralizedCostCalculator extends Thread {
 	public void run() {
 		val = origins.parallelStream().flatMap(o -> o.getContainers().parallelStream())
 				.filter(c -> c instanceof Bush).map(c -> (Bush) c)
-				.mapToDouble(b -> b.getIncurredCosts()).sum();
+				.mapToDouble(b -> b.incurredCost()).sum();
 	}
 }

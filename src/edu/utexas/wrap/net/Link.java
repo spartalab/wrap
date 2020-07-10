@@ -1,6 +1,9 @@
 package edu.utexas.wrap.net;
 
 
+import java.util.concurrent.Semaphore;
+
+import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.bush.BackVector;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.util.NegativeFlowException;
@@ -14,6 +17,7 @@ public abstract class Link implements Priced, BackVector {
 	private final Float capacity, length, fftime;
 	private final Node head;
 	private final Node tail;
+	protected Semaphore ttSem;
 	
 	protected Double flo;
 
@@ -35,7 +39,8 @@ public abstract class Link implements Priced, BackVector {
 		int c = 76537;	//	UT 76-5-37 TAMC \m/
 		int b = 1831;	//	Founding of Univ. of Alabama
 		int a = 2017;	//	Year of inception for this project
-		hc = (((head.getID()*a + tail.getID())*b + capacity.intValue())*c + fftime.intValue());
+		hc = (((head.getID()*a + tail.getID())*b + capacity.hashCode())*c + fftime.hashCode());
+		ttSem = new Semaphore(1);
 	}
 
 	public abstract Boolean allowsClass(Mode c);
@@ -45,6 +50,12 @@ public abstract class Link implements Priced, BackVector {
 	 * @return whether the flow from this bush on the link is non-zero
 	 */
 	public synchronized Boolean changeFlow(Double delta) {
+		try {
+			ttSem.acquire();
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		if (delta < 0.0 && flo+delta < 0.0 - Math.max(Math.ulp(flo), Math.ulp(delta)))
 			throw new RuntimeException("Too much flow removed");
 		else if (delta < 0.0 && flo + delta <0.0) flo = 0.0;
@@ -56,8 +67,9 @@ public abstract class Link implements Priced, BackVector {
 			cachedTT = null;
 			cachedTP = null;
 		}
+		ttSem.release();
 		return flo > 0.0;
-//
+
 	}
 
 	public Float freeFlowTime() {
@@ -85,8 +97,6 @@ public abstract class Link implements Priced, BackVector {
 		return length;
 	}
 	
-	public abstract double getPrice(Float vot, Mode c);
-
 	public Node getTail() {
 		return tail;
 	}
@@ -114,5 +124,7 @@ public abstract class Link implements Priced, BackVector {
 	public Link getLongLink() {
 		return this;
 	}
+
+	public abstract double getPrice(AssignmentContainer container);
 	
 }

@@ -1,0 +1,11 @@
+/data/
+/struct/
+*.DS_Store
+src/edu/utexas/wrap/distribution/dbConfig.properties
+src/edu/utexas/wrap/a.out
+src/edu/utexas/wrap/main.c
+*.csv
+*.txt
+*.xlsx
+*.jar
+inputs.properties

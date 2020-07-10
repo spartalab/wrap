@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 
-import edu.utexas.wrap.assignment.AssignmentLoader;
+import edu.utexas.wrap.assignment.OldAssignmentLoader;
 import edu.utexas.wrap.demand.containers.AutoDemandPassthroughMap;
 import edu.utexas.wrap.demand.containers.AutoODHashMatrix;
 import edu.utexas.wrap.modechoice.Mode;
@@ -17,7 +17,7 @@ import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-/**An instance of a {@link edu.utexas.wrap.assignment.AssignmentLoader}
+/**An instance of a {@link edu.utexas.wrap.assignment.OldAssignmentLoader}
  * used for loading demand into Bushes for use by Bush-based assignment
  * methods. This class first attempts to read a bush file given at the 
  * relative path "./{MD5 hash of input graph file}/{origin ID}/{Mode}-{VOT}.bush"
@@ -25,26 +25,27 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  * @author William
  *
  */
-public class BushOriginFactory extends AssignmentLoader {
-	Map<TravelSurveyZone, BushOriginBuilder> pool;
+@Deprecated
+public class OldBushOriginFactory extends OldAssignmentLoader {
+	Map<TravelSurveyZone, OldBushOriginBuilder> pool;
 	ExecutorService p; 
-	Set<BushOrigin> origins;
+	Set<OldBushOrigin> origins;
 	
 	/**Default constructor
 	 * @param g the graph onto which Origins should be built
 	 */
-	public BushOriginFactory(Graph g) {
+	public OldBushOriginFactory(Graph g) {
 		super(g);
-		pool = new HashMap<TravelSurveyZone, BushOriginBuilder>(g.numZones());
+		pool = new HashMap<TravelSurveyZone, OldBushOriginBuilder>(g.numZones());
 		p = Executors.newWorkStealingPool();
-		origins = new HashSet<BushOrigin>();
+		origins = new HashSet<OldBushOrigin>();
 	}
 	
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.assignment.AssignmentLoader#add(edu.utexas.wrap.net.Node, edu.utexas.wrap.demand.containers.AutoDemandHashMap)
 	 */
 	public void submit(TravelSurveyZone zone, AutoDemandMap map) {
-		pool.putIfAbsent(zone, new BushOriginLoader(graph,zone,origins));
+		pool.putIfAbsent(zone, new OldBushOriginLoader(graph,zone,origins));
 		pool.get(zone).addMap(map);
 	} 
 	
@@ -67,7 +68,7 @@ public class BushOriginFactory extends AssignmentLoader {
 	/**Wait until all worker threads have finished. Print updates
 	 * @return the set of completely loaded BushOrigins
 	 */
-	public Set<BushOrigin> finishAll() {
+	public Set<OldBushOrigin> finishAll() {
 		ForkJoinPool p = (ForkJoinPool) this.p;
 		System.out.print("\r                                ");
 		p.shutdown();

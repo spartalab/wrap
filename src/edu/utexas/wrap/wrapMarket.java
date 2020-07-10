@@ -73,7 +73,7 @@ public class wrapMarket {
 		try {
 			File netFile = Paths.get(proj.getProperty("network.file")).toFile();
 			Integer ftn = Integer.parseInt(proj.getProperty("network.firstThruNode"));
-			return GraphFactory.readEnhancedGraph(netFile, ftn);
+			return GraphFactory.readConicGraph(netFile, ftn);
 		} catch (NullPointerException e) {
 			System.err.println("Missing property: network.file");
 			System.exit(-2);

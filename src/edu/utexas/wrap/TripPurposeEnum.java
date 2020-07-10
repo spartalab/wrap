@@ -1,5 +1,6 @@
 package edu.utexas.wrap;
 
+@Deprecated
 public enum TripPurposeEnum {
 	HOME_NONWORK,
 	HOME_WORK,

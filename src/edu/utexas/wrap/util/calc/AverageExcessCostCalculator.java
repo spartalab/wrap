@@ -2,17 +2,17 @@ package edu.utexas.wrap.util.calc;
 
 import java.util.Set;
 
-import edu.utexas.wrap.assignment.bush.BushOrigin;
+import edu.utexas.wrap.assignment.bush.OldBushOrigin;
 import edu.utexas.wrap.net.Graph;
 
 public class AverageExcessCostCalculator extends Thread {
 	public Double val;
 	Graph graph;
-	Set<BushOrigin> origins;
+	Set<OldBushOrigin> origins;
 	TotalSystemGeneralizedCostCalculator cc;
 	LowestCostPathCostCalculator lc;
 	
-	public AverageExcessCostCalculator(Graph g, Set<BushOrigin> o, TotalSystemGeneralizedCostCalculator tc, LowestCostPathCostCalculator lc) {
+	public AverageExcessCostCalculator(Graph g, Set<OldBushOrigin> o, TotalSystemGeneralizedCostCalculator tc, LowestCostPathCostCalculator lc) {
 		graph = g;
 		origins = o;
 		this.cc = tc;

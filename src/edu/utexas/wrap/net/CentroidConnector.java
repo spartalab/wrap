@@ -1,5 +1,6 @@
 package edu.utexas.wrap.net;
 
+import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.modechoice.Mode;
 
 public class CentroidConnector extends TolledLink {
@@ -49,6 +50,11 @@ public class CentroidConnector extends TolledLink {
 	@Override
 	public double tPrime() {
 		return 0.0;
+	}
+
+	@Override
+	public double getPrice(AssignmentContainer container) {
+		return getPrice(container.valueOfTime(),container.vehicleClass());
 	}
 
 }

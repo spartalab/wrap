@@ -8,7 +8,7 @@ import java.util.concurrent.ForkJoinPool;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import edu.utexas.wrap.assignment.Optimizer;
+import edu.utexas.wrap.assignment.OldOptimizer;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.util.calc.AverageExcessCostCalculator;
@@ -25,20 +25,21 @@ import edu.utexas.wrap.util.calc.TotalSystemTravelTimeCalculator;
  * @author William
  *
  */
-public abstract class BushOptimizer extends Optimizer {
+@Deprecated
+public abstract class OldBushOptimizer extends OldOptimizer {
 	public static boolean printProgress = true;
 	public static boolean printBushes = true;
 
 	private int innerIters = 8;
 	
-	protected Set<BushOrigin> origins;
+	protected Set<OldBushOrigin> origins;
 	protected Integer relativeGapExp = -8;
 
 	/**Default constructor
 	 * @param g	the graph on which the optimizer should operate
 	 * @param o	the set of BushOrigins to equilibrate
 	 */
-	public BushOptimizer(Graph g, Set<BushOrigin> o) {
+	public OldBushOptimizer(Graph g, Set<OldBushOrigin> o) {
 		super(g);
 		origins = o;
 	}
@@ -117,7 +118,7 @@ public abstract class BushOptimizer extends Optimizer {
 		Long imprStart = System.currentTimeMillis();
 //		origins.parallelStream().flatMap(o -> o.getContainers().parallelStream()).forEach(Bush::improve);
 		ForkJoinPool p = new ForkJoinPool();
-		for (BushOrigin o : origins) {
+		for (OldBushOrigin o : origins) {
 			for (Bush b : o.getContainers()) {
 				Thread t = new Thread() {
 					public void run() {
@@ -151,7 +152,7 @@ public abstract class BushOptimizer extends Optimizer {
 		outer: for (int i = 0; i < innerIters; i++) {
 			int j = 1;
 			start = imprStart != null? imprStart : System.currentTimeMillis();
-			for (BushOrigin o : origins) {
+			for (OldBushOrigin o : origins) {
 				int numBushes = o.getContainers().size();
 
 				int k = 1;
@@ -194,7 +195,7 @@ public abstract class BushOptimizer extends Optimizer {
 		Map<Link,Double> linkFlows = graph.getLinks().parallelStream().collect(Collectors.toMap(Function.identity(), l -> l.getFlow()));
 		Map<Link,Double> bushFlows = new HashMap<Link,Double>(graph.numLinks(),1.0f);
 		
-		origins.parallelStream().flatMap(o -> o.getContainers().parallelStream()).map(b -> b.getFlows()).sequential().forEach(m ->{
+		origins.parallelStream().flatMap(o -> o.getContainers().parallelStream()).map(b -> b.flows()).sequential().forEach(m ->{
 			for (Entry<Link, Double> e : m.entrySet()) {
 				bushFlows.put(e.getKey(), bushFlows.getOrDefault(e.getKey(), 0.0) + e.getValue());
 			}

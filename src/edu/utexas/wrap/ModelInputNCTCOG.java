@@ -264,7 +264,7 @@ public class ModelInputNCTCOG implements ModelInput {
 		String hhWkrIGChild = inputs.getProperty("network.hhWkrIGChild");
 
 		try {
-			graph = GraphFactory.readEnhancedGraph(new File(graphFile),Integer.parseInt(thruNode));
+			graph = GraphFactory.readConicGraph(new File(graphFile),Integer.parseInt(thruNode));
 		} catch (IOException e) {
 			System.err.println("Error in reading network file");
 			e.printStackTrace();
@@ -804,5 +804,17 @@ public class ModelInputNCTCOG implements ModelInput {
 		String outputName = inputs.getProperty("general.timePeriodAggregation."+input);
 		if (outputName == null) return input;
 		else return TimePeriod.valueOf(outputName);
+	}
+
+	@Override
+	public String getNetFile() {
+		// TODO Auto-generated method stub
+		return inputs.getProperty("network.graphFile");
+	}
+
+	@Override
+	public String getConversionTableFile() {
+		// TODO Auto-generated method stub
+		return inputs.getProperty("ta.conversionTable");
 	}
 }
