@@ -25,7 +25,7 @@ public class Market {
 		purposes = getPurposes();
 	}
 
-	public Stream<ODProfile> buildODs(Map<String,NetworkSkim> skims) {
+	public Stream<ODProfile> buildODs(Collection<NetworkSkim> skims) {
 		//combine all purposes' per-mode profiles into a single stream
 		return purposes.parallelStream().flatMap(purpose -> purpose.buildODs(skims));
 	}

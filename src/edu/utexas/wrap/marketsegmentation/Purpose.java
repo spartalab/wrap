@@ -3,6 +3,7 @@ package edu.utexas.wrap.marketsegmentation;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -41,7 +42,7 @@ public class Purpose {
 		model = new PurposeModel(purposeFile, network);
 	}
 
-	public Stream<ODProfile> buildODs(Map<String,NetworkSkim> skims) {
+	public Stream<ODProfile> buildODs(Collection<NetworkSkim> skims) {
 		
 		Stream<DemandMap>
 					productions	= getProductions(),
@@ -50,7 +51,7 @@ public class Purpose {
 		PAMap		map			= balance(productions,attractions);
 		
 		AggregatePAMatrix 
-					aggPAMtx	= distribute(map, skims);
+					aggPAMtx	= distribute(map);
 		
 		Stream<ModalPAMatrix>
 					modalPAMtxs	= chooseModes(aggPAMtx);
@@ -80,14 +81,12 @@ public class Purpose {
 		return new FixedProportionSplitter(model.modeShares()).split(aggregateMtx);
 	}
 	
-	private AggregatePAMatrix distribute(PAMap map, Map<String,NetworkSkim> skims) {
+	private AggregatePAMatrix distribute(PAMap map) {
 		return model.distributionShares().entrySet().parallelStream()
 		.map(entry -> 
 			
 			model.distributor(
-					
-					skims.get(entry.getKey()), 
-					
+					entry.getKey(), 
 					entry.getValue())
 			.distribute(map)
 		)
@@ -178,7 +177,7 @@ class PurposeModel {
 		throw new RuntimeException("Not yet implemented");
 	}
 	
-	public Map<String,Double> distributionShares(){
+	public Map<NetworkSkim,Double> distributionShares(){
 		throw new RuntimeException("Not yet implemented");
 	}
 	

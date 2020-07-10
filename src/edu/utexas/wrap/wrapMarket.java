@@ -13,8 +13,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import edu.utexas.wrap.assignment.Assigner;
-import edu.utexas.wrap.demand.ODMatrix;
+import edu.utexas.wrap.assignment.StaticAssigner;
 import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.marketsegmentation.Market;
 import edu.utexas.wrap.net.Graph;
@@ -50,24 +49,25 @@ public class wrapMarket {
 		
 		Collection<Market> markets = getMarkets();
 		
-		Map<String,NetworkSkim> skims = getSeedSkims();
 		
-		Collection<Assigner> assigners = getAssigners();
+		
+		Collection<StaticAssigner> assigners = getAssigners();
 		int numFeedbacks = 1;
-		
 		for (int i = 0; i < numFeedbacks; i++) {
+			boolean initialIteration = i == 0;
+			
+			
 			Stream<ODProfile> stream =
 			markets.parallelStream()
-				.flatMap(market -> market.buildODs(skims));
+				.flatMap(market -> market.buildODs(initialIteration? getInitialSkims() : getUpdatedSkims(assigners)));
 			stream
 				.forEach(od -> 
 				assigners.stream().forEach(assigner -> assigner.process(od))
 				);
 
 			
-			assigners.stream().forEach(Assigner::run);
+			assigners.stream().forEach(StaticAssigner::run);
 			
-//			assigners.entrySet().parallelStream().forEach(entry -> skims.put(entry.getKey(),entry.getValue().getSkim()));
 		}
 		
 	}
@@ -105,17 +105,24 @@ public class wrapMarket {
 		return proj;
 	}
 
-	private static Collection<Assigner> getAssigners() {
-		return null;
-//		throw new RuntimeException("Not yet implemented");
+	private static Collection<StaticAssigner> getAssigners() {
+		throw new RuntimeException("Not yet implemented");
 	}
 
-	private static Map<String, NetworkSkim> getSeedSkims() {
-		return Stream.of(proj.getProperty("skimIDs").split(","))
-				.parallel()
-		.collect(Collectors.toMap(Function.identity(), id ->
-			SkimFactory.readSkimFile(Paths.get(proj.getProperty("skimDir"), id+".csv"), false, network)
-		));
+	private static Collection<NetworkSkim> getInitialSkims() {
+		throw new RuntimeException();
+//		return Stream.of(proj.getProperty("skimIDs").split(","))
+//				.parallel()
+//		.collect(
+//				Collectors.toMap(
+//						id -> TimePeriod.valueOf(id), 
+//						id -> SkimFactory.readSkimFile(Paths.get(proj.getProperty("skimDir"), id+".csv"), false, network)
+//						)
+//				);
+	}
+	
+	private static Collection<NetworkSkim> getUpdatedSkims(Collection<StaticAssigner> assigners){
+		throw new RuntimeException();
 	}
 
 	private static Collection<Market> getMarkets() {
