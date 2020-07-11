@@ -16,6 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import edu.utexas.wrap.modechoice.Mode;
+import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.CentroidConnector;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
@@ -111,7 +112,7 @@ public class GraphFactory {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public static Graph readConicGraph(File f, Integer thruNode) throws FileNotFoundException, IOException {
+	public static Graph readConicGraph(File f, Integer thruNode, Map<Integer,AreaClass> classes) throws FileNotFoundException, IOException {
 		try {
 		MessageDigest md = MessageDigest.getInstance("MD5");
 		Graph g = new Graph();
@@ -132,14 +133,14 @@ public class GraphFactory {
 
 			if (!nodes.containsKey(nodeA)) {
 				if (nodeA < thruNode) {
-					newZone(g, numZones, numNodes, nodes, nodeA);
+					newZone(g, numZones, numNodes, nodes, nodeA, classes.get(nodeA));
 				} else
 					nodes.put(nodeA, new Node(nodeA, false, numNodes.getAndIncrement()));
 			}
 
 			if (!nodes.containsKey(nodeB)) {
 				if (nodeB < thruNode) {
-					newZone(g, numZones, numNodes, nodes, nodeB);
+					newZone(g, numZones, numNodes, nodes, nodeB, classes.get(nodeB));
 				} else
 					nodes.put(nodeB, new Node(nodeB, false, numNodes.getAndIncrement()));
 
@@ -178,8 +179,6 @@ public class GraphFactory {
 			float[] tollA = new float[Mode.values().length];
 			float[] tollB = new float[Mode.values().length];
 			
-//			Map<Mode, Float> tollsA = new Object2FloatOpenHashMap<Mode>(4,1.0f);
-//			Map<Mode, Float> tollsB = new Object2FloatOpenHashMap<Mode>(4,1.0f);
 
 			tollA[Mode.SINGLE_OCC.ordinal()] = parse(args[27]);
 			tollB[Mode.SINGLE_OCC.ordinal()] = parse(args[28]);
@@ -231,9 +230,14 @@ public class GraphFactory {
 		}
 	}
 
-	private static void newZone(Graph g, AtomicInteger numZones, AtomicInteger numNodes, Map<Integer, Node> nodes, Integer nodeID) {
+	private static void newZone(Graph g, 
+			AtomicInteger numZones, 
+			AtomicInteger numNodes, 
+			Map<Integer, Node> nodes, 
+			Integer nodeID,
+			AreaClass ac) {
 		Node node = new Node(nodeID, true, numNodes.getAndIncrement());
-		TravelSurveyZone tsz = new TravelSurveyZone(node,numZones.getAndIncrement(),null);
+		TravelSurveyZone tsz = new TravelSurveyZone(node,numZones.getAndIncrement(),ac);
 		node.setTravelSurveyZone(tsz);
 		g.addZone(tsz);
 		nodes.put(nodeID, node);

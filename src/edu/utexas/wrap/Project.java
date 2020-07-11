@@ -1,18 +1,20 @@
 package edu.utexas.wrap;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import edu.utexas.wrap.assignment.Assigner;
 import edu.utexas.wrap.marketsegmentation.Market;
+import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.util.io.GraphFactory;
@@ -33,13 +35,24 @@ public class Project {
 	
 	public Graph getNetwork() {
 		try {
-			File netFile = Paths.get(props.getProperty("network.file")).toFile();
+			File linkFile = projDir.resolve(props.getProperty("network.links")).toFile();
 
-			switch(props.getProperty("network.type")) {
+			switch(props.getProperty("network.linkType")) {
 
 			case "conic":
+				
+				BufferedReader reader = Files.newBufferedReader(projDir.resolve(props.getProperty("network.zones")));
+				
+				reader.readLine();
+				
+				Map<Integer, AreaClass> zoneClasses = reader.lines()
+				.map(string -> string.split(","))
+				.collect(Collectors.toMap(
+						args -> Integer.parseInt(args[0]), 
+						args -> AreaClass.values()[Integer.parseInt(args[1])-1]));
+				
 				Integer ftn = Integer.parseInt(props.getProperty("network.firstThruNode"));
-				return GraphFactory.readConicGraph(netFile, ftn);
+				return GraphFactory.readConicGraph(linkFile, ftn, zoneClasses);
 				
 			case "bpr":
 				//TODO
@@ -50,7 +63,7 @@ public class Project {
 			}
 			
 		} catch (NullPointerException e) {
-			System.err.println("Missing property: network.file");
+			System.err.println("Missing property: network.linkFile");
 			System.exit(-2);
 			return null;
 			
@@ -62,13 +75,14 @@ public class Project {
 			
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
-			System.err.println("Invalid property value: network.file\r\nFile not found");
+			System.err.println("Invalid property value: network.linkFile\r\nFile not found");
+			e.printStackTrace();
 			System.exit(-4);
 			return null;
 			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
-			System.err.println("Error while reading network file");
+			System.err.println("Error while reading network files");
 			System.exit(-5);
 			return null;
 			

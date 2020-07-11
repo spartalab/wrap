@@ -4,12 +4,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Properties;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import edu.utexas.wrap.demand.ODProfile;
-import edu.utexas.wrap.net.DefaultDemographic;
+import edu.utexas.wrap.net.BasicDemographic;
 import edu.utexas.wrap.net.Demographic;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.NetworkSkim;
@@ -26,7 +28,7 @@ public class Market {
 		Path directory = marketFile.getParent().resolve(props.getProperty("dir"));
 		this.network = network;
 		
-		Collection<Demographic> demographics = getDemographics(directory);
+		Map<String,Demographic> demographics = getDemographics(directory);
 		purposes = getPurposes(directory,demographics);
 		
 	}
@@ -36,14 +38,14 @@ public class Market {
 		return purposes.parallelStream().flatMap(purpose -> purpose.buildODs(skims));
 	}
 	
-	private Collection<Purpose> getPurposes(Path directory, Collection<Demographic> demographics) throws IOException {
+	private Collection<Purpose> getPurposes(Path directory, Map<String,Demographic> demographics) throws IOException {
 		return Stream.of(props.getProperty("purposes.ids").split(","))
 				.map(name -> directory.resolve(props.getProperty("purposes."+name+".file")))
-				.map(path -> {
+				.map(purposeFile -> {
 					try {
-						return new Purpose(path, network);
+						return new Purpose(purposeFile, network, demographics);
 					} catch (IOException e) {
-						System.err.println("Error while reading purpose file: "+path);
+						System.err.println("Error while reading purpose file: "+purposeFile);
 						return null;
 					}
 				})
@@ -51,18 +53,17 @@ public class Market {
 				.collect(Collectors.toSet());
 	}
 	
-	private Collection<Demographic> getDemographics(Path directory){
+	private Map<String,Demographic> getDemographics(Path directory){
 		return Stream.of(props.getProperty("demographics.ids").split(","))
-		.map(name -> directory.resolve(props.getProperty("demographics."+name+".file")))
-		.map(path -> {
+		.collect(Collectors.toMap(Function.identity(), 
+				name -> {
 			try {
-				return new DefaultDemographic(path);
+				return new BasicDemographic(directory.resolve(props.getProperty("demographics."+name+".file")), network);
 			} catch (IOException e) {
-				System.err.println("Error while reading demographic file: "+path);
+				System.err.println("Error while reading demographic file: "+name);
 				return null;
 			}
-		})
-		.collect(Collectors.toSet());
+		}));
 	}
 	
 }
