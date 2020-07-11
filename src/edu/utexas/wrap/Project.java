@@ -3,6 +3,7 @@ package edu.utexas.wrap;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
@@ -21,48 +22,73 @@ public class Project {
 	private Graph network;
 	private Path projDir;
 	
-	public Project(Properties propertiesFile, Path directory) {
-		props = propertiesFile;
-		projDir = directory;
+	public Project(Path projFile) throws IOException {
+		props = new Properties();
+		props.load(Files.newInputStream(projFile));
+		
+		projDir = projFile.getParent();
+		
 		network = getNetwork();
 	}
 	
 	public Graph getNetwork() {
 		try {
 			File netFile = Paths.get(props.getProperty("network.file")).toFile();
-			Integer ftn = Integer.parseInt(props.getProperty("network.firstThruNode"));
-			return GraphFactory.readConicGraph(netFile, ftn);
+
+			switch(props.getProperty("network.type")) {
+
+			case "conic":
+				Integer ftn = Integer.parseInt(props.getProperty("network.firstThruNode"));
+				return GraphFactory.readConicGraph(netFile, ftn);
+				
+			case "bpr":
+				//TODO
+				throw new RuntimeException("Not yet implemented");
+				
+			default:
+				throw new IllegalArgumentException("network.type");
+			}
+			
 		} catch (NullPointerException e) {
 			System.err.println("Missing property: network.file");
 			System.exit(-2);
 			return null;
+			
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
 			System.err.println("Invalid property value: network.firstThruNode\r\nCould not parse integer");
 			System.exit(-3);
 			return null;
+			
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			System.err.println("Invalid property value: network.file\r\nFile not found");
 			System.exit(-4);
 			return null;
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			System.err.println("Error while reading network file");
 			System.exit(-5);
 			return null;
+			
+		} catch (IllegalArgumentException e) {
+			System.err.println("Illegal argument: "+e.getMessage());
+			System.exit(-6);
+			return null;
 		}
+		
 	}
 
 	public Collection<Market> getMarkets(){
-		String projNames = props.getProperty("markets");
+		String projNames = props.getProperty("markets.ids");
 		if (projNames == null) 
 			throw new RuntimeException("No markets specified in project properties. Define at least one market");
 		else return 
 				Stream.of(projNames.split(","))
 				.map(name -> {
 					try {
-						return new Market(projDir.resolve(name), network);
+						return new Market(projDir.resolve(props.getProperty("markets."+name+".file")), network);
 					} catch (IOException e) {
 						System.err.println("Could not load trip purposes for "+name);
 						e.printStackTrace();

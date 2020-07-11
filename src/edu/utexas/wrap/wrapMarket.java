@@ -1,11 +1,9 @@
 package edu.utexas.wrap;
 
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.Properties;
 import java.util.stream.Stream;
 
 import edu.utexas.wrap.assignment.Assigner;
@@ -17,23 +15,26 @@ public class wrapMarket {
 	static Project proj;
 	
 	public static void main(String[] args) {
-		//Get the name of the market source
-		if (args.length < 2) {
+		//Get a path to the project file (a Properties file of arbitrary extension)
+		if (args.length < 1) {
 			System.err.println("No model input file supplied");
 			System.exit(1);
 		}
-		projDir = Paths.get(args[0]);
-		projFile = projDir.resolve(args[1]);
+		projFile = Paths.get(args[0]);
 		
 		
+		//Load the project from the given path
 		try {
-			proj = new Project(getProjectProperties(projFile),projDir);
+			proj = new Project(projFile);
 		} catch (IOException e) {
 			System.err.println("Error loading project properties");
 			e.printStackTrace();
 			proj = null;
 			System.exit(-1);
 		}
+		
+		
+		
 		
 		
 		Collection<Market> markets = proj.getMarkets();
@@ -59,13 +60,5 @@ public class wrapMarket {
 			assigners.stream().forEach(Assigner::run);
 			
 		}
-		
 	}
-
-	private static Properties getProjectProperties(Path projFile) throws IOException {
-		Properties proj = new Properties();
-		proj.load(Files.newInputStream(projFile));
-		return proj;
-	}
-
 }
