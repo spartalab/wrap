@@ -23,17 +23,35 @@ public class FixedSizeODMatrix<T extends DemandMap> implements ODMatrix {
 		this.demandMaps = new DemandMap[graph.numZones()];
 	}
 
-	public FixedSizeODMatrix(Float vot, Mode mode, ODMatrix od) {
+	//Matrix multiplier constructor
+	public FixedSizeODMatrix(Float vot, Mode mode, ODMatrix od, float multiplier) {
 		this(vot,mode, od.getGraph());
 		
 		graph.getTSZs().forEach(origin -> {
 			FixedSizeDemandMap dm = new FixedSizeDemandMap(graph);
 			
-			graph.getTSZs().forEach(destination -> dm.put(destination, od.getDemand(origin, destination)));
+			graph.getTSZs().forEach(destination -> dm.put(destination, multiplier*od.getDemand(origin, destination)));
 			
 			demandMaps[origin.getOrder()] = dm;
 		});
 		
+	}
+	
+	public FixedSizeODMatrix(Float vot, Mode mode, ODMatrix od) {
+		this(vot,mode,od,1.0f);
+	}
+	
+	//Matrix adder constructor
+	public FixedSizeODMatrix(Float vot, Mode mode, ODMatrix od1, ODMatrix od2) {
+		this(vot, mode, od1.getGraph());
+		
+		graph.getTSZs().forEach(origin -> {
+			FixedSizeDemandMap dm = new FixedSizeDemandMap(graph);
+			
+			graph.getTSZs().forEach(destination -> dm.put(destination, od1.getDemand(origin, destination) + od2.getDemand(origin, destination)));
+			
+			demandMaps[origin.getOrder()] = dm;
+		});
 	}
 
 	@Override

@@ -38,7 +38,6 @@ public class Purpose {
 	PurposeModel model;
 
 	public Purpose(Path purposeFile, Graph network) throws IOException {
-		// TODO Auto-generated constructor stub
 		model = new PurposeModel(purposeFile, network);
 	}
 
@@ -57,7 +56,7 @@ public class Purpose {
 					modalPAMtxs	= chooseModes(aggPAMtx);
 		
 		Stream<ODProfile>
-					odProfiles		= convertToOD(modalPAMtxs);
+					odProfiles	= convertToOD(modalPAMtxs);
 		
 		return odProfiles;
 	}
@@ -67,7 +66,7 @@ public class Purpose {
 		//One daily ODMatrix per mode
 		Stream<ODMatrix> dailyODs = new PassengerVehicleTripConverter().convert(modalPAMtxs);
 		
-		//One OD profile (consisting of multiple TimePeriods' ODMatrices) per mode
+		//One ODProfile (consisting of multiple TimePeriods' ODMatrices) per mode
 		Stream<ODProfile> temporalODs = new TimeOfDaySplitter(
 				model.departureRates(),
 				model.arrivalRates())
@@ -112,6 +111,13 @@ public class Purpose {
 	}
 
 }
+
+
+
+
+
+
+
 
 class PurposeModel {
 	
@@ -177,23 +183,23 @@ class PurposeModel {
 		throw new RuntimeException("Not yet implemented");
 	}
 	
-	public Map<NetworkSkim,Double> distributionShares(){
+	public Map<NetworkSkim,Float> distributionShares(){
 		throw new RuntimeException("Not yet implemented");
 	}
 	
-	public TripDistributor distributor(NetworkSkim skim, Double multiplier) {
+	public TripDistributor distributor(NetworkSkim skim, Float multiplier) {
 		throw new RuntimeException("Not yet inmplemented");
 	}
 	
-	public Map<Mode,Double> modeShares(){
+	public Map<Mode,Float> modeShares(){
 		throw new RuntimeException("Not yet implemented");
 	}
 	
-	public Map<TimePeriod,Double> departureRates(){
+	public Map<TimePeriod,Float> departureRates(){
 		throw new RuntimeException("Not yet implemented");
 	}
 	
-	public Map<TimePeriod,Double> arrivalRates(){
+	public Map<TimePeriod,Float> arrivalRates(){
 		throw new RuntimeException("Not yet implemented");
 	}
 }

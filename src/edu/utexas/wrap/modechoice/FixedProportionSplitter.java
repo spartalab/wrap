@@ -17,9 +17,9 @@ import edu.utexas.wrap.demand.ModalPAMatrix;
  */
 public class FixedProportionSplitter implements TripInterchangeSplitter {
 
-	private Map<Mode, Double> map;
+	private Map<Mode, Float> map;
 
-	public FixedProportionSplitter(Map<Mode, Double> map) {
+	public FixedProportionSplitter(Map<Mode, Float> map) {
 		this.map = map;
 	}
 
@@ -33,8 +33,9 @@ public class FixedProportionSplitter implements TripInterchangeSplitter {
 	 */
 	@Override
 	public Stream<ModalPAMatrix> split(AggregatePAMatrix aggregate) {
-		return map.entrySet().parallelStream().filter(entry -> entry.getValue() > 0).map(entry ->
-			new ModalFixedMultiplierPassthroughMatrix(entry.getKey(),entry.getValue(),aggregate)
+		return map.entrySet().parallelStream()
+				.filter(entry -> entry.getValue() > 0)
+				.map(entry -> new ModalFixedMultiplierPassthroughMatrix(entry.getKey(),entry.getValue(),aggregate)
 		);
 	}
 }
