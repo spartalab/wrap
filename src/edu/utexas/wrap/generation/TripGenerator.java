@@ -2,9 +2,9 @@ package edu.utexas.wrap.generation;
 
 
 import edu.utexas.wrap.demand.DemandMap;
-import edu.utexas.wrap.marketsegmentation.MarketSubsegment;
+import edu.utexas.wrap.net.Demographic;
 
 public interface TripGenerator {
 	
-	public DemandMap generate(MarketSubsegment segment);
+	public DemandMap generate(Demographic attractionDemographic);
 }

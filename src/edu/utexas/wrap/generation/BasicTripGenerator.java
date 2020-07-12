@@ -1,30 +1,35 @@
 package edu.utexas.wrap.generation;
 
-import java.util.Map;
+import java.util.stream.IntStream;
 
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
-import edu.utexas.wrap.marketsegmentation.MarketSegment;
-import edu.utexas.wrap.marketsegmentation.MarketSubsegment;
-import edu.utexas.wrap.net.AreaClass;
+import edu.utexas.wrap.net.Demographic;
 import edu.utexas.wrap.net.Graph;
 
 public class BasicTripGenerator implements TripGenerator {
 	protected Graph g;
-	private Map<MarketSubsegment, GenerationRate> rates;
+	private GenerationRate[] rates;
 	
-	public BasicTripGenerator(Graph graph, Map<MarketSubsegment, GenerationRate> map) {
+	public BasicTripGenerator(Graph graph, GenerationRate[] generationRates) {
 		g = graph;
-		rates = map;
+		rates = generationRates;
 	}
 	
-	public DemandMap generate(MarketSubsegment segment){
-		GenerationRate rate = rates.get(segment);
+	public DemandMap generate(Demographic demographic){
 		DemandMap ret = new FixedSizeDemandMap(g);
-		g.getTSZs().parallelStream().forEach(	//For each TSZ in parallel,
-				 tsz ->	//the TSZ maps to a value:
-					//The data rate for this market segment times the market segment's value for this TSZ
-						ret.put(tsz, (float) (rate.getRate(tsz)*segment.attributeDataGetter().applyAsDouble(tsz))));
+
+		g.getTSZs().stream()
+		.forEach(tsz -> {
+			ret.put(tsz, 
+					(float) IntStream.range(0, rates.length)
+					.mapToDouble(
+							category -> rates[category].getRate(tsz) * demographic.valueFor(tsz)[category]
+							)
+					.sum()
+					);
+		});
+		
 		return ret;
 	}
 	
