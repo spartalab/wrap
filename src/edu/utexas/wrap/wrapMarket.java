@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
-import java.util.stream.Stream;
+import java.util.Map;
 
 import edu.utexas.wrap.assignment.Assigner;
-import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.marketsegmentation.Market;
+import edu.utexas.wrap.net.NetworkSkim;
 
 public class wrapMarket {
 	static Path projDir, projFile;
@@ -43,18 +43,17 @@ public class wrapMarket {
 		
 		int numFeedbacks = 1;
 		for (int i = 0; i < numFeedbacks; i++) {
-			boolean initialIteration = i == 0;
 			
+			//Update skims and redistribute
+			Map<String,NetworkSkim> skims = i == 0? proj.getInitialSkims() : proj.getFeedbackSkims(assigners);
+			markets.parallelStream().forEach(market -> market.updateSkims(skims));
 			
-			Stream<ODProfile> stream =
 			markets.parallelStream()
-				.flatMap(market -> market.buildODs(initialIteration? proj.getInitialSkims() : proj.getFeedbackSkims(assigners)));
-			
-			
-			stream
-				.forEach(od -> 
-				assigners.stream().forEach(assigner -> assigner.process(od))
-				);
+			.flatMap(market -> market.getODProfiles())
+			.forEach(
+					od -> 
+					assigners.stream().forEach(assigner -> assigner.process(od))
+					);
 
 			
 			assigners.stream().forEach(Assigner::run);

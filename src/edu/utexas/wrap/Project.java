@@ -116,7 +116,7 @@ public class Project {
 		throw new RuntimeException("Not yet implemented");
 	}
 	
-	public Collection<NetworkSkim> getInitialSkims(){
+	public Map<String,NetworkSkim> getInitialSkims(){
 		throw new RuntimeException("Not yet implemented");
 //		return Stream.of(props.getProperty("skimIDs").split(","))
 //				.parallel()
@@ -128,7 +128,7 @@ public class Project {
 //						);
 	}
 	
-	public Collection<NetworkSkim> getFeedbackSkims(Collection<Assigner> assigners){
+	public Map<String,NetworkSkim> getFeedbackSkims(Collection<Assigner> assigners){
 		throw new RuntimeException("Not yet implemented");
 	}
 }
