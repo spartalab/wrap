@@ -22,6 +22,7 @@ public class SegmentedODProfile implements ODProfile {
 			) {
 		mode = dailyDepartures.getMode();
 		matrices = Stream.of(TimePeriod.values())
+				.filter(tp -> departureRates.containsKey(tp) || arrivalRates.containsKey(tp))
 				.collect(
 						Collectors.toMap(
 								Function.identity(),
@@ -32,13 +33,13 @@ public class SegmentedODProfile implements ODProfile {
 												dailyDepartures.getVOT(),
 												dailyDepartures.getMode(),
 												dailyDepartures,
-												departureRates.get(tp)
+												departureRates.getOrDefault(tp,0.0f)
 												),
 										new FixedSizeODMatrix<FixedSizeDemandMap>(
 												dailyArrivals.getVOT(),
 												dailyArrivals.getMode(),
 												dailyArrivals,
-												arrivalRates.get(tp)
+												arrivalRates.getOrDefault(tp,0.0f)
 												)
 										)
 								)
