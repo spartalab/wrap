@@ -9,11 +9,9 @@ import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class PAPassthroughMap implements PAMap {
-	private Graph g;
 	private DemandMap prods, attrs;
 	
-	public PAPassthroughMap(Graph g, DemandMap productions, DemandMap attractions) {
-		this.g = g;
+	public PAPassthroughMap(DemandMap productions, DemandMap attractions) {
 		prods = productions;
 		attrs = attractions;
 	}
@@ -40,7 +38,7 @@ public class PAPassthroughMap implements PAMap {
 
 	@Override
 	public Graph getGraph() {
-		return g;
+		return prods.getGraph();
 	}
 
 	@Override

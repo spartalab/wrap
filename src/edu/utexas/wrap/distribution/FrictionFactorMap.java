@@ -10,6 +10,6 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  */
 public interface FrictionFactorMap {
 
-	public Float get(TravelSurveyZone i, TravelSurveyZone z);
+	public Float get(TravelSurveyZone i, TravelSurveyZone z, float skimCost);
 
 }

@@ -3,7 +3,6 @@ package edu.utexas.wrap.marketsegmentation;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
@@ -11,11 +10,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import edu.utexas.wrap.TimePeriod;
+import edu.utexas.wrap.balancing.Attr2ProdProportionalBalancer;
+import edu.utexas.wrap.balancing.Prod2AttrProportionalBalancer;
 import edu.utexas.wrap.balancing.TripBalancer;
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.AggregatePAMatrixProvider;
 import edu.utexas.wrap.demand.DailyODMatrixProvider;
-import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.ModalPAMatrixProvider;
 import edu.utexas.wrap.demand.ODMatrix;
@@ -23,10 +23,13 @@ import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.demand.ODProfileProvider;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.PAMapProvider;
-import edu.utexas.wrap.demand.containers.FixedMultiplierPassthroughPAMap;
-import edu.utexas.wrap.demand.containers.FixedSizePAMap;
+import edu.utexas.wrap.demand.containers.AggregateFixedMultiplierPassthroughMatrix;
+import edu.utexas.wrap.demand.containers.PAPassthroughMap;
+import edu.utexas.wrap.distribution.FrictionFactorMap;
+import edu.utexas.wrap.distribution.GravityDistributor;
 import edu.utexas.wrap.distribution.TripDistributor;
 import edu.utexas.wrap.generation.BasicTripGenerator;
+import edu.utexas.wrap.generation.AreaClassGenerationRate;
 import edu.utexas.wrap.generation.GeneralGenerationRate;
 import edu.utexas.wrap.generation.GenerationRate;
 import edu.utexas.wrap.generation.TripGenerator;
@@ -51,14 +54,22 @@ public interface Purpose extends
 class BasicPurpose implements Purpose {
 	
 	private final Properties properties;
+	
 	private final Graph network;
 	private final PAMap paMap;
+	private final Map<String,FrictionFactorMap> frictFacts;
 	
 	private Map<String,NetworkSkim> skims;
-	
-	public BasicPurpose(Path purposeFile, Graph network, Map<String,Demographic> demographics) throws IOException {
+
+	public BasicPurpose(
+			Path purposeFile, 
+			Graph network, 
+			Map<String,Demographic> demographics,
+			Map<String,FrictionFactorMap> frictFacts
+			) throws IOException {
 
 		this.network = network;
+		this.frictFacts = frictFacts;
 
 		properties = new Properties();
 		properties.load(Files.newInputStream(purposeFile));
@@ -74,13 +85,19 @@ class BasicPurpose implements Purpose {
 
 		
 		paMap = balancer().balance(
-				new FixedSizePAMap(
+				new PAPassthroughMap(
 						producer.generate(productionDemographic),
 						attractor.generate(attractionDemographic)
 						)
 				);
+		
+//		throw new RuntimeException("Derail: Didn't assign the purpose directory yet");
+
+		
 	}
 
+	
+	
 	private TripGenerator productionGenerator() {
 		switch (properties.getProperty("prodGenerator")) {
 		case "basic":
@@ -93,7 +110,27 @@ class BasicPurpose implements Purpose {
 	}
 	
 	private GenerationRate[] productionRates() {
-		throw new RuntimeException("Not yet implemented"); 
+		switch (properties.getProperty("prodType")) {
+		
+		case "basic":
+			return Stream.of(properties.getProperty("prodRate").split(","))
+			.map(arg -> Float.parseFloat(arg))
+			.map(flt -> new GeneralGenerationRate(flt))
+			.toArray(GenerationRate[]::new);
+			
+		case "area":
+			return Stream.of(IndustryClass.values())
+			.map(ic ->
+				Stream.of(properties.getProperty("prodRate."+ic.toString()).split(","))
+				.mapToDouble(Double::parseDouble)
+				.toArray()
+			)
+			.map(AreaClassGenerationRate::new)
+			.toArray(GenerationRate[]::new);
+			
+		default:
+			throw new RuntimeException("Not yet implemented"); 
+		}
 	}
 	
 	
@@ -108,22 +145,66 @@ class BasicPurpose implements Purpose {
 		}	}
 	
 	private GenerationRate[] attractionRates() {
-		throw new RuntimeException("Not yet implemented");
+		switch (properties.getProperty("attrType")) {
+		
+		case "basic":
+			return Stream.of(properties.getProperty("attrRate").split(","))
+			.map(arg -> Float.parseFloat(arg))
+			.map(flt -> new GeneralGenerationRate(flt))
+			.toArray(GenerationRate[]::new);
+			
+		case "area":
+			return Stream.of(IndustryClass.values())
+			.map(ic ->
+				Stream.of(properties.getProperty("attrRate."+ic.toString()).split(","))
+				.mapToDouble(Double::parseDouble)
+				.toArray()
+			)
+			.map(AreaClassGenerationRate::new)
+			.toArray(GenerationRate[]::new);
+			
+		default:
+			throw new RuntimeException("Not yet implemented"); 
+		}
 	}
 	
 	
 	private TripBalancer balancer() {
-		throw new RuntimeException("Not yet implemented");
+		switch (properties.getProperty("balancer.class")) {
+		
+		case "prodProportional":
+			return new Prod2AttrProportionalBalancer(null);
+		
+		case "attrProportional":
+			return new Attr2ProdProportionalBalancer();
+		
+		default:
+			throw new RuntimeException("Not yet implemented");
+		}
+		
 	}
 	
 	
+	
+	private FrictionFactorMap frictionFactors(String skimID) {
+		return frictFacts.get(skimID);
+	}
 	
 	private Map<String,Float> distributionShares(){
-		throw new RuntimeException("Not yet implemented");
+		return Stream.of(properties.getProperty("distrib.ids").split(","))
+		.collect(
+				Collectors.toMap(
+						Function.identity(), 
+						id -> Float.parseFloat(properties.getProperty("distrib."+id+".split"))
+						)
+				);
 	}
 	
-	private TripDistributor distributor(String skim, Float multiplier) {
-		throw new RuntimeException("Not yet inmplemented");
+	private TripDistributor distributor(String skimID) {
+		return new GravityDistributor(
+				network, 
+				skims.get(skimID), 
+				frictionFactors(properties.getProperty("distrib."+skimID+".frictFacts")));
 	}
 	
 	
@@ -195,14 +276,13 @@ class BasicPurpose implements Purpose {
 	@Override
 	public AggregatePAMatrix getAggregatePAMatrix() {
 		return distributionShares().entrySet().parallelStream()
-		.map(entry -> 
-			
-			distributor(
-					entry.getKey(), 
-					entry.getValue())
-			.distribute(getPAMap())
-		)
-		.collect(new AggregatePAMatrixCollector());
+				.map(
+						entry -> new AggregateFixedMultiplierPassthroughMatrix(
+								distributor(entry.getKey()).distribute(getPAMap()),
+								entry.getValue())
+						)
+				.collect(new AggregatePAMatrixCollector());
+
 	}
 
 	@Override

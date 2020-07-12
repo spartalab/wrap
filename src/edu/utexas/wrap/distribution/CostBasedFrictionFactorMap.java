@@ -2,7 +2,6 @@ package edu.utexas.wrap.distribution;
 
 import java.util.NavigableMap;
 
-import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**A friction factor map that depends on a cost skim and
@@ -16,23 +15,21 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  */
 public class CostBasedFrictionFactorMap implements FrictionFactorMap {
 
-	private NetworkSkim travelCosts;
 	private NavigableMap<Integer, Float> costFactors;
 
 
-	public CostBasedFrictionFactorMap(NetworkSkim skim, NavigableMap<Integer, Float> factors) {
-		travelCosts = skim;
+	public CostBasedFrictionFactorMap(NavigableMap<Integer, Float> factors) {
 		costFactors = factors;
 	}
 	
 	@Override
-	public Float get(TravelSurveyZone producer, TravelSurveyZone attractor) {
-		Float cost = travelCosts.getCost(producer, attractor);
-		if (cost < 0) throw new RuntimeException("Negative travel cost");
+	public Float get(TravelSurveyZone producer, TravelSurveyZone attractor, float skimCost) {
+//		Float cost = travelCosts.getCost(producer, attractor);
+		if (skimCost < 0) throw new RuntimeException("Negative travel cost");
 		
 		//Get the nearest costFactors to this cost
-		Integer lowerBd = costFactors.floorKey((int) Math.floor(cost));
-		Integer upperBd = costFactors.ceilingKey((int) Math.ceil(cost));
+		Integer lowerBd = costFactors.floorKey((int) Math.floor(skimCost));
+		Integer upperBd = costFactors.ceilingKey((int) Math.ceil(skimCost));
 		Float c;
 		
 		//Handle boundary cases
@@ -48,7 +45,7 @@ public class CostBasedFrictionFactorMap implements FrictionFactorMap {
 		}
 		
 		//Otherwise, linearly interpolate between the two
-		Float pct = (cost - lowerBd)/(upperBd - lowerBd);
+		Float pct = (skimCost - lowerBd)/(upperBd - lowerBd);
 		
 		 c = pct*costFactors.get(upperBd) + (1-pct)*costFactors.get(lowerBd);
 		if (c.isNaN()) throw new RuntimeException();

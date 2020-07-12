@@ -12,10 +12,12 @@ import java.util.stream.Stream;
 
 import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.demand.ODProfileProvider;
+import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.net.BasicDemographic;
 import edu.utexas.wrap.net.Demographic;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.NetworkSkim;
+import edu.utexas.wrap.util.io.FrictionFactorFactory;
 
 public class Market implements ODProfileProvider {
 	private Properties props;
@@ -29,8 +31,7 @@ public class Market implements ODProfileProvider {
 		Path directory = marketFile.getParent().resolve(props.getProperty("dir"));
 		this.network = network;
 		
-		Map<String,Demographic> demographics = getDemographics(directory);
-		purposes = getPurposes(directory,demographics);
+		purposes = getPurposes(directory, getDemographics(directory), getFrictionFactors(directory));
 		
 	}
 	
@@ -38,16 +39,21 @@ public class Market implements ODProfileProvider {
 		purposes.stream().forEach(purpose -> purpose.updateSkims(skims));
 	}
 	
-	public Stream<ODProfile> getODProfiles(){
+	public Stream<ODProfile> getODProfiles() {
 		return purposes.stream().flatMap(Purpose::getODProfiles);
 	}
 	
-	private Collection<BasicPurpose> getPurposes(Path directory, Map<String,Demographic> demographics) throws IOException {
+	private Collection<BasicPurpose> getPurposes(
+			Path directory,
+			Map<String,Demographic> demographics, 
+			Map<String,FrictionFactorMap> frictFacts
+			) throws IOException {
+		
 		return Stream.of(props.getProperty("purposes.ids").split(","))
 				.map(name -> directory.resolve(props.getProperty("purposes."+name+".file")))
 				.map(purposeFile -> {
 					try {
-						return new BasicPurpose(purposeFile, network, demographics);
+						return new BasicPurpose(purposeFile, network, demographics, frictFacts);
 					} catch (IOException e) {
 						System.err.println("Error while reading purpose file: "+purposeFile);
 						return null;
@@ -57,7 +63,7 @@ public class Market implements ODProfileProvider {
 				.collect(Collectors.toSet());
 	}
 	
-	private Map<String,Demographic> getDemographics(Path directory){
+	private Map<String,Demographic> getDemographics(Path directory) {
 		return Stream.of(props.getProperty("demographics.ids").split(","))
 				.collect(
 						Collectors.toMap(
@@ -72,6 +78,23 @@ public class Market implements ODProfileProvider {
 									}
 								})
 						);
+	}
+	
+	private Map<String,FrictionFactorMap> getFrictionFactors(Path directory) {
+		return Stream.of(props.getProperty("frictFacts.ids").split(","))
+		.collect(
+				Collectors.toMap(
+						Function.identity(), 
+						id -> 
+						FrictionFactorFactory.readFactorFile(
+								directory.resolve(
+										props.getProperty("frictFacts."+id+".file")
+										)
+								)
+						)
+				)
+		;
+
 	}
 
 }

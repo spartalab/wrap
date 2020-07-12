@@ -8,6 +8,7 @@ import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
 import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**A trip distribution class that uses the traditional gravity
@@ -22,12 +23,14 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  *
  */
 public class GravityDistributor extends TripDistributor {
-	private FrictionFactorMap friction;
-	private Graph g;
+	private final NetworkSkim skim;
+	private final FrictionFactorMap friction;
+	private final Graph g;
 
-	public GravityDistributor(Graph g, FrictionFactorMap fm) {
+	public GravityDistributor(Graph g, NetworkSkim skim, FrictionFactorMap fm) {
 		this.g = g;
 		friction = fm;
+		this.skim = skim;
 	}
 	
 	@Override
@@ -54,7 +57,7 @@ public class GravityDistributor extends TripDistributor {
 						.mapToDouble(x -> 
 //						b.getOrDefault(x, 1.0)
 						b1[x.getOrder()] == null? 1.0 : b1[x.getOrder()]
-						*pa.getAttractions(x)*friction.get(i,x)).sum();
+						*pa.getAttractions(x)*friction.get(i,x,skim.getCost(i, x))).sum();
 				//Check for errors
 				if (denom == 0.0 || denom.isNaN()) throw new RuntimeException();
 				//If no A value exists yet or this is not within the numerical tolerance of the previous value
@@ -73,7 +76,7 @@ public class GravityDistributor extends TripDistributor {
 						.mapToDouble(x-> 
 //						a.getOrDefault(x, 1.0)
 						a1[x.getOrder()] == null? 1.0 : a1[x.getOrder()]
-						*pa.getProductions(x)*friction.get(x,j)).sum();
+						*pa.getProductions(x)*friction.get(x,j,skim.getCost(x, j))).sum();
 				//Check for errors
 				if (denom == 0.0 || denom.isNaN()) throw new RuntimeException();
 				//If no B value exists yet or this is not within the numerical tolerance of the previous value
@@ -103,7 +106,7 @@ public class GravityDistributor extends TripDistributor {
 //						*b.get(attractor)
 						*b1[attractor.getOrder()]
 						*pa.getAttractions(attractor)
-						*friction.get(producer, attractor);
+						*friction.get(producer, attractor, skim.getCost(producer, attractor));
 				//Check for errors
 				if (Tij.isNaN()) throw new RuntimeException();
 				//Store this value as the number of trips in the DemandMap
