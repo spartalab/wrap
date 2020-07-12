@@ -8,9 +8,11 @@ import java.util.stream.Stream;
 import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.ODProfile;
+import edu.utexas.wrap.modechoice.Mode;
 
 public class SegmentedODProfile implements ODProfile {
-	Map<TimePeriod,ODMatrix> matrices;
+	private Map<TimePeriod,ODMatrix> matrices;
+	private Mode mode;
 
 	public SegmentedODProfile(
 			ODMatrix dailyDepartures,
@@ -18,6 +20,7 @@ public class SegmentedODProfile implements ODProfile {
 			ODMatrix dailyArrivals,
 			Map<TimePeriod,Float> arrivalRates
 			) {
+		mode = dailyDepartures.getMode();
 		matrices = Stream.of(TimePeriod.values())
 				.collect(
 						Collectors.toMap(
@@ -47,4 +50,8 @@ public class SegmentedODProfile implements ODProfile {
 		return matrices.get(period);
 	}
 
+	@Override
+	public Mode getMode() {
+		return mode;
+	}
 }
