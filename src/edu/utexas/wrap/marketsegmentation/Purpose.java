@@ -46,8 +46,6 @@ public interface Purpose extends
 							ModalPAMatrixProvider, 
 							AggregatePAMatrixProvider, 
 							PAMapProvider {
-
-							
 };
 
 class BasicPurpose implements Purpose {
@@ -128,8 +126,10 @@ class BasicPurpose implements Purpose {
 		throw new RuntimeException("Not yet inmplemented");
 	}
 	
+	
+	
 	private Map<Mode,Float> modeShares(){
-		Stream.of(Mode.values())
+		return Stream.of(Mode.values())
 		.filter(mode -> properties.containsKey("modeChoice.proportion."+mode.toString()))
 		.collect(
 				Collectors.toMap(
@@ -137,7 +137,6 @@ class BasicPurpose implements Purpose {
 						mode -> Float.parseFloat("modeChoice.proportion."+mode.toString())
 						)
 				);
-		throw new RuntimeException("Not yet implemented");
 	}
 	
 	private TripInterchangeSplitter modeSplitter() {
@@ -145,9 +144,13 @@ class BasicPurpose implements Purpose {
 		return new FixedProportionSplitter(modeShares());
 	}
 	
+	
+	
 	private PassengerVehicleTripConverter vehicleConverter() {
 		return new PassengerVehicleTripConverter();
 	}
+	
+	
 	
 	private Map<TimePeriod,Float> departureRates(){
 		return Stream.of(TimePeriod.values())
