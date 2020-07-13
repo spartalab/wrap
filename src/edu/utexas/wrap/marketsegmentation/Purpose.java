@@ -224,25 +224,26 @@ class BasicPurpose implements Purpose {
 	
 	
 	private PassengerVehicleTripConverter vehicleConverter() {
-		return new PassengerVehicleTripConverter();
+		return new PassengerVehicleTripConverter(getVOT());
 	}
 	
 	
 	
 	private Map<TimePeriod,Float> departureRates(){
 		return Stream.of(TimePeriod.values())
-				.filter(tp -> properties.containsKey(tp.toString()))
+				.filter(tp -> properties.containsKey("depRate."+tp.toString()))
 				.collect(
 						Collectors.toMap(
 								Function.identity(),
 								tp -> Float.parseFloat(properties.getProperty("depRate."+tp.toString()))
 								)
 						);
+//		return ret;
 	}
 
 	private Map<TimePeriod,Float> arrivalRates(){
 		return Stream.of(TimePeriod.values())
-				.filter(tp -> properties.containsKey(tp.toString()))
+				.filter(tp -> properties.containsKey("arrRate."+tp.toString()))
 				.collect(
 						Collectors.toMap(
 								Function.identity(), 
@@ -293,5 +294,9 @@ class BasicPurpose implements Purpose {
 
 	public void updateSkims(Map<String,NetworkSkim> skims) {
 		this.skims = skims;
+	}
+	
+	private float getVOT() {
+		return Float.parseFloat(properties.getProperty("vot"));
 	}
 }

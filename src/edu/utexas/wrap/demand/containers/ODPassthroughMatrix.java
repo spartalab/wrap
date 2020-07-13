@@ -18,6 +18,11 @@ public class ODPassthroughMatrix implements ODMatrix {
 	public ODPassthroughMatrix(ModalPAMatrix baseMatrix) {
 		base = baseMatrix;
 	}
+	
+	public ODPassthroughMatrix(ModalPAMatrix baseMatrix, float vot) {
+		this(baseMatrix);
+		this.vot = vot;
+	}
 
 	@Override
 	public Mode getMode() {
