@@ -8,12 +8,16 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.assignment.StaticAssigner;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.ODProfile;
+import edu.utexas.wrap.modechoice.Mode;
+import edu.utexas.wrap.util.ODMatrixCollector;
 import edu.utexas.wrap.util.io.output.ODMatrixStreamWriter;
 
 public class StreamPassthroughAssigner implements StaticAssigner {
@@ -54,14 +58,14 @@ public class StreamPassthroughAssigner implements StaticAssigner {
 	public void run() {
 		try {
 			System.out.println("Aggregating ODMatrices");
-			Collection<ODMatrix> aggregatedMtxs = aggregateMtxs();
+			Map<Mode,Map<Float,ODMatrix>> aggregatedMtxs = aggregateMtxs();
 			
 			
 			System.out.println("Streaming " + period.toString());
 			
 			Process proc = builder.start();
 			OutputStream stdin = proc.getOutputStream();
-			streamODs(aggregatedMtxs, stdin);
+			ODMatrixStreamWriter.write(period.toString(), aggregatedMtxs, stdin);
 
 			System.out.println(period.toString() + ":TA Process finished with exit code "+ proc.waitFor());
 			
@@ -75,22 +79,39 @@ public class StreamPassthroughAssigner implements StaticAssigner {
 		}
 	}
 
-	private Collection<ODMatrix> aggregateMtxs() {
+	private Map<Mode,Map<Float,ODMatrix>> aggregateMtxs() {
 		// TODO Auto-generated method stub
-		throw new RuntimeException("Derail: Aggregation needed before assignment");
+		return disaggregatedMtxs.stream()
+		.collect(
+				Collectors.groupingBy(
+						this::getMode,
+						Collectors.groupingBy(
+								ODMatrix::getVOT,
+								new ODMatrixCollector()
+								)
+						)
+				);
 	}
 
-	private void streamODs(Collection<ODMatrix> ods, OutputStream o) {
-		ODMatrixStreamWriter.write(period.toString(), ods, o);
-	}
 
 	@Override
 	public void process(ODProfile profile) {
 		disaggregatedMtxs.add(profile.getMatrix(period));
 	}
 
+	@Override
 	public TimePeriod getTimePeriod() {
 		return period;
 	}
 
+	private Mode getMode(ODMatrix mtx) {
+		switch (mtx.getMode()) {
+		case HOV_2_PSGR:
+		case HOV_3_PSGR:
+		case HOV:
+			return Mode.HOV;
+		default:
+			return mtx.getMode();
+		}
+	}
 }

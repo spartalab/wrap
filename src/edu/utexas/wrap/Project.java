@@ -124,7 +124,7 @@ public class Project {
 	}
 	
 	public Collection<Assigner> getAssigners(){
-		System.out.println("Reading Market configurations");
+		System.out.println("Reading Assigner configurations");
 
 		return Stream.of(props.getProperty("assigners.ids").split(","))
 		.map( id -> initializeAssigner(id))
