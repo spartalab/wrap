@@ -3,11 +3,13 @@ package edu.utexas.wrap.assignment.bush;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Map;
+import java.util.Properties;
 
-import edu.utexas.wrap.ModelInput;
 import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.assignment.StaticAssigner;
 import edu.utexas.wrap.demand.ODMatrix;
@@ -15,43 +17,54 @@ import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.util.io.output.ODMatrixStreamWriter;
 
 public class StreamPassthroughAssigner implements StaticAssigner {
-	ModelInput model;
-	Collection<ODMatrix> mtxs;
-	TimePeriod period;
 
-	public StreamPassthroughAssigner(ModelInput model, Map<TimePeriod, Collection<ODMatrix>> flatODs) {
+	private Collection<ODMatrix> mtxs;
+	private final TimePeriod period;
+	private final Properties properties;
+	private final ProcessBuilder builder;
+
+	public StreamPassthroughAssigner(Path propsFile) throws IOException {
 		// TODO Auto-generated constructor stub
-		this.model = model;
+		properties = new Properties();
+		properties.load(Files.newInputStream(propsFile));
+		
 		mtxs = new HashSet<ODMatrix>();
-		period = TimePeriod.AM_PK;
+		period = TimePeriod.valueOf(properties.getProperty("timePeriod"));
+		
+		builder = new ProcessBuilder(
+				properties.getProperty("executable"),
+				properties.getProperty("netFile"),
+				"STREAM",
+				properties.getProperty("zoneOrder"));
+		
+
+		File out = Paths.get(
+				properties.getProperty("outputDir"),
+				"/log" + System.currentTimeMillis() + ".txt")
+				.toFile();
+		out.getParentFile().mkdirs();
+		out.createNewFile();
+		
+		builder.redirectOutput(out);
+		builder.redirectError(out);
+		
 	}
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
 		try {
 			System.out.println("Streaming " + period.toString());
-			String tapExec = new File("./tap").getAbsolutePath();
-			String netFile = new File(model.getNetFile()).getAbsolutePath();
-			String convTable = new File(model.getConversionTableFile()).getAbsolutePath();
-			ProcessBuilder builder = new ProcessBuilder(tapExec,netFile,"STREAM",convTable);
-			File outputDirectory = new File(model.getOutputDirectory() + period.toString() + "/");
-			outputDirectory.mkdirs();
-			builder.directory(outputDirectory);
-			File out = new File(outputDirectory.getAbsolutePath() + "/log" + System.currentTimeMillis() + ".txt");
-			out.getParentFile().mkdirs();
-			out.createNewFile();
-			builder.redirectOutput(out);
-			builder.redirectError(out);
+			
 			Process proc = builder.start();
 			OutputStream stdin = proc.getOutputStream();
 			streamODs(mtxs, stdin);
 
-			int exit = proc.waitFor();
-			System.out.println(period.toString() + ":TA Process finished with exit code "+ exit);
+			System.out.println(period.toString() + ":TA Process finished with exit code "+ proc.waitFor());
+			
 		} catch (IOException e) {
 			System.out.println(period.toString() + " unable to stream data");
-			e.printStackTrace();			
+			e.printStackTrace();
+			
 		} catch (InterruptedException e) {
 			System.out.println(period.toString() + " traffic assignment was interrupted");
 			e.printStackTrace();
@@ -64,7 +77,6 @@ public class StreamPassthroughAssigner implements StaticAssigner {
 
 	@Override
 	public void process(ODProfile profile) {
-		// TODO Auto-generated method stub
 		mtxs.add(profile.getMatrix(period));
 	}
 

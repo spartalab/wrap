@@ -33,7 +33,8 @@ public class SkimFactory {
 		try {
 			in = new BufferedReader(Files.newBufferedReader(file));
 			if (header) in.readLine();
-			in.lines().parallel().forEach(line -> processLine(graph,ret,line));
+			in.lines()//.parallel()
+			.forEach(line -> processLine(graph,ret,line));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

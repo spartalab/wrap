@@ -90,10 +90,6 @@ class BasicPurpose implements Purpose {
 						attractor.generate(attractionDemographic)
 						)
 				);
-		
-//		throw new RuntimeException("Derail: Didn't assign the purpose directory yet");
-
-		
 	}
 
 	

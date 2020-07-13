@@ -1,5 +1,6 @@
 package edu.utexas.wrap.assignment;
 
+import java.nio.file.Path;
 import java.util.Collection;
 
 import edu.utexas.wrap.TimePeriod;
@@ -28,6 +29,13 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	
 
 	
+	public BasicStaticAssigner(Path path) {
+		// TODO Auto-generated constructor stub
+		throw new RuntimeException("Not yet implemented");
+	}
+
+
+
 	public void run() {
 		this.containers = initializer.initializeContainers();
 

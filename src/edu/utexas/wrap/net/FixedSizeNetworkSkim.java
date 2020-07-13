@@ -1,7 +1,5 @@
 package edu.utexas.wrap.net;
 
-import edu.utexas.wrap.TimePeriod;
-
 public class FixedSizeNetworkSkim implements NetworkSkim {
 	
 	float[][] skimData;
@@ -11,9 +9,9 @@ public class FixedSizeNetworkSkim implements NetworkSkim {
 	}
 
 	@Override
-	public TimePeriod timePeriod() {
+	public float getCost(TravelSurveyZone producer, TravelSurveyZone attractor) {
 		// TODO Auto-generated method stub
-		return null;
+		return skimData[producer.getOrder()][attractor.getOrder()];
 	}
 
 }
