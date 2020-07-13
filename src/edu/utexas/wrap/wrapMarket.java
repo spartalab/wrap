@@ -5,10 +5,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import edu.utexas.wrap.assignment.Assigner;
-import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.marketsegmentation.Market;
 import edu.utexas.wrap.net.NetworkSkim;
 
@@ -52,24 +50,17 @@ public class wrapMarket {
 			markets.parallelStream().forEach(market -> market.updateSkims(skims));
 			
 
-			System.out.println("Consolidating ODProfiles");
-			Stream<ODProfile> profiles = consolidate(
-					markets.parallelStream()
-					.flatMap(market -> market.getODProfiles())
-					);
-			
-			profiles.forEach(
+			System.out.println("Calculating disaggregated ODProfiles");
+			markets.parallelStream()
+			.flatMap(market -> market.getODProfiles())
+			.forEach(
 					od -> 
 					assigners.stream().forEach(assigner -> assigner.process(od))
 					);
 
+			
 			System.out.println("Starting assignment");
 			assigners.stream().forEach(Assigner::run);
 		}
-	}
-
-	private static Stream<ODProfile> consolidate(Stream<ODProfile> disaggregateProfiles) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("Derail: Aggregation needed before assignment");
 	}
 }

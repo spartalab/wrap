@@ -18,7 +18,7 @@ import edu.utexas.wrap.util.io.output.ODMatrixStreamWriter;
 
 public class StreamPassthroughAssigner implements StaticAssigner {
 
-	private Collection<ODMatrix> mtxs;
+	private Collection<ODMatrix> disaggregatedMtxs;
 	private final TimePeriod period;
 	private final Properties properties;
 	private final ProcessBuilder builder;
@@ -28,7 +28,7 @@ public class StreamPassthroughAssigner implements StaticAssigner {
 		properties = new Properties();
 		properties.load(Files.newInputStream(propsFile));
 		
-		mtxs = new HashSet<ODMatrix>();
+		disaggregatedMtxs = new HashSet<ODMatrix>();
 		period = TimePeriod.valueOf(properties.getProperty("timePeriod"));
 		
 		builder = new ProcessBuilder(
@@ -53,11 +53,15 @@ public class StreamPassthroughAssigner implements StaticAssigner {
 	@Override
 	public void run() {
 		try {
+			System.out.println("Aggregating ODMatrices");
+			Collection<ODMatrix> aggregatedMtxs = aggregateMtxs();
+			
+			
 			System.out.println("Streaming " + period.toString());
 			
 			Process proc = builder.start();
 			OutputStream stdin = proc.getOutputStream();
-			streamODs(mtxs, stdin);
+			streamODs(aggregatedMtxs, stdin);
 
 			System.out.println(period.toString() + ":TA Process finished with exit code "+ proc.waitFor());
 			
@@ -71,13 +75,18 @@ public class StreamPassthroughAssigner implements StaticAssigner {
 		}
 	}
 
+	private Collection<ODMatrix> aggregateMtxs() {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("Derail: Aggregation needed before assignment");
+	}
+
 	private void streamODs(Collection<ODMatrix> ods, OutputStream o) {
 		ODMatrixStreamWriter.write(period.toString(), ods, o);
 	}
 
 	@Override
 	public void process(ODProfile profile) {
-		mtxs.add(profile.getMatrix(period));
+		disaggregatedMtxs.add(profile.getMatrix(period));
 	}
 
 	public TimePeriod getTimePeriod() {
