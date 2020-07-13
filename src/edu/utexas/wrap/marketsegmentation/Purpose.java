@@ -211,7 +211,7 @@ class BasicPurpose implements Purpose {
 		.collect(
 				Collectors.toMap(
 						Function.identity(),
-						mode -> Float.parseFloat("modeChoice.proportion."+mode.toString())
+						mode -> Float.parseFloat(properties.getProperty("modeChoice.proportion."+mode.toString()))
 						)
 				);
 	}
