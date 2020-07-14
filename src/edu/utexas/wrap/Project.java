@@ -1,11 +1,13 @@
 package edu.utexas.wrap;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
@@ -195,6 +197,26 @@ public class Project {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return null;
+		}
+	}
+
+	public void outputFlows() {
+		try {
+			BufferedWriter writer = Files.newBufferedWriter(projDir.resolve("flows.csv"),StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+			network.getLinks().parallelStream()
+			.map(link -> link.toString()+","+link.getFlow()+","+link.getTravelTime()+"\r\n")
+			.forEach(line -> {
+				try {
+					writer.write(line);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			});
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 }

@@ -3,6 +3,7 @@ package edu.utexas.wrap.assignment;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Properties;
 
@@ -48,7 +49,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		Properties props = new Properties();
 		props.load(Files.newInputStream(path));
 		
-		
+		Files.createDirectories(Paths.get(network.toString()));
 		
 		AssignmentProvider<Bush> provider;
 		AssignmentConsumer<Bush> primaryConsumer, evaluationConsumer;
@@ -141,6 +142,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 			value = evaluator.getValue(containers.parallelStream());
 		}
 		System.out.println("Final value: "+value);
+		
 	}
 
 

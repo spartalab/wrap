@@ -61,6 +61,9 @@ public class wrapMarket {
 			
 			System.out.println("Starting assignment");
 			assigners.stream().forEach(Assigner::run);
+			
+			System.out.println("Printing flows");
+			proj.outputFlows();
 		}
 	}
 }
