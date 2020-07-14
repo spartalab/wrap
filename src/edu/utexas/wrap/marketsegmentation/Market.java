@@ -64,6 +64,7 @@ public class Market implements ODProfileProvider {
 	}
 	
 	private Map<String,Demographic> getDemographics(Path directory) {
+		//TODO improve error handling here
 		return Stream.of(props.getProperty("demographics.ids").split(","))
 				.collect(
 						Collectors.toMap(

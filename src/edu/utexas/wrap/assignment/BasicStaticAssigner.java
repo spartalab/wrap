@@ -1,10 +1,23 @@
 package edu.utexas.wrap.assignment;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Properties;
 
 import edu.utexas.wrap.TimePeriod;
+import edu.utexas.wrap.assignment.bush.Bush;
+import edu.utexas.wrap.assignment.bush.BushBuilder;
+import edu.utexas.wrap.assignment.bush.BushEvaluator;
+import edu.utexas.wrap.assignment.bush.BushForgetter;
+import edu.utexas.wrap.assignment.bush.BushGapEvaluator;
+import edu.utexas.wrap.assignment.bush.BushInitializer;
+import edu.utexas.wrap.assignment.bush.BushReader;
+import edu.utexas.wrap.assignment.bush.BushWriter;
+import edu.utexas.wrap.assignment.bush.algoB.AlgorithmBOptimizer;
 import edu.utexas.wrap.demand.ODProfile;
+import edu.utexas.wrap.net.Graph;
 
 public class BasicStaticAssigner<C extends AssignmentContainer> implements StaticAssigner {
 	private AssignmentEvaluator<C> evaluator;
@@ -29,9 +42,90 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	
 
 	
-	public BasicStaticAssigner(Path path) {
+	public BasicStaticAssigner(Graph network, Path path) throws IOException {
 		// TODO Auto-generated constructor stub
-		throw new RuntimeException("Not yet implemented");
+		
+		Properties props = new Properties();
+		props.load(Files.newInputStream(path));
+		
+		
+		
+		AssignmentProvider<Bush> provider;
+		AssignmentConsumer<Bush> primaryConsumer, evaluationConsumer;
+
+		switch (props.getProperty("providerConsumer")) {
+		case "bushIOsuite":
+			provider = new BushReader(network);
+			primaryConsumer = new BushWriter(network);
+			evaluationConsumer = new BushForgetter();
+			break;
+		default:
+			throw new RuntimeException("Not yet implented");
+		}
+		
+		
+		
+		AssignmentBuilder<Bush> builder;
+		switch (props.getProperty("builder")) {
+		case "bush":
+			builder = new BushBuilder(network);
+			break;
+		default:
+			throw new RuntimeException("Not yet implemented");
+		}
+		
+		
+		
+		switch (props.getProperty("initializer")) {
+		case "bush":
+			initializer = (AssignmentInitializer<C>) new BushInitializer(provider, primaryConsumer,builder,network);
+			break;
+		default:
+			throw new RuntimeException("Not yet implemented");
+		}
+		
+		
+		
+		switch (props.getProperty("evaluator")) {
+		case "gap":
+			evaluator = (AssignmentEvaluator<C>) new GapEvaluator<Bush>(network, provider, evaluationConsumer);
+			break;
+		default:
+			throw new RuntimeException("Not yet implemented");
+		}
+		
+		
+		switch (props.getProperty("optimizer")) {
+		case "algoB":
+			BushEvaluator iterEvaluator;
+			switch(props.getProperty("optimizer.iterEvaluator")) {
+			case "bushGap":
+				iterEvaluator = new BushGapEvaluator(network);
+				break;
+			default:
+				throw new RuntimeException("Not yet implemented");
+			}
+			
+			
+			
+			double iterThreshold = Double.parseDouble(props.getProperty("optimizer.iterThreshold"));
+			
+			
+			optimizer = (AssignmentOptimizer<C>) new AlgorithmBOptimizer(
+					provider, 
+					primaryConsumer, 
+					iterEvaluator,
+					iterThreshold);
+			break;
+		default:
+			throw new RuntimeException("Not yet implemented");
+		}
+		
+		
+		
+		threshold = Double.parseDouble(props.getProperty("evaluator.threshold"));
+		maxIterations = Integer.parseInt(props.getProperty("maxIterations"));
+//		throw new RuntimeException("Not finished implementing");
 	}
 
 

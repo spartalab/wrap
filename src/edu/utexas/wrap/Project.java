@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -21,6 +22,8 @@ import edu.utexas.wrap.marketsegmentation.Market;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.NetworkSkim;
+import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.io.GraphFactory;
 import edu.utexas.wrap.util.io.SkimFactory;
 
@@ -43,28 +46,32 @@ public class Project {
 		
 		try {
 			File linkFile = projDir.resolve(props.getProperty("network.links")).toFile();
-
+			
+			Map<Integer, AreaClass> zoneClasses = getAreaClasses();
+			
 			switch(props.getProperty("network.linkType")) {
 
 			case "conic":
-				
-				BufferedReader reader = Files.newBufferedReader(projDir.resolve(props.getProperty("network.zones")));
-				
-				reader.readLine();
-				
-				Map<Integer, AreaClass> zoneClasses = reader.lines()
-				.map(string -> string.split(","))
-				.collect(Collectors.toMap(
-						args -> Integer.parseInt(args[0]), 
-						args -> AreaClass.values()[Integer.parseInt(args[1])-1]));
 				
 				Integer ftn = Integer.parseInt(props.getProperty("network.firstThruNode"));
 				return GraphFactory.readConicGraph(linkFile, ftn, zoneClasses);
 				
 			case "bpr":
 				//TODO
-				throw new RuntimeException("Not yet implemented");
+				Graph g = GraphFactory.readTNTPGraph(linkFile);
 				
+				AtomicInteger idx = new AtomicInteger(0);
+				
+				zoneClasses.entrySet().parallelStream()
+				.forEach(entry -> {
+					Node n = g.getNode(entry.getKey());
+					TravelSurveyZone z = new TravelSurveyZone(n,idx.getAndIncrement(),entry.getValue());
+					n.setTravelSurveyZone(z);
+					g.addZone(z);
+				});
+				g.setNumZones(idx.get());
+				
+				return g;
 			default:
 				throw new IllegalArgumentException("network.type");
 			}
@@ -99,6 +106,18 @@ public class Project {
 			return null;
 		}
 		
+	}
+
+	private Map<Integer, AreaClass> getAreaClasses() throws IOException {
+		BufferedReader reader = Files.newBufferedReader(projDir.resolve(props.getProperty("network.zones")));
+		reader.readLine();
+
+		Map<Integer, AreaClass> zoneClasses = reader.lines()
+				.map(string -> string.split(","))
+				.collect(Collectors.toMap(
+						args -> Integer.parseInt(args[0]), 
+						args -> AreaClass.values()[Integer.parseInt(args[1])-1]));
+		return zoneClasses;
 	}
 
 	public Collection<Market> getMarkets(){
@@ -153,24 +172,29 @@ public class Project {
 		System.out.println("Updating NetworkSkims");
 		throw new RuntimeException("Not yet implemented");
 	}
-	
+
 	private Assigner initializeAssigner(String id) {
-		switch (props.getProperty("assigners."+id+".class")) {
-		case "stream":
-			try {
+		try {
+
+			switch (props.getProperty("assigners."+id+".class")) {
+			case "stream":
 				return new StreamPassthroughAssigner(
 						projDir.resolve(props.getProperty("assigners."+id+".file"))
 						);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+
+
+			case "bush":
+				return new BasicStaticAssigner<Bush>(
+						network,
+						projDir.resolve(props.getProperty("assigners."+id+".file"))
+						);
+			default:
+				throw new RuntimeException("Not yet implemented");
 			}
-		case "bush":
-			return new BasicStaticAssigner<Bush>(
-					projDir.resolve(props.getProperty("assigners."+id+".file"))
-					);
-		default:
-			throw new RuntimeException("Not yet implemented");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
 		}
 	}
 }
