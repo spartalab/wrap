@@ -6,6 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Properties;
+import java.util.function.ToDoubleFunction;
 
 import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.assignment.bush.Bush;
@@ -19,6 +20,9 @@ import edu.utexas.wrap.assignment.bush.BushWriter;
 import edu.utexas.wrap.assignment.bush.algoB.AlgorithmBOptimizer;
 import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.net.Link;
+import edu.utexas.wrap.net.NetworkSkim;
+import edu.utexas.wrap.util.io.SkimFactory;
 
 public class BasicStaticAssigner<C extends AssignmentContainer> implements StaticAssigner {
 	private AssignmentEvaluator<C> evaluator;
@@ -27,6 +31,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	private Collection<C> containers;
 	private double threshold;
 	private final int maxIterations;
+	private final Graph network;
 	
 	public BasicStaticAssigner(
 			AssignmentInitializer<C> initializer,
@@ -38,14 +43,14 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		this.optimizer = optimizer;
 		this.threshold = threshold;
 		maxIterations = 100;
-		
+		network = null;
 	}
 	
 
 	
 	public BasicStaticAssigner(Graph network, Path path) throws IOException {
 		// TODO Auto-generated constructor stub
-		
+		this.network = network;
 		Properties props = new Properties();
 		props.load(Files.newInputStream(path));
 		
@@ -156,4 +161,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		return TimePeriod.AM_PK;
 	}
 	
+	public NetworkSkim getSkim(ToDoubleFunction<Link> function) {
+		return SkimFactory.calculateSkim(network, function);
+	}
+
 }

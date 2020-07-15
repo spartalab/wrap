@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 
 import edu.utexas.wrap.TimePeriod;
@@ -17,6 +18,8 @@ import edu.utexas.wrap.assignment.StaticAssigner;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.modechoice.Mode;
+import edu.utexas.wrap.net.Link;
+import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.util.ODMatrixCollector;
 import edu.utexas.wrap.util.io.output.ODMatrixStreamWriter;
 
@@ -113,5 +116,9 @@ public class StreamPassthroughAssigner implements StaticAssigner {
 		default:
 			return mtx.getMode();
 		}
+	}
+	
+	public NetworkSkim getSkim(ToDoubleFunction<Link> function) {
+		throw new RuntimeException("Not yet implemented");
 	}
 }

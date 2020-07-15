@@ -61,7 +61,8 @@ public class Graph {
 		numLinks = g.numLinks;
 		forwardStar = g.forwardStar;
 		reverseStar = g.reverseStar;
-		//TODO: duplicate zones
+		throw new RuntimeException("Incomplete");
+		//TODO: duplicate zones, nodes, and links
 	}
 	
 	//TODO improve concurrency availability here

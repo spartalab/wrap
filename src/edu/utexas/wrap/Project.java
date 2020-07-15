@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -23,6 +24,7 @@ import edu.utexas.wrap.assignment.bush.StreamPassthroughAssigner;
 import edu.utexas.wrap.marketsegmentation.Market;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
@@ -40,10 +42,10 @@ public class Project {
 		
 		projDir = projFile.getParent();
 		
-		network = getNetwork();
+		network = readNetwork();
 	}
 	
-	public Graph getNetwork() {
+	private Graph readNetwork() {
 		System.out.println("Reading network");
 		
 		try {
@@ -110,6 +112,10 @@ public class Project {
 		
 	}
 
+	public Graph getNetwork() {
+		return network;
+	}
+	
 	private Map<Integer, AreaClass> getAreaClasses() throws IOException {
 		BufferedReader reader = Files.newBufferedReader(projDir.resolve(props.getProperty("network.zones")));
 		reader.readLine();
@@ -144,12 +150,11 @@ public class Project {
 				.collect(Collectors.toSet());
 	}
 	
-	public Collection<Assigner> getAssigners(){
+	public Map<String,Assigner> getAssigners(){
 		System.out.println("Reading Assigner configurations");
 
 		return Stream.of(props.getProperty("assigners.ids").split(","))
-		.map( id -> initializeAssigner(id))
-		.collect(Collectors.toSet());
+		.collect(Collectors.toMap(Function.identity(), id -> initializeAssigner(id)));
 	}
 	
 	public Map<String,NetworkSkim> getInitialSkims(){
@@ -170,9 +175,29 @@ public class Project {
 		;
 	}
 	
-	public Map<String,NetworkSkim> getFeedbackSkims(Collection<Assigner> assigners){
+	public Map<String,NetworkSkim> getFeedbackSkims(Map<String,Assigner> assigners){
 		System.out.println("Updating NetworkSkims");
-		throw new RuntimeException("Not yet implemented");
+
+		return Stream.of(props.getProperty("skims.ids").split(","))
+		.parallel()
+		.collect(
+				Collectors.toMap(
+						Function.identity(),
+						id ->{
+							Assigner assigner = assigners.get(props.getProperty("skims."+id+".assigner"));
+							ToDoubleFunction<Link> func;
+							switch (props.getProperty("skims."+id+".function")) {
+							default:
+								System.err.println("Skim funciton not yet implemented. Reverting to travel time");
+							case "travelTime":
+								func = Link::getTravelTime;
+							}
+							return assigner.getSkim(func);
+						}
+						)
+				);
+
+//		return assigners.values().parallelStream().collect(Collectors.toMap(Assigner::toString,assigner -> assigner.getSkim(func)));
 	}
 
 	private Assigner initializeAssigner(String id) {
@@ -187,7 +212,7 @@ public class Project {
 
 			case "bush":
 				return new BasicStaticAssigner<Bush>(
-						network,
+						network, //TODO this should provide a copy of the network, rather than the initial one to allow for multiple non-interfering Assigners
 						projDir.resolve(props.getProperty("assigners."+id+".file"))
 						);
 			default:
@@ -200,7 +225,7 @@ public class Project {
 		}
 	}
 
-	public void outputFlows() {
+	private  void outputFlows() {
 		try {
 			BufferedWriter writer = Files.newBufferedWriter(projDir.resolve("flows.csv"),StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 			network.getLinks().parallelStream()
@@ -218,5 +243,25 @@ public class Project {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	
+	public void output(Map<String, NetworkSkim> finalSkims) {
+		// TODO Auto-generated method stub
+		
+		System.out.println("Printing final skims");
+		finalSkims.entrySet()
+		.forEach(
+				entry -> SkimFactory.outputCSV(
+						finalSkims.get(entry.getKey()),
+						projDir.resolve(props.getProperty("skims."+entry.getKey()+".file")),
+						getNetwork().getTSZs()
+						)
+				);
+		
+		
+		System.out.println("Printing final flows");
+		outputFlows();
+
 	}
 }

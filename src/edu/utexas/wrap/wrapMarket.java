@@ -39,31 +39,46 @@ public class wrapMarket {
 		Collection<Market> markets = proj.getMarkets();
 		
 
-		Collection<Assigner> assigners = proj.getAssigners();
+		Map<String,Assigner> assigners = null;
 		
 		int numFeedbacks = 1;
 		for (int i = 0; i < numFeedbacks; i++) {
+			System.out.println("Beginning feedback iteration "+i);
+			assigners = proj.getAssigners();
 			
 			//Update skims and redistribute
 			Map<String,NetworkSkim> skims = i == 0? proj.getInitialSkims() : proj.getFeedbackSkims(assigners);
 			
 			markets.parallelStream().forEach(market -> market.updateSkims(skims));
 			
+			
+			Collection<Assigner> ac = assigners.values();
 
 			System.out.println("Calculating disaggregated ODProfiles");
 			markets.parallelStream()
 			.flatMap(market -> market.getODProfiles())
 			.forEach(
 					od -> 
-					assigners.stream().forEach(assigner -> assigner.process(od))
+					ac.stream().forEach(assigner -> assigner.process(od))
 					);
 
 			
 			System.out.println("Starting assignment");
-			assigners.stream().forEach(Assigner::run);
+			ac.stream().forEach(Assigner::run);
 			
-			System.out.println("Printing flows");
-			proj.outputFlows();
+
+			
 		}
+		
+		System.out.println("Feedback loop(s) completed");
+		
+		System.out.println("Computing final skims");
+		Map<String,NetworkSkim> finalSkims = proj.getFeedbackSkims(assigners);
+		
+		
+		proj.output(finalSkims);
+		
+		
+		System.out.println("Done");
 	}
 }

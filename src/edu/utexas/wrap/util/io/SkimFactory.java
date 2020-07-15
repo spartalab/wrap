@@ -1,15 +1,23 @@
 package edu.utexas.wrap.util.io;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.function.ToDoubleFunction;
 
 import edu.utexas.wrap.net.FixedSizeNetworkSkim;
 import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.NetworkSkim;
+import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
+import edu.utexas.wrap.util.FibonacciHeap;
+import edu.utexas.wrap.util.FibonacciLeaf;
 
 /**
  * This class provides static methods to read information about Skim rates
@@ -71,4 +79,63 @@ public class SkimFactory {
 	}
 
 
+	public static NetworkSkim calculateSkim(Graph network,ToDoubleFunction<Link> costFunction) {
+		Collection<TravelSurveyZone> zones = network.getTSZs();
+		
+		FixedSizeNetworkSkim skim = new FixedSizeNetworkSkim(network.numZones());
+		
+		zones.stream()
+		
+		.forEach(orig -> {
+			FibonacciHeap<Node> Q = new FibonacciHeap<Node>(zones.size(),1.0f);
+			for (Node n : network.getNodes()) {
+				if (!n.equals(orig.node())) {
+					Q.add(n, Double.MAX_VALUE);
+				}
+			}
+			Q.add(orig.node(), 0.0);
+
+			while (!Q.isEmpty()) {
+				FibonacciLeaf<Node> u = Q.poll();
+				if (u.node.getZone() != null) {
+					skim.putCost(orig, u.node.getZone(), (float) u.key);
+				}
+
+				for (Link uv : u.node.forwardStar()) {
+
+
+					FibonacciLeaf<Node> v = Q.getLeaf(uv.getHead());
+					Double alt = costFunction.applyAsDouble(uv)+u.key;
+					if (alt<v.key) {
+						Q.decreaseKey(v, alt);
+					}
+				}
+			}
+		});
+		return skim;
+	}
+
+	public static void outputCSV(NetworkSkim skim, Path path, Collection<TravelSurveyZone> zones) {
+		// TODO Auto-generated method stub
+		try {
+			BufferedWriter writer = Files.newBufferedWriter(path, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+			
+			zones.stream().forEach(orig -> {
+				zones.stream().forEach(dest ->{
+					try {
+						writer.write(orig.getID()+","+dest.getID()+","+skim.getCost(orig, dest)+"\r\n");
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				});
+			});
+			
+			writer.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+//		throw new RuntimeException("Not yet implemented");
+	}
 }
