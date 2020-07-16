@@ -155,9 +155,9 @@ public class Project {
 	public void output(Map<String,Assigner> assigners) {
 		// TODO Auto-generated method stub
 		Map<String,NetworkSkim> finalSkims = getFeedbackSkims(assigners);
-		
 		System.out.println("Printing final skims");
-		finalSkims.entrySet()
+		finalSkims.entrySet().stream()
+		.filter(entry -> Boolean.parseBoolean(props.getProperty("skims."+entry.getKey()+".overwrite")))
 		.forEach(
 				entry -> SkimFactory.outputCSV(
 						finalSkims.get(entry.getKey()),
