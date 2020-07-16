@@ -4,7 +4,6 @@ import java.util.Collection;
 
 import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.modechoice.Mode;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**A map from an origin-destination pair to the number
@@ -37,11 +36,6 @@ public interface ODMatrix {
 	 */
 	public void put(TravelSurveyZone origin, TravelSurveyZone destination, Float demand);
 
-	/**
-	 * @return the graph to which this OD matrix is associated
-	 */
-	public Graph getGraph();
-
 	public Float getVOT();
 	
 	public void setVOT(float VOT);
@@ -50,7 +44,7 @@ public interface ODMatrix {
 		throw new RuntimeException();
 	};
 	
-	public default Collection<TravelSurveyZone> getOrigins(){
+	public default Collection<TravelSurveyZone> getZones(){
 		throw new RuntimeException();
 	};
 	

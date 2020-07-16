@@ -21,17 +21,17 @@ public class ODMatrixCSVWriter {
 			Files.createDirectories(path.getParent());
 			BufferedWriter out = Files.newBufferedWriter(path,
 					StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-			matrix.getGraph().getTSZs().parallelStream().forEach( orig -> {
-				matrix.getGraph().getTSZs().parallelStream()
+			matrix.getZones().parallelStream().forEach( orig -> {
+				matrix.getZones().parallelStream()
 //				.filter(dest -> matrix.getDemand(orig,dest) > 0)
 				.forEach(dest ->{
 					try {
 						float demand = matrix.getDemand(orig, dest);
 						if (demand > 0) {
 							StringBuilder sb = new StringBuilder();
-							sb.append(orig.node().getID());
+							sb.append(orig.getID());
 							sb.append(",");
-							sb.append(dest.node().getID());
+							sb.append(dest.getID());
 							sb.append(",");
 							sb.append(demand);
 							sb.append("\r\n");

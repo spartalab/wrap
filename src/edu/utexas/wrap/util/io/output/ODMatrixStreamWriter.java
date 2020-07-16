@@ -25,7 +25,7 @@ public class ODMatrixStreamWriter {
             // Assuming that there is something in the ods
         	Graph g = 
         			ods.values().stream().flatMap(map -> map.values().stream())
-        			.map(ODMatrix::getGraph)
+        			.map(ODMatrix::getZones)
         			.findAny()
         			.orElseThrow(RuntimeException::new);
         	

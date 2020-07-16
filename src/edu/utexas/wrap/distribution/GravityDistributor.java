@@ -1,5 +1,6 @@
 package edu.utexas.wrap.distribution;
 
+import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
@@ -7,7 +8,6 @@ import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
 import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
@@ -25,10 +25,11 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 public class GravityDistributor extends TripDistributor {
 	private final NetworkSkim skim;
 	private final FrictionFactorMap friction;
-	private final Graph g;
+	private final Collection<TravelSurveyZone> zones;
+//	private final Graph g;
 
-	public GravityDistributor(Graph g, NetworkSkim skim, FrictionFactorMap fm) {
-		this.g = g;
+	public GravityDistributor(Collection<TravelSurveyZone> zones, NetworkSkim skim, FrictionFactorMap fm) {
+		this.zones = zones;
 		friction = fm;
 		this.skim = skim;
 	}
@@ -39,8 +40,8 @@ public class GravityDistributor extends TripDistributor {
 //		Map<TravelSurveyZone, Double> a = Object2DoubleMaps.synchronize(new Object2DoubleOpenHashMap<TravelSurveyZone>(g.numZones(),1.0f));
 //		Map<TravelSurveyZone, Double> b = Object2DoubleMaps.synchronize(new Object2DoubleOpenHashMap<TravelSurveyZone>(g.numZones(),1.0f));
 
-		Float[] a1 = new Float[g.numZones()];
-		Float[] b1 = new Float[g.numZones()];
+		Float[] a1 = new Float[zones.size()];
+		Float[] b1 = new Float[zones.size()];
 		
 		AtomicBoolean converged = new AtomicBoolean(false);
 		//While the previous iteration made changes
@@ -91,11 +92,11 @@ public class GravityDistributor extends TripDistributor {
 		}
 		
 		//Now begin constructing the matrix
-		AggregatePAHashMatrix pam = new AggregatePAHashMatrix(g);
+		AggregatePAHashMatrix pam = new AggregatePAHashMatrix(zones);
 		//For each producer
 		pa.getProducers().parallelStream().forEach(producer -> {
 			//Construct a new DemandMap
-			DemandMap d = new FixedSizeDemandMap(g);
+			DemandMap d = new FixedSizeDemandMap(zones);
 			//For each attractor
 			for (TravelSurveyZone attractor : pa.getAttractors()) {
 				//Calculate the number of trips between these two as a*productions*b*attractions*impedance

@@ -14,7 +14,6 @@ import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import edu.utexas.wrap.demand.DemandMap;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class DemandMapCollector implements Collector<DemandMap, CombinedDemandMap, DemandMap> {
@@ -73,11 +72,6 @@ class CombinedDemandMap implements DemandMap {
 	@Override
 	public float get(TravelSurveyZone dest) {
 		return (float) children.parallelStream().mapToDouble(map -> map.get(dest)).sum();
-	}
-
-	@Override
-	public Graph getGraph() {
-		return children.parallelStream().map(DemandMap::getGraph).findAny().get();
 	}
 
 	@Override

@@ -15,23 +15,23 @@ import edu.utexas.wrap.demand.ODProfileProvider;
 import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.net.BasicDemographic;
 import edu.utexas.wrap.net.Demographic;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.NetworkSkim;
+import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.io.FrictionFactorFactory;
 
 public class Market implements ODProfileProvider {
 	private Properties props;
 	private Collection<BasicPurpose> purposes;
-	private Graph network;
+	private final Collection<TravelSurveyZone> zones;
 	
-	public Market(Path marketFile, Graph network) throws IOException {
+	public Market(Path marketFile, Map<Integer,TravelSurveyZone> zoneIDs) throws IOException {
 		props = new Properties();
 		props.load(Files.newInputStream(marketFile));
 		
 		Path directory = marketFile.getParent().resolve(props.getProperty("dir"));
-		this.network = network;
-		
-		purposes = getPurposes(directory, getDemographics(directory), getFrictionFactors(directory));
+
+		this.zones = zoneIDs.values();
+		purposes = getPurposes(directory, getDemographics(directory, zoneIDs), getFrictionFactors(directory));
 		
 	}
 	
@@ -53,7 +53,7 @@ public class Market implements ODProfileProvider {
 				.map(name -> directory.resolve(props.getProperty("purposes."+name+".file")))
 				.map(purposeFile -> {
 					try {
-						return new BasicPurpose(purposeFile, network, demographics, frictFacts);
+						return new BasicPurpose(purposeFile, zones, demographics, frictFacts);
 					} catch (IOException e) {
 						System.err.println("Error while reading purpose file: "+purposeFile);
 						return null;
@@ -63,7 +63,7 @@ public class Market implements ODProfileProvider {
 				.collect(Collectors.toSet());
 	}
 	
-	private Map<String,Demographic> getDemographics(Path directory) {
+	private Map<String,Demographic> getDemographics(Path directory, Map<Integer, TravelSurveyZone> zones) {
 		//TODO improve error handling here
 		return Stream.of(props.getProperty("demographics.ids").split(","))
 				.collect(
@@ -72,7 +72,7 @@ public class Market implements ODProfileProvider {
 								name -> {
 									Path path = directory.resolve(props.getProperty("demographics."+name+".file"));
 									try {
-										return new BasicDemographic(path, network);
+										return new BasicDemographic(path, zones);
 									} catch (IOException e) {
 										System.err.println("Error while reading demographic file: "+name);
 										return null;

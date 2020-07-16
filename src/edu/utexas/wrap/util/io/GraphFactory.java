@@ -16,7 +16,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import edu.utexas.wrap.modechoice.Mode;
-import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.CentroidConnector;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
@@ -38,7 +37,7 @@ public class GraphFactory {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public static Graph readTNTPGraph(File linkFile) throws FileNotFoundException, IOException {
+	public static Graph readTNTPGraph(File linkFile, Map<Integer,TravelSurveyZone> zoneIDs) throws FileNotFoundException, IOException {
 
 		try {
 			MessageDigest md = MessageDigest.getInstance("MD5");
@@ -46,9 +45,10 @@ public class GraphFactory {
 			DigestInputStream dis = new DigestInputStream(new FileInputStream(linkFile), md);
 
 			String line;
-			Graph g = new Graph();
+			Graph g = new Graph(zoneIDs.values());
 			BufferedReader lf = new BufferedReader(new InputStreamReader(dis));
-			Map<Integer, Node> nodes = new HashMap<Integer,Node>();
+			Map<Integer, Node> nodeIDs = new HashMap<Integer,Node>();
+			AtomicInteger nodeIdx = new AtomicInteger(0);
 			Integer ftn = 1;
 			do { // Move past headers in the file
 				line = lf.readLine();
@@ -73,21 +73,24 @@ public class GraphFactory {
 				Float toll = parse(cols[8]);
 
 				// Create new node(s) if new, then add to map
-				if (!nodes.containsKey(tail))
-					nodes.put(tail, new Node(tail, tail < ftn? true : false, nodes.size()));
+				if (!nodeIDs.containsKey(tail)) {
+					nodeIDs.put(tail, new Node(tail, nodeIdx.getAndIncrement(),zoneIDs.get(tail)));
 
-				if (!nodes.containsKey(head))
-					nodes.put(head, new Node(head, head < ftn? true: false, nodes.size()));
+				}
 
+				if (!nodeIDs.containsKey(head)) {
+					nodeIDs.put(head, new Node(head, nodeIdx.getAndIncrement(),zoneIDs.get(head)));
+				}
+				
 				// Construct new link and add to the list
 				Link link;
 				if (tail >= ftn && head >= ftn) {
 					Float B = parse(cols[5]);
 					Float power = parse(cols[6]);
-					link = new TolledBPRLink(nodes.get(tail), nodes.get(head), capacity, length, fftime, B, power, toll);
+					link = new TolledBPRLink(nodeIDs.get(tail), nodeIDs.get(head), capacity, length, fftime, B, power, toll);
 				}
 				else {
-					link = new CentroidConnector(nodes.get(tail), nodes.get(head), capacity, length, fftime, toll);
+					link = new CentroidConnector(nodeIDs.get(tail), nodeIDs.get(head), capacity, length, fftime, toll);
 				}
 				g.add(link);
 			}
@@ -107,17 +110,15 @@ public class GraphFactory {
 	 * The file contains information about the CONAC paramters and uses EnhancedLinks
 	 * to build the graph
 	 * @param f File with the network information
-	 * @param thruNode Integer value of the first node id that is not a centroid
 	 * @return Graph object representation of input network
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public static Graph readConicGraph(File f, Integer thruNode, Map<Integer,AreaClass> classes) throws FileNotFoundException, IOException {
+	public static Graph readConicGraph(File f, Map<Integer,TravelSurveyZone> zoneIDs) throws FileNotFoundException, IOException {
 		try {
 		MessageDigest md = MessageDigest.getInstance("MD5");
-		Graph g = new Graph();
-		AtomicInteger numZones = new AtomicInteger(0), 
-				numNodes = new AtomicInteger(0);
+		Graph g = new Graph(zoneIDs.values());
+		AtomicInteger numNodes = new AtomicInteger(0);
 		DigestInputStream dis = new DigestInputStream(new FileInputStream(f), md);
 		BufferedReader lf = new BufferedReader(new InputStreamReader(dis));
 		Map<Integer, Node> nodes = new ConcurrentHashMap<Integer,Node>();
@@ -132,17 +133,17 @@ public class GraphFactory {
 			Integer nodeB = Integer.parseInt(args[2]);
 
 			if (!nodes.containsKey(nodeA)) {
-				if (nodeA < thruNode) {
-					newZone(g, numZones, numNodes, nodes, nodeA, classes.get(nodeA));
-				} else
-					nodes.put(nodeA, new Node(nodeA, false, numNodes.getAndIncrement()));
+//				if (nodeA < thruNode) {
+//					newZone(g, numZones, numNodes, nodes, nodeA, classes.get(nodeA));
+//				} else
+					nodes.put(nodeA, new Node(nodeA, numNodes.getAndIncrement(),zoneIDs.get(nodeA)));
 			}
 
 			if (!nodes.containsKey(nodeB)) {
-				if (nodeB < thruNode) {
-					newZone(g, numZones, numNodes, nodes, nodeB, classes.get(nodeB));
-				} else
-					nodes.put(nodeB, new Node(nodeB, false, numNodes.getAndIncrement()));
+//				if (nodeB < thruNode) {
+//					newZone(g, numZones, numNodes, nodes, nodeB, classes.get(nodeB));
+//				} else
+					nodes.put(nodeB, new Node(nodeB, numNodes.getAndIncrement(),zoneIDs.get(nodeB)));
 
 			}
 			
@@ -219,7 +220,6 @@ public class GraphFactory {
 			}
 		});
 		lf.close();
-		g.setNumZones(numZones.get());
 		g.setMD5(md.digest());
 		g.complete();
 		return g;
@@ -228,19 +228,6 @@ public class GraphFactory {
 			e.printStackTrace();
 			return null;
 		}
-	}
-
-	private static void newZone(Graph g, 
-			AtomicInteger numZones, 
-			AtomicInteger numNodes, 
-			Map<Integer, Node> nodes, 
-			Integer nodeID,
-			AreaClass ac) {
-		Node node = new Node(nodeID, true, numNodes.getAndIncrement());
-		TravelSurveyZone tsz = new TravelSurveyZone(node,numZones.getAndIncrement(),ac);
-		node.setTravelSurveyZone(tsz);
-		g.addZone(tsz);
-		nodes.put(nodeID, node);
 	}
 
 	private static Float parse(String s) {

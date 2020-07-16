@@ -12,7 +12,6 @@ import java.util.stream.Collector;
 
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.modechoice.Mode;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class ODMatrixCollector implements Collector<ODMatrix, CombinedODMatrix, ODMatrix>{
@@ -97,11 +96,6 @@ class CombinedODMatrix implements ODMatrix {
 	@Override
 	public void put(TravelSurveyZone origin, TravelSurveyZone destination, Float demand) {
 		throw new RuntimeException("Writing to a read-only matrix");
-	}
-
-	@Override
-	public Graph getGraph() {
-		return children.parallelStream().map(ODMatrix::getGraph).findAny().get();
 	}
 
 	@Override

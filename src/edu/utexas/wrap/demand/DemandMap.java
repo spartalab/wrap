@@ -3,7 +3,6 @@ package edu.utexas.wrap.demand;
 import java.util.Collection;
 import java.util.Map;
 
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**A simple map from a node to a demand level
@@ -17,11 +16,6 @@ public interface DemandMap {
 	 * @return the demand at the given Node
 	 */
 	public float get(TravelSurveyZone dest);
-
-	/**
-	 * @return the associated graph
-	 */
-	public Graph getGraph();
 
 	/**
 	 * @return the collection of nodes for which there is demand

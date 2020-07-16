@@ -1,36 +1,34 @@
 package edu.utexas.wrap.demand.containers;
 
 import java.util.Collection;
-import java.util.stream.Collectors;
 
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.modechoice.Mode;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class FixedSizeODMatrix<T extends DemandMap> implements ODMatrix {
 	
 	private float vot;
 	private final Mode mode;
-	private final Graph graph;
+	private final Collection<TravelSurveyZone> zones;
 	private final DemandMap[] demandMaps;
 	
-	public FixedSizeODMatrix(Float vot, Mode mode, Graph graph) {
+	public FixedSizeODMatrix(Float vot, Mode mode, Collection<TravelSurveyZone> zones) {
 		this.mode = mode;
 		this.vot = vot;
-		this.graph = graph;
-		this.demandMaps = new DemandMap[graph.numZones()];
+		this.zones = zones;
+		this.demandMaps = new DemandMap[zones.size()];
 	}
 
 	//Matrix multiplier constructor
 	public FixedSizeODMatrix(Float vot, Mode mode, ODMatrix od, float multiplier) {
-		this(vot,mode, od.getGraph());
+		this(vot,mode, od.getZones());
 		
-		graph.getTSZs().forEach(origin -> {
-			FixedSizeDemandMap dm = new FixedSizeDemandMap(graph);
+		od.getZones().forEach(origin -> {
+			FixedSizeDemandMap dm = new FixedSizeDemandMap(zones);
 			
-			graph.getTSZs().forEach(destination -> dm.put(destination, multiplier*od.getDemand(origin, destination)));
+			zones.forEach(destination -> dm.put(destination, multiplier*od.getDemand(origin, destination)));
 			
 			demandMaps[origin.getOrder()] = dm;
 		});
@@ -43,12 +41,12 @@ public class FixedSizeODMatrix<T extends DemandMap> implements ODMatrix {
 	
 	//Matrix adder constructor
 	public FixedSizeODMatrix(Float vot, Mode mode, ODMatrix od1, ODMatrix od2) {
-		this(vot, mode, od1.getGraph());
+		this(vot, mode, od1.getZones());
 		
-		graph.getTSZs().forEach(origin -> {
-			FixedSizeDemandMap dm = new FixedSizeDemandMap(graph);
+		zones.forEach(origin -> {
+			FixedSizeDemandMap dm = new FixedSizeDemandMap(zones);
 			
-			graph.getTSZs().forEach(destination -> dm.put(destination, od1.getDemand(origin, destination) + od2.getDemand(origin, destination)));
+			zones.forEach(destination -> dm.put(destination, od1.getDemand(origin, destination) + od2.getDemand(origin, destination)));
 			
 			demandMaps[origin.getOrder()] = dm;
 		});
@@ -70,11 +68,6 @@ public class FixedSizeODMatrix<T extends DemandMap> implements ODMatrix {
 	}
 
 	@Override
-	public Graph getGraph() {
-		return graph;
-	}
-
-	@Override
 	public Float getVOT() {
 		return vot;
 	}
@@ -85,10 +78,8 @@ public class FixedSizeODMatrix<T extends DemandMap> implements ODMatrix {
 	}
 
 	@Override
-	public Collection<TravelSurveyZone> getOrigins() {
-		return graph.getTSZs().parallelStream()
-				.filter(zone -> demandMaps[zone.getOrder()] != null)
-				.collect(Collectors.toSet());
+	public Collection<TravelSurveyZone> getZones() {
+		return zones;
 	}
 
 	@Override

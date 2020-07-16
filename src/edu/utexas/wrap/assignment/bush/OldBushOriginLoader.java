@@ -11,6 +11,7 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
+@Deprecated
 public class OldBushOriginLoader extends OldBushOriginBuilder {
 	Boolean print = true;
 	

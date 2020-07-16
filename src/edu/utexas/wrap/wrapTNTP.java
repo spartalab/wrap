@@ -29,6 +29,7 @@ import edu.utexas.wrap.demand.ODMatrixFactory;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.util.io.GraphFactory;
 
+@Deprecated
 public class wrapTNTP {
 
 	public static void main(String[] args) throws FileNotFoundException, IOException {

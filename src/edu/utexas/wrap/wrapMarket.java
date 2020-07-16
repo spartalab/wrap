@@ -72,11 +72,7 @@ public class wrapMarket {
 		
 		System.out.println("Feedback loop(s) completed");
 		
-		System.out.println("Computing final skims");
-		Map<String,NetworkSkim> finalSkims = proj.getFeedbackSkims(assigners);
-		
-		
-		proj.output(finalSkims);
+		proj.output(assigners);
 		
 		
 		System.out.println("Done");

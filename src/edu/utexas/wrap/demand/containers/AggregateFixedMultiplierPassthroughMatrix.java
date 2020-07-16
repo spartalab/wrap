@@ -5,7 +5,6 @@ import java.util.HashSet;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class AggregateFixedMultiplierPassthroughMatrix implements AggregatePAMatrix {
@@ -19,8 +18,8 @@ public class AggregateFixedMultiplierPassthroughMatrix implements AggregatePAMat
 	}
 	
 	@Override
-	public Graph getGraph() {
-		return base.getGraph();
+	public Collection<TravelSurveyZone> getZones() {
+		return base.getZones();
 	}
 
 	@Override

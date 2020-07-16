@@ -2,7 +2,6 @@ package edu.utexas.wrap.demand.containers;
 
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.PAMap;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 import java.util.Map;
@@ -18,12 +17,10 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class AggregatePAHashMap implements PAMap {
 
-    private Graph g;
     private Map<TravelSurveyZone, Float> attractors;
     private Map<TravelSurveyZone, Float> producers;
 
-    public AggregatePAHashMap(Graph graph) {
-        this.g = graph;
+    public AggregatePAHashMap() {
         attractors = new ConcurrentHashMap<TravelSurveyZone,Float>();
         producers = new ConcurrentHashMap<TravelSurveyZone,Float>();
     }
@@ -58,14 +55,6 @@ public class AggregatePAHashMap implements PAMap {
     @Override
     public float getProductions(TravelSurveyZone z) {
         return producers.getOrDefault(z, 0.0f);
-    }
-
-    /* (non-Javadoc)
-     * @see edu.utexas.wrap.demand.PAMap#getGraph()
-     */
-    @Override
-    public Graph getGraph() {
-        return g;
     }
 
     /* (non-Javadoc)

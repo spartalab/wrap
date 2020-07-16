@@ -5,7 +5,6 @@ import java.util.Collection;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.modechoice.Mode;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class TransposeModalPAMatrix implements ModalPAMatrix {
@@ -13,11 +12,6 @@ public class TransposeModalPAMatrix implements ModalPAMatrix {
 	
 	public TransposeModalPAMatrix(ModalPAMatrix pa) {
 		base = pa;
-	}
-
-	@Override
-	public Graph getGraph() {
-		return base.getGraph();
 	}
 
 	@Override
@@ -45,6 +39,11 @@ public class TransposeModalPAMatrix implements ModalPAMatrix {
 	@Override
 	public Mode getMode() {
 		return base.getMode();
+	}
+	
+	@Override
+	public Collection<TravelSurveyZone> getZones(){
+		return base.getZones();
 	}
 
 }

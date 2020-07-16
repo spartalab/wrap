@@ -60,6 +60,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+@Deprecated
 public class ModelInputNCTCOG implements ModelInput {
 	private Properties inputs;
 	private Graph graph;

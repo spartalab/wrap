@@ -1,7 +1,7 @@
 package edu.utexas.wrap.net;
 
 public class TravelSurveyZone {
-	private final Node origin;
+	private final int nodeID;
 	private final int order;
 //	private RegionalAreaAnalysisZone parent;
 	private final AreaClass ac;
@@ -10,18 +10,14 @@ public class TravelSurveyZone {
 
 	
 	
-	public TravelSurveyZone(Node origin, int order, AreaClass ac) {
-		this.origin = origin;
+	public TravelSurveyZone(int nodeID, int order, AreaClass ac) {
+		this.nodeID = nodeID;
 		this.order = order;
 		this.ac = ac;
 	}
 	
-	public Node node() {
-		return origin;
-	}
-	
 	public int getID() {
-		return origin.getID();
+		return nodeID;
 	}
 	
 	@Override

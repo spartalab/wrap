@@ -3,6 +3,7 @@ package edu.utexas.wrap.marketsegmentation;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
@@ -37,8 +38,8 @@ import edu.utexas.wrap.modechoice.FixedProportionSplitter;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.modechoice.TripInterchangeSplitter;
 import edu.utexas.wrap.net.Demographic;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.NetworkSkim;
+import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.AggregatePAMatrixCollector;
 import edu.utexas.wrap.util.PassengerVehicleTripConverter;
 import edu.utexas.wrap.util.TimeOfDaySplitter;
@@ -55,7 +56,8 @@ class BasicPurpose implements Purpose {
 	
 	private final Properties properties;
 	
-	private final Graph network;
+//	private final Graph network;
+	private final Collection<TravelSurveyZone> zones;
 	private final PAMap paMap;
 	private final Map<String,FrictionFactorMap> frictFacts;
 	
@@ -63,14 +65,14 @@ class BasicPurpose implements Purpose {
 
 	public BasicPurpose(
 			Path purposeFile, 
-			Graph network, 
+			Collection<TravelSurveyZone> zones, 
 			Map<String,Demographic> demographics,
 			Map<String,FrictionFactorMap> frictFacts
 			) throws IOException {
 
-		this.network = network;
+//		this.network = network;
 		this.frictFacts = frictFacts;
-
+		this.zones = zones;
 		properties = new Properties();
 		properties.load(Files.newInputStream(purposeFile));
 		
@@ -97,7 +99,7 @@ class BasicPurpose implements Purpose {
 	private TripGenerator productionGenerator() {
 		switch (properties.getProperty("prodGenerator")) {
 		case "basic":
-			return new BasicTripGenerator(network,productionRates());
+			return new BasicTripGenerator(zones,productionRates());
 		case "rateProportion":
 			throw new RuntimeException("Not yet implemented");
 		default:
@@ -133,7 +135,7 @@ class BasicPurpose implements Purpose {
 	private TripGenerator attractionGenerator() {
 		switch (properties.getProperty("attrGenerator")) {
 		case "basic":
-			return new BasicTripGenerator(network,attractionRates());
+			return new BasicTripGenerator(zones,attractionRates());
 		case "rateProportion":
 			throw new RuntimeException("Not yet implemented");
 		default:
@@ -198,7 +200,7 @@ class BasicPurpose implements Purpose {
 	
 	private TripDistributor distributor(String skimID) {
 		return new GravityDistributor(
-				network, 
+				zones, 
 				skims.get(skimID), 
 				frictionFactors(properties.getProperty("distrib."+skimID+".frictFacts")));
 	}

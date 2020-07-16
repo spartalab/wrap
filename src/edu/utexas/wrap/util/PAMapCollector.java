@@ -85,12 +85,7 @@ class CombinedPAMap implements PAMap {
 	public float getProductions(TravelSurveyZone z) {
 		return (float) children.parallelStream().mapToDouble(map -> map.getProductions(z)).sum();
 	}
-
-	@Override
-	public Graph getGraph() {
-		return children.parallelStream().map(PAMap::getGraph).findAny().get();
-	}
-
+	
 	@Override
 	public void putAttractions(TravelSurveyZone z, Float amt) {
 		throw new RuntimeException("Writing to read-only map");
@@ -103,14 +98,14 @@ class CombinedPAMap implements PAMap {
 
 	@Override
 	public DemandMap getProductionMap() {
-		DemandMap ret = new FixedSizeDemandMap(getGraph());
+		DemandMap ret = new FixedSizeDemandMap(getZones());
 		getProducers().parallelStream().forEach(producer -> ret.put(producer, getProductions(producer)));
 		return ret;
 	}
 
 	@Override
 	public DemandMap getAttractionMap() {
-		DemandMap ret = new FixedSizeDemandMap(getGraph());
+		DemandMap ret = new FixedSizeDemandMap(getZones());
 		getAttractors().parallelStream().forEach(attractor -> ret.put(attractor, getAttractions(attractor)));
 		return ret;
 	}

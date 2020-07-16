@@ -8,18 +8,15 @@ import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.modechoice.Mode;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
+public class ModalHashMatrix implements ODMatrix, ModalPAMatrix {
 	
 	private final Mode m;
-	private Graph g;
 	protected Map<TravelSurveyZone,DemandMap> map;
 	private float vot;
 	
-	public ModalHashMatrix(Graph g, Mode mode) {
-		this.g = g;
+	public ModalHashMatrix(Mode mode) {
 		this.m = mode;
 		map = new ConcurrentHashMap<TravelSurveyZone, DemandMap>();
 	}
@@ -43,7 +40,7 @@ public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 	 */
 	@Override
 	public void put(TravelSurveyZone prod, TravelSurveyZone attr, Float demand) {
-		map.putIfAbsent(prod, new DemandHashMap(getGraph()));
+		map.putIfAbsent(prod, new DemandHashMap(getZones()));
 		map.get(prod).put(attr, demand);
 		
 	}
@@ -64,14 +61,6 @@ public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 		return vot;
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.utexas.wrap.demand.ODMatrix#getGraph()
-	 */
-	@Override
-	public Graph getGraph() {
-		return g;
-	}
-
 	@Override
 	public DemandMap getDemandMap(TravelSurveyZone producer) {
 		return map.get(producer);
@@ -85,6 +74,12 @@ public class ModalHashMatrix  implements ODMatrix, ModalPAMatrix {
 	@Override
 	public void setVOT(float VOT) {
 		vot = VOT;
+	}
+
+	@Override
+	public Collection<TravelSurveyZone> getZones() {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("Not yet implemented");
 	}
 
 

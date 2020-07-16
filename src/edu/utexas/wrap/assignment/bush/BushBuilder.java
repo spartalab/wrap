@@ -34,11 +34,12 @@ public class BushBuilder implements AssignmentBuilder<Bush> {
 		BackVector[] initMap = new BackVector[nodes.size()];
 		FibonacciHeap<Node> Q = new FibonacciHeap<Node>(nodes.size(),1.0f);
 		for (Node n : nodes) {
-			if (!n.equals(bush.root().node())) {
+			if (!n.getID().equals(bush.root().getID())) {
 				Q.add(n, Double.MAX_VALUE);
 			}
+			else Q.add(n,0.0);
 		}
-		Q.add(bush.root().node(), 0.0);
+//		Q.add(bush.root().node(), 0.0);
 
 		while (!Q.isEmpty()) {
 			FibonacciLeaf<Node> u = Q.poll();

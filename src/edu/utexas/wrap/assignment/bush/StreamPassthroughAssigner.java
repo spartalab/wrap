@@ -121,4 +121,10 @@ public class StreamPassthroughAssigner implements StaticAssigner {
 	public NetworkSkim getSkim(ToDoubleFunction<Link> function) {
 		throw new RuntimeException("Not yet implemented");
 	}
+
+	@Override
+	public void outputFlows(Path outputFile) {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("Not yet implemented");
+	}
 }

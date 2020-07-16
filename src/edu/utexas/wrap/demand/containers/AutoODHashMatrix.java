@@ -9,6 +9,7 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  * @author William
  *
  */
+@Deprecated
 public class AutoODHashMatrix extends ModalHashMatrix {
 	private final Float vot;
 	

@@ -7,22 +7,22 @@ import java.util.concurrent.ConcurrentHashMap;
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.PAMatrix;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class AggregatePAHashMatrix implements AggregatePAMatrix {
 
-	private Graph g;
+//	private Graph g;
+	private final Collection<TravelSurveyZone> zones;
 	private Map<TravelSurveyZone,DemandMap> matrix;
 
-	public AggregatePAHashMatrix(Graph g) {
-		this.g = g;
-		matrix = new ConcurrentHashMap<TravelSurveyZone,DemandMap>(g.numZones(),1.0f);
+	public AggregatePAHashMatrix(Collection<TravelSurveyZone> zones) {
+		this.zones = zones;
+		matrix = new ConcurrentHashMap<TravelSurveyZone,DemandMap>(zones.size(),1.0f);
 	}
 
 	public AggregatePAHashMatrix(PAMatrix hbwSum, Map<TravelSurveyZone, Float> map) {
-		g = hbwSum.getGraph();
-		matrix = new ConcurrentHashMap<TravelSurveyZone,DemandMap>(g.numZones(),1.0f);
+		zones = hbwSum.getZones();
+		matrix = new ConcurrentHashMap<TravelSurveyZone,DemandMap>(zones.size(),1.0f);
 		hbwSum.getProducers().parallelStream().forEach(prod ->{
 			matrix.put(prod, new FixedMultiplierPassthroughDemandMap(hbwSum.getDemandMap(prod),map.getOrDefault(prod,0.0f)));
 		});
@@ -49,8 +49,8 @@ public class AggregatePAHashMatrix implements AggregatePAMatrix {
 	 * @see edu.utexas.wrap.demand.PAMatrix#getGraph()
 	 */
 	@Override
-	public Graph getGraph() {
-		return g;
+	public Collection<TravelSurveyZone> getZones(){
+		return zones;
 	}
 
 	/* (non-Javadoc)
@@ -58,7 +58,7 @@ public class AggregatePAHashMatrix implements AggregatePAMatrix {
 	 */
 	@Override
 	public void put(TravelSurveyZone producer, TravelSurveyZone attractor, Float demand) {
-		matrix.putIfAbsent(producer,new DemandHashMap(g));
+		matrix.putIfAbsent(producer,new DemandHashMap(zones));
 		((DemandMap) matrix.get(producer)).put(attractor,demand);
 		
 	}

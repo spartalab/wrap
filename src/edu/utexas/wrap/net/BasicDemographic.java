@@ -11,7 +11,7 @@ import java.util.stream.IntStream;
 public class BasicDemographic implements Demographic {
 	Map<TravelSurveyZone,Float[]> zoneData;
 
-	public BasicDemographic(Path demographicFile, Graph network) throws IOException {
+	public BasicDemographic(Path demographicFile, Map<Integer,TravelSurveyZone> zoneIDs) throws IOException {
 		zoneData = new HashMap<TravelSurveyZone,Float[]>();
 		BufferedReader reader = Files.newBufferedReader(demographicFile);
 		
@@ -20,7 +20,7 @@ public class BasicDemographic implements Demographic {
 		
 		reader.lines().forEach(line ->{
 			String[] args = line.split(",");
-			TravelSurveyZone zone = network.getNode(Integer.parseInt(args[0])).getZone();
+			TravelSurveyZone zone = zoneIDs.get(Integer.parseInt(args[0]));
 			Float[] demos = new Float[cols-1];
 			
 			IntStream.range(1, cols)

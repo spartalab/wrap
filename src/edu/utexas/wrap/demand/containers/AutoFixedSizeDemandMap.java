@@ -4,6 +4,7 @@ import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 
+@Deprecated
 public class AutoFixedSizeDemandMap extends FixedSizeDemandMap implements AutoDemandMap {
 	private AutoODHashMatrix parent;
 	

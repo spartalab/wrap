@@ -7,29 +7,29 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import edu.utexas.wrap.demand.DemandMap;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class FixedSizeDemandMap implements DemandMap {
-	private final Graph graph;
-	private float[] demand;
+//	private final Graph graph;
+	private final Collection<TravelSurveyZone> zones;
+	private final float[] demand;
 	
-	public FixedSizeDemandMap(Graph g) {
-		graph = g;
-		demand = new float[g.numZones()];
+	public FixedSizeDemandMap(Collection<TravelSurveyZone> zones) {
+		this.zones = zones;
+		demand = new float[zones.size()];
 	}
 	
 	public FixedSizeDemandMap(DemandMap base) {
-		graph = base.getGraph();
-		demand = new float[graph.numZones()];
+		zones = base.getZones();
+		demand = new float[zones.size()];
 		base.getZones().parallelStream().forEach(tsz -> demand[tsz.getOrder()] = base.get(tsz));
 	}
 	
 	public FixedSizeDemandMap(Stream<DemandMap> baseMapStream) {
 		Collection<DemandMap> baseMaps = baseMapStream.collect(Collectors.toSet());
-		graph = baseMaps.parallelStream().map(DemandMap::getGraph).findAny().get();
-		demand = new float[graph.numZones()];
-		graph.getTSZs().forEach(tsz -> demand[tsz.getOrder()] = (float)
+		zones = baseMaps.stream().findFirst().get().getZones();
+		demand = new float[zones.size()];
+		zones.forEach(tsz -> demand[tsz.getOrder()] = (float)
 				baseMaps.parallelStream()
 				.mapToDouble(dm -> (double) dm.get(tsz))
 				.sum()
@@ -47,15 +47,8 @@ public class FixedSizeDemandMap implements DemandMap {
 	}
 
 	@Override
-	public Graph getGraph() {
-		return graph;
-	}
-
-	@Override
 	public Collection<TravelSurveyZone> getZones() {
-		return graph.getTSZs().parallelStream()
-				.filter(tsz -> get(tsz) > 0)
-				.collect(Collectors.toSet());
+		return zones;
 	}
 
 	@Override
@@ -75,7 +68,7 @@ public class FixedSizeDemandMap implements DemandMap {
 	@Override
 	public Map<TravelSurveyZone, Double> doubleClone() {
 		Map<TravelSurveyZone, Double> ret = new HashMap<TravelSurveyZone, Double>();
-		for (TravelSurveyZone n : graph.getTSZs()) {
+		for (TravelSurveyZone n : zones) {
 			ret.put(n,(double) demand[n.getOrder()]);
 		}
 		return ret;

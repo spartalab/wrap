@@ -1,5 +1,6 @@
 package edu.utexas.wrap.assignment;
 
+import java.nio.file.Path;
 import java.util.function.ToDoubleFunction;
 
 import edu.utexas.wrap.demand.ODProfile;
@@ -11,5 +12,7 @@ public interface Assigner extends Runnable {
 	public void process(ODProfile profile);
 	
 	public NetworkSkim getSkim(ToDoubleFunction<Link> function);
+
+	public void outputFlows(Path outputFile);
 	
 }

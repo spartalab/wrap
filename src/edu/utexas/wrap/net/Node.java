@@ -5,21 +5,19 @@ import java.util.stream.IntStream;
 public class Node {
 
 	private final int ID;
-	private TravelSurveyZone zone;
+	private final TravelSurveyZone zone;
 	private final int graphOrder;
-	private final boolean isCentroid;
 	private Link[] outLinks, inLinks;
 	
-	public Node(Integer ID, Boolean isCentroid, Integer order) {
+	public Node(Integer ID, Integer order, TravelSurveyZone zone) {
 		this.ID = ID;
-		this.isCentroid = isCentroid;
 		graphOrder = order;
+		this.zone = zone;
 	}
 	
 	public Node(Node n) {
 		this.ID = n.ID;
 		this.graphOrder = n.graphOrder;
-		this.isCentroid = n.isCentroid;
 		this.zone = n.zone;
 	}
 	
@@ -37,7 +35,7 @@ public class Node {
 
 
 	public boolean isCentroid() {
-		return isCentroid;
+		return zone == null;
 	}
 
 
@@ -75,8 +73,5 @@ public class Node {
 	public TravelSurveyZone getZone() {
 		return zone;
 	}
-	
-	public void setTravelSurveyZone(TravelSurveyZone zone) {
-		this.zone = zone;
-	}
+
 }

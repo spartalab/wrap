@@ -32,15 +32,16 @@ public class BushInitializer implements AssignmentInitializer<Bush>{
 	}
 	
 	public void add(ODMatrix matrix) {
-		Stream<Bush> rawBushes = matrix.getOrigins()
+		Stream<Bush> rawBushes = matrix.getZones()
 				.parallelStream()
 				.filter(tsz -> !matrix.getDemandMap(tsz).isEmpty())
 				.map(tsz -> new Bush(
-				tsz, 
-				matrix.getVOT(), 
-				matrix.getMode(),
-				matrix.getDemandMap(tsz)));
-		
+						network.getNode(tsz.getID()), 
+						matrix.getVOT(), 
+						matrix.getMode(),
+						matrix.getDemandMap(tsz))
+						);
+
 		containers = containers == null? rawBushes :
 			Stream.concat(containers, rawBushes);
 	}

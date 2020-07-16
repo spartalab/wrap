@@ -19,7 +19,7 @@ public class DemandMapCSVWriter {
 					StandardOpenOption.CREATE, 
 					StandardOpenOption.TRUNCATE_EXISTING);
 			out.write("TSZ,Demand\r\n");
-			map.getGraph().getTSZs().parallelStream().forEach(
+			map.getZones().getTSZs().parallelStream().forEach(
 					zone -> {
 						try {
 							out.write(

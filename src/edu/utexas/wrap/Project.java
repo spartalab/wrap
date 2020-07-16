@@ -1,13 +1,9 @@
 package edu.utexas.wrap;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
@@ -23,17 +19,15 @@ import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.bush.StreamPassthroughAssigner;
 import edu.utexas.wrap.marketsegmentation.Market;
 import edu.utexas.wrap.net.AreaClass;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.NetworkSkim;
-import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
-import edu.utexas.wrap.util.io.GraphFactory;
 import edu.utexas.wrap.util.io.SkimFactory;
 
 public class Project {
-	private Properties props;
-	private Graph network;
+	private final Properties props;
+//	private Graph network;
+	private Map<Integer, TravelSurveyZone> zones;
 	private Path projDir;
 	
 	public Project(Path projFile) throws IOException {
@@ -41,91 +35,23 @@ public class Project {
 		props.load(Files.newInputStream(projFile));
 		
 		projDir = projFile.getParent();
-		
-		network = readNetwork();
+		zones = getZones();
+//		network = readNetwork();
+//		throw new RuntimeException("Zones not loaded");
 	}
 	
-	private Graph readNetwork() {
-		System.out.println("Reading network");
-		
-		try {
-			File linkFile = projDir.resolve(props.getProperty("network.links")).toFile();
-			
-			Map<Integer, AreaClass> zoneClasses = getAreaClasses();
-			
-			switch(props.getProperty("network.linkType")) {
-
-			case "conic":
-				
-				Integer ftn = Integer.parseInt(props.getProperty("network.firstThruNode"));
-				return GraphFactory.readConicGraph(linkFile, ftn, zoneClasses);
-				
-			case "bpr":
-				//TODO
-				Graph g = GraphFactory.readTNTPGraph(linkFile);
-				
-				AtomicInteger idx = new AtomicInteger(0);
-				
-				zoneClasses.entrySet().parallelStream()
-				.forEach(entry -> {
-					Node n = g.getNode(entry.getKey());
-					TravelSurveyZone z = new TravelSurveyZone(n,idx.getAndIncrement(),entry.getValue());
-					n.setTravelSurveyZone(z);
-					g.addZone(z);
-				});
-				g.setNumZones(idx.get());
-				
-				return g;
-			default:
-				throw new IllegalArgumentException("network.type");
-			}
-			
-		} catch (NullPointerException e) {
-			System.err.println("Missing property: network.linkFile");
-			System.exit(-2);
-			return null;
-			
-		} catch (NumberFormatException e) {
-			// TODO Auto-generated catch block
-			System.err.println("Invalid property value: network.firstThruNode\r\nCould not parse integer");
-			System.exit(-3);
-			return null;
-			
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			System.err.println("Invalid property value: network.linkFile\r\nFile not found");
-			e.printStackTrace();
-			System.exit(-4);
-			return null;
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			System.err.println("Error while reading network files");
-			System.exit(-5);
-			return null;
-			
-		} catch (IllegalArgumentException e) {
-			System.err.println("Illegal argument: "+e.getMessage());
-			System.exit(-6);
-			return null;
-		}
-		
-	}
-
-	public Graph getNetwork() {
-		return network;
-	}
 	
-	private Map<Integer, AreaClass> getAreaClasses() throws IOException {
+	private Map<Integer, TravelSurveyZone> getZones() throws IOException {
 		BufferedReader reader = Files.newBufferedReader(projDir.resolve(props.getProperty("network.zones")));
 		reader.readLine();
+		AtomicInteger idx = new AtomicInteger(0);
 
-		Map<Integer, AreaClass> zoneClasses = reader.lines()
+		Map<Integer, TravelSurveyZone> zones = reader.lines()
 				.map(string -> string.split(","))
 				.collect(Collectors.toMap(
 						args -> Integer.parseInt(args[0]), 
-						args -> AreaClass.values()[Integer.parseInt(args[1])-1]));
-		return zoneClasses;
+						args -> new TravelSurveyZone(Integer.parseInt(args[0]),idx.getAndIncrement(),AreaClass.values()[Integer.parseInt(args[1])-1])));
+		return zones;
 	}
 
 	public Collection<Market> getMarkets(){
@@ -140,7 +66,7 @@ public class Project {
 				Stream.of(projNames.split(","))
 				.map(name -> {
 					try {
-						return new Market(projDir.resolve(props.getProperty("markets."+name+".file")), network);
+						return new Market(projDir.resolve(props.getProperty("markets."+name+".file")), zones);
 					} catch (IOException e) {
 						System.err.println("Could not load trip purposes for "+name);
 						e.printStackTrace();
@@ -168,7 +94,7 @@ public class Project {
 								id -> SkimFactory.readSkimFile(
 										projDir.resolve(props.getProperty("skims."+id+".file")), 
 										false, 
-										network
+										zones
 										)
 								)
 						)
@@ -212,8 +138,8 @@ public class Project {
 
 			case "bush":
 				return new BasicStaticAssigner<Bush>(
-						network, //TODO this should provide a copy of the network, rather than the initial one to allow for multiple non-interfering Assigners
-						projDir.resolve(props.getProperty("assigners."+id+".file"))
+						projDir.resolve(props.getProperty("assigners."+id+".file")),
+						zones
 						);
 			default:
 				throw new RuntimeException("Not yet implemented");
@@ -225,29 +151,10 @@ public class Project {
 		}
 	}
 
-	private  void outputFlows() {
-		try {
-			BufferedWriter writer = Files.newBufferedWriter(projDir.resolve("flows.csv"),StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-			network.getLinks().parallelStream()
-			.map(link -> link.toString()+","+link.getFlow()+","+link.getTravelTime()+"\r\n")
-			.forEach(line -> {
-				try {
-					writer.write(line);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-			});
-			writer.close();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
 	
-	public void output(Map<String, NetworkSkim> finalSkims) {
+	public void output(Map<String,Assigner> assigners) {
 		// TODO Auto-generated method stub
+		Map<String,NetworkSkim> finalSkims = getFeedbackSkims(assigners);
 		
 		System.out.println("Printing final skims");
 		finalSkims.entrySet()
@@ -255,13 +162,15 @@ public class Project {
 				entry -> SkimFactory.outputCSV(
 						finalSkims.get(entry.getKey()),
 						projDir.resolve(props.getProperty("skims."+entry.getKey()+".file")),
-						getNetwork().getTSZs()
+						zones.values()
 						)
 				);
 		
 		
 		System.out.println("Printing final flows");
-		outputFlows();
+		assigners.forEach((id, assigner) -> {
+			assigner.outputFlows(projDir.resolve(id+"flows.csv"));
+		});
 
 	}
 }

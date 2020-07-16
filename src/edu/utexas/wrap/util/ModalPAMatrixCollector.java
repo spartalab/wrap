@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.modechoice.Mode;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class ModalPAMatrixCollector implements Collector<ModalPAMatrix,Collection<ModalPAMatrix>,ModalPAMatrix> {
@@ -57,11 +56,6 @@ class CombinedModalPAMatrix implements ModalPAMatrix {
 		children = pas;
 	}
 	
-	@Override
-	public Graph getGraph() {
-		return children.parallelStream().map(ModalPAMatrix::getGraph).findAny().get();
-	}
-
 	@Override
 	public void put(TravelSurveyZone producer, TravelSurveyZone attractor, Float demand) {
 		throw new RuntimeException("Writing to read-only matrix");

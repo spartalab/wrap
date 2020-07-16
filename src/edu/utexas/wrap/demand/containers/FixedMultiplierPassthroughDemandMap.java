@@ -4,7 +4,6 @@ import java.util.Collection;
 import java.util.Map;
 
 import edu.utexas.wrap.demand.DemandMap;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class FixedMultiplierPassthroughDemandMap implements DemandMap {
@@ -19,11 +18,6 @@ public class FixedMultiplierPassthroughDemandMap implements DemandMap {
 	@Override
 	public float get(TravelSurveyZone dest) {
 		return multiplier*parent.get(dest);
-	}
-
-	@Override
-	public Graph getGraph() {
-		return parent.getGraph();
 	}
 
 	@Override

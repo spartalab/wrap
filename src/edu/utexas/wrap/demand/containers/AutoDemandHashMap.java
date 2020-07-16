@@ -8,6 +8,7 @@ import edu.utexas.wrap.net.Graph;
  * @author William
  *
  */
+@Deprecated
 public class AutoDemandHashMap extends DemandHashMap implements AutoDemandMap {
 
 	private final AutoODHashMatrix parent;

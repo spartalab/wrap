@@ -2,10 +2,9 @@ package edu.utexas.wrap.assignment.bush;
 
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -27,7 +26,7 @@ public class Bush implements AssignmentContainer {
 	public static boolean orderCachingEnabled = true;
 	public static boolean flowCachingEnabled = false;
 	// Bush attributes
-	private final TravelSurveyZone origin;
+	private final Node origin;
 	private final Float vot;
 	private final Mode c;
 	
@@ -49,7 +48,7 @@ public class Bush implements AssignmentContainer {
 	 * @param mode the demand to be carried on the bush
 	 * @param demandMap the mode of travel for the bush
 	 */
-	public Bush(TravelSurveyZone origin, Float vot, Mode mode, DemandMap demandMap) {
+	public Bush(Node origin, Float vot, Mode mode, DemandMap demandMap) {
 		this.origin = origin;
 		this.vot = vot;
 		this.c = mode;
@@ -115,7 +114,7 @@ public class Bush implements AssignmentContainer {
 		Node[] to = new Node[q.length];
 		LinkedList<Node> S = new LinkedList<Node>();
 		// "start nodes"
-		S.add(origin.node());
+		S.add(origin);
 		Node n;
 		int pos = 0;
 
@@ -171,7 +170,7 @@ public class Bush implements AssignmentContainer {
 	 * @return the origin of the bush
 	 */
 	public TravelSurveyZone root() {
-		return origin;
+		return origin.getZone();
 	}
 
 	/**Get the backvector at a given node
@@ -220,7 +219,7 @@ public class Bush implements AssignmentContainer {
 		int a = 2017;	//	Year of inception for this project
 		int b = 76537;	//	UT 76-5-37 TAMC \m/
 		
-		return (origin.node().getID()*a 
+		return (origin.getID()*a 
 				+ vot.toString().hashCode())*b 
 				+ (c == null? 0 : c.toString().hashCode());
 	}
@@ -233,7 +232,7 @@ public class Bush implements AssignmentContainer {
 		//If the link is a centroid connector
 		return uv instanceof CentroidConnector? 
 				//that doesn't lead from the origin and
-				uv.getTail().equals(origin.node())? true :
+				uv.getTail().getID().equals(origin.getID())? true :
 					//leads from a different centroid instead
 					(uv.getHead().isCentroid() && !uv.getTail().isCentroid())? true:
 						//then we can't use the link in the bush
@@ -295,8 +294,20 @@ public class Bush implements AssignmentContainer {
 	public Map<Link, Double> flows(){
 		if (cachedFlows != null) return cachedFlows;
 		//Get the reverse topological ordering and a place to store node flows
-		Map<TravelSurveyZone,Double> tszFlow = demand.doubleClone();
-		Map<Node,Double> nodeFlow = tszFlow.keySet().parallelStream().collect(Collectors.toMap(x -> x.node(), x -> tszFlow.get(x)));
+//		Map<TravelSurveyZone,Double> tszFlow = demand.doubleClone();
+//		
+//		Map<Node,Double> nodeFlow = tszFlow.keySet().parallelStream()
+//				.collect(Collectors.toMap(x -> x.node(), x -> tszFlow.get(x)));
+		Map<Node,Double> nodeFlow = 
+				getNodes().stream()
+				.filter(node -> node.getZone() != null)
+				.collect(
+						Collectors.toMap(
+								Function.identity(), 
+								node -> (double) demand.get(node.getZone())
+								)
+						);
+		
 		Node[] iter = getTopologicalOrder(true);
 		Map<Link,Double> ret = new HashMap<Link,Double>(size(),1.0f);
 
@@ -333,7 +344,7 @@ public class Bush implements AssignmentContainer {
 			}
 
 			//If we've reached a dead end in the topological ordering, throw an exception
-			else if (back == null && !n.equals(origin.node())) {
+			else if (back == null && !n.getID().equals(origin.getID())) {
 				throw new RuntimeException("Missing backvector for "+n.toString());
 			}
 			
@@ -346,7 +357,7 @@ public class Bush implements AssignmentContainer {
 	 * @see java.lang.Object#toString()
 	 */
 	public String toString() {
-		return "ORIG=" + origin.node().getID() + "\tVOT=" + vot + "\tCLASS=" + c;
+		return "ORIG=" + origin.getID() + "\tVOT=" + vot + "\tCLASS=" + c;
 	}
 	
 	/**
@@ -392,50 +403,6 @@ public class Bush implements AssignmentContainer {
 		cachedTopoOrder = null;
 	}
 
-	public boolean cycleCheck() {
-		Set<Node> visited = new HashSet<Node>(demand.getGraph().numNodes(),1.0f);
-		Set<Node> stack = new HashSet<Node>(demand.getGraph().numNodes(),1.0f);
-		for (Node node : getNodes()) {
-//			if (node.equals(origin.node())) continue;
-			if (cycleCheck(node,visited,stack)) return true;
-		}
-		return false;
-	}
-
-	private boolean cycleCheck(Node node, Set<Node> visited, Set<Node> stack) {
-		// TODO explore modifying Set to Deque
-		if (stack.contains(node)) 
-			return true;
-		
-		if (visited.contains(node)) 
-			return false;
-		visited.add(node);
-		stack.add(node);
-
-		
-		for (Link l : node.forwardStar()) {
-			if (contains(l)) {
-				if (cycleCheck(l.getHead(),visited,stack)) return true;
-			}
-		}
-		stack.remove(node);
-		return false;
-//		BackVector bv = getBackVector(node);
-//		if (bv instanceof Link) {
-//			if (cycleCheck(((Link) bv).getTail(),visited,stack,nextIndex)) return true;
-//			stack.remove(node);
-//			return false;
-//		}
-//		else if (bv instanceof BushMerge) {
-//			for (Link l : ((BushMerge) bv).getLinks().collect(Collectors.toSet())) {
-//				if (cycleCheck(l.getTail(),visited,stack,nextIndex)) return true;
-//				stack.remove(node);
-//				return false;
-//			}
-//		}
-//		else if (bv == null && node.equals(origin.node())) return false;
-//		throw new RuntimeException();
-	}
 
 	/**
 	 * @return the total generalized cost for trips in this bush
@@ -505,11 +472,6 @@ public class Bush implements AssignmentContainer {
 //		return true;
 //	}
 
-	public BushEvaluator getEvaluator(Class<? extends BushEvaluator> calcClass) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("Not yet implemented");
-	}
-
 	@Override
 	public double demand(Node n) {
 		return n.getZone() == null? 0.0 : demand.get(n.getZone());
@@ -517,20 +479,7 @@ public class Bush implements AssignmentContainer {
 
 	public Collection<Node> getNodes(){
 		Collection<Node> nodes = getQ().filter(x -> x != null).map(BackVector::getHead).collect(Collectors.toSet());
-		nodes.add(origin.node());
+		nodes.add(origin);
 		return nodes;
-	}
-	
-	private boolean contains(Link l) {
-		BackVector bv =  q[l.getHead().getOrder()];
-		
-		if (bv == null || 
-				((bv instanceof Link) && !((Link)bv).equals(l)) ||
-				((bv instanceof BushMerge) && !((BushMerge) bv).contains(l))) return false;
-		return true;
-	}
-	
-	Collection<Node> outOnly(){
-		return demand.getGraph().getNodes().parallelStream().filter(node -> q[node.getOrder()] == null).collect(Collectors.toSet());
 	}
 }

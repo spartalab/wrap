@@ -135,7 +135,7 @@ public class ProductionAttractionFactory {
 	 * @throws IOException
 	 */
 	public static PAMap readMap(File file, boolean header, Graph g) throws IOException {
-		PAMap ret = new AggregatePAHashMap(g);
+		PAMap ret = new AggregatePAHashMap();
 		BufferedReader in = null;
 
 		try {

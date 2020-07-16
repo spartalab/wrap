@@ -35,7 +35,7 @@ public class AlgorithmBEquilibrator {
 				cur = topoOrder[i];
 
 				//Ignore the origin. Should be same as break if topoOrder is correct 
-				if (cur == null || cur.equals(bush.root().node())) continue;
+				if (cur == null || cur.getID().equals(bush.root().getID())) continue;
 
 				//Determine the ASP, including the maximum delta that can be shifted
 				AlternateSegmentPair asp = getShortLongASP(bush, cur, bushFlows, pcc);

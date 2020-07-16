@@ -2,7 +2,6 @@ package edu.utexas.wrap.demand;
 
 import java.util.Collection;
 
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**A map from an origin and destination zone to the
@@ -21,10 +20,9 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  */
 public interface PAMatrix {
 
-	/**
-	 * @return the graph to which this matrix is tied
-	 */
-	public Graph getGraph();
+	public default Collection<TravelSurveyZone> getZones(){
+		throw new RuntimeException("Not yet implemented");
+	}
 
 	/**
 	 * @param producer the Node from which trips are produced

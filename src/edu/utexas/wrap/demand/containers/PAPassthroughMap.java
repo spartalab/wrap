@@ -5,7 +5,6 @@ import java.util.Collections;
 
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.PAMap;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class PAPassthroughMap implements PAMap {
@@ -34,11 +33,6 @@ public class PAPassthroughMap implements PAMap {
 	@Override
 	public float getProductions(TravelSurveyZone z) {
 		return prods == null? 0.0f : prods.get(z);
-	}
-
-	@Override
-	public Graph getGraph() {
-		return prods.getGraph();
 	}
 
 	@Override

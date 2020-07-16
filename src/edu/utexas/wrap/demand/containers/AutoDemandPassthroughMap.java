@@ -9,6 +9,7 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
+@Deprecated
 public class AutoDemandPassthroughMap implements AutoDemandMap {
 
 	private DemandMap map;
@@ -27,7 +28,7 @@ public class AutoDemandPassthroughMap implements AutoDemandMap {
 
 	@Override
 	public Graph getGraph() {
-		return map.getGraph();
+		return map.getZones();
 	}
 
 	@Override

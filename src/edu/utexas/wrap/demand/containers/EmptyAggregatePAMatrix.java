@@ -5,21 +5,11 @@ import java.util.Collections;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class EmptyAggregatePAMatrix implements AggregatePAMatrix {
 
-	private Graph graph;
 	
-	public EmptyAggregatePAMatrix(Graph g) {
-		graph = g;
-	}
-	
-	@Override
-	public Graph getGraph() {
-		return graph;
-	}
 
 	@Override
 	public void put(TravelSurveyZone producer, TravelSurveyZone attractor, Float demand) {
@@ -33,11 +23,17 @@ public class EmptyAggregatePAMatrix implements AggregatePAMatrix {
 
 	@Override
 	public DemandMap getDemandMap(TravelSurveyZone producer) {
-		return new EmptyDemandMap(graph);
+		return new EmptyDemandMap();
 	}
 
 	@Override
 	public Collection<TravelSurveyZone> getProducers() {
+		return Collections.emptySet();
+	}
+
+	@Override
+	public Collection<TravelSurveyZone> getZones() {
+		// TODO Auto-generated method stub
 		return Collections.emptySet();
 	}
 

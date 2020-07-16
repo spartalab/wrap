@@ -38,8 +38,8 @@ public class ODMatrixBINWriter {
 			Files.createDirectories(path.getParent());
 			OutputStream out = Files.newOutputStream(path,
 					StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-			matrix.getGraph().getTSZs().parallelStream().forEach( orig -> {
-				matrix.getGraph().getTSZs().parallelStream()
+			matrix.getZones().getTSZs().parallelStream().forEach( orig -> {
+				matrix.getZones().getTSZs().parallelStream()
 //				.filter(dest -> matrix.getDemand(orig,dest) > 0)
 				.forEach(dest ->{
 					try {
@@ -47,8 +47,8 @@ public class ODMatrixBINWriter {
 						
 						if (demand > 0)	out.write(
 								ByteBuffer.allocate(2*Integer.BYTES+Float.BYTES)
-								.putInt(orig.node().getID())
-								.putInt(dest.node().getID())
+								.putInt(orig.getID())
+								.putInt(dest.getID())
 								.putFloat(demand).array());
 					} catch (IOException e) {
 						// TODO Auto-generated catch block

@@ -6,7 +6,6 @@ import java.util.stream.Collectors;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class PerProductionZoneMultiplierPassthroughMatrix implements AggregatePAMatrix {
@@ -17,11 +16,6 @@ public class PerProductionZoneMultiplierPassthroughMatrix implements AggregatePA
 	public PerProductionZoneMultiplierPassthroughMatrix(AggregatePAMatrix initialMatrix, Map<TravelSurveyZone, Float> perZoneRates) {
 		parent = initialMatrix;
 		rates = perZoneRates;
-	}
-
-	@Override
-	public Graph getGraph() {
-		return parent.getGraph();
 	}
 
 	@Override

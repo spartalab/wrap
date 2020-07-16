@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class AggregatePAMatrixCollector implements Collector<AggregatePAMatrix, Collection<AggregatePAMatrix>, AggregatePAMatrix> {
@@ -58,8 +57,8 @@ class CombinedAggregatePAMatrix implements AggregatePAMatrix {
 	}
 	
 	@Override
-	public Graph getGraph() {
-		return children.parallelStream().map(AggregatePAMatrix::getGraph).findAny().get();
+	public Collection<TravelSurveyZone> getZones() {
+		return children.parallelStream().map(AggregatePAMatrix::getZones).findAny().get();
 	}
 
 	@Override

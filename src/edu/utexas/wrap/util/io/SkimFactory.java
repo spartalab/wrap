@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.function.ToDoubleFunction;
 
 import edu.utexas.wrap.net.FixedSizeNetworkSkim;
@@ -33,8 +34,8 @@ public class SkimFactory {
 	 * @return 2d array of floats that can be indexed by the pair of zones storing the skim rates between the zones
 	 * @throws IOException
 	 */
-	public static NetworkSkim readSkimFile(Path file, boolean header, Graph graph) {
-		float[][] ret = new float[graph.numZones()][graph.numZones()];
+	public static NetworkSkim readSkimFile(Path file, boolean header, Map<Integer,TravelSurveyZone> zones) {
+		float[][] ret = new float[zones.size()][zones.size()];
 //		Map<TravelSurveyZone,Map<TravelSurveyZone,Float>> ret = new ConcurrentSkipListMap<TravelSurveyZone, Map<TravelSurveyZone,Float>>(new ZoneComparator());
 		BufferedReader in = null;
 		
@@ -42,7 +43,7 @@ public class SkimFactory {
 			in = new BufferedReader(Files.newBufferedReader(file));
 			if (header) in.readLine();
 			in.lines()//.parallel()
-			.forEach(line -> processLine(graph,ret,line));
+			.forEach(line -> processLine(zones,ret,line));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -57,10 +58,10 @@ public class SkimFactory {
 		return new FixedSizeNetworkSkim(ret);
 	}
 
-	private static void processLine(Graph graph, float[][] ret, String line) {
+	private static void processLine(Map<Integer,TravelSurveyZone> zones, float[][] ret, String line) {
 		String[] args = line.split(",");
-		TravelSurveyZone orig = graph.getNode(Integer.parseInt(args[0])).getZone();
-		TravelSurveyZone dest = graph.getNode(Integer.parseInt(args[1])).getZone();
+		TravelSurveyZone orig = zones.get(Integer.parseInt(args[0]));
+		TravelSurveyZone dest = zones.get(Integer.parseInt(args[1]));
 		Float cost = Float.parseFloat(args[2]);
 //		ret.putIfAbsent(orig, new ConcurrentSkipListMap<TravelSurveyZone, Float>(new ZoneComparator()));
 		ret[orig.getOrder()][dest.getOrder()] = cost;
@@ -89,11 +90,11 @@ public class SkimFactory {
 		.forEach(orig -> {
 			FibonacciHeap<Node> Q = new FibonacciHeap<Node>(zones.size(),1.0f);
 			for (Node n : network.getNodes()) {
-				if (!n.equals(orig.node())) {
+				if (!n.getID().equals(orig.getID())) {
 					Q.add(n, Double.MAX_VALUE);
 				}
+				else Q.add(n,0.0);
 			}
-			Q.add(orig.node(), 0.0);
 
 			while (!Q.isEmpty()) {
 				FibonacciLeaf<Node> u = Q.poll();

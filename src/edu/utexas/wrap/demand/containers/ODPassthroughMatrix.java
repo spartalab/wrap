@@ -7,7 +7,6 @@ import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.modechoice.Mode;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class ODPassthroughMatrix implements ODMatrix {
@@ -40,8 +39,8 @@ public class ODPassthroughMatrix implements ODMatrix {
 	}
 
 	@Override
-	public Graph getGraph() {
-		return base.getGraph();
+	public Collection<TravelSurveyZone> getZones() {
+		return base.getZones();
 	}
 
 	@Override
@@ -54,11 +53,6 @@ public class ODPassthroughMatrix implements ODMatrix {
 		vot = VOT;
 	}
 
-	@Override
-	public Collection<TravelSurveyZone> getOrigins() {
-		// TODO Auto-generated method stub
-		return null;
-	}
 
 	@Override
 	public DemandMap getDemandMap(TravelSurveyZone origin) {

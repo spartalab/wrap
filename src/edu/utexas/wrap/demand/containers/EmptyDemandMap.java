@@ -6,23 +6,16 @@ import java.util.Map;
 
 import edu.utexas.wrap.demand.AutoDemandMap;
 import edu.utexas.wrap.modechoice.Mode;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class EmptyDemandMap implements AutoDemandMap {
-	private Graph g;
-	public EmptyDemandMap(Graph gPrime) {
-		g = gPrime;
+	
+	public EmptyDemandMap() {
 	}
 
 	@Override
 	public float get(TravelSurveyZone dest) {
 		return 0.0f;
-	}
-
-	@Override
-	public Graph getGraph() {
-		return g;
 	}
 
 	@Override

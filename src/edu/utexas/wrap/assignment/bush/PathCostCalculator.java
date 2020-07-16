@@ -48,7 +48,7 @@ public class PathCostCalculator {
 		//In topological order,
 		for (Node d : to) {
 			if (d == null) continue;
-			else if (d == bush.root().node()) shortCache[d.getOrder()] = 0.;
+			else if (d.getID().equals(bush.root().getID())) shortCache[d.getOrder()] = 0.;
 
 			BackVector bv = bush.getBackVector(d);
 			if (bv instanceof Link) shortRelax((Link) bv);
@@ -99,7 +99,7 @@ public class PathCostCalculator {
 		//In topological order,
 		for (Node d : to) {
 			if (d == null) continue;
-			else if (d == bush.root().node()) longCache[d.getOrder()] = 0.;
+			else if (d.getID().equals(bush.root().getID())) longCache[d.getOrder()] = 0.;
 			
 			//Try to relax the backvector (all links in the BushMerge, if applicable)
 			BackVector bv = bush.getBackVector(d);
@@ -152,7 +152,7 @@ public class PathCostCalculator {
 	 */
 	public Node divergeNode(Node start) {
 		// If the given node is the origin or it has only one backvector, there is no diverge node
-		if (start.equals(bush.root().node()) || !(bush.getBackVector(start) instanceof BushMerge))
+		if (start.getID().equals(bush.root().getID()) || !(bush.getBackVector(start) instanceof BushMerge))
 			return start;
 
 		//Store the nodes seen on the paths in reverse order

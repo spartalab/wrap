@@ -11,15 +11,16 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 public class DemandHashMap implements DemandMap {
 
 	Graph g;
+	private final Collection<TravelSurveyZone> zones;
 	private Map<TravelSurveyZone,Float> map; 
 
-	public DemandHashMap(Graph g) {
-		this.g = g;
-		map = new ConcurrentHashMap<TravelSurveyZone,Float>(g.numZones(),1.0f);
+	public DemandHashMap(Collection<TravelSurveyZone> zones) {
+		this.zones = zones;
+		map = new ConcurrentHashMap<TravelSurveyZone,Float>(zones.size(),1.0f);
 	}
 	
 	protected DemandHashMap(DemandHashMap d) {
-		this.g = d.getGraph();
+		this.zones = d.getZones();
 		map = new ConcurrentHashMap<TravelSurveyZone,Float>(d.map);
 	}
 	
@@ -39,20 +40,13 @@ public class DemandHashMap implements DemandMap {
 		return map.getOrDefault(dest, 0.0f);
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.utexas.wrap.demand.DemandMap#getGraph()
-	 */
-	@Override
-	public Graph getGraph() {
-		return g;
-	}
 
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.demand.DemandMap#getNodes()
 	 */
 	@Override
 	public Collection<TravelSurveyZone> getZones() {
-		return map.keySet();
+		return zones;
 	}
 
 	@Override

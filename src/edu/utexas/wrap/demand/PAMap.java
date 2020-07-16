@@ -2,7 +2,6 @@ package edu.utexas.wrap.demand;
 
 import java.util.Collection;
 
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**A mapping from a zone to the number of productions
@@ -39,11 +38,6 @@ public interface PAMap {
 	 * @return the number of trips produced at the Node
 	 */
 	public float getProductions(TravelSurveyZone z);
-
-	/**
-	 * @return the Graph to which the PA map is tied
-	 */
-	public Graph getGraph();
 
 	/**
 	 * @param z the Node to which trips are attracted

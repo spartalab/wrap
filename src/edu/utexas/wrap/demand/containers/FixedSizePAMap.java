@@ -5,15 +5,12 @@ import java.util.stream.Stream;
 
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.PAMap;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class FixedSizePAMap implements PAMap {
-	final Graph graph;
 	final DemandMap prods, attrs;
 	
 	public FixedSizePAMap(PAMap base) {
-		graph = base.getGraph();
 		prods = new FixedSizeDemandMap(base.getProductionMap());
 		attrs = new FixedSizeDemandMap(base.getAttractionMap());
 	}
@@ -21,7 +18,6 @@ public class FixedSizePAMap implements PAMap {
 	public FixedSizePAMap(Stream<DemandMap> prodMapStream, Stream<DemandMap> attrMapStream) {
 		prods = new FixedSizeDemandMap(prodMapStream);
 		attrs = new FixedSizeDemandMap(attrMapStream);
-		graph = prods.getGraph();
 	}
 
 	@Override
@@ -42,11 +38,6 @@ public class FixedSizePAMap implements PAMap {
 	@Override
 	public float getProductions(TravelSurveyZone z) {
 		return prods.get(z);
-	}
-
-	@Override
-	public Graph getGraph() {
-		return graph;
 	}
 
 	@Override

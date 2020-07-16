@@ -28,8 +28,7 @@ public class Graph {
 	private List<Node> order;
 //	private Map<Node,Integer> nodeOrder;
 	private Set<Link> links;
-	private Collection<TravelSurveyZone> zones;
-	private int numZones;
+	private final Collection<TravelSurveyZone> zones;
 	private int numNodes;
 	private int numLinks;
 	private byte[] md5;
@@ -40,23 +39,21 @@ public class Graph {
 	private Map<Integer,Link> hashes = new HashMap<Integer,Link>();
 	
 	
-	public Graph() {
+	public Graph(Collection<TravelSurveyZone> zones) {
 		outLinks = (new HashMap<Node, Set<Link>>());
 		inLinks = (new HashMap<Node, Set<Link>>());
 		nodeMap = (new HashMap<Integer,Node>());
 		order = (new ArrayList<Node>());
 		links = new HashSet<Link>();
-		numZones = 0;
 		numNodes = 0;
 		numLinks = 0;
-		zones = new HashSet<TravelSurveyZone>();
+		this.zones = zones;
 	}
 	
 	public Graph(Graph g) {
 		nodeMap = g.nodeMap;
 		order = Collections.unmodifiableList(g.order);
 		links = g.links;
-		numZones = g.numZones;
 		numNodes = g.numNodes;
 		numLinks = g.numLinks;
 		forwardStar = g.forwardStar;
@@ -130,12 +127,9 @@ public class Graph {
 	}
 
 	public int numZones() {
-		return numZones;
+		return zones.size();
 	}
 
-	public void setNumZones(int numZones) {
-		this.numZones = numZones;
-	}
 
 //	public Link[] inLinks(Node u){
 //		return reverseStar[u.getOrder()];
@@ -246,12 +240,11 @@ public class Graph {
 
 	public Graph getDerivativeGraph(Map<Link, Link> linkMap, Map<Node,Node> mapOfNodes) {
 		// TODO Auto-generated method stub
-		Graph ret = new Graph();
+		Graph ret = new Graph(zones);
 		
 		ret.nodeMap = nodeMap;
 		ret.numLinks = numLinks;
 		ret.numNodes = numNodes;
-		ret.numZones = numZones;
 		ret.forwardStar = new Link[forwardStar.length][];
 		ret.reverseStar = new Link[reverseStar.length][];
 		ret.setMD5(getMD5());
@@ -309,9 +302,9 @@ public class Graph {
 		return zones;
 	}
 	
-	public boolean addZone(TravelSurveyZone zone) {
-		return zones.add(zone);
-	}
+//	public boolean addZone(TravelSurveyZone zone) {
+//		return zones.add(zone);
+//	}
 
 //	public Set<RegionalAreaAnalysisZone> getRAAs() {
 //		return zones.parallelStream().map(TravelSurveyZone::getRAA).collect(Collectors.toSet());
@@ -334,11 +327,12 @@ public class Graph {
 		Double cost = 0.0;
 		
 		for (Node n : nodes) {
-			if (!n.equals(container.root().node())) {
+			if (!n.getID().equals(container.root().getID())) {
 				Q.add(n, Double.MAX_VALUE);
 			}
+			else Q.add(n,0.0);
 		}
-		Q.add(container.root().node(), 0.0);
+//		Q.add(container.root().node(), 0.0);
 
 		while (!Q.isEmpty()) {
 			FibonacciLeaf<Node> u = Q.poll();

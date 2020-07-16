@@ -27,6 +27,7 @@ import java.util.AbstractMap.SimpleEntry;
  * @author William Alexander
  *
  */
+@Deprecated
 public class wrapTP {
 
 	public static void main(String[] args) {

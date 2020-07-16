@@ -23,6 +23,7 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.util.AggregatePAMatrixCollector;
 import edu.utexas.wrap.util.DepartureArrivalConverter;
 
+@Deprecated
 public class BasicTripPurpose extends Thread implements TripPurpose {
 	
 	private ModelInput model;

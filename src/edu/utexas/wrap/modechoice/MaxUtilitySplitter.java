@@ -22,8 +22,8 @@ public class MaxUtilitySplitter extends TripInterchangeSplitter {
 	public Set<ModalPAMatrix> split(AggregatePAMatrix aggregate, MarketSegment ms) {
 		// TODO Auto-generated method stub
 		Map<Mode, ModalPAMatrix> map = new HashMap<Mode,ModalPAMatrix>();
-		for (Node origin : (aggregate.getGraph().getNodes())) {
-			for (Node dest : (aggregate.getGraph().getNodes())) {
+		for (Node origin : (aggregate.getZones().getNodes())) {
+			for (Node dest : (aggregate.getZones().getNodes())) {
 				Double util = null;
 				Mode mode = null;
 				
@@ -34,7 +34,7 @@ public class MaxUtilitySplitter extends TripInterchangeSplitter {
 					}
 				}
 				
-				map.putIfAbsent(mode, new ModalHashMatrix(aggregate.getGraph(),mode));
+				map.putIfAbsent(mode, new ModalHashMatrix(aggregate.getZones(),mode));
 			}
 			
 		}

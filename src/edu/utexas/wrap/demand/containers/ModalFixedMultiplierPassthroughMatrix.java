@@ -7,7 +7,6 @@ import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.PAMatrix;
 import edu.utexas.wrap.modechoice.Mode;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class ModalFixedMultiplierPassthroughMatrix implements ModalPAMatrix {
@@ -27,8 +26,8 @@ public class ModalFixedMultiplierPassthroughMatrix implements ModalPAMatrix {
 	}
 	
 	@Override
-	public Graph getGraph() {
-		return aggregate.getGraph();
+	public Collection<TravelSurveyZone> getZones() {
+		return aggregate.getZones();
 	}
 
 	@Override

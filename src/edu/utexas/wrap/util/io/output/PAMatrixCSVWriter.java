@@ -20,10 +20,10 @@ public class PAMatrixCSVWriter {
 					StandardOpenOption.CREATE,
 					StandardOpenOption.TRUNCATE_EXISTING);
 			out.write("Prod,Attr,Demand\r\n");
-			matrix.getGraph().getTSZs().parallelStream().forEach(
+			matrix.getZones().getTSZs().parallelStream().forEach(
 					
 					prod -> {
-						matrix.getGraph().getTSZs().parallelStream().forEach(
+						matrix.getZones().getTSZs().parallelStream().forEach(
 								
 								attr ->{
 									
