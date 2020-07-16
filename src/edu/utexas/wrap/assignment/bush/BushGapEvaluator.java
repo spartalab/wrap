@@ -16,8 +16,10 @@ public class BushGapEvaluator implements BushEvaluator {
 	public double getValue(Bush bush) {
 		Double num = bush.incurredCost();
 		Double denom = cheapestCostPossible(bush);
-		if (num.isNaN() || denom.isNaN() || ((Double) (num/denom)).isNaN()) 
+		if (num.isNaN() || denom.isNaN() || (((Double) (num/denom)).isNaN() && !num.equals(denom))) 
 			throw new RuntimeException();
+		else if (((Double) (num/denom)).isNaN())
+			return 0;
 		return num/denom - 1.0;
 	}
 	
