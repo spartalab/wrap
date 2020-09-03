@@ -1,4 +1,4 @@
-package edu.utexas.wrap.tests;
+package edu.utexas.wrap.tests.distribution;
 
 import java.io.File;
 import java.io.FileNotFoundException;

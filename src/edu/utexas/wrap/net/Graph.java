@@ -65,7 +65,8 @@ public class Graph {
 	//TODO improve concurrency availability here
 	public synchronized Boolean add(Link link) {
 		
-		if (hashes.containsKey(link.hashCode())) throw new RuntimeException("Hash collision");
+		if (hashes.containsKey(link.hashCode())) 
+			throw new RuntimeException("Hash collision");
 		else hashes.put(link.hashCode(),link);
 		
 		numLinks++;
@@ -203,7 +204,6 @@ public class Graph {
 ////		return nodeOrder.getOrDefault(n,-1);
 //	}
 
-	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder("struct/");
 		for (byte b : getMD5()) {

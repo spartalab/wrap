@@ -37,7 +37,6 @@ public class FixedSizeDemandMap implements DemandMap {
 		
 	}
 
-	@Override
 	public float get(TravelSurveyZone dest) {
 		try{
 			return demand[dest.getOrder()];
@@ -46,12 +45,10 @@ public class FixedSizeDemandMap implements DemandMap {
 		}
 	}
 
-	@Override
 	public Collection<TravelSurveyZone> getZones() {
 		return zones;
 	}
 
-	@Override
 	public Float put(TravelSurveyZone dest, Float put) {
 		int idx = dest.getOrder();
 		Float d = demand[idx];
@@ -59,13 +56,11 @@ public class FixedSizeDemandMap implements DemandMap {
 		return d;
 	}
 
-	@Override
 	public boolean isEmpty() {
 		for (Float d : demand) if (d > 0) return false;
 		return true;
 	}
 
-	@Override
 	public Map<TravelSurveyZone, Double> doubleClone() {
 		Map<TravelSurveyZone, Double> ret = new HashMap<TravelSurveyZone, Double>();
 		for (TravelSurveyZone n : zones) {

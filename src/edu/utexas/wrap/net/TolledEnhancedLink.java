@@ -17,8 +17,8 @@ public class TolledEnhancedLink extends TolledLink {
 	public TolledEnhancedLink(Node tail, Node head, Float capacity, Float length, Float fftime, Float conicalParam,
 			Float VDFShift, Float sParam, Float uParam, Float saturatedFlowRate, Float minDelay, Float operCost,
 			Float CA, Float CB, Float CC, Float CD, 
-			float[] classTolls, boolean[] classesAllowed) {
-		super(tail, head, capacity, length, fftime);
+			float[] classTolls, boolean[] classesAllowed, Integer linkID) {
+		super(tail, head, capacity, length, fftime, linkID);
 		this.conicalParam = conicalParam;
 		this.VDFshift = VDFShift;
 		s = sParam;
@@ -38,7 +38,6 @@ public class TolledEnhancedLink extends TolledLink {
 		h0 = h(0.0);
 	}
 
-	@Override
 	public Boolean allowsClass(Mode c) {
 		return classesAllowed[c.ordinal()];
 //		return allowedClasses.getOrDefault(c, true);
@@ -90,19 +89,16 @@ public class TolledEnhancedLink extends TolledLink {
 		return 1 - x + VDFshift;
 	}
 
-	@Override
 	public double getPrice(Float vot, Mode c) {
 		return getToll(c) + getTravelTime() * vot;
 	}
 
-	@Override
 	public Float getToll(Mode c) {
 		if (!allowsClass(c))
 			return Float.MAX_VALUE;
 		return classTolls[c.ordinal()] + operCost;
 	}
 
-	@Override
 	public synchronized double getTravelTime() {
 		// T == T_0 + c(v) + s(v) + u(v)
 		try {
@@ -163,7 +159,6 @@ public class TolledEnhancedLink extends TolledLink {
 		return rPrime() - conicalParam * gPrime();
 	}
 
-	@Override
 	public double pricePrime(Float vot) {
 		// d( k(v) + m*t(v) )/dv
 		// == t'(v) * m + k'(v)
@@ -312,7 +307,6 @@ public class TolledEnhancedLink extends TolledLink {
 
 	}
 
-	@Override
 	public double tIntegral() {
 
 		// Integral from 0 to v of:
@@ -331,12 +325,10 @@ public class TolledEnhancedLink extends TolledLink {
 						+ (unsignalizedIntegral()); // Integral of u(x) dx
 	}
 
-	@Override
 	public double tollPrime() {
 		return 0.0;
 	}
 
-	@Override
 	public double tPrime() {
 		// t'(v) == d( T_0 + c(v) + s(v) + u(v) )/dv
 		// == c'(v) + s'(v) + u'(v)
@@ -368,7 +360,6 @@ public class TolledEnhancedLink extends TolledLink {
 		return ((double) u) / getCapacity();
 	}
 
-	@Override
 	public double getPrice(AssignmentContainer container) {
 		return getPrice(container.valueOfTime(),container.vehicleClass());
 	}

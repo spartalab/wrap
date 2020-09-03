@@ -9,8 +9,8 @@ public class TolledBPRLink extends TolledLink {
 	private final Double tp;
 
 	
-	public TolledBPRLink(Node tail, Node head, Float capacity, Float length, Float fftime, Float b, Float power, Float toll) {
-		super(tail,head,capacity,length,fftime);
+	public TolledBPRLink(Node tail, Node head, Float capacity, Float length, Float fftime, Float b, Float power, Float toll, Integer linkID) {
+		super(tail,head,capacity,length,fftime, linkID);
 		
 		this.b = b;
 		this.power = power;
@@ -33,7 +33,6 @@ public class TolledBPRLink extends TolledLink {
 		return power;
 	}
 	
-	@Override
 	public double getPrice(Float vot, Mode c) {
 //		if (cachedPrice != null) return cachedPrice; // Causes a convergence failure for some reason
 
@@ -105,7 +104,6 @@ public class TolledBPRLink extends TolledLink {
 		return r;
 	}
 
-	@Override
 	public double getPrice(AssignmentContainer container) {
 		// TODO Auto-generated method stub
 		return getPrice(container.valueOfTime(),container.vehicleClass());

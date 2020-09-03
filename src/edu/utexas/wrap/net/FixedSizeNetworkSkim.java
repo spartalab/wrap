@@ -12,7 +12,6 @@ public class FixedSizeNetworkSkim implements NetworkSkim {
 		skimData = new float[numZones][numZones];
 	}
 
-	@Override
 	public float getCost(TravelSurveyZone producer, TravelSurveyZone attractor) {
 		// TODO Auto-generated method stub
 		return skimData[producer.getOrder()][attractor.getOrder()];

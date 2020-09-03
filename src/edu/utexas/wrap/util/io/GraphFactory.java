@@ -57,6 +57,7 @@ public class GraphFactory {
 				}
 			} while (!line.startsWith("~"));
 
+			int numLinks = 0;
 			while (true) { // Iterate through each link (row)
 				line = lf.readLine();
 				if (line == null)
@@ -87,10 +88,10 @@ public class GraphFactory {
 				if (tail >= ftn && head >= ftn) {
 					Float B = parse(cols[5]);
 					Float power = parse(cols[6]);
-					link = new TolledBPRLink(nodeIDs.get(tail), nodeIDs.get(head), capacity, length, fftime, B, power, toll);
+					link = new TolledBPRLink(nodeIDs.get(tail), nodeIDs.get(head), capacity, length, fftime, B, power, toll,numLinks++);
 				}
 				else {
-					link = new CentroidConnector(nodeIDs.get(tail), nodeIDs.get(head), capacity, length, fftime, toll);
+					link = new CentroidConnector(nodeIDs.get(tail), nodeIDs.get(head), capacity, length, fftime, toll,numLinks++);
 				}
 				g.add(link);
 			}
@@ -118,7 +119,7 @@ public class GraphFactory {
 		try {
 		MessageDigest md = MessageDigest.getInstance("MD5");
 		Graph g = new Graph(zoneIDs.values());
-		AtomicInteger numNodes = new AtomicInteger(0);
+		AtomicInteger numNodes = new AtomicInteger(0), numLinks = new AtomicInteger(0);
 		DigestInputStream dis = new DigestInputStream(new FileInputStream(f), md);
 		BufferedReader lf = new BufferedReader(new InputStreamReader(dis));
 		Map<Integer, Node> nodes = new ConcurrentHashMap<Integer,Node>();
@@ -198,23 +199,23 @@ public class GraphFactory {
 			allowed[Mode.MED_TRUCK.ordinal()] = a;
 
 				Link AB = null;
-				if (aCap > 0 && satFlowA > 0) {
+				if (!zoneIDs.containsKey(nodeA) && !zoneIDs.containsKey(nodeB)) {
 					AB = new TolledEnhancedLink(nodes.get(nodeA), nodes.get(nodeB), aCap, length, ffTimeA, alpha,
-							epsilon, sParA, uParA, satFlowA, minDel, opCostA, caA, cbA, ccA, cdA, tollA, allowed);
+							epsilon, sParA, uParA, satFlowA, minDel, opCostA, caA, cbA, ccA, cdA, tollA, allowed,numLinks.getAndIncrement());
 				} else {
 					AB = new CentroidConnector(nodes.get(nodeA), nodes.get(nodeB), aCap, length, ffTimeA,
-							opCostA.floatValue());
+							opCostA.floatValue(), numLinks.getAndIncrement());
 				}
 				g.add(AB);
 
-			if (bCap > 0.0) {
+			if (Boolean.parseBoolean(args[36].trim())) {
 				Link BA = null;
-				if (satFlowB > 0) {
+				if (!zoneIDs.containsKey(nodeA) && !zoneIDs.containsKey(nodeB)) {
 					BA = new TolledEnhancedLink(nodes.get(nodeB), nodes.get(nodeA), bCap, length, ffTimeB, alpha,
-							epsilon, sParB, uParB, satFlowB, minDel, opCostB, caB, cbB, ccB, cdB, tollB, allowed);
+							epsilon, sParB, uParB, satFlowB, minDel, opCostB, caB, cbB, ccB, cdB, tollB, allowed, numLinks.getAndIncrement());
 				} else {
 					BA = new CentroidConnector(nodes.get(nodeB), nodes.get(nodeA), bCap, length, ffTimeB,
-							opCostB.floatValue());
+							opCostB.floatValue(), numLinks.getAndIncrement());
 				}
 				g.add(BA);
 			}

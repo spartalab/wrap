@@ -125,12 +125,10 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 		return map.get(head);
 	}
 
-	@Override
 	public boolean isEmpty() {
 		return n == 0;
 	}
 
-	@Override
 	public Iterator<FibonacciLeaf<E>> iterator() {
 		// TODO Auto-generated method stub
 		return null;
@@ -144,7 +142,6 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 		y.mark = false;
 	}
 
-	@Override
 	public boolean offer(FibonacciLeaf<E> e) {
 		rootList.add(e);
 		if (min == null || e.key < min.key) min = e;
@@ -153,7 +150,6 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 		return true;
 	}
 	
-	@Override
 	public FibonacciLeaf<E> peek() {
 		return min;
 	}
@@ -172,7 +168,6 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 //		return h;
 //	}
 
-	@Override
 	public FibonacciLeaf<E> poll() {
 		FibonacciLeaf<E> z = min;
 		if (z != null) {
@@ -193,12 +188,10 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 		return z;
 	}
 
-	@Override
 	public int size() {
 		return n;
 	}
 	
-	@Override
 	public String toString() {
 		return "Heap size="+size()+"\tmin="+min.toString();
 	}

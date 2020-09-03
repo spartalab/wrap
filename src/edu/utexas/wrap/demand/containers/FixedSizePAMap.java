@@ -20,42 +20,34 @@ public class FixedSizePAMap implements PAMap {
 		attrs = new FixedSizeDemandMap(attrMapStream);
 	}
 
-	@Override
 	public Collection<TravelSurveyZone> getProducers() {
 		return prods.getZones();
 	}
 
-	@Override
 	public Collection<TravelSurveyZone> getAttractors() {
 		return attrs.getZones();
 	}
 
-	@Override
 	public float getAttractions(TravelSurveyZone z) {
 		return attrs.get(z);
 	}
 
-	@Override
 	public float getProductions(TravelSurveyZone z) {
 		return prods.get(z);
 	}
 
-	@Override
 	public void putAttractions(TravelSurveyZone z, Float amt) {
 		attrs.put(z, amt);
 	}
 
-	@Override
 	public void putProductions(TravelSurveyZone z, Float amt) {
 		prods.put(z, amt);
 	}
 
-	@Override
 	public DemandMap getProductionMap() {
 		return prods;
 	}
 
-	@Override
 	public DemandMap getAttractionMap() {
 		return attrs;
 	}

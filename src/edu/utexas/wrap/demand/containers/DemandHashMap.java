@@ -27,7 +27,6 @@ public class DemandHashMap implements DemandMap {
 	/* (non-Javadoc)
 	 * @see java.util.HashMap#clone()
 	 */
-	@Override
 	public DemandHashMap clone() {
 		return new DemandHashMap(this);
 	}
@@ -35,7 +34,6 @@ public class DemandHashMap implements DemandMap {
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.demand.DemandMap#get(edu.utexas.wrap.net.Node)
 	 */
-	@Override
 	public float get(TravelSurveyZone dest) {
 		return map.getOrDefault(dest, 0.0f);
 	}
@@ -44,24 +42,20 @@ public class DemandHashMap implements DemandMap {
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.demand.DemandMap#getNodes()
 	 */
-	@Override
 	public Collection<TravelSurveyZone> getZones() {
 		return zones;
 	}
 
-	@Override
 	public Map<TravelSurveyZone, Double> doubleClone() {
 		Map<TravelSurveyZone, Double> ret = new ConcurrentHashMap<TravelSurveyZone,Double>(map.size());
 		for (TravelSurveyZone key : map.keySet()) ret.put(key, (double) get(key));
 		return ret;
 	}
 
-	@Override
 	public Float put(TravelSurveyZone attr, Float demand) {
 		return map.put(attr, demand);
 	}
 
-	@Override
 	public boolean isEmpty() {
 		return map.isEmpty();
 	}

@@ -2,8 +2,6 @@ package edu.utexas.wrap.distribution;
 
 import java.util.NavigableMap;
 
-import edu.utexas.wrap.net.TravelSurveyZone;
-
 /**A friction factor map that depends on a cost skim and
  * an ordered set of multiplication factors. The impedance
  * between two TSZs is determined by the travel cost between
@@ -22,8 +20,7 @@ public class CostBasedFrictionFactorMap implements FrictionFactorMap {
 		costFactors = factors;
 	}
 	
-	@Override
-	public Float get(TravelSurveyZone producer, TravelSurveyZone attractor, float skimCost) {
+	public Float get(float skimCost) {
 //		Float cost = travelCosts.getCost(producer, attractor);
 		if (skimCost < 0) throw new RuntimeException("Negative travel cost");
 		

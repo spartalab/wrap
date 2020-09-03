@@ -20,7 +20,6 @@ public class TravelSurveyZone {
 		return nodeID;
 	}
 	
-	@Override
 	public String toString() {
 		return "Zone "+this.getID();
 	}

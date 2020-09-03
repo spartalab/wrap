@@ -24,7 +24,6 @@ public class BushBuilder implements AssignmentBuilder<Bush> {
 		this.costFunction = costFunction;
 	}
 
-	@Override
 	public void buildStructure(Bush bush) {
 		// Initialize every nodeL to infinity except this, the origin
 		// Initialize the empty map of finalized nodes, the map of 

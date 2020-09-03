@@ -35,7 +35,7 @@ public class Node {
 
 
 	public boolean isCentroid() {
-		return zone == null;
+		return zone != null;
 	}
 
 

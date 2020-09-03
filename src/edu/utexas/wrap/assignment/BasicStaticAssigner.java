@@ -161,7 +161,6 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 
 
 
-	@Override
 	public void process(ODProfile profile) {
 		initializer.add(profile.getMatrix(getTimePeriod()));
 	}
@@ -244,7 +243,6 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 
 
 
-	@Override
 	public void outputFlows(Path outputFile) {
 		// TODO Auto-generated method stub
 		try {

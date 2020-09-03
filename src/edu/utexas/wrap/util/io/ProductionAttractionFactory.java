@@ -3,6 +3,7 @@ package edu.utexas.wrap.util.io;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
 import java.util.Set;
@@ -134,16 +135,16 @@ public class ProductionAttractionFactory {
 	 * @return PA Map from the file
 	 * @throws IOException
 	 */
-	public static PAMap readMap(File file, boolean header, Graph g) throws IOException {
+	public static PAMap readMap(Path path, boolean header, Map<Integer,TravelSurveyZone> zones) throws IOException {
 		PAMap ret = new AggregatePAHashMap();
 		BufferedReader in = null;
 
 		try {
-			in = new BufferedReader(new FileReader(file));
+			in = Files.newBufferedReader(path);
 			if (header) in.readLine();
 			in.lines().parallel().forEach(line -> {
-				String[] args = line.split(",");
-				TravelSurveyZone tsz = g.getNode(Integer.parseInt(args[0])).getZone();
+				String[] args = line.replaceAll("[^\\x00-\\xff]", "").split(",");
+				TravelSurveyZone tsz = zones.get(Integer.parseInt(args[0]));
 				Float prods = Float.parseFloat(args[1]);
 				Float attrs = Float.parseFloat(args[2]);
 
@@ -167,17 +168,17 @@ public class ProductionAttractionFactory {
 	 * @return PA Matrix from the file
 	 * @throws IOException
 	 */
-	public static PAMatrix readMatrix(File file, boolean header, Graph g) throws IOException {
-		PAMatrix ret = new AggregatePAHashMatrix(g);
+	public static PAMatrix readMatrix(Path path, boolean header, Map<Integer, TravelSurveyZone> zones) throws IOException {
+		PAMatrix ret = new AggregatePAHashMatrix(zones.values());
 		BufferedReader in = null;
 
 		try {
-			in = new BufferedReader(new FileReader(file));
+			in = Files.newBufferedReader(path);
 			if (header) in.readLine();
 			in.lines().parallel().forEach(line -> {
 				String[] args = line.split(",");
-				TravelSurveyZone prod = g.getNode(Integer.parseInt(args[0])).getZone();
-				TravelSurveyZone attr = g.getNode(Integer.parseInt(args[1])).getZone();
+				TravelSurveyZone prod = zones.get(Integer.parseInt(args[0]));
+				TravelSurveyZone attr = zones.get(Integer.parseInt(args[1]));
 				Float trips = Float.parseFloat(args[2]);
 
 				ret.put(prod, attr, trips);

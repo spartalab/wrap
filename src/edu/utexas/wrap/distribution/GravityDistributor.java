@@ -1,5 +1,6 @@
 package edu.utexas.wrap.distribution;
 
+
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -26,6 +27,7 @@ public class GravityDistributor extends TripDistributor {
 	private final NetworkSkim skim;
 	private final FrictionFactorMap friction;
 	private final Collection<TravelSurveyZone> zones;
+	private final Double margin = 0.001;
 //	private final Graph g;
 
 	public GravityDistributor(Collection<TravelSurveyZone> zones, NetworkSkim skim, FrictionFactorMap fm) {
@@ -34,14 +36,11 @@ public class GravityDistributor extends TripDistributor {
 		this.skim = skim;
 	}
 	
-	@Override
 	public AggregatePAMatrix distribute(PAMap pa) {
 		//Begin by iteratively calculating each zone's A and B values
-//		Map<TravelSurveyZone, Double> a = Object2DoubleMaps.synchronize(new Object2DoubleOpenHashMap<TravelSurveyZone>(g.numZones(),1.0f));
-//		Map<TravelSurveyZone, Double> b = Object2DoubleMaps.synchronize(new Object2DoubleOpenHashMap<TravelSurveyZone>(g.numZones(),1.0f));
 
-		Float[] a1 = new Float[zones.size()];
-		Float[] b1 = new Float[zones.size()];
+		Double[] a = new Double[zones.size()];
+		Double[] b = new Double[zones.size()];
 		
 		AtomicBoolean converged = new AtomicBoolean(false);
 		//While the previous iteration made changes
@@ -50,68 +49,77 @@ public class GravityDistributor extends TripDistributor {
 			converged.set(true);
 			iterations++;
 //			System.out.println("Iteration "+iterations);
-			
+
 			//For each producer
-			pa.getProducers().parallelStream().forEach(i -> {
+			zones.parallelStream().forEach(i -> {
 				//Calculate a new denominator as sum_attractors(attractions*impedance*b)
-				Double denom = pa.getAttractors().parallelStream()
+				Double denom = zones.stream()
 						.mapToDouble(x -> 
-//						b.getOrDefault(x, 1.0)
-						b1[x.getOrder()] == null? 1.0 : b1[x.getOrder()]
-						*pa.getAttractions(x)*friction.get(i,x,skim.getCost(i, x))).sum();
+						(b[x.getOrder()] == null? 1.0 : b[x.getOrder()])
+						*pa.getAttractions(x)*friction.get(skim.getCost(i, x)))
+						.sum();
+				
 				//Check for errors
 				if (denom == 0.0 || denom.isNaN()) throw new RuntimeException();
+				
+				//Write a new A value for this producer
+				Double temp = a[i.getOrder()];
+				a[i.getOrder()] = 1.0/denom;
+				
 				//If no A value exists yet or this is not within the numerical tolerance of the previous value
-				if (a1[i.getOrder()] == null || !converged(a1[i.getOrder()] == null? 1.0 : a1[i.getOrder()], 1.0/denom)) {
-					//Write a new A value for this producer
+				if (temp == null || !converged(temp, a[i.getOrder()])) {
 					converged.set(false);
-					a1[i.getOrder()] = (float) (1.0/denom);
-//					a.put(i, 1.0/denom);
 				}
 			});
 
+			
 			//For each attractor
-			pa.getAttractors().forEach(j->{
+			zones.parallelStream().forEach(j->{
+				
 				//Calculate a new denominator as sum_producers(productions*impedance*a)
-				Double denom = pa.getProducers().parallelStream()
+				Double denom = zones.stream()
 						.mapToDouble(x-> 
-//						a.getOrDefault(x, 1.0)
-						a1[x.getOrder()] == null? 1.0 : a1[x.getOrder()]
-						*pa.getProductions(x)*friction.get(x,j,skim.getCost(x, j))).sum();
+						(a[x.getOrder()] == null? 1.0 : a[x.getOrder()])
+						*pa.getProductions(x)*friction.get(skim.getCost(x, j)))
+						.sum();
+				
 				//Check for errors
 				if (denom == 0.0 || denom.isNaN()) throw new RuntimeException();
+				
+				//Write a new B value for this attractor
+				Double temp = b[j.getOrder()];
+				b[j.getOrder()] = 1.0/denom;
+				
 				//If no B value exists yet or this is not within the numerical tolerance of the previous value
-				if (b1[j.getOrder()] == null || !converged(b1[j.getOrder()] == null? 1.0 : b1[j.getOrder()], 1.0/denom)) {
-					//Write a new B value for this attractor
+				if (temp == null || !converged(temp, b[j.getOrder()])) {
 					converged.set(false);
-					b1[j.getOrder()] =(float) (1.0/denom);
-//					b.put(j, 1.0/denom);
 				}	
 			});
-
 		}
+		
+
+		
 		
 		//Now begin constructing the matrix
 		AggregatePAHashMatrix pam = new AggregatePAHashMatrix(zones);
 		//For each producer
-		pa.getProducers().parallelStream().forEach(producer -> {
+		zones.parallelStream().forEach(producer -> {
 			//Construct a new DemandMap
 			DemandMap d = new FixedSizeDemandMap(zones);
 			//For each attractor
-			for (TravelSurveyZone attractor : pa.getAttractors()) {
+			for (TravelSurveyZone attractor : zones) {
 				//Calculate the number of trips between these two as a*productions*b*attractions*impedance
-				Float Tij = 
-//						a.get(producer)
-						a1[producer.getOrder()]
+				Double Tij = 
+						a[producer.getOrder()]
 						*pa.getProductions(producer)
-//						*b.get(attractor)
-						*b1[attractor.getOrder()]
+						*b[attractor.getOrder()]
 						*pa.getAttractions(attractor)
-						*friction.get(producer, attractor, skim.getCost(producer, attractor));
+						*friction.get(skim.getCost(producer, attractor));
+				
 				//Check for errors
 				if (Tij.isNaN()) throw new RuntimeException();
 				//Store this value as the number of trips in the DemandMap
-				d.put(attractor, Tij);
+				d.put(attractor, Tij.floatValue());
 			}
 
 			//Store the DemandMap in the new matrix
@@ -122,7 +130,6 @@ public class GravityDistributor extends TripDistributor {
 	}
 
 	private Boolean converged(Double a, Double b) {
-		Double margin = 0.001;
 		return Math.abs(a-b) < margin;
 	}
 }

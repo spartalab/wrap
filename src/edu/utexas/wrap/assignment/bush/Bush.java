@@ -213,7 +213,6 @@ public class Bush implements AssignmentContainer {
 	/* (non-Javadoc)
 	 * @see java.lang.Object#hashCode()
 	 */
-	@Override
 	public int hashCode() {
 		//origin;vot;c;
 		int a = 2017;	//	Year of inception for this project
@@ -290,7 +289,6 @@ public class Bush implements AssignmentContainer {
 	/** Get all Bush flows
 	 * @return a Map from a Link to the amount of flow from this Bush on the Link
 	 */
-	@Override
 	public Map<Link, Double> flows(){
 		if (cachedFlows != null) return cachedFlows;
 		//Get the reverse topological ordering and a place to store node flows
@@ -374,7 +372,6 @@ public class Bush implements AssignmentContainer {
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getLinks()
 	 */
-	@Override
 	public Collection<Link> usedLinks() {
 		return getUsedLinkStream().collect(Collectors.toSet());
 	}
@@ -407,7 +404,6 @@ public class Bush implements AssignmentContainer {
 	/**
 	 * @return the total generalized cost for trips in this bush
 	 */
-	@Override
 	public double incurredCost() {
 		Map<Link,Double> flows = flows();
 		return getUsedLinkStream().parallel().mapToDouble(l -> flows.getOrDefault(l, 0.0)*l.getPrice(vot, c)).sum();
@@ -472,7 +468,6 @@ public class Bush implements AssignmentContainer {
 //		return true;
 //	}
 
-	@Override
 	public double demand(Node n) {
 		return n.getZone() == null? 0.0 : demand.get(n.getZone());
 	}

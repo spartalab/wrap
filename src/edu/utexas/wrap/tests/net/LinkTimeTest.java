@@ -1,4 +1,4 @@
-package edu.utexas.wrap.tests;
+package edu.utexas.wrap.tests.net;
 
 
 import edu.utexas.wrap.modechoice.Mode;
