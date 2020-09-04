@@ -19,6 +19,7 @@ import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.PAMatrix;
 import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.distribution.GravityDistributor;
+import edu.utexas.wrap.distribution.ModularGravityDistributor;
 import edu.utexas.wrap.distribution.TripDistributor;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.NetworkSkim;
@@ -399,4 +400,61 @@ class GravityTest {
 //	void testOTHOTH() {
 //		fail("Not yet implemented");
 //	}
+
+	// Run gravity model approximation trials
+
+	private void errorReport(AggregatePAMatrix predicted, PAMatrix real, int iteration, boolean production) {
+		double rmse = Math.sqrt(mse(predicted, real));
+		System.out.printf("%2d-%b, %f", iteration, production, rmse);
+	}
+
+	private void iterationTrial(FrictionFactorMap ff, PAMap map, PAMatrix real, NetworkSkim skim, int maxIter) {
+		// Track the progress of the PAMatrix toward convergence at each iteration of IPF.
+
+		balanceCheck(map);
+
+		AggregatePAMatrix predicted;
+		int i = 0;
+
+		// Initialize distributor
+		ModularGravityDistributor distributor = new ModularGravityDistributor(zones.values(), skim, ff,
+				map, 0.001);
+
+		// Run gravity model fitting to convergence or close to it,
+		// reporting the RMSE at each iteration
+		while (!distributor.isConverged() && i < maxIter) {
+
+			// Fit according to productions
+			distributor.iterateProductions();
+			errorReport(distributor.getMatrix(), real, i, true);
+
+			// Fit according to attractions
+			distributor.iterateAttractions();
+			errorReport(distributor.getMatrix(), real, i, false);
+
+			// Update step counter
+			i++;
+		}
+
+		if (distributor.isConverged()) System.out.printf("Converged after %d iterations.", i);
+	}
+
+
+	@Test
+	void iterationTrialHBW1PK() throws IOException {
+		FrictionFactorMap ff = FrictionFactorFactory.readFactorFile(
+				Paths.get("data/test/distrib/ffs/FFactorHBWRK_INC1 PK.csv")
+		);
+		PAMap map = ProductionAttractionFactory.readMap(
+				Paths.get("data/test/distrib/paMaps/hbw_pk_ig1.csv"),
+				false, zones);
+
+		PAMatrix real = ProductionAttractionFactory.readMatrix(
+				Paths.get("data/test/distrib/paMatrices/hbw_pk_ig1.csv"),
+				false, zones);
+		NetworkSkim skim = skims.get("pk");
+
+		iterationTrial(ff, map, real, skim, 100);
+	}
+
 }
