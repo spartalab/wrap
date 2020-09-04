@@ -403,9 +403,28 @@ class GravityTest {
 
 	// Run gravity model approximation trials
 
-	private void errorReport(AggregatePAMatrix predicted, PAMatrix real, int iteration, boolean production) {
+	private void iterationErrorReport(AggregatePAMatrix predicted, PAMatrix real, int iteration, boolean production) {
+				
+		double error = Math.sqrt(mse(predicted, real)); //rmse
+//		double error = mae(predicted, real); //mae
+//		double error = rmse/mean(real); //prmse
+//		double error = mape(predicted, real); //mape
+		System.out.printf("\n%2d-%5b, %f", iteration, production, error);
+	}
+
+	private void fullErrorReport(AggregatePAMatrix predicted, PAMatrix real, int iteration, boolean production) {
+						
 		double rmse = Math.sqrt(mse(predicted, real));
-		System.out.printf("%2d-%b, %f", iteration, production, rmse);
+		System.out.println(" RMSE: "+rmse);
+		
+		double prmse = rmse/mean(real);
+		System.out.println("%RMSE: "+prmse);
+		
+		double mae = mae(predicted, real);
+		System.out.println("  MAE: "+mae);
+		
+		double mape = mape(predicted, real);
+		System.out.println(" MAPE: "+mape);
 	}
 
 	private void iterationTrial(FrictionFactorMap ff, PAMap map, PAMatrix real, NetworkSkim skim, int maxIter) {
@@ -413,7 +432,6 @@ class GravityTest {
 
 		balanceCheck(map);
 
-		AggregatePAMatrix predicted;
 		int i = 0;
 
 		// Initialize distributor
@@ -426,17 +444,22 @@ class GravityTest {
 
 			// Fit according to productions
 			distributor.iterateProductions();
-			errorReport(distributor.getMatrix(), real, i, true);
+			if (i>0) {
+				iterationErrorReport(distributor.getMatrix(), real, i, true);
+			}
 
 			// Fit according to attractions
 			distributor.iterateAttractions();
-			errorReport(distributor.getMatrix(), real, i, false);
+			if (i==0) {
+				fullErrorReport(distributor.getMatrix(), real, i, false);
+			}
+			iterationErrorReport(distributor.getMatrix(), real, i, false);
 
 			// Update step counter
 			i++;
 		}
 
-		if (distributor.isConverged()) System.out.printf("Converged after %d iterations.", i);
+		if (distributor.isConverged()) System.out.printf("\nConverged after %d iterations.", i);
 	}
 
 
@@ -455,6 +478,27 @@ class GravityTest {
 		NetworkSkim skim = skims.get("pk");
 
 		iterationTrial(ff, map, real, skim, 100);
+		
+		testSuite(ff, map, real, skim);	
+	}
+	
+	@Test
+	void iterationTrialHBW4OP()  throws IOException {
+		FrictionFactorMap ff = FrictionFactorFactory.readFactorFile(
+				Paths.get("data/test/distrib/ffs/FFactorHBWRK_INC4 OP.csv")
+				);
+		PAMap map = ProductionAttractionFactory.readMap(
+				Paths.get("data/test/distrib/paMaps/hbw_op_ig4.csv"), 
+				false, zones);
+		
+		PAMatrix real = ProductionAttractionFactory.readMatrix(
+				Paths.get("data/test/distrib/paMatrices/hbw_op_ig4.csv"),
+				false, zones);
+		NetworkSkim skim = skims.get("op_hbw");
+
+		iterationTrial(ff, map, real, skim, 100);
+		
+		testSuite(ff, map, real, skim);	
 	}
 
 }
