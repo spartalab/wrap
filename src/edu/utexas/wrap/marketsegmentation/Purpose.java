@@ -3,7 +3,6 @@ package edu.utexas.wrap.marketsegmentation;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
@@ -17,6 +16,7 @@ import edu.utexas.wrap.balancing.TripBalancer;
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.AggregatePAMatrixProvider;
 import edu.utexas.wrap.demand.DailyODMatrixProvider;
+import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.ModalPAMatrixProvider;
 import edu.utexas.wrap.demand.ODMatrix;
@@ -29,17 +29,16 @@ import edu.utexas.wrap.demand.containers.PAPassthroughMap;
 import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.distribution.GravityDistributor;
 import edu.utexas.wrap.distribution.TripDistributor;
-import edu.utexas.wrap.generation.BasicTripGenerator;
+import edu.utexas.wrap.generation.ComponentTripGenerator;
 import edu.utexas.wrap.generation.AreaClassGenerationRate;
 import edu.utexas.wrap.generation.GeneralGenerationRate;
 import edu.utexas.wrap.generation.GenerationRate;
-import edu.utexas.wrap.generation.TripGenerator;
 import edu.utexas.wrap.modechoice.FixedProportionSplitter;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.modechoice.TripInterchangeSplitter;
 import edu.utexas.wrap.net.Demographic;
 import edu.utexas.wrap.net.NetworkSkim;
-import edu.utexas.wrap.net.TravelSurveyZone;
+import edu.utexas.wrap.net.SecondaryDemographic;
 import edu.utexas.wrap.util.AggregatePAMatrixCollector;
 import edu.utexas.wrap.util.PassengerVehicleTripConverter;
 import edu.utexas.wrap.util.TimeOfDaySplitter;
@@ -57,54 +56,46 @@ class BasicPurpose implements Purpose {
 	private final Properties properties;
 	
 //	private final Graph network;
-	private final Collection<TravelSurveyZone> zones;
 	private final PAMap paMap;
-	private final Map<String,FrictionFactorMap> frictFacts;
-	
+	private final Market parent;
 	private Map<String,NetworkSkim> skims;
+	private final Demographic ubProds, ubAttrs;
 
 	public BasicPurpose(
 			Path purposeFile, 
-			Collection<TravelSurveyZone> zones, 
-			Map<String,Demographic> demographics,
-			Map<String,FrictionFactorMap> frictFacts
+			Market parent
 			) throws IOException {
 
 //		this.network = network;
-		this.frictFacts = frictFacts;
-		this.zones = zones;
+		this.parent = parent;
 		properties = new Properties();
 		properties.load(Files.newInputStream(purposeFile));
 		
 		
 		Demographic 
-		productionDemographic = demographics.get(properties.get("prodDemographic")), 
-		attractionDemographic = demographics.get(properties.get("attrDemographic"));
+		productionDemographic = productionDemographic(), 
+		attractionDemographic = attractionDemographic();
 		
-		
-		TripGenerator 	producer = productionGenerator(),
-				attractor = attractionGenerator();
+		ComponentTripGenerator
+		producer = new ComponentTripGenerator(parent.getZones(),productionRates()),
+		attractor = new ComponentTripGenerator(parent.getZones(),attractionRates());
 
+		DemandMap 
+		unbalancedProds = producer.generate(productionDemographic),
+		unbalancedAttrs = attractor.generate(attractionDemographic);
 		
-		paMap = balancer().balance(
-				new PAPassthroughMap(
-						producer.generate(productionDemographic),
-						attractor.generate(attractionDemographic)
-						)
-				);
+		ubProds = new SecondaryDemographic(producer.getComponents());
+		ubAttrs = new SecondaryDemographic(attractor.getComponents());
+		
+		paMap = balancer().balance(new PAPassthroughMap(unbalancedProds,unbalancedAttrs));
 	}
 
 	
 	
-	private TripGenerator productionGenerator() {
-		switch (properties.getProperty("prodGenerator")) {
-		case "basic":
-			return new BasicTripGenerator(zones,productionRates());
-		case "rateProportion":
-			throw new RuntimeException("Not yet implemented");
-		default:
-			throw new RuntimeException("Unknown prodGenerator type: "+properties.getProperty("prodGenerator"));
-		}
+	private Demographic unbalancedProductions() {
+
+		return ubProds;
+
 	}
 	
 	private GenerationRate[] productionRates() {
@@ -131,16 +122,22 @@ class BasicPurpose implements Purpose {
 		}
 	}
 	
-	
-	private TripGenerator attractionGenerator() {
-		switch (properties.getProperty("attrGenerator")) {
+	private Demographic productionDemographic() {
+		switch (properties.getProperty("prodDemographic.type")) {
 		case "basic":
-			return new BasicTripGenerator(zones,attractionRates());
-		case "rateProportion":
-			throw new RuntimeException("Not yet implemented");
+			return parent.getBasicDemographic(properties.getProperty("prodDemographic.id"));
+		case "prodProportional":
+			return parent.getPurpose(properties.getProperty("prodDemographic.id")).unbalancedProductions();
+		case "attrProportional":
+			return parent.getPurpose(properties.getProperty("prodDemographic.id")).unbalancedAttractions();
 		default:
-			throw new RuntimeException("Unknown prodGenerator type: "+properties.getProperty("attrGenerator"));
-		}	}
+			throw new RuntimeException("Not yet implemented");
+		}
+	}
+
+	private Demographic unbalancedAttractions() {
+		return ubAttrs;
+	}
 	
 	private GenerationRate[] attractionRates() {
 		switch (properties.getProperty("attrType")) {
@@ -166,6 +163,18 @@ class BasicPurpose implements Purpose {
 		}
 	}
 	
+	private Demographic attractionDemographic() {
+		switch (properties.getProperty("attrDemographic.type")) {
+		case "basic":
+			return parent.getBasicDemographic(properties.getProperty("attrDemographic.id"));
+		case "prodProportional":
+			return parent.getPurpose(properties.getProperty("attrDemographic.id")).unbalancedProductions();
+		case "attrProportional":
+			return parent.getPurpose(properties.getProperty("attrDemographic.id")).unbalancedAttractions();
+		default:
+			throw new RuntimeException("Not yet implemented");
+		}
+	}
 	
 	private TripBalancer balancer() {
 		switch (properties.getProperty("balancer.class")) {
@@ -185,7 +194,7 @@ class BasicPurpose implements Purpose {
 	
 	
 	private FrictionFactorMap frictionFactors(String skimID) {
-		return frictFacts.get(skimID);
+		return parent.getFrictionFactor(skimID);
 	}
 	
 	private Map<String,Float> distributionShares(){
@@ -200,7 +209,7 @@ class BasicPurpose implements Purpose {
 	
 	private TripDistributor distributor(String skimID) {
 		return new GravityDistributor(
-				zones, 
+				parent.getZones(), 
 				skims.get(skimID), 
 				frictionFactors(properties.getProperty("distrib."+skimID+".frictFacts")));
 	}

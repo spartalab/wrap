@@ -6,5 +6,5 @@ import edu.utexas.wrap.net.Demographic;
 
 public interface TripGenerator {
 	
-	public DemandMap generate(Demographic attractionDemographic);
+	public DemandMap generate(Demographic demographic);
 }

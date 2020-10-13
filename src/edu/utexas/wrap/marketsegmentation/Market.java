@@ -21,8 +21,10 @@ import edu.utexas.wrap.util.io.FrictionFactorFactory;
 
 public class Market implements ODProfileProvider {
 	private Properties props;
-	private Collection<BasicPurpose> purposes;
+	private Map<String,BasicPurpose> purposes;
 	private final Collection<TravelSurveyZone> zones;
+	private final Map<String,Demographic> basicDemos;
+	private final Map<String,FrictionFactorMap> frictionFactors;
 	
 	public Market(Path marketFile, Map<Integer,TravelSurveyZone> zoneIDs) throws IOException {
 		props = new Properties();
@@ -31,36 +33,40 @@ public class Market implements ODProfileProvider {
 		Path directory = marketFile.getParent().resolve(props.getProperty("dir"));
 
 		this.zones = zoneIDs.values();
-		purposes = getPurposes(directory, getDemographics(directory, zoneIDs), getFrictionFactors(directory));
+		this.basicDemos = getDemographics(directory,zoneIDs);
+		this.frictionFactors = getFrictionFactors(directory);
+		purposes = getPurposes(directory);
 		
 	}
 	
 	public void updateSkims(Map<String,NetworkSkim> skims) {
-		purposes.stream().forEach(purpose -> purpose.updateSkims(skims));
+		purposes.values().stream().forEach(purpose -> purpose.updateSkims(skims));
 	}
 	
 	public Stream<ODProfile> getODProfiles() {
-		return purposes.stream().flatMap(Purpose::getODProfiles);
+		return purposes.values().stream().flatMap(Purpose::getODProfiles);
 	}
 	
-	private Collection<BasicPurpose> getPurposes(
-			Path directory,
-			Map<String,Demographic> demographics, 
-			Map<String,FrictionFactorMap> frictFacts
+	private Map<String,BasicPurpose> getPurposes(
+			Path directory
 			) throws IOException {
 		
+		
 		return Stream.of(props.getProperty("purposes.ids").split(","))
-				.map(name -> directory.resolve(props.getProperty("purposes."+name+".file")))
-				.map(purposeFile -> {
-					try {
-						return new BasicPurpose(purposeFile, zones, demographics, frictFacts);
-					} catch (IOException e) {
-						System.err.println("Error while reading purpose file: "+purposeFile);
-						return null;
-					}
-				})
-				.filter(x -> x != null)
-				.collect(Collectors.toSet());
+		.collect(
+				Collectors.toMap(
+						Function.identity(), 
+						id -> {
+							try {
+								return new BasicPurpose(directory.resolve(props.getProperty("purposes."+id+".file")),this);
+							} catch (IOException e1) {
+								System.err.println("Error while reading purpose file: "+id);
+								return null;
+							}
+						}
+
+						));
+
 	}
 	
 	private Map<String,Demographic> getDemographics(Path directory, Map<Integer, TravelSurveyZone> zones) {
@@ -98,4 +104,20 @@ public class Market implements ODProfileProvider {
 
 	}
 
+	
+	public Demographic getBasicDemographic(String id) {
+		return basicDemos.get(id);
+	}
+	
+	public FrictionFactorMap getFrictionFactor(String id) {
+		return frictionFactors.get(id);
+	}
+	
+	public Collection<TravelSurveyZone> getZones() {
+		return zones;
+	}
+	
+	public BasicPurpose getPurpose(String id) {
+		return purposes.get(id);
+	}
 }
