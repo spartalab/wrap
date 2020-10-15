@@ -42,6 +42,14 @@ public class GravityDistributor extends TripDistributor {
 		Double[] a = new Double[zones.size()];
 		Double[] b = new Double[zones.size()];
 		
+		Float[][] ff = new Float[zones.size()][zones.size()];
+		
+		zones.parallelStream().forEach(i -> {
+			zones.stream().forEach(j ->{
+				ff[i.getOrder()][j.getOrder()] = friction.get(skim.getCost(i, j));
+			});
+		});
+		
 		AtomicBoolean converged = new AtomicBoolean(false);
 		//While the previous iteration made changes
 		int iterations = 0;
@@ -56,7 +64,7 @@ public class GravityDistributor extends TripDistributor {
 				Double denom = zones.stream()
 						.mapToDouble(x -> 
 						(b[x.getOrder()] == null? 1.0 : b[x.getOrder()])
-						*pa.getAttractions(x)*friction.get(skim.getCost(i, x)))
+						*pa.getAttractions(x)*ff[i.getOrder()][x.getOrder()])
 						.sum();
 				
 				//Check for errors
@@ -80,7 +88,7 @@ public class GravityDistributor extends TripDistributor {
 				Double denom = zones.stream()
 						.mapToDouble(x-> 
 						(a[x.getOrder()] == null? 1.0 : a[x.getOrder()])
-						*pa.getProductions(x)*friction.get(skim.getCost(x, j)))
+						*pa.getProductions(x)*ff[x.getOrder()][j.getOrder()])
 						.sum();
 				
 				//Check for errors
@@ -114,7 +122,7 @@ public class GravityDistributor extends TripDistributor {
 						*pa.getProductions(producer)
 						*b[attractor.getOrder()]
 						*pa.getAttractions(attractor)
-						*friction.get(skim.getCost(producer, attractor));
+						*ff[producer.getOrder()][ attractor.getOrder()];
 				
 				//Check for errors
 				if (Tij.isNaN()) throw new RuntimeException();
