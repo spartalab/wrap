@@ -1,5 +1,6 @@
 package edu.utexas.wrap.distribution;
 
+import java.util.Map.Entry;
 import java.util.NavigableMap;
 
 /**A friction factor map that depends on a cost skim and
@@ -25,28 +26,26 @@ public class CostBasedFrictionFactorMap implements FrictionFactorMap {
 		if (skimCost < 0) throw new RuntimeException("Negative travel cost");
 		
 		//Get the nearest costFactors to this cost
-		Integer lowerBd = costFactors.floorKey((int) Math.floor(skimCost));
-		Integer upperBd = costFactors.ceilingKey((int) Math.ceil(skimCost));
-		Float c;
-		
-		//Handle boundary cases
-		if (lowerBd == null && upperBd != null) lowerBd = upperBd;
-		else if (lowerBd != null && upperBd == null) upperBd = lowerBd;
-		else if (lowerBd == null && upperBd == null) throw new RuntimeException("No mappings in cost factor tree");
+		int floor = (int) Math.floor(skimCost);
+		Entry<Integer, Float> lowerBd = costFactors.floorEntry(floor);
 
 		//If we landed on an exact cost for which a mapping exists, use it
-		if (lowerBd == upperBd) {
-			c = costFactors.get(lowerBd);
-			if (c.isNaN()) throw new RuntimeException();
-			return c;
-		}
+		if (lowerBd != null && lowerBd.getKey() == skimCost) return lowerBd.getValue();
+		
+		
+		//Otherwise, get the next value in the map
+		Entry<Integer, Float> upperBd = costFactors.higherEntry(floor);
+		
+		//Handle boundary cases
+		if (lowerBd == null && upperBd != null) return upperBd.getValue();
+		else if (lowerBd != null && upperBd == null) return lowerBd.getValue();
+		else if (lowerBd == null && upperBd == null) throw new RuntimeException("No mappings in cost factor tree");
+
 		
 		//Otherwise, linearly interpolate between the two
-		Float pct = (skimCost - lowerBd)/(upperBd - lowerBd);
+		Float pct = (skimCost - lowerBd.getKey())/(upperBd.getKey() - lowerBd.getKey());
 		
-		 c = pct*costFactors.get(upperBd) + (1-pct)*costFactors.get(lowerBd);
-		if (c.isNaN()) throw new RuntimeException();
-		return c;
+		return pct*upperBd.getValue() + (1-pct)*lowerBd.getValue();
 	}
 
 }
