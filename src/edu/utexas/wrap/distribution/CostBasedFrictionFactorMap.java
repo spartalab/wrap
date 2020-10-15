@@ -27,14 +27,15 @@ public class CostBasedFrictionFactorMap implements FrictionFactorMap {
 		
 		//Get the nearest costFactors to this cost
 		int floor = (int) Math.floor(skimCost);
-		Entry<Integer, Float> lowerBd = costFactors.floorEntry(floor);
+		NavigableMap<Integer, Float> submap = costFactors.subMap(floor, true, floor+1,true);
+		Entry<Integer, Float> lowerBd = submap.firstEntry();
 
 		//If we landed on an exact cost for which a mapping exists, use it
 		if (lowerBd != null && lowerBd.getKey() == skimCost) return lowerBd.getValue();
 		
 		
 		//Otherwise, get the next value in the map
-		Entry<Integer, Float> upperBd = costFactors.higherEntry(floor);
+		Entry<Integer, Float> upperBd = submap.lastEntry();
 		
 		//Handle boundary cases
 		if (lowerBd == null && upperBd != null) return upperBd.getValue();
