@@ -5,7 +5,7 @@ import java.util.HashSet;
 
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.ODMatrix;
-import edu.utexas.wrap.demand.containers.ModalFixedMultiplierPassthroughMatrix;
+import edu.utexas.wrap.demand.containers.FixedMultiplierPassthroughModalPAMatrix;
 import edu.utexas.wrap.demand.containers.ODPassthroughMatrix;
 import edu.utexas.wrap.demand.containers.TransposeModalPAMatrix;
 
@@ -24,9 +24,9 @@ public class DepartureArrivalConverter {
 		Collection<ModalPAMatrix> matrices = new HashSet<ModalPAMatrix>(2,1.0f);
 		
 		//multiply the original matrix by the departure rate
-		matrices.add(new ModalFixedMultiplierPassthroughMatrix(departureRate*vehOccRate, pa));
+		matrices.add(new FixedMultiplierPassthroughModalPAMatrix(departureRate*vehOccRate, pa));
 		//multiply the transpose matrix by the arrival rate
-		matrices.add(new ModalFixedMultiplierPassthroughMatrix(arrivalRate*vehOccRate,transpose));
+		matrices.add(new FixedMultiplierPassthroughModalPAMatrix(arrivalRate*vehOccRate,transpose));
 
 		//sum the two matrices and pass on as an OD matrix
 		

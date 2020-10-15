@@ -7,12 +7,12 @@ import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-public class AggregateFixedMultiplierPassthroughMatrix implements AggregatePAMatrix {
+public class FixedMultiplierPassthroughAggregateMatrix implements AggregatePAMatrix {
 	
 	private final AggregatePAMatrix base;
 	private final float multip;
 
-	public AggregateFixedMultiplierPassthroughMatrix(AggregatePAMatrix baseMatrix, float multiplier) {
+	public FixedMultiplierPassthroughAggregateMatrix(AggregatePAMatrix baseMatrix, float multiplier) {
 		base = baseMatrix;
 		multip = multiplier;
 	}
