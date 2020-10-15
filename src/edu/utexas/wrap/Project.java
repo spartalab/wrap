@@ -29,12 +29,14 @@ public class Project {
 //	private Graph network;
 	private Map<Integer, TravelSurveyZone> zones;
 	private Path projDir;
+	private String name;
 	
 	public Project(Path projFile) throws IOException {
 		props = new Properties();
 		props.load(Files.newInputStream(projFile));
+		name = projFile.getFileName().toString();
 		
-		projDir = projFile.getParent();
+		projDir = projFile.getParent().resolve(props.getProperty("dir"));
 		zones = getZones();
 //		network = readNetwork();
 //		throw new RuntimeException("Zones not loaded");
@@ -172,5 +174,9 @@ public class Project {
 			assigner.outputFlows(projDir.resolve(id+"flows.csv"));
 		});
 
+	}
+	
+	public String toString() {
+		return name;
 	}
 }

@@ -8,7 +8,7 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class TransposeModalPAMatrix implements ModalPAMatrix {
-	ModalPAMatrix base;
+	private final ModalPAMatrix base;
 	
 	public TransposeModalPAMatrix(ModalPAMatrix pa) {
 		base = pa;

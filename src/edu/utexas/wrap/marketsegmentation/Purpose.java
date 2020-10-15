@@ -24,7 +24,7 @@ import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.demand.ODProfileProvider;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.PAMapProvider;
-import edu.utexas.wrap.demand.containers.AggregateFixedMultiplierPassthroughMatrix;
+import edu.utexas.wrap.demand.containers.FixedMultiplierPassthroughAggregateMatrix;
 import edu.utexas.wrap.demand.containers.PAPassthroughMap;
 import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.distribution.GravityDistributor;
@@ -55,11 +55,9 @@ class BasicPurpose implements Purpose {
 	
 	private final Properties properties;
 	
-//	private final Graph network;
-	private final PAMap paMap;
 	private final Market parent;
 	private Map<String,NetworkSkim> skims;
-	private final Demographic ubProds, ubAttrs;
+	private Demographic ubProds, ubAttrs;
 
 	public BasicPurpose(
 			Path purposeFile, 
@@ -71,29 +69,12 @@ class BasicPurpose implements Purpose {
 		properties = new Properties();
 		properties.load(Files.newInputStream(purposeFile));
 		
-		
-		Demographic 
-		productionDemographic = productionDemographic(), 
-		attractionDemographic = attractionDemographic();
-		
-		ComponentTripGenerator
-		producer = new ComponentTripGenerator(parent.getZones(),productionRates()),
-		attractor = new ComponentTripGenerator(parent.getZones(),attractionRates());
-
-		DemandMap 
-		unbalancedProds = producer.generate(productionDemographic),
-		unbalancedAttrs = attractor.generate(attractionDemographic);
-		
-		ubProds = new SecondaryDemographic(producer.getComponents());
-		ubAttrs = new SecondaryDemographic(attractor.getComponents());
-		
-		paMap = balancer().balance(new PAPassthroughMap(unbalancedProds,unbalancedAttrs));
 	}
 
 	
 	
 	private Demographic unbalancedProductions() {
-
+		if (ubProds == null) getPAMap();
 		return ubProds;
 
 	}
@@ -136,6 +117,7 @@ class BasicPurpose implements Purpose {
 	}
 
 	private Demographic unbalancedAttractions() {
+		if (ubAttrs == null) getPAMap();
 		return ubAttrs;
 	}
 	
@@ -285,7 +267,7 @@ class BasicPurpose implements Purpose {
 	public AggregatePAMatrix getAggregatePAMatrix() {
 		return distributionShares().entrySet().parallelStream()
 				.map(
-						entry -> new AggregateFixedMultiplierPassthroughMatrix(
+						entry -> new FixedMultiplierPassthroughAggregateMatrix(
 								distributor(entry.getKey()).distribute(getPAMap()),
 								entry.getValue())
 						)
@@ -295,7 +277,23 @@ class BasicPurpose implements Purpose {
 
 	@Override
 	public PAMap getPAMap() {
-		return paMap;
+		
+		Demographic 
+		productionDemographic = productionDemographic(), 
+		attractionDemographic = attractionDemographic();
+		
+		ComponentTripGenerator
+		producer = new ComponentTripGenerator(parent.getZones(),productionRates()),
+		attractor = new ComponentTripGenerator(parent.getZones(),attractionRates());
+
+		DemandMap 
+		unbalancedProds = producer.generate(productionDemographic),
+		unbalancedAttrs = attractor.generate(attractionDemographic);
+		
+		ubProds = new SecondaryDemographic(producer.getComponents());
+		ubAttrs = new SecondaryDemographic(attractor.getComponents());
+		
+		return balancer().balance(new PAPassthroughMap(unbalancedProds,unbalancedAttrs));
 	}
 
 	@Override

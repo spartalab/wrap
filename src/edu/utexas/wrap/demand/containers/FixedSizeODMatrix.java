@@ -21,37 +21,6 @@ public class FixedSizeODMatrix<T extends DemandMap> implements ODMatrix {
 		this.demandMaps = new DemandMap[zones.size()];
 	}
 
-	//Matrix multiplier constructor
-	public FixedSizeODMatrix(Float vot, Mode mode, ODMatrix od, float multiplier) {
-		this(vot,mode, od.getZones());
-		
-		od.getZones().forEach(origin -> {
-			FixedSizeDemandMap dm = new FixedSizeDemandMap(zones);
-			
-			zones.forEach(destination -> dm.put(destination, multiplier*od.getDemand(origin, destination)));
-			
-			demandMaps[origin.getOrder()] = dm;
-		});
-		
-	}
-	
-	public FixedSizeODMatrix(Float vot, Mode mode, ODMatrix od) {
-		this(vot,mode,od,1.0f);
-	}
-	
-	//Matrix adder constructor
-	public FixedSizeODMatrix(Float vot, Mode mode, ODMatrix od1, ODMatrix od2) {
-		this(vot, mode, od1.getZones());
-		
-		zones.forEach(origin -> {
-			FixedSizeDemandMap dm = new FixedSizeDemandMap(zones);
-			
-			zones.forEach(destination -> dm.put(destination, od1.getDemand(origin, destination) + od2.getDemand(origin, destination)));
-			
-			demandMaps[origin.getOrder()] = dm;
-		});
-	}
-
 	@Override
 	public Mode getMode() {
 		return mode;

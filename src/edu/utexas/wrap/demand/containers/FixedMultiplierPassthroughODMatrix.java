@@ -1,27 +1,29 @@
 package edu.utexas.wrap.demand.containers;
 
-import java.util.Collection;
-
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-public class TransposeODMatrix implements ODMatrix {
+public class FixedMultiplierPassthroughODMatrix implements ODMatrix {
 
 	private final ODMatrix parent;
+	private final float multiplier;
 	
-	public TransposeODMatrix(ODMatrix parent) {
+	public FixedMultiplierPassthroughODMatrix(ODMatrix parent, float multiplier) {
 		this.parent = parent;
+		this.multiplier = multiplier;
 	}
 	
 	@Override
 	public Mode getMode() {
+		// TODO Auto-generated method stub
 		return parent.getMode();
 	}
 
 	@Override
 	public float getDemand(TravelSurveyZone origin, TravelSurveyZone destination) {
-		return parent.getDemand(destination, origin);
+		// TODO Auto-generated method stub
+		return parent.getDemand(origin, destination) * multiplier;
 	}
 
 	@Override
@@ -31,12 +33,8 @@ public class TransposeODMatrix implements ODMatrix {
 	}
 
 	@Override
-	public Collection<TravelSurveyZone> getZones() {
-		return parent.getZones();
-	}
-
-	@Override
 	public Float getVOT() {
+		// TODO Auto-generated method stub
 		return parent.getVOT();
 	}
 

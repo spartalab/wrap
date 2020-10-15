@@ -15,4 +15,7 @@ public class GeneralGenerationRate implements GenerationRate {
 		return rate;
 	}
 
+	public String toString() {
+		return Double.toString(rate);
+	}
 }

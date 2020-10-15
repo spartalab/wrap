@@ -48,7 +48,7 @@ public class wrapMarket {
 			
 			//Update skims and redistribute
 			Map<String,NetworkSkim> skims = i == 0? proj.getInitialSkims() : proj.getFeedbackSkims(assigners);
-			
+			//TODO project should have skims
 			markets.parallelStream().forEach(market -> market.updateSkims(skims));
 			
 			

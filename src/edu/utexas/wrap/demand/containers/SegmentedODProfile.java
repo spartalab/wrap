@@ -26,22 +26,22 @@ public class SegmentedODProfile implements ODProfile {
 				.collect(
 						Collectors.toMap(
 								Function.identity(),
-								tp -> new FixedSizeODMatrix<FixedSizeDemandMap>(
-										dailyDepartures.getVOT(),
-										dailyDepartures.getMode(),
-										new FixedSizeODMatrix<FixedSizeDemandMap>(
-												dailyDepartures.getVOT(),
-												dailyDepartures.getMode(),
-												dailyDepartures,
-												departureRates.getOrDefault(tp,0.0f)
-												),
-										new FixedSizeODMatrix<FixedSizeDemandMap>(
-												dailyArrivals.getVOT(),
-												dailyArrivals.getMode(),
-												dailyArrivals,
-												arrivalRates.getOrDefault(tp,0.0f)
-												)
-										)
+								tp -> {
+									ODMatrix 
+									deps = new FixedMultiplierPassthroughODMatrix(
+											dailyDepartures,
+											departureRates.getOrDefault(tp,0.0f)
+											),
+									arrs = new FixedMultiplierPassthroughODMatrix(
+											dailyArrivals,
+											arrivalRates.getOrDefault(tp,0.0f)
+											),
+									ret = new AddingPassthroughODMatrix(
+											deps,
+											arrs
+											);
+									return ret;
+								}
 								)
 						);
 	}

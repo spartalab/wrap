@@ -25,50 +25,52 @@ public class Market implements ODProfileProvider {
 	private final Collection<TravelSurveyZone> zones;
 	private final Map<String,Demographic> basicDemos;
 	private final Map<String,FrictionFactorMap> frictionFactors;
-	
+	public String name;
+
 	public Market(Path marketFile, Map<Integer,TravelSurveyZone> zoneIDs) throws IOException {
 		props = new Properties();
 		props.load(Files.newInputStream(marketFile));
-		
+		name = marketFile.getFileName().toString();
+
 		Path directory = marketFile.getParent().resolve(props.getProperty("dir"));
 
 		this.zones = zoneIDs.values();
 		this.basicDemos = getDemographics(directory,zoneIDs);
 		this.frictionFactors = getFrictionFactors(directory);
 		purposes = getPurposes(directory);
-		
+
 	}
-	
+
 	public void updateSkims(Map<String,NetworkSkim> skims) {
 		purposes.values().stream().forEach(purpose -> purpose.updateSkims(skims));
 	}
-	
+
 	public Stream<ODProfile> getODProfiles() {
 		return purposes.values().stream().flatMap(Purpose::getODProfiles);
 	}
-	
+
 	private Map<String,BasicPurpose> getPurposes(
 			Path directory
 			) throws IOException {
-		
-		
+
+
 		return Stream.of(props.getProperty("purposes.ids").split(","))
-		.collect(
-				Collectors.toMap(
-						Function.identity(), 
-						id -> {
-							try {
-								return new BasicPurpose(directory.resolve(props.getProperty("purposes."+id+".file")),this);
-							} catch (IOException e1) {
-								System.err.println("Error while reading purpose file: "+id);
-								return null;
-							}
-						}
+				.collect(
+						Collectors.toMap(
+								Function.identity(), 
+								id -> {
+									try {
+										return new BasicPurpose(directory.resolve(props.getProperty("purposes."+id+".file")),this);
+									} catch (IOException e1) {
+										System.err.println("Error while reading purpose file: "+id);
+										return null;
+									}
+								}
 
-						));
-
+								)
+						);
 	}
-	
+
 	private Map<String,Demographic> getDemographics(Path directory, Map<Integer, TravelSurveyZone> zones) {
 		//TODO improve error handling here
 		return Stream.of(props.getProperty("demographics.ids").split(","))
@@ -86,38 +88,42 @@ public class Market implements ODProfileProvider {
 								})
 						);
 	}
-	
+
 	private Map<String,FrictionFactorMap> getFrictionFactors(Path directory) {
 		return Stream.of(props.getProperty("frictFacts.ids").split(","))
-		.collect(
-				Collectors.toMap(
-						Function.identity(), 
-						id -> 
-						FrictionFactorFactory.readFactorFile(
-								directory.resolve(
-										props.getProperty("frictFacts."+id+".file")
+				.collect(
+						Collectors.toMap(
+								Function.identity(), 
+								id -> 
+								FrictionFactorFactory.readFactorFile(
+										directory.resolve(
+												props.getProperty("frictFacts."+id+".file")
+												)
 										)
 								)
 						)
-				)
-		;
+				;
 
 	}
 
-	
+
 	public Demographic getBasicDemographic(String id) {
 		return basicDemos.get(id);
 	}
-	
+
 	public FrictionFactorMap getFrictionFactor(String id) {
 		return frictionFactors.get(id);
 	}
-	
+
 	public Collection<TravelSurveyZone> getZones() {
 		return zones;
 	}
-	
+
 	public BasicPurpose getPurpose(String id) {
 		return purposes.get(id);
+	}
+	
+	public String toString() {
+		return name;
 	}
 }
