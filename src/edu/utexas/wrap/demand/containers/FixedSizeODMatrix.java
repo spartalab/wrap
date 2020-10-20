@@ -2,6 +2,7 @@ package edu.utexas.wrap.demand.containers;
 
 import java.util.Collection;
 
+import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.modechoice.Mode;
@@ -13,6 +14,7 @@ public class FixedSizeODMatrix<T extends DemandMap> implements ODMatrix {
 	private final Mode mode;
 	private final Collection<TravelSurveyZone> zones;
 	private final DemandMap[] demandMaps;
+	private TimePeriod tp;
 	
 	public FixedSizeODMatrix(Float vot, Mode mode, Collection<TravelSurveyZone> zones) {
 		this.mode = mode;
@@ -63,5 +65,11 @@ public class FixedSizeODMatrix<T extends DemandMap> implements ODMatrix {
 	
 	public String toString() {
 		return mode + "_" + getVOT();
+	}
+
+	@Override
+	public TimePeriod timePeriod() {
+		// TODO Auto-generated method stub
+		return tp;
 	}
 }

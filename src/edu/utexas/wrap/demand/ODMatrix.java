@@ -40,15 +40,9 @@ public interface ODMatrix {
 	
 	public void setVOT(float VOT);
 
-	public default TimePeriod timePeriod() {
-		throw new RuntimeException();
-	};
+	public TimePeriod timePeriod();
 	
-	public default Collection<TravelSurveyZone> getZones(){
-		throw new RuntimeException();
-	};
+	public Collection<TravelSurveyZone> getZones();
 	
-	public default DemandMap getDemandMap(TravelSurveyZone origin) {
-		throw new RuntimeException();
-	};
+	public DemandMap getDemandMap(TravelSurveyZone origin);
 }
