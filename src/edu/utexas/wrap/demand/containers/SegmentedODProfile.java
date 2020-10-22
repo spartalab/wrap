@@ -36,11 +36,10 @@ public class SegmentedODProfile implements ODProfile {
 											dailyArrivals,
 											arrivalRates.getOrDefault(tp,0.0f)
 											),
-									ret = new AddingPassthroughODMatrix(
-											deps,
-											arrs
+									combined = new AddingPassthroughODMatrix(
+											deps,arrs
 											);
-									return ret;
+									return combined;
 								}
 								)
 						);

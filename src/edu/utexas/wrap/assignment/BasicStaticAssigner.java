@@ -9,9 +9,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.ToDoubleFunction;
+import java.util.stream.Collectors;
 
 import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.assignment.bush.Bush;
@@ -23,7 +25,10 @@ import edu.utexas.wrap.assignment.bush.BushInitializer;
 import edu.utexas.wrap.assignment.bush.BushReader;
 import edu.utexas.wrap.assignment.bush.BushWriter;
 import edu.utexas.wrap.assignment.bush.algoB.AlgorithmBOptimizer;
+import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.ODProfile;
+import edu.utexas.wrap.demand.containers.AddingODMatrix;
+import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.NetworkSkim;
@@ -35,22 +40,27 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	private AssignmentEvaluator<C> evaluator;
 	private AssignmentOptimizer<C> optimizer;
 	private AssignmentInitializer<C> initializer;
+	private Collection<ODMatrix> disaggregatedMtxs;
 	private Collection<C> containers;
 	private double threshold;
 	private final int maxIterations;
 	private final Graph network;
+	private final TimePeriod tp;
 	
 	public BasicStaticAssigner(
 			AssignmentInitializer<C> initializer,
 			AssignmentEvaluator<C> evaluator,
 			AssignmentOptimizer<C> optimizer,
-			double threshold){
+			double threshold,
+			TimePeriod tp){
 		this.initializer = initializer;
 		this.evaluator = evaluator;
 		this.optimizer = optimizer;
 		this.threshold = threshold;
 		maxIterations = 100;
 		network = null;
+		this.tp=tp;
+		disaggregatedMtxs = new HashSet<ODMatrix>();
 	}
 	
 
@@ -137,15 +147,20 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		}
 		
 		
-		
+		tp = TimePeriod.valueOf(props.getProperty("timePeriod"));
 		threshold = Double.parseDouble(props.getProperty("evaluator.threshold"));
 		maxIterations = Integer.parseInt(props.getProperty("maxIterations"));
+		disaggregatedMtxs = new HashSet<ODMatrix>();
 //		throw new RuntimeException("Not finished implementing");
 	}
 
 
 
 	public void run() {
+		System.out.println("Aggregating OD matrices for "+tp);
+		aggregateMtxs().forEach(initializer::add);
+		
+		System.out.println("Initializing bushes for "+tp);
 		this.containers = initializer.initializeContainers();
 
 		int numIterations = 0;
@@ -159,14 +174,34 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		
 	}
 
-
+	private Collection<ODMatrix> aggregateMtxs(){
+		return disaggregatedMtxs.stream()
+				.collect(Collectors.groupingBy(this::getMode,
+						Collectors.groupingBy(ODMatrix::getVOT,
+								Collectors.toSet()
+								)
+						)
+						)
+				.entrySet().stream()
+				.flatMap(modeEntry -> modeEntry.getValue().entrySet().stream()
+						.map(votEntry -> new AddingODMatrix(
+								votEntry.getValue(),
+								modeEntry.getKey(),
+								votEntry.getKey(),
+								tp,
+								network.getTSZs()
+								)
+								)
+						)
+				.collect(Collectors.toSet());
+	}
 
 	public void process(ODProfile profile) {
-		initializer.add(profile.getMatrix(getTimePeriod()));
+		disaggregatedMtxs.add(profile.getMatrix(getTimePeriod()));
 	}
 	
 	public TimePeriod getTimePeriod() {
-		return TimePeriod.AM_PK;
+		return tp;
 	}
 	
 	public NetworkSkim getSkim(ToDoubleFunction<Link> function) {
@@ -241,7 +276,16 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		
 	}
 
-
+	private Mode getMode(ODMatrix mtx) {
+		switch (mtx.getMode()) {
+		case HOV_2_PSGR:
+		case HOV_3_PSGR:
+		case HOV:
+			return Mode.HOV;
+		default:
+			return mtx.getMode();
+		}
+	}
 
 	public void outputFlows(Path outputFile) {
 		// TODO Auto-generated method stub
