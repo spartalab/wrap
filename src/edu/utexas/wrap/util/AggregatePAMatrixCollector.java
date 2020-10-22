@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
+import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class AggregatePAMatrixCollector implements Collector<AggregatePAMatrix, Collection<AggregatePAMatrix>, AggregatePAMatrix> {
@@ -49,16 +50,27 @@ public class AggregatePAMatrixCollector implements Collector<AggregatePAMatrix, 
 }
 
 class CombinedAggregatePAMatrix implements AggregatePAMatrix {
-
-	private Collection<AggregatePAMatrix> children;
+	
+	private final DemandMap[] demandMaps;
+	private final Collection<TravelSurveyZone> zones;
 	
 	public CombinedAggregatePAMatrix(Collection<AggregatePAMatrix> pas) {
-		children = pas;
+		zones = pas.stream().findAny().get().getZones();
+		demandMaps = new DemandMap[zones.size()];
+		zones.stream().forEach(producer ->{
+			DemandMap dm = new FixedSizeDemandMap(zones);
+			zones.stream()
+			.forEach(attractor -> dm.put(attractor, 
+					(float) pas.stream()
+					.mapToDouble(pa -> pa.getDemand(producer, attractor)).sum())
+					);
+			demandMaps[producer.getOrder()] = dm;
+		});
 	}
 	
 	@Override
 	public Collection<TravelSurveyZone> getZones() {
-		return children.parallelStream().map(AggregatePAMatrix::getZones).findAny().get();
+		return zones;
 	}
 
 	@Override
@@ -69,20 +81,18 @@ class CombinedAggregatePAMatrix implements AggregatePAMatrix {
 	@Override
 	public float getDemand(TravelSurveyZone producer, TravelSurveyZone attractor) {
 //		System.out.println(children.size());
-		return (float) children.stream().mapToDouble(mtx -> mtx.getDemand(producer, attractor)).sum();
+		return demandMaps[producer.getOrder()].get(attractor);
 	}
 
 	@Override
 	public DemandMap getDemandMap(TravelSurveyZone producer) {
 
-		Collection<DemandMap> maps = children.parallelStream().map(mtx -> mtx.getDemandMap(producer)).collect(Collectors.toSet());
-		
-		return new CombinedDemandMap(maps);
+		return demandMaps[producer.getOrder()];
 	}
 
 	@Override
 	public Collection<TravelSurveyZone> getProducers() {
-		return children.parallelStream().flatMap(mtx -> mtx.getProducers().parallelStream()).collect(Collectors.toSet());
+		return zones.stream().filter(zone -> !demandMaps[zone.getOrder()].isEmpty()).collect(Collectors.toSet());
 	}
 	
 }
