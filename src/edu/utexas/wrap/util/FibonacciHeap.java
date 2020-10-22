@@ -7,15 +7,14 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.PriorityQueue;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 	private Integer n;
 	private FibonacciLeaf<E> min;
 	private List<FibonacciLeaf<E>> rootList;
 	private Map<E,FibonacciLeaf<E>> map;
+	private final double phi = Math.log10((1+Math.sqrt(5))/2);
 	
 	public FibonacciHeap() {
 		this(16,0.75f);
@@ -55,12 +54,16 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 
 
 	private void consolidate() {
-		Map<Integer, FibonacciLeaf<E>> A = new ConcurrentHashMap<Integer,FibonacciLeaf<E>>();
+		double dn = Math.log10(n)/phi;
+		int D = (int) Math.floor(dn);
+		FibonacciLeaf[] AA = new FibonacciLeaf[D];
+		
+//		Map<Integer, FibonacciLeaf<E>> A = new ConcurrentHashMap<Integer,FibonacciLeaf<E>>();
 		Set<FibonacciLeaf<E>> ignore = (new HashSet<FibonacciLeaf<E>>());
 		rootList.parallelStream().filter(x -> !ignore.contains(x)).sequential().forEach(w->{
 			FibonacciLeaf<E> x = w;
 			Integer d = x.degree;
-			FibonacciLeaf<E> y = A.get(d);
+			FibonacciLeaf<E> y = AA[d];
 			while (y != null) {
 				
 				if (x.key > y.key) {
@@ -69,17 +72,17 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 					y = temp;
 				}
 				link(x,y, ignore);
-				A.remove(d++);
-				y = A.get(d);
+				AA[d++]=null;
+				y = AA[d];
 			}
-			A.put(d, x);
+			AA[d]= x;
 		});
 
 		rootList.removeAll(ignore);
 
 		min = null;
-		for (Integer i : new PriorityQueue<Integer>(A.keySet())) {
-			FibonacciLeaf<E> ai = A.get(i);
+		for (int i = 0; i < D; i++) {
+			FibonacciLeaf<E> ai = AA[i];
 			if (ai != null) {
 				if (min == null) {
 					rootList = new ArrayList<FibonacciLeaf<E>>();
