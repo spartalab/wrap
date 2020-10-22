@@ -162,7 +162,15 @@ public class TolledEnhancedLink extends TolledLink {
 	public double pricePrime(Float vot) {
 		// d( k(v) + m*t(v) )/dv
 		// == t'(v) * m + k'(v)
-		return tPrime() * vot + tollPrime();
+		try {
+			ttSem.acquire();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		if (cachedTP == null) cachedTP = tPrime() * vot + tollPrime();
+		double ret = cachedTP;
+		ttSem.release();
+		return ret;
 	}
 
 	private double r(Double x) {
