@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.util.Optional;
 import java.util.stream.Stream;
 
@@ -15,17 +15,19 @@ import edu.utexas.wrap.net.Node;
 
 public class BushReader implements AssignmentProvider<Bush> {
 	Graph network;
+	private Path inputPath;
 	
-	public BushReader(Graph network) {
+	public BushReader(Graph network, Path ioPath) {
 		this.network = network;
+		this.inputPath = ioPath;
 	}
 
 	public void getStructure(Bush bush) throws IOException {
 		//Load the bush from the network directory's file matching the bush's hash code
 		InputStream in = Files.newInputStream(
-				Paths.get(
-						network.toString(), 
-						Integer.toString(bush.hashCode())));
+				inputPath
+				.resolve(network.toString())
+				.resolve(Integer.toString(bush.hashCode())));
 		readFromStream(bush, in);
 		in.close();
 	}
@@ -46,65 +48,69 @@ public class BushReader implements AssignmentProvider<Bush> {
 			in.read(b);
 			pos += Integer.BYTES*2+Double.BYTES;
 			ByteBuffer bb = ByteBuffer.wrap(b);
-			Integer nid = bb.getInt();
-			Integer bvhc = bb.getInt();
-			Double split = bb.getDouble();
-			Node n = network.getNode(nid);
-
-			//Find the appropriate link instance
-//			Link bv = null;
-			Optional<Link> bvo = Stream.of(n.reverseStar()).parallel().filter(l -> l.hashCode()==bvhc).findAny();
-
-			//If it can't be found, throw an error
-			if (!bvo.isPresent()) throw new RuntimeException("Unknown Link econuntered. Node ID: "+nid+"\tHash: "+bvhc);
-			
-			Link bv = bvo.get();
-			
-			if (split >= 1.0) {
-			
-				if (q[n.getOrder()] == null) {
-					q[n.getOrder()] = bv;
-				} 
-				
-				else {
-					if (q[n.getOrder()] instanceof BushMerge) {
-						((BushMerge) q[n.getOrder()]).add(bv);
-						((BushMerge) q[n.getOrder()]).setSplit(bv, split);
-					} else {
-						q[n.getOrder()] = new BushMerge(bush, bv, (Link) q[n.getOrder()]);
-					}
-				}
-			
-			} 
-
-			
-			else if (split >=0.0) {
-				
-				if (q[n.getOrder()] == null) {
-					BushMerge bm = new BushMerge(bush, n);
-					bm.add(bv);
-					bm.setSplit(bv, split);
-					q[n.getOrder()] = bm;
-				} 
-				
-				
-				else {
-					
-					if (q[n.getOrder()] instanceof BushMerge) {
-						((BushMerge) q[n.getOrder()]).add(bv);
-						((BushMerge) q[n.getOrder()]).setSplit(bv, split);
-					} 
-					
-					else {
-						q[n.getOrder()] = new BushMerge(bush, (Link) q[n.getOrder()], bv);
-					}
-				}
-			}
+			processBytes(bush, q, bb);
 
 //			bush.add(bv);
 //			throw new RuntimeException("BackVector splits aren't implemented yet");
 		}
 		bush.setQ(q);
+	}
+
+	private void processBytes(Bush bush, BackVector[] q, ByteBuffer bb) {
+		Integer nid = bb.getInt();
+		Integer bvhc = bb.getInt();
+		Double split = bb.getDouble();
+		Node n = network.getNode(nid);
+
+		//Find the appropriate link instance
+//			Link bv = null;
+		Optional<Link> bvo = Stream.of(n.reverseStar()).parallel().filter(l -> l.hashCode()==bvhc).findAny();
+
+		//If it can't be found, throw an error
+		if (!bvo.isPresent()) throw new RuntimeException("Unknown Link econuntered. Node ID: "+nid+"\tHash: "+bvhc);
+		
+		Link bv = bvo.get();
+		
+		if (split >= 1.0) {
+		
+			if (q[n.getOrder()] == null) {
+				q[n.getOrder()] = bv;
+			} 
+			
+			else {
+				if (q[n.getOrder()] instanceof BushMerge) {
+					((BushMerge) q[n.getOrder()]).add(bv);
+					((BushMerge) q[n.getOrder()]).setSplit(bv, split);
+				} else {
+					q[n.getOrder()] = new BushMerge(bush, bv, (Link) q[n.getOrder()]);
+				}
+			}
+		
+		} 
+
+		
+		else if (split >=0.0) {
+			
+			if (q[n.getOrder()] == null) {
+				BushMerge bm = new BushMerge(bush, n);
+				bm.add(bv);
+				bm.setSplit(bv, split);
+				q[n.getOrder()] = bm;
+			} 
+			
+			
+			else {
+				
+				if (q[n.getOrder()] instanceof BushMerge) {
+					((BushMerge) q[n.getOrder()]).add(bv);
+					((BushMerge) q[n.getOrder()]).setSplit(bv, split);
+				} 
+				
+				else {
+					q[n.getOrder()] = new BushMerge(bush, (Link) q[n.getOrder()], bv);
+				}
+			}
+		}
 	}
 
 }

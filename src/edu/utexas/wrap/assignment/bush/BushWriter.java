@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 
 import edu.utexas.wrap.assignment.AssignmentConsumer;
@@ -13,14 +13,21 @@ import edu.utexas.wrap.net.Link;
 
 public class BushWriter implements AssignmentConsumer<Bush> {
 	private Graph network;
+	private Path outputPath;
 
-	public BushWriter(Graph network) {
+	public BushWriter(Graph network, Path ioPath) throws IOException {
 		this.network = network;
+		this.outputPath = ioPath;
+		Files.createDirectories(outputPath
+		.resolve(network.toString()));
 	}
 	
 	public void consumeStructure(Bush bush) throws IOException {
 		OutputStream out = Files.newOutputStream(
-				Paths.get(network.toString(), Integer.toString(bush.hashCode())),
+				outputPath
+				.resolve(network.toString())
+				.resolve(Integer.toString(bush.hashCode())),
+				
 				StandardOpenOption.CREATE, 
 				StandardOpenOption.TRUNCATE_EXISTING
 				);

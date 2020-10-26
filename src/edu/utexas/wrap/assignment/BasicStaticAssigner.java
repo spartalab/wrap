@@ -80,8 +80,10 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 
 		switch (props.getProperty("providerConsumer")) {
 		case "bushIOsuite":
-			provider = new BushReader(network);
-			primaryConsumer = new BushWriter(network);
+			//TODO custom paths
+			Path ioPath = Paths.get(props.getProperty("providerConsumer.source"));
+			provider = new BushReader(network,ioPath);
+			primaryConsumer = new BushWriter(network,ioPath);
 			evaluationConsumer = new BushForgetter();
 			break;
 		default:
