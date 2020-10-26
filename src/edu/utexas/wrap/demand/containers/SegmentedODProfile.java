@@ -11,8 +11,8 @@ import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.modechoice.Mode;
 
 public class SegmentedODProfile implements ODProfile {
-	private Map<TimePeriod,ODMatrix> matrices;
-	private Mode mode;
+	private final Map<TimePeriod,ODMatrix> matrices;
+	private final Mode mode;
 
 	public SegmentedODProfile(
 			ODMatrix dailyDepartures,
@@ -43,6 +43,11 @@ public class SegmentedODProfile implements ODProfile {
 								}
 								)
 						);
+	}
+	
+	public SegmentedODProfile(Map<TimePeriod,ODMatrix> matrices, Mode mode) {
+		this.matrices = matrices;
+		this.mode = mode;
 	}
 
 	@Override
