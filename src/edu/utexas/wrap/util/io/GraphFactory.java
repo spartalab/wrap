@@ -129,7 +129,7 @@ public class GraphFactory {
 		.forEach(line -> {
 
 			String[] args = line.split(",");
-
+			Integer linkID = Integer.parseInt(args[0]);
 			Integer nodeA = Integer.parseInt(args[1]);
 			Integer nodeB = Integer.parseInt(args[2]);
 
@@ -201,22 +201,24 @@ public class GraphFactory {
 				Link AB = null;
 				if (!zoneIDs.containsKey(nodeA) && !zoneIDs.containsKey(nodeB)) {
 					AB = new TolledEnhancedLink(nodes.get(nodeA), nodes.get(nodeB), aCap, length, ffTimeA, alpha,
-							epsilon, sParA, uParA, satFlowA, minDel, opCostA, caA, cbA, ccA, cdA, tollA, allowed,numLinks.getAndIncrement());
+							epsilon, sParA, uParA, satFlowA, minDel, opCostA, caA, cbA, ccA, cdA, tollA, allowed,linkID);
 				} else {
 					AB = new CentroidConnector(nodes.get(nodeA), nodes.get(nodeB), aCap, length, ffTimeA,
-							opCostA.floatValue(), numLinks.getAndIncrement());
+							opCostA.floatValue(), linkID);
 				}
+				numLinks.incrementAndGet();
 				g.add(AB);
 
 			if (Boolean.parseBoolean(args[36].trim())) {
 				Link BA = null;
 				if (!zoneIDs.containsKey(nodeA) && !zoneIDs.containsKey(nodeB)) {
 					BA = new TolledEnhancedLink(nodes.get(nodeB), nodes.get(nodeA), bCap, length, ffTimeB, alpha,
-							epsilon, sParB, uParB, satFlowB, minDel, opCostB, caB, cbB, ccB, cdB, tollB, allowed, numLinks.getAndIncrement());
+							epsilon, sParB, uParB, satFlowB, minDel, opCostB, caB, cbB, ccB, cdB, tollB, allowed, -linkID);
 				} else {
 					BA = new CentroidConnector(nodes.get(nodeB), nodes.get(nodeA), bCap, length, ffTimeB,
-							opCostB.floatValue(), numLinks.getAndIncrement());
+							opCostB.floatValue(), -linkID);
 				}
+				numLinks.incrementAndGet();
 				g.add(BA);
 			}
 		});

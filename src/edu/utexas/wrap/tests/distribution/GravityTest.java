@@ -37,7 +37,7 @@ class GravityTest {
 				
 		
 		// read zones
-		BufferedReader reader = Files.newBufferedReader(Paths.get("data/test/distrib/NCTCOG_zones.csv"));
+		BufferedReader reader = Files.newBufferedReader(Paths.get("E:/NCTCOG/test/distrib/NCTCOG_zones.csv"));
 		reader.readLine();
 		AtomicInteger idx = new AtomicInteger(0);
 
@@ -52,9 +52,9 @@ class GravityTest {
 		
 		// read skims
 		skims = new HashMap<String,NetworkSkim>();
-		skims.put("pk", SkimFactory.readSkimFile(Paths.get("data/test/distrib/skims/pk.csv"), false, zones));
-		skims.put("op", SkimFactory.readSkimFile(Paths.get("data/test/distrib/skims/op.csv"), false, zones));
-		skims.put("op_hbw", SkimFactory.readSkimFile(Paths.get("data/test/distrib/skims/op_hbw.csv"), false, zones));
+		skims.put("pk", SkimFactory.readSkimFile(Paths.get("E:/NCTCOG/test/distrib/skims/pk.csv"), false, zones));
+		skims.put("op", SkimFactory.readSkimFile(Paths.get("E:/NCTCOG/test/distrib/skims/op.csv"), false, zones));
+		skims.put("op_hbw", SkimFactory.readSkimFile(Paths.get("E:/NCTCOG/test/distrib/skims/op_hbw.csv"), false, zones));
 	}
 	
 	private void balanceCheck(PAMap map) {
@@ -175,14 +175,14 @@ class GravityTest {
 	@Test
 	void testHBW1PK() throws IOException {
 		FrictionFactorMap ff = FrictionFactorFactory.readFactorFile(
-				Paths.get("data/test/distrib/ffs/FFactorHBWRK_INC1 PK.csv")
+				Paths.get("E:/NCTCOG/test/distrib/ffs/FFactorHBWRK_INC1 PK.csv")
 				);
 		PAMap map = ProductionAttractionFactory.readMap(
-				Paths.get("data/test/distrib/paMaps/hbw_pk_ig1.csv"), 
+				Paths.get("E:/NCTCOG/test/distrib/paMaps/hbw_pk_ig1.csv"), 
 				false, zones);
 		
 		PAMatrix real = ProductionAttractionFactory.readMatrix(
-				Paths.get("data/test/distrib/paMatrices/hbw_pk_ig1.csv"),
+				Paths.get("E:/NCTCOG/test/distrib/paMatrices/hbw_pk_ig1.csv"),
 				false, zones);
 		NetworkSkim skim = skims.get("pk");
 		
@@ -190,18 +190,17 @@ class GravityTest {
 		
 	}
 
-
 	@Test
 	void testHBW2PK() throws IOException {
 		FrictionFactorMap ff = FrictionFactorFactory.readFactorFile(
-				Paths.get("data/test/distrib/ffs/FFactorHBWRK_INC2 PK.csv")
+				Paths.get("E:/NCTCOG/test/distrib/ffs/FFactorHBWRK_INC2 PK.csv")
 				);
 		PAMap map = ProductionAttractionFactory.readMap(
-				Paths.get("data/test/distrib/paMaps/hbw_pk_ig2.csv"), 
+				Paths.get("E:/NCTCOG/test/distrib/paMaps/hbw_pk_ig2.csv"), 
 				false, zones);
 		
 		PAMatrix real = ProductionAttractionFactory.readMatrix(
-				Paths.get("data/test/distrib/paMatrices/hbw_pk_ig2.csv"),
+				Paths.get("E:/NCTCOG/test/distrib/paMatrices/hbw_pk_ig2.csv"),
 				false, zones);
 		NetworkSkim skim = skims.get("pk");
 		
@@ -211,14 +210,14 @@ class GravityTest {
 	@Test
 	void testHBW3PK() throws IOException {
 		FrictionFactorMap ff = FrictionFactorFactory.readFactorFile(
-				Paths.get("data/test/distrib/ffs/FFactorHBWRK_INC3 PK.csv")
+				Paths.get("E:/NCTCOG/test/distrib/ffs/FFactorHBWRK_INC3 PK.csv")
 				);
 		PAMap map = ProductionAttractionFactory.readMap(
-				Paths.get("data/test/distrib/paMaps/hbw_pk_ig3.csv"), 
+				Paths.get("E:/NCTCOG/test/distrib/paMaps/hbw_pk_ig3.csv"), 
 				false, zones);
 		
 		PAMatrix real = ProductionAttractionFactory.readMatrix(
-				Paths.get("data/test/distrib/paMatrices/hbw_pk_ig3.csv"),
+				Paths.get("E:/NCTCOG/test/distrib/paMatrices/hbw_pk_ig3.csv"),
 				false, zones);
 		NetworkSkim skim = skims.get("pk");
 		
@@ -228,14 +227,14 @@ class GravityTest {
 	@Test
 	void testHBW4PK() throws IOException {
 		FrictionFactorMap ff = FrictionFactorFactory.readFactorFile(
-				Paths.get("data/test/distrib/ffs/FFactorHBWRK_INC4 PK.csv")
+				Paths.get("E:/NCTCOG/test/distrib/ffs/FFactorHBWRK_INC4 PK.csv")
 				);
 		PAMap map = ProductionAttractionFactory.readMap(
-				Paths.get("data/test/distrib/paMaps/hbw_pk_ig4.csv"), 
+				Paths.get("E:/NCTCOG/test/distrib/paMaps/hbw_pk_ig4.csv"), 
 				false, zones);
 		
 		PAMatrix real = ProductionAttractionFactory.readMatrix(
-				Paths.get("data/test/distrib/paMatrices/hbw_pk_ig4.csv"),
+				Paths.get("E:/NCTCOG/test/distrib/paMatrices/hbw_pk_ig4.csv"),
 				false, zones);
 		NetworkSkim skim = skims.get("pk");
 		
@@ -245,14 +244,14 @@ class GravityTest {
 	@Test
 	void testHBW1OP() throws IOException {
 		FrictionFactorMap ff = FrictionFactorFactory.readFactorFile(
-				Paths.get("data/test/distrib/ffs/FFactorHBWRK_INC1 OP.csv")
+				Paths.get("E:/NCTCOG/test/distrib/ffs/FFactorHBWRK_INC1 OP.csv")
 				);
 		PAMap map = ProductionAttractionFactory.readMap(
-				Paths.get("data/test/distrib/paMaps/hbw_op_ig1.csv"), 
+				Paths.get("E:/NCTCOG/test/distrib/paMaps/hbw_op_ig1.csv"), 
 				false, zones);
 		
 		PAMatrix real = ProductionAttractionFactory.readMatrix(
-				Paths.get("data/test/distrib/paMatrices/hbw_op_ig1.csv"),
+				Paths.get("E:/NCTCOG/test/distrib/paMatrices/hbw_op_ig1.csv"),
 				false, zones);
 		NetworkSkim skim = skims.get("op_hbw");
 		
@@ -262,14 +261,14 @@ class GravityTest {
 	@Test
 	void testHBW2OP()  throws IOException {
 		FrictionFactorMap ff = FrictionFactorFactory.readFactorFile(
-				Paths.get("data/test/distrib/ffs/FFactorHBWRK_INC2 OP.csv")
+				Paths.get("E:/NCTCOG/test/distrib/ffs/FFactorHBWRK_INC2 OP.csv")
 				);
 		PAMap map = ProductionAttractionFactory.readMap(
-				Paths.get("data/test/distrib/paMaps/hbw_op_ig2.csv"), 
+				Paths.get("E:/NCTCOG/test/distrib/paMaps/hbw_op_ig2.csv"), 
 				false, zones);
 		
 		PAMatrix real = ProductionAttractionFactory.readMatrix(
-				Paths.get("data/test/distrib/paMatrices/hbw_op_ig2.csv"),
+				Paths.get("E:/NCTCOG/test/distrib/paMatrices/hbw_op_ig2.csv"),
 				false, zones);
 		NetworkSkim skim = skims.get("op_hbw");
 		
@@ -279,14 +278,14 @@ class GravityTest {
 	@Test
 	void testHBW3OP() throws IOException {
 		FrictionFactorMap ff = FrictionFactorFactory.readFactorFile(
-				Paths.get("data/test/distrib/ffs/FFactorHBWRK_INC3 OP.csv")
+				Paths.get("E:/NCTCOG/test/distrib/ffs/FFactorHBWRK_INC3 OP.csv")
 				);
 		PAMap map = ProductionAttractionFactory.readMap(
-				Paths.get("data/test/distrib/paMaps/hbw_op_ig3.csv"), 
+				Paths.get("E:/NCTCOG/test/distrib/paMaps/hbw_op_ig3.csv"), 
 				false, zones);
 		
 		PAMatrix real = ProductionAttractionFactory.readMatrix(
-				Paths.get("data/test/distrib/paMatrices/hbw_op_ig3.csv"),
+				Paths.get("E:/NCTCOG/test/distrib/paMatrices/hbw_op_ig3.csv"),
 				false, zones);
 		NetworkSkim skim = skims.get("op_hbw");
 		
@@ -296,14 +295,14 @@ class GravityTest {
 	@Test
 	void testHBW4OP()  throws IOException {
 		FrictionFactorMap ff = FrictionFactorFactory.readFactorFile(
-				Paths.get("data/test/distrib/ffs/FFactorHBWRK_INC4 OP.csv")
+				Paths.get("E:/NCTCOG/test/distrib/ffs/FFactorHBWRK_INC4 OP.csv")
 				);
 		PAMap map = ProductionAttractionFactory.readMap(
-				Paths.get("data/test/distrib/paMaps/hbw_op_ig4.csv"), 
+				Paths.get("E:/NCTCOG/test/distrib/paMaps/hbw_op_ig4.csv"), 
 				false, zones);
 		
 		PAMatrix real = ProductionAttractionFactory.readMatrix(
-				Paths.get("data/test/distrib/paMatrices/hbw_op_ig4.csv"),
+				Paths.get("E:/NCTCOG/test/distrib/paMatrices/hbw_op_ig4.csv"),
 				false, zones);
 		NetworkSkim skim = skims.get("op_hbw");
 		

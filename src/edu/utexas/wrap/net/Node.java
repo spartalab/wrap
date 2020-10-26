@@ -67,7 +67,7 @@ public class Node {
 
 	public int orderOf(Link l) {
 		// TODO Auto-generated method stub
-		return IntStream.range(0,inLinks.length).filter(x -> inLinks[x].equals(l)).findAny().orElse(-1);
+		return l.headIndex();
 	}
 
 	public TravelSurveyZone getZone() {

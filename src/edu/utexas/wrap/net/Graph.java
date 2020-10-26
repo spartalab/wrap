@@ -290,6 +290,9 @@ public class Graph {
 		});
 		inLinks.keySet().parallelStream().forEach(x ->{
 			Link[] rs = inLinks.get(x).stream().toArray(Link[]::new);
+			for (int i = 0; i < rs.length; i++) {
+				rs[i].setHeadIndex(i);
+			}
 			reverseStar[x.getOrder()] = rs;
 			x.setReverseStar(rs);
 			

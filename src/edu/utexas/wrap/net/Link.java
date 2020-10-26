@@ -14,10 +14,13 @@ import edu.utexas.wrap.util.NegativeFlowException;
  */
 public abstract class Link implements Priced, BackVector {
 
-	private final Float capacity, length, fftime;
+	protected final Float capacity;
+	protected final Float length;
+	protected final Float fftime;
 	private final Node head;
 	private final Node tail;
 	protected Semaphore ttSem;
+	private int headIdx;
 	
 	protected Double flo;
 
@@ -133,5 +136,14 @@ public abstract class Link implements Priced, BackVector {
 	}
 
 	public abstract double getPrice(AssignmentContainer container);
+
+	public void setHeadIndex(int i) {
+		// TODO Auto-generated method stub
+		headIdx = i;
+	}
+	
+	public int headIndex() {
+		return headIdx;
+	}
 	
 }
