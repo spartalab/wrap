@@ -13,6 +13,7 @@ public class TolledEnhancedLink extends TolledLink {
 	private final double beta, h0, betaSquared, conicalSquared;
 	private final boolean[] classesAllowed;
 	private final float[] classTolls;
+	private Double cachedg = null, cachedr = null;
 
 	public TolledEnhancedLink(Node tail, Node head, Float capacity, Float length, Float fftime, Float conicalParam,
 			Float VDFShift, Float sParam, Float uParam, Float saturatedFlowRate, Float minDelay, Float operCost,
@@ -36,6 +37,7 @@ public class TolledEnhancedLink extends TolledLink {
 		betaSquared = Math.pow(beta, 2);
 		conicalSquared = Math.pow(conicalParam, 2);
 		h0 = h(0.0);
+		
 	}
 
 	public Boolean allowsClass(Mode c) {
@@ -60,8 +62,8 @@ public class TolledEnhancedLink extends TolledLink {
 
 	private double conicalDelay() {
 		// c(v) == T_0 * (h(v) - h(0))
-		Double x = getFlow() / getCapacity();
-		return freeFlowTime() * (h(x) - h0);
+		Double x = getFlow() /capacity;
+		return fftime * (h(x) - h0);
 	}
 
 	private double conicalIntegral() {
@@ -99,7 +101,7 @@ public class TolledEnhancedLink extends TolledLink {
 		return classTolls[c.ordinal()] + operCost;
 	}
 
-	public synchronized double getTravelTime() {
+	public double getTravelTime() {
 		// T == T_0 + c(v) + s(v) + u(v)
 		try {
 			ttSem.acquire();
@@ -107,7 +109,12 @@ public class TolledEnhancedLink extends TolledLink {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if (cachedTT == null) cachedTT = freeFlowTime() + conicalDelay() + signalDelay() + unsignalizedDelay();	
+		if (cachedTT == null) {
+			double x = getFlow()/getCapacity();
+			cachedg = g(x);
+			cachedr = r(x);
+			cachedTT = fftime + conicalDelay() + signalDelay() + unsignalizedDelay();	
+		}
 		double ret = cachedTT;
 		ttSem.release();
 		return ret;
@@ -136,7 +143,8 @@ public class TolledEnhancedLink extends TolledLink {
 
 	private double h(Double x) {
 		// h(x) == 1 + r(x) - (a * g(x)) - b
-		return 1 + r(x) - (conicalParam * g(x)) - beta;
+		double r = cachedr == null? r(x) : cachedr;
+		return 1 + r - (conicalParam * (cachedg ==null? g(x) : cachedg)) - beta;
 	}
 
 	private double hIntegral() {
@@ -167,7 +175,12 @@ public class TolledEnhancedLink extends TolledLink {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		if (cachedTP == null) cachedTP = tPrime() * vot + tollPrime();
+		if (cachedTP == null) {
+			double x = this.getFlow()/this.getCapacity();
+			cachedg = g(x);
+			cachedr = r(x);
+			cachedTP = tPrime() * vot + tollPrime();
+		}
 		double ret = cachedTP;
 		ttSem.release();
 		return ret;
@@ -175,7 +188,8 @@ public class TolledEnhancedLink extends TolledLink {
 
 	private double r(Double x) {
 		// r(x) == sqrt( a^2 * g(x)^2 + b^2 )
-		return Math.sqrt(conicalSquared * Math.pow(g(x), 2) + betaSquared);
+		double g = cachedg == null? g(x) : cachedg;
+		return Math.sqrt(conicalSquared * g*g + betaSquared);
 	}
 
 	private double rIntegral() {
@@ -225,8 +239,8 @@ public class TolledEnhancedLink extends TolledLink {
 	private double rPrime() {
 		// r'(x) == d( sqrt( a^2 * g(x)^2 + b^2 ) )/dx
 		// == a^2 * g(x) * g'(x) / sqrt( a^2 * g(x)^2 + b^2 )
-		double x = getFlow() / getCapacity();
-		return Math.pow(conicalParam, 2) * g(x) * gPrime() / r(x);
+		double denom = cachedr == null? r(getFlow()/getCapacity()) : cachedr;
+		return Math.pow(conicalParam, 2) * cachedg * gPrime() / denom;
 	}
 
 	private double signalDelay() {
