@@ -39,9 +39,11 @@ import edu.utexas.wrap.modechoice.TripInterchangeSplitter;
 import edu.utexas.wrap.net.Demographic;
 import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.SecondaryDemographic;
+import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.AggregatePAMatrixCollector;
 import edu.utexas.wrap.util.PassengerVehicleTripConverter;
 import edu.utexas.wrap.util.TimeOfDaySplitter;
+import edu.utexas.wrap.util.io.ODProfileFactory;
 
 public interface Purpose extends 
 							ODProfileProvider, 
@@ -308,4 +310,89 @@ class BasicPurpose implements Purpose {
 	private float getVOT() {
 		return Float.parseFloat(properties.getProperty("vot"));
 	}
+
+}
+
+class DummyPurpose implements Purpose {
+	
+	private Properties props;
+	private Map<Integer, TravelSurveyZone> zones;
+	private Path dir;
+	
+	public DummyPurpose(Path propsPath, Map<Integer, TravelSurveyZone> zones) throws IOException {
+		props = new Properties();
+		props.load(Files.newInputStream(propsPath));
+		this.zones = zones;
+		dir = propsPath.getParent().resolve(props.getProperty("dir"));
+	}
+
+	@Override
+	public Stream<ODProfile> getODProfiles() {
+		// TODO Auto-generated method stub
+		switch (props.getProperty("type")) {
+		case "odProfile":
+			return loadProfilesFromFiles();
+		default:
+			throw new RuntimeException("Not yet implemented");
+		}	
+	}
+
+	private Stream<ODProfile> loadProfilesFromFiles() {
+		// TODO Auto-generated method stub
+		return Stream.of(props.getProperty("odProfile.modes").split(","))
+		.map(mode -> Mode.valueOf(mode))
+		.map(mode -> {
+			try {
+				return ODProfileFactory.readFromFile(
+						dir.resolve(props.getProperty("odProfile."+mode.toString()+".file")),
+						mode,
+						getVOTs(mode),
+						zones);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			}
+		});
+	}
+	
+	private Map<TimePeriod,Float> getVOTs(Mode mode) {
+		return Stream.of(TimePeriod.values())
+				.filter(tp -> props.getProperty("odProfile."+mode.toString()+".vot."+tp.toString()) != null)
+				.collect(
+				Collectors.toMap(
+						Function.identity(), 
+						tp -> Float.parseFloat(
+								props.getProperty(
+										"odProfile."+mode.toString()+".vot."+tp.toString()
+										)
+								)
+						)
+				);
+	}
+
+	@Override
+	public Stream<ODMatrix> getDailyODMatrices() {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("Not yet implemented");
+	}
+
+	@Override
+	public Stream<ModalPAMatrix> getModalPAMatrices() {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("Not yet implemented");
+	}
+
+	@Override
+	public AggregatePAMatrix getAggregatePAMatrix() {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("Not yet implemented");
+	}
+
+	@Override
+	public PAMap getPAMap() {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("Not yet implemented");
+	}
+	
 }
