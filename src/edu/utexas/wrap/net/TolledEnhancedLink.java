@@ -99,7 +99,7 @@ public class TolledEnhancedLink extends TolledLink {
 		return classTolls[c.ordinal()] + operCost;
 	}
 
-	public synchronized double getTravelTime() {
+	public double getTravelTime() {
 		// T == T_0 + c(v) + s(v) + u(v)
 		try {
 			ttSem.acquire();
