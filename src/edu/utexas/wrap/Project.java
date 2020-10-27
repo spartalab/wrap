@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -17,6 +18,7 @@ import edu.utexas.wrap.assignment.Assigner;
 import edu.utexas.wrap.assignment.BasicStaticAssigner;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.bush.StreamPassthroughAssigner;
+import edu.utexas.wrap.marketsegmentation.DummyPurpose;
 import edu.utexas.wrap.marketsegmentation.Market;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Link;
@@ -71,6 +73,24 @@ public class Project {
 						return new Market(projDir.resolve(props.getProperty("markets."+name+".file")), zones);
 					} catch (IOException e) {
 						System.err.println("Could not load trip purposes for "+name);
+						e.printStackTrace();
+						return null;
+					}
+				})
+				.collect(Collectors.toSet());
+	}
+	
+	public Collection<DummyPurpose> getDummyPurposes() {
+		// TODO Auto-generated method stub
+		String dummyNames = props.getProperty("dummies.ids");
+		
+		if (dummyNames == null) return Collections.emptySet();
+		else return Stream.of(dummyNames.split(","))
+				.map(name ->{
+					try {
+						return new DummyPurpose(projDir.resolve(props.getProperty("dummies."+name+".file")), zones);
+					} catch (IOException e) {
+						System.out.println("Could not load dummy trip purpose "+name);
 						e.printStackTrace();
 						return null;
 					}
@@ -179,4 +199,7 @@ public class Project {
 	public String toString() {
 		return name;
 	}
+
+
+
 }

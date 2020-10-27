@@ -5,9 +5,11 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import edu.utexas.wrap.assignment.Assigner;
 import edu.utexas.wrap.marketsegmentation.Market;
+import edu.utexas.wrap.marketsegmentation.DummyPurpose;
 import edu.utexas.wrap.net.NetworkSkim;
 
 public class wrapMarket {
@@ -37,6 +39,7 @@ public class wrapMarket {
 		
 		
 		Collection<Market> markets = proj.getMarkets();
+		Collection<DummyPurpose> dummies = proj.getDummyPurposes();
 		
 
 		Map<String,Assigner> assigners = null;
@@ -55,8 +58,12 @@ public class wrapMarket {
 			Collection<Assigner> ac = assigners.values();
 
 			System.out.println("Calculating disaggregated ODProfiles");
-			markets.parallelStream()
-			.flatMap(market -> market.getODProfiles())
+			Stream.concat(
+					markets.parallelStream()
+					.flatMap(market -> market.getODProfiles()),
+					dummies.parallelStream()
+					.flatMap(dummy -> dummy.getODProfiles())
+					)
 			.forEach(
 					od -> 
 					ac.stream().forEach(assigner -> assigner.process(od))

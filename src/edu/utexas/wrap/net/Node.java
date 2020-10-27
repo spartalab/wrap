@@ -1,7 +1,5 @@
 package edu.utexas.wrap.net;
 
-import java.util.stream.IntStream;
-
 public class Node {
 
 	private final int ID;

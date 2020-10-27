@@ -21,7 +21,8 @@ import edu.utexas.wrap.util.io.FrictionFactorFactory;
 
 public class Market implements ODProfileProvider {
 	private Properties props;
-	private Map<String,BasicPurpose> purposes;
+	private Map<String,BasicPurpose> basicPurposes;
+	private Collection<DummyPurpose> dummyPurposes;
 	private final Collection<TravelSurveyZone> zones;
 	private final Map<String,Demographic> basicDemos;
 	private final Map<String,FrictionFactorMap> frictionFactors;
@@ -37,19 +38,35 @@ public class Market implements ODProfileProvider {
 		this.zones = zoneIDs.values();
 		this.basicDemos = getDemographics(directory,zoneIDs);
 		this.frictionFactors = getFrictionFactors(directory);
-		purposes = getPurposes(directory);
+		basicPurposes = getBasicPurposes(directory);
+		dummyPurposes = getDummyPurposes(directory,zoneIDs);
 
+	}
+
+	private Collection<DummyPurpose> getDummyPurposes(Path directory,Map<Integer,TravelSurveyZone> zoneIDs) {
+		// TODO Auto-generated method stub
+		Stream.of(props.getProperty("purposes.dummies.ids").split(","))
+		.map(id -> {
+			try {
+				return new DummyPurpose(directory.resolve(props.getProperty("purposes."+id+".file")),zoneIDs);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				return null;
+			}
+		});
+		return null;
 	}
 
 	public void updateSkims(Map<String,NetworkSkim> skims) {
-		purposes.values().stream().forEach(purpose -> purpose.updateSkims(skims));
+		basicPurposes.values().stream().forEach(purpose -> purpose.updateSkims(skims));
 	}
 
 	public Stream<ODProfile> getODProfiles() {
-		return purposes.values().stream().flatMap(Purpose::getODProfiles);
+		return basicPurposes.values().stream().flatMap(Purpose::getODProfiles);
 	}
 
-	private Map<String,BasicPurpose> getPurposes(
+	private Map<String,BasicPurpose> getBasicPurposes(
 			Path directory
 			) throws IOException {
 
@@ -119,8 +136,8 @@ public class Market implements ODProfileProvider {
 		return zones;
 	}
 
-	public BasicPurpose getPurpose(String id) {
-		return purposes.get(id);
+	public BasicPurpose getBasicPurpose(String id) {
+		return basicPurposes.get(id);
 	}
 	
 	public String toString() {
