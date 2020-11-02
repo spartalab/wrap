@@ -103,12 +103,8 @@ public class TolledEnhancedLink extends TolledLink {
 
 	public double getTravelTime() {
 		// T == T_0 + c(v) + s(v) + u(v)
-		try {
-			ttSem.acquire();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		ttLock.readLock().lock();
+
 		if (cachedTT == null) {
 			double x = getFlow()/getCapacity();
 			cachedg = g(x);
@@ -116,7 +112,7 @@ public class TolledEnhancedLink extends TolledLink {
 			cachedTT = fftime + conicalDelay() + signalDelay() + unsignalizedDelay();	
 		}
 		double ret = cachedTT;
-		ttSem.release();
+		ttLock.readLock().unlock();
 		return ret;
 	}
 
@@ -170,11 +166,7 @@ public class TolledEnhancedLink extends TolledLink {
 	public double pricePrime(Float vot) {
 		// d( k(v) + m*t(v) )/dv
 		// == t'(v) * m + k'(v)
-		try {
-			ttSem.acquire();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		ttLock.readLock().lock();
 		if (cachedTP == null) {
 			double x = this.getFlow()/this.getCapacity();
 			cachedg = g(x);
@@ -182,7 +174,7 @@ public class TolledEnhancedLink extends TolledLink {
 			cachedTP = tPrime() * vot + tollPrime();
 		}
 		double ret = cachedTP;
-		ttSem.release();
+		ttLock.readLock().unlock();
 		return ret;
 	}
 
@@ -251,7 +243,8 @@ public class TolledEnhancedLink extends TolledLink {
 	private double signalizedIntegral() {
 
 		// u = v/m
-		double u = getFlow() / saturatedFlowRate;
+		Double flow = getFlow();
+		double u = flow / saturatedFlowRate;
 
 		// Integral from 0 to v of s(x) dx ==
 
@@ -278,7 +271,7 @@ public class TolledEnhancedLink extends TolledLink {
 
 		else if (u >= 0.925) {
 			// 10 * s * v
-			return 10 * s * getFlow();
+			return 10 * s * flow;
 		}
 
 		// Else: (i.e. 0.925 > u > 0.875)
@@ -292,11 +285,11 @@ public class TolledEnhancedLink extends TolledLink {
 		// + d * v
 
 		else {
-			double v = getFlow();
+			double v = flow;
 
-			double firstTerm = a * Math.pow(v, 4) / (4 * Math.pow(saturatedFlowRate, 3)); // a * v^4 / (4 * m^3)
-			double secondTerm = b * Math.pow(v, 3) / (3 * Math.pow(saturatedFlowRate, 2)); // b * v^3 / (3 * m^2)
-			double thirdTerm = c * Math.pow(v, 2) / (2 * saturatedFlowRate); // c * v^2 / (2 * m)
+			double firstTerm = a *v*v*v*v / (4 * saturatedFlowRate * saturatedFlowRate * saturatedFlowRate); // a * v^4 / (4 * m^3)
+			double secondTerm = b * v*v*v / (3 * saturatedFlowRate*saturatedFlowRate); // b * v^3 / (3 * m^2)
+			double thirdTerm = c * v*v / (2 * saturatedFlowRate); // c * v^2 / (2 * m)
 			return firstTerm + secondTerm + thirdTerm + (d * v); // d * v
 		}
 	}
@@ -305,7 +298,8 @@ public class TolledEnhancedLink extends TolledLink {
 		// TODO: Explore boundary cases (0.875 and 0.925) where not differentiable
 
 		// u = v/m
-		double vOverS = getFlow() / saturatedFlowRate;
+		Double flow = getFlow();
+		double vOverS = flow / saturatedFlowRate;
 
 		// S'(v) ==
 
@@ -313,7 +307,7 @@ public class TolledEnhancedLink extends TolledLink {
 		// d( s/(1 - v/m) )/dv
 		// == m*s / (m-v)^2
 		if (vOverS <= 0.875)
-			return (saturatedFlowRate * s) / Math.pow((saturatedFlowRate - getFlow()), 2);
+			return (saturatedFlowRate * s) / Math.pow((saturatedFlowRate - flow), 2);
 
 		// Else if u >= 0.925:
 		// d( s/0.1 )/dv == 0
@@ -324,8 +318,8 @@ public class TolledEnhancedLink extends TolledLink {
 		// d( a*(v/m)^3 + b*(v/m)^2 + c*(v/m) + d )/dv
 		// == ((3 * a * v^2) + (2 * b * m * v) + (c * m^2)) / m^3
 		else
-			return (3 * a * Math.pow(getFlow(), 2)) + (2 * b * saturatedFlowRate * getFlow())
-					+ (c * Math.pow(saturatedFlowRate, 2) / Math.pow(saturatedFlowRate, 3));
+			return ((3 * a * flow*flow) + (2 * b * saturatedFlowRate * flow)
+					+ (c * Math.pow(saturatedFlowRate, 2))) / Math.pow(saturatedFlowRate, 3);
 
 	}
 
@@ -339,9 +333,9 @@ public class TolledEnhancedLink extends TolledLink {
 		// + Integral of c(x) dx
 		// + Integral of s(x) dx
 		// + Integral of u(x) dx
-
-		return getFlow() == 0 ? 0.0 : // Short circuit for zero-flow
-				(freeFlowTime() * getFlow()) // Integral of T_0 dx == T_0 v
+		Double flow = getFlow();
+		return flow == 0 ? 0.0 : // Short circuit for zero-flow
+				(freeFlowTime() * flow) // Integral of T_0 dx == T_0 v
 						+ (conicalIntegral()) // Integral of c(x) dx
 						+ (signalizedIntegral()) // Integral of s(x) dx
 						+ (unsignalizedIntegral()); // Integral of u(x) dx
@@ -371,9 +365,9 @@ public class TolledEnhancedLink extends TolledLink {
 		//
 		// == m*v
 		// + u*v^2/(2*c)
-
-		return u * Math.pow(getFlow(), 2) / (2 * getCapacity()) // u*v^2/(2*c)
-				+ (minDelay * getFlow()); // + m*v
+		Double flow = getFlow();
+		return u * flow*flow / (2 * getCapacity()) // u*v^2/(2*c)
+				+ (minDelay * flow); // + m*v
 	}
 
 	private double unsignalPrime() {

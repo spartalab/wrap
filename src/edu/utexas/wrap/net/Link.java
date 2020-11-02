@@ -1,7 +1,8 @@
 package edu.utexas.wrap.net;
 
 
-import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.bush.BackVector;
@@ -19,7 +20,7 @@ public abstract class Link implements Priced, BackVector {
 	protected final Float fftime;
 	private final Node head;
 	private final Node tail;
-	protected Semaphore ttSem;
+	protected ReadWriteLock ttLock;
 	private int headIdx;
 	
 	protected Double flo;
@@ -48,7 +49,7 @@ public abstract class Link implements Priced, BackVector {
 		
 //		long a = 3, b = 5, c = 7, d = 11;
 //		uid = (((head.getID()*a + tail.getID())*b + capacity.hashCode())*c + fftime.hashCode())*d+length.hashCode();
-		ttSem = new Semaphore(1);
+		ttLock = new ReentrantReadWriteLock();
 	}
 
 	public abstract Boolean allowsClass(Mode c);
@@ -57,25 +58,17 @@ public abstract class Link implements Priced, BackVector {
 	 * @param delta amount by how much the flow should be altered
 	 * @return whether the flow from this bush on the link is non-zero
 	 */
-	public synchronized Boolean changeFlow(Double delta) {
-		try {
-			ttSem.acquire();
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if (delta < 0.0 && flo+delta < 0.0 - Math.max(Math.ulp(flo), Math.ulp(delta)))
-			throw new RuntimeException("Too much flow removed");
-		else if (delta < 0.0 && flo + delta <0.0) flo = 0.0;
+	public Boolean changeFlow(Double delta) {
+		ttLock.writeLock().lock();
+
+		if (flo + delta <0.0) flo = 0.0;
 		else flo += delta;
-		if (flo.isNaN()) {
-			throw new RuntimeException();
-		}
+
 		if (delta != 0.0) {
 			cachedTT = null;
 			cachedTP = null;
 		}
-		ttSem.release();
+		ttLock.writeLock().unlock();
 		return flo > 0.0;
 
 	}

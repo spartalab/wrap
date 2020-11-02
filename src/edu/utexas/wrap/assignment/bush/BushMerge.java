@@ -1,5 +1,7 @@
 package edu.utexas.wrap.assignment.bush;
 
+import java.util.List;
+import java.util.Map.Entry;
 import java.util.stream.Stream;
 
 import edu.utexas.wrap.net.Link;
@@ -51,6 +53,13 @@ public class BushMerge implements BackVector {
 		head = n;
 	}
 	
+	public BushMerge(Node head, List<Entry<Link, Double>> value) {
+		// TODO Auto-generated constructor stub
+		this.head = head;
+		shares = new Double[head.reverseStar().length];
+		value.forEach(entry -> setSplit(entry.getKey(),entry.getValue()));
+	}
+
 	/**
 	 * @return the shortest cost path Link
 	 */

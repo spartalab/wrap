@@ -34,7 +34,7 @@ public class PathCostCalculator {
 			if (shortCache == null) getShortestPathCosts();
 		}
 
-		return bm.getLinks().parallel().min(Comparator.comparing( (Link x) -> 
+		return bm.getLinks().min(Comparator.comparing( (Link x) -> 
 		shortCache[x.getTail().getOrder()]+x.getPrice(bush)
 				)).orElseThrow(RuntimeException::new);
 	}
@@ -86,7 +86,7 @@ public class PathCostCalculator {
 			if (longCache == null) getLongestPathCosts(true);
 		}
 		
-		return bm.getLinks().parallel().max(Comparator.comparing((Link x) ->
+		return bm.getLinks().max(Comparator.comparing((Link x) ->
 		longCache[x.getTail().getOrder()]+x.getPrice(bush)
 				)).orElseThrow(RuntimeException::new);
 	}
