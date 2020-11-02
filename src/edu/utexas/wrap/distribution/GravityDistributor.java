@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.PAMap;
-import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
+import edu.utexas.wrap.demand.containers.FixedSizeAggregatePAMatrix;
 import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
@@ -109,7 +109,7 @@ public class GravityDistributor extends TripDistributor {
 		
 		
 		//Now begin constructing the matrix
-		AggregatePAHashMatrix pam = new AggregatePAHashMatrix(zones);
+		FixedSizeAggregatePAMatrix pam = new FixedSizeAggregatePAMatrix(zones);
 		//For each producer
 		zones.parallelStream().forEach(producer -> {
 			//Construct a new DemandMap

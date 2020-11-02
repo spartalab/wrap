@@ -14,7 +14,6 @@ public class ModalHashMatrix implements ODMatrix, ModalPAMatrix {
 	
 	private final Mode m;
 	protected Map<TravelSurveyZone,DemandMap> map;
-	private float vot;
 	
 	public ModalHashMatrix(Mode mode) {
 		this.m = mode;
@@ -53,14 +52,6 @@ public class ModalHashMatrix implements ODMatrix, ModalPAMatrix {
 		map.put(i, d);
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.utexas.wrap.demand.PAMatrix#getVOT()
-	 */
-	@Override
-	public Float getVOT() {
-		return vot;
-	}
-
 	@Override
 	public DemandMap getDemandMap(TravelSurveyZone producer) {
 		return map.get(producer);
@@ -71,10 +62,6 @@ public class ModalHashMatrix implements ODMatrix, ModalPAMatrix {
 		return map.keySet();
 	}
 
-	@Override
-	public void setVOT(float VOT) {
-		vot = VOT;
-	}
 
 	@Override
 	public Collection<TravelSurveyZone> getZones() {

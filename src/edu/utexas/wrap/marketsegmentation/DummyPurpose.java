@@ -15,6 +15,7 @@ import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.demand.PAMap;
+import edu.utexas.wrap.demand.containers.FixedMultiplierPassthroughModalPAMatrix;
 import edu.utexas.wrap.modechoice.FixedProportionSplitter;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.modechoice.TripInterchangeSplitter;
@@ -22,6 +23,7 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.PassengerVehicleTripConverter;
 import edu.utexas.wrap.util.TimeOfDaySplitter;
 import edu.utexas.wrap.util.io.ODProfileFactory;
+import edu.utexas.wrap.util.io.ProductionAttractionFactory;
 
 public class DummyPurpose implements Purpose {
 	
@@ -80,7 +82,18 @@ public class DummyPurpose implements Purpose {
 						)
 				);
 	}
-
+	
+	private Map<TimePeriod,Float> getVOTs() {
+		Map<TimePeriod,Float> ret = Stream.of(TimePeriod.values())
+				.filter(tp -> props.getProperty("vot."+tp.toString()) != null)
+		.collect(
+				Collectors.toMap(
+						Function.identity(), 
+						tp->  Float.parseFloat(props.getProperty("vot."+tp.toString()))
+						)
+				);
+		return ret;
+	}
 	@Override
 	public Stream<ODMatrix> getDailyODMatrices() {
 		// TODO Auto-generated method stub
@@ -98,6 +111,12 @@ public class DummyPurpose implements Purpose {
 		// TODO Auto-generated method stub
 		switch (props.getProperty("type")) {
 		case "modalPAMatrix":
+			try {
+				Mode mode = Mode.valueOf(props.getProperty("modalPAMatrix.mode"));
+				return Stream.of(new FixedMultiplierPassthroughModalPAMatrix(mode, 1.0f, ProductionAttractionFactory.readMatrix(dir.resolve(props.getProperty("modalPAMatrix.file")), false, zones)));
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 			throw new RuntimeException("Not yet implemented");
 		default:
 			return modeSplitter().split(getAggregatePAMatrix());
@@ -108,7 +127,18 @@ public class DummyPurpose implements Purpose {
 	@Override
 	public AggregatePAMatrix getAggregatePAMatrix() {
 		// TODO Auto-generated method stub
-		throw new RuntimeException("Not yet implemented");
+		switch (props.getProperty("type")) {
+		case "aggPAMatrix":
+			try {
+				return ProductionAttractionFactory.readMatrix(dir.resolve(props.getProperty("aggPAMatrix.file")),false,zones);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		default:
+						throw new RuntimeException("Not yet implemented");
+
+		}
 	}
 
 	@Override
@@ -136,7 +166,7 @@ public class DummyPurpose implements Purpose {
 	
 	
 	private PassengerVehicleTripConverter vehicleConverter() {
-		return new PassengerVehicleTripConverter(getVOT());
+		return new PassengerVehicleTripConverter();
 	}
 	
 	
@@ -165,7 +195,7 @@ public class DummyPurpose implements Purpose {
 	}
 
 	private TimeOfDaySplitter timeOfDaySplitter(){
-		return new TimeOfDaySplitter(departureRates(), arrivalRates());
+		return new TimeOfDaySplitter(departureRates(), arrivalRates(),getVOTs());
 	}
 
 	

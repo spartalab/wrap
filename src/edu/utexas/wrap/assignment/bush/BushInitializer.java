@@ -31,13 +31,13 @@ public class BushInitializer implements AssignmentInitializer<Bush>{
 		this.network = network;
 	}
 	
-	public void add(ODMatrix matrix) {
+	public void add(ODMatrix matrix, Float vot) {
 		Stream<Bush> rawBushes = matrix.getZones()
 				.parallelStream()
 				.filter(tsz -> !matrix.getDemandMap(tsz).isEmpty())
 				.map(tsz -> new Bush(
 						network.getNode(tsz.getID()), 
-						matrix.getVOT(), 
+						vot, 
 						matrix.getMode(),
 						matrix.getDemandMap(tsz))
 						);

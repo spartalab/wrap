@@ -36,18 +36,7 @@ public class TransposeODMatrix implements ODMatrix {
 	public Collection<TravelSurveyZone> getZones() {
 		return parent.getZones();
 	}
-
-	@Override
-	public Float getVOT() {
-		return parent.getVOT();
-	}
-
-	@Override
-	public void setVOT(float VOT) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("Read-only matrix");
-	}
-
+	
 	@Override
 	public TimePeriod timePeriod() {
 		// TODO Auto-generated method stub

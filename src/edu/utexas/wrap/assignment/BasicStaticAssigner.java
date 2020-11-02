@@ -8,11 +8,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.AbstractMap;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
+import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import edu.utexas.wrap.TimePeriod;
@@ -40,13 +43,13 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	private AssignmentEvaluator<C> evaluator;
 	private AssignmentOptimizer<C> optimizer;
 	private AssignmentInitializer<C> initializer;
-	private Collection<ODMatrix> disaggregatedMtxs;
+	private Map<ODMatrix,Float> disaggregatedMtxs;
 	private Collection<C> containers;
 	private double threshold;
 	private final int maxIterations;
 	private final Graph network;
 	private final TimePeriod tp;
-	
+
 	public BasicStaticAssigner(
 			AssignmentInitializer<C> initializer,
 			AssignmentEvaluator<C> evaluator,
@@ -60,21 +63,21 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		maxIterations = 100;
 		network = null;
 		this.tp=tp;
-		disaggregatedMtxs = new HashSet<ODMatrix>();
+		disaggregatedMtxs = new HashMap<ODMatrix,Float>();
 	}
-	
 
-	
+
+
 	public BasicStaticAssigner(Path path, Map<Integer,TravelSurveyZone> zones) throws IOException {
 		// TODO Auto-generated constructor stub
-	
+
 		Properties props = new Properties();
 		props.load(Files.newInputStream(path));
-		
+
 		this.network = readNetwork(props, path.getParent(), zones);
-		
+
 		Files.createDirectories(Paths.get(network.toString()));
-		
+
 		AssignmentProvider<Bush> provider;
 		AssignmentConsumer<Bush> primaryConsumer, evaluationConsumer;
 
@@ -89,9 +92,9 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		default:
 			throw new RuntimeException("Not yet implented");
 		}
-		
-		
-		
+
+
+
 		AssignmentBuilder<Bush> builder;
 		switch (props.getProperty("builder")) {
 		case "bush":
@@ -100,9 +103,9 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		default:
 			throw new RuntimeException("Not yet implemented");
 		}
-		
-		
-		
+
+
+
 		switch (props.getProperty("initializer")) {
 		case "bush":
 			initializer = (AssignmentInitializer<C>) new BushInitializer(provider, primaryConsumer,builder,network);
@@ -110,9 +113,9 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		default:
 			throw new RuntimeException("Not yet implemented");
 		}
-		
-		
-		
+
+
+
 		switch (props.getProperty("evaluator")) {
 		case "gap":
 			evaluator = (AssignmentEvaluator<C>) new GapEvaluator<Bush>(network, provider, evaluationConsumer);
@@ -120,8 +123,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		default:
 			throw new RuntimeException("Not yet implemented");
 		}
-		
-		
+
+
 		switch (props.getProperty("optimizer")) {
 		case "algoB":
 			BushEvaluator iterEvaluator;
@@ -132,12 +135,12 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 			default:
 				throw new RuntimeException("Not yet implemented");
 			}
-			
-			
-			
+
+
+
 			double iterThreshold = Double.parseDouble(props.getProperty("optimizer.iterThreshold"));
-			
-			
+
+
 			optimizer = (AssignmentOptimizer<C>) new AlgorithmBOptimizer(
 					provider, 
 					primaryConsumer, 
@@ -147,13 +150,13 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		default:
 			throw new RuntimeException("Not yet implemented");
 		}
-		
-		
+
+
 		tp = TimePeriod.valueOf(props.getProperty("timePeriod"));
 		threshold = Double.parseDouble(props.getProperty("evaluator.threshold"));
 		maxIterations = Integer.parseInt(props.getProperty("maxIterations"));
-		disaggregatedMtxs = new HashSet<ODMatrix>();
-//		throw new RuntimeException("Not finished implementing");
+		disaggregatedMtxs = new HashMap<ODMatrix,Float>();
+		//		throw new RuntimeException("Not finished implementing");
 	}
 
 
@@ -161,7 +164,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	public void run() {
 		System.out.println("Aggregating OD matrices for "+tp);
 		aggregateMtxs().forEach(initializer::add);
-		
+
 		System.out.println("Initializing bushes for "+tp);
 		this.containers = initializer.initializeContainers();
 
@@ -173,109 +176,133 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 			value = evaluator.getValue(containers.parallelStream());
 		}
 		System.out.println("Final value: "+value);
-		
+
 	}
 
-	private Collection<ODMatrix> aggregateMtxs(){
-		return disaggregatedMtxs.stream()
-				.collect(Collectors.groupingBy(this::getMode,
-						Collectors.groupingBy(ODMatrix::getVOT,
-								Collectors.toSet()
+	private Map<ODMatrix,Float> aggregateMtxs(){
+
+		Function<Mode,Collector<ODMatrix,?,ODMatrix>> e = mode -> Collectors.collectingAndThen(
+				Collectors.toSet(), 
+				set -> new AddingODMatrix(set,mode, tp, network.getTSZs()
+						)
+				);
+		
+		return disaggregatedMtxs.entrySet().stream()
+		//aggregate matrices into a mapping based on aggregate mode and value of time, then store in a set
+		.collect(						
+				Collectors.groupingBy(Map.Entry::getValue,
+						Collectors.mapping(Map.Entry::getKey,
+								Collectors.groupingBy(this::getMode,
+										Collectors.toSet()
+										)
 								)
 						)
+				)
+		//for each value of time,
+		.entrySet().parallelStream()
+		.flatMap(
+				//for each mode
+				votEntry -> votEntry.getValue().entrySet().stream()
+				.map(
+						//collect all into an AddingODMatrix (which is Mode-aware)
+						modeEntry -> modeEntry.getValue().stream()
+						.collect(
+								e.apply(modeEntry.getKey()))
 						)
-				.entrySet().stream()
-				.flatMap(modeEntry -> modeEntry.getValue().entrySet().stream()
-						.map(votEntry -> new AddingODMatrix(
-								votEntry.getValue(),
-								modeEntry.getKey(),
-								votEntry.getKey(),
-								tp,
-								network.getTSZs()
-								)
-								)
+				//map each AddingODMatrix to its VOT
+				.map(
+						odm -> new AbstractMap.SimpleEntry<ODMatrix, Float>(odm, votEntry.getKey())
 						)
-				.collect(Collectors.toSet());
+				)
+		//then collect into a map
+		.collect(
+				Collectors.toMap(
+						Map.Entry::getKey, 
+						Map.Entry::getValue
+						)
+				);
 	}
 
 	public void process(ODProfile profile) {
-		disaggregatedMtxs.add(profile.getMatrix(getTimePeriod()));
+		disaggregatedMtxs.put(
+				profile.getMatrix(getTimePeriod()),
+				profile.getVOT(getTimePeriod()));
 	}
-	
+
 	public TimePeriod getTimePeriod() {
 		return tp;
 	}
-	
+
 	public NetworkSkim getSkim(ToDoubleFunction<Link> function) {
 		return SkimFactory.calculateSkim(network, function);
 	}
-	
+
 
 	private Graph readNetwork(Properties props, Path projDir, Map<Integer,TravelSurveyZone> zoneIDs) {
 		System.out.println("Reading network");
-		
+
 		try {
 			File linkFile = projDir.resolve(props.getProperty("network.links")).toFile();
 
-//			Map<Integer, AreaClass> zoneClasses = getAreaClasses();
-			
+			//			Map<Integer, AreaClass> zoneClasses = getAreaClasses();
+
 			switch(props.getProperty("network.linkType")) {
 
 			case "conic":
-				
-//				Integer ftn = Integer.parseInt(props.getProperty("network.firstThruNode"));
+
+				//				Integer ftn = Integer.parseInt(props.getProperty("network.firstThruNode"));
 				return GraphFactory.readConicGraph(linkFile, zoneIDs);
-				
+
 			case "bpr":
 				Graph g = GraphFactory.readTNTPGraph(linkFile, zoneIDs);
-				
-				
+
+
 				//FIXME This assumes the lowest n indices are the Node id's, but this isn't guaranteed
-//				AtomicInteger idx = new AtomicInteger(0);
-//				zones.entrySet().parallelStream()
-//				.forEach(entry -> {
-//					Node n = g.getNode(entry.getKey());
-//					TravelSurveyZone z = new TravelSurveyZone(n,idx.getAndIncrement(),entry.getValue());
-//					n.setTravelSurveyZone(z);
-//					g.addZone(z);
-//				});
-//				g.setNumZones(idx.get());
-				
+				//				AtomicInteger idx = new AtomicInteger(0);
+				//				zones.entrySet().parallelStream()
+				//				.forEach(entry -> {
+				//					Node n = g.getNode(entry.getKey());
+				//					TravelSurveyZone z = new TravelSurveyZone(n,idx.getAndIncrement(),entry.getValue());
+				//					n.setTravelSurveyZone(z);
+				//					g.addZone(z);
+				//				});
+				//				g.setNumZones(idx.get());
+
 				return g;
 			default:
 				throw new IllegalArgumentException("network.type");
 			}
-			
+
 		} catch (NullPointerException e) {
 			System.err.println("Missing property: network.linkFile");
 			System.exit(-2);
 			return null;
-			
+
 		} catch (NumberFormatException e) {
 			// TODO Auto-generated catch block
 			System.err.println("Invalid property value: network.firstThruNode\r\nCould not parse integer");
 			System.exit(-3);
 			return null;
-			
+
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			System.err.println("Invalid property value: network.linkFile\r\nFile not found");
 			e.printStackTrace();
 			System.exit(-4);
 			return null;
-			
+
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			System.err.println("Error while reading network files");
 			System.exit(-5);
 			return null;
-			
+
 		} catch (IllegalArgumentException e) {
 			System.err.println("Illegal argument: "+e.getMessage());
 			System.exit(-6);
 			return null;
 		}
-		
+
 	}
 
 	private Mode getMode(ODMatrix mtx) {
@@ -284,6 +311,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		case HOV_3_PSGR:
 		case HOV:
 			return Mode.HOV;
+
 		default:
 			return mtx.getMode();
 		}
@@ -296,7 +324,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 					outputFile,
 					StandardOpenOption.CREATE, 
 					StandardOpenOption.TRUNCATE_EXISTING);
-			
+
 			network.getLinks().parallelStream()
 			.map(link -> link.toString()+","+link.getFlow()+","+link.getTravelTime()+"\r\n")
 			.forEach(line -> {

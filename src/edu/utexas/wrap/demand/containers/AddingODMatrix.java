@@ -12,13 +12,11 @@ public class AddingODMatrix implements ODMatrix {
 
 	private final DemandMap[] demandMaps;
 	private final TimePeriod tp;
-	private final Float vot;
 	private final Mode mode;
 	private final Collection<TravelSurveyZone> zones;
 	
-	public AddingODMatrix(Collection<ODMatrix> ods, Mode mode, Float vot, TimePeriod tp, Collection<TravelSurveyZone> zones) {
+	public AddingODMatrix(Collection<ODMatrix> ods, Mode mode, TimePeriod tp, Collection<TravelSurveyZone> zones) {
 		this.mode = mode;
-		this.vot = vot;
 		this.tp = tp;
 		this.zones = zones;
 		
@@ -45,15 +43,6 @@ public class AddingODMatrix implements ODMatrix {
 		throw new RuntimeException("Read-only matrix");
 	}
 
-	@Override
-	public Float getVOT() {
-		return vot;
-	}
-
-	@Override
-	public void setVOT(float VOT) {
-		throw new RuntimeException("Read-only matrix");
-	}
 
 	@Override
 	public TimePeriod timePeriod() {

@@ -36,7 +36,7 @@ public class ODMatrixFactory {
 		else g.setNumZones(numZones);
 		
 		numZones = 0;
-		FixedSizeODMatrix<FixedSizeDemandMap> od = new FixedSizeODMatrix<FixedSizeDemandMap>(1.0f,null,g);
+		FixedSizeODMatrix<FixedSizeDemandMap> od = new FixedSizeODMatrix<FixedSizeDemandMap>(null,g);
 		
 		while (true) {
 			while (line != null && !line.startsWith("O"))
@@ -110,18 +110,18 @@ public class ODMatrixFactory {
 		BufferedReader matrixFile = Files.newBufferedReader(odMatrix.toPath());
 		
 		FixedSizeODMatrix<FixedSizeDemandMap> 
-		solo17 = new FixedSizeODMatrix<FixedSizeDemandMap>(0.17f, Mode.SINGLE_OCC, g), 
-		solo35 = new FixedSizeODMatrix<FixedSizeDemandMap>(0.35f, Mode.SINGLE_OCC, g), 
-		solo45 = new FixedSizeODMatrix<FixedSizeDemandMap>(0.45f, Mode.SINGLE_OCC, g), 
-		solo90 = new FixedSizeODMatrix<FixedSizeDemandMap>(0.90f, Mode.SINGLE_OCC, g),
+		solo17 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.SINGLE_OCC, g), 
+		solo35 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.SINGLE_OCC, g), 
+		solo45 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.SINGLE_OCC, g), 
+		solo90 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.SINGLE_OCC, g),
 
-		hov17 = new FixedSizeODMatrix<FixedSizeDemandMap>(0.17f, Mode.HOV, g), 
-		hov35 = new FixedSizeODMatrix<FixedSizeDemandMap>(0.35f, Mode.HOV, g), 
-		hov45 = new FixedSizeODMatrix<FixedSizeDemandMap>(0.45f, Mode.HOV, g), 
-		hov90 = new FixedSizeODMatrix<FixedSizeDemandMap>(0.90f, Mode.HOV, g),
+		hov17 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.HOV, g), 
+		hov35 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.HOV, g), 
+		hov45 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.HOV, g), 
+		hov90 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.HOV, g),
 
-		medTrucks = new FixedSizeODMatrix<FixedSizeDemandMap>(1f, Mode.MED_TRUCK, g), 
-		hvyTrucks = new FixedSizeODMatrix<FixedSizeDemandMap>(1f, Mode.MED_TRUCK, g);
+		medTrucks = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.MED_TRUCK, g), 
+		hvyTrucks = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.MED_TRUCK, g);
 		
 
 		matrixFile.lines().sequential().forEach(line -> {

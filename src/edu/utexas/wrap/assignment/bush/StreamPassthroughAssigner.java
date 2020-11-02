@@ -7,6 +7,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
@@ -25,7 +26,7 @@ import edu.utexas.wrap.util.io.output.ODMatrixStreamWriter;
 
 public class StreamPassthroughAssigner implements StaticAssigner {
 
-	private Collection<ODMatrix> disaggregatedMtxs;
+	private Map<ODMatrix,Float> disaggregatedMtxs;
 	private final TimePeriod period;
 	private final Properties properties;
 	private final ProcessBuilder builder;
@@ -35,7 +36,7 @@ public class StreamPassthroughAssigner implements StaticAssigner {
 		properties = new Properties();
 		properties.load(Files.newInputStream(propsFile));
 		
-		disaggregatedMtxs = new HashSet<ODMatrix>();
+		disaggregatedMtxs = new HashMap<ODMatrix,Float>();
 		period = TimePeriod.valueOf(properties.getProperty("timePeriod"));
 		
 		builder = new ProcessBuilder(
@@ -84,13 +85,14 @@ public class StreamPassthroughAssigner implements StaticAssigner {
 
 	private Map<Mode,Map<Float,ODMatrix>> aggregateMtxs() {
 		// TODO Auto-generated method stub
-		return disaggregatedMtxs.stream()
+		return disaggregatedMtxs.entrySet().stream()
 		.collect(
 				Collectors.groupingBy(
-						this::getMode,
+						entry -> getMode(entry.getKey()),
 						Collectors.groupingBy(
-								ODMatrix::getVOT,
-								new ODMatrixCollector()
+								entry -> entry.getValue(),
+								Collectors.mapping(Map.Entry::getKey, 
+								new ODMatrixCollector())
 								)
 						)
 				);
@@ -99,7 +101,7 @@ public class StreamPassthroughAssigner implements StaticAssigner {
 
 	@Override
 	public void process(ODProfile profile) {
-		disaggregatedMtxs.add(profile.getMatrix(period));
+		disaggregatedMtxs.put(profile.getMatrix(period),profile.getVOT(period));
 	}
 
 	@Override

@@ -38,18 +38,6 @@ public class FixedMultiplierPassthroughODMatrix implements ODMatrix {
 	}
 
 	@Override
-	public Float getVOT() {
-		// TODO Auto-generated method stub
-		return parent.getVOT();
-	}
-
-	@Override
-	public void setVOT(float VOT) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("Read-only matrix");
-	}
-
-	@Override
 	public TimePeriod timePeriod() {
 		// TODO Auto-generated method stub
 		return tp;

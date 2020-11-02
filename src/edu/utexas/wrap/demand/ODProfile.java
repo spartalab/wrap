@@ -8,5 +8,7 @@ public interface ODProfile {
 	public ODMatrix getMatrix(TimePeriod period);
 	
 	public Mode getMode();
+
+	public Float getVOT(TimePeriod timePeriod);
 	
 }

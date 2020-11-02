@@ -12,15 +12,18 @@ import edu.utexas.wrap.modechoice.Mode;
 
 public class SegmentedODProfile implements ODProfile {
 	private final Map<TimePeriod,ODMatrix> matrices;
+	private final Map<TimePeriod,Float> vots;
 	private final Mode mode;
 
 	public SegmentedODProfile(
 			ODMatrix dailyDepartures,
 			Map<TimePeriod,Float> departureRates,
 			ODMatrix dailyArrivals,
-			Map<TimePeriod,Float> arrivalRates
+			Map<TimePeriod,Float> arrivalRates,
+			Map<TimePeriod,Float> vots
 			) {
 		mode = dailyDepartures.getMode();
+		this.vots = vots;
 		matrices = Stream.of(TimePeriod.values())
 				.filter(tp -> departureRates.containsKey(tp) || arrivalRates.containsKey(tp))
 				.collect(
@@ -45,14 +48,20 @@ public class SegmentedODProfile implements ODProfile {
 						);
 	}
 	
-	public SegmentedODProfile(Map<TimePeriod,ODMatrix> matrices, Mode mode) {
+	public SegmentedODProfile(Map<TimePeriod,ODMatrix> matrices, Map<TimePeriod,Float> vots, Mode mode) {
 		this.matrices = matrices;
+		this.vots = vots;
 		this.mode = mode;
 	}
 
 	@Override
 	public ODMatrix getMatrix(TimePeriod period) {
 		return matrices.get(period);
+	}
+	
+	@Override
+	public Float getVOT(TimePeriod period) {
+		return vots.get(period);
 	}
 
 	@Override

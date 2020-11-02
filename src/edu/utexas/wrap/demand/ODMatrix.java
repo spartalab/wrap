@@ -36,10 +36,6 @@ public interface ODMatrix {
 	 */
 	public void put(TravelSurveyZone origin, TravelSurveyZone destination, Float demand);
 
-	public Float getVOT();
-	
-	public void setVOT(float VOT);
-
 	public TimePeriod timePeriod();
 	
 	public Collection<TravelSurveyZone> getZones();

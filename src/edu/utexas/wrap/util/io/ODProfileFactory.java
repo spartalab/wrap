@@ -35,7 +35,7 @@ public class ODProfileFactory {
 						Collectors.toMap(
 								Function.identity(), 
 								tp -> {
-									FixedSizeODMatrix<FixedSizeDemandMap> mtx = new FixedSizeODMatrix<FixedSizeDemandMap>(vots.get(tp), mode, zones.values());
+									FixedSizeODMatrix<FixedSizeDemandMap> mtx = new FixedSizeODMatrix<FixedSizeDemandMap>(mode, zones.values());
 									zones.values().forEach(zone -> mtx.setDemandMap(zone, new FixedSizeDemandMap(zones.values())));
 									return mtx;
 								}
@@ -59,6 +59,6 @@ public class ODProfileFactory {
 		
 		in.close();
 		
-		return new SegmentedODProfile(matrices,mode);
+		return new SegmentedODProfile(matrices,vots,mode);
 	}
 }

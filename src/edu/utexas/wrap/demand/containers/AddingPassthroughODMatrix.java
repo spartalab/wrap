@@ -36,18 +36,6 @@ public class AddingPassthroughODMatrix implements ODMatrix {
 	}
 
 	@Override
-	public Float getVOT() {
-		// TODO Auto-generated method stub
-		return od1.getVOT();
-	}
-
-	@Override
-	public void setVOT(float VOT) {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("Read-only matrix");
-	}
-
-	@Override
 	public TimePeriod timePeriod() {
 		// TODO Auto-generated method stub
 		return tp;

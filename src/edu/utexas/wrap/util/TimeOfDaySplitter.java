@@ -10,15 +10,16 @@ import edu.utexas.wrap.demand.containers.SegmentedODProfile;
 import edu.utexas.wrap.demand.containers.TransposeODMatrix;
 
 public class TimeOfDaySplitter {
-	Map<TimePeriod,Float> depRates, arrRates;
+	final Map<TimePeriod,Float> depRates, arrRates,vots;
 
-	public TimeOfDaySplitter(Map<TimePeriod, Float> departureRates, Map<TimePeriod, Float> arrivalRates) {
+	public TimeOfDaySplitter(Map<TimePeriod, Float> departureRates, Map<TimePeriod, Float> arrivalRates,Map<TimePeriod,Float> vots) {
 		depRates = departureRates;
 		arrRates = arrivalRates;
+		this.vots = vots;
 	}
 
 	public Stream<ODProfile> split(Stream<ODMatrix> dailyODs) {
-		return dailyODs.map(daily -> new SegmentedODProfile(daily,depRates,new TransposeODMatrix(daily),arrRates));
+		return dailyODs.map(daily -> new SegmentedODProfile(daily,depRates,new TransposeODMatrix(daily),arrRates, vots));
 	}
 
 }

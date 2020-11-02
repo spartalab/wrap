@@ -13,16 +13,10 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 public class ODPassthroughMatrix implements ODMatrix {
 	
 	private ModalPAMatrix base;
-	private Float vot = null;
 	private TimePeriod tp;
 	
 	public ODPassthroughMatrix(ModalPAMatrix baseMatrix) {
 		base = baseMatrix;
-	}
-	
-	public ODPassthroughMatrix(ModalPAMatrix baseMatrix, float vot) {
-		this(baseMatrix);
-		this.vot = vot;
 	}
 
 	@Override
@@ -44,17 +38,6 @@ public class ODPassthroughMatrix implements ODMatrix {
 	public Collection<TravelSurveyZone> getZones() {
 		return base.getZones();
 	}
-
-	@Override
-	public Float getVOT() {
-		return vot;
-	}
-
-	@Override
-	public void setVOT(float VOT) {
-		vot = VOT;
-	}
-
 
 	@Override
 	public DemandMap getDemandMap(TravelSurveyZone origin) {

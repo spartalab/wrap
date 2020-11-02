@@ -8,5 +8,5 @@ public interface AssignmentInitializer<T extends AssignmentContainer> {
 	
 	public Collection<T> initializeContainers();
 	
-	public void add(ODMatrix matrix);
+	public void add(ODMatrix matrix, Float vot);
 }

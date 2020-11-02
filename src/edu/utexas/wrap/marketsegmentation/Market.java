@@ -45,7 +45,7 @@ public class Market implements ODProfileProvider {
 
 	private Collection<DummyPurpose> getDummyPurposes(Path directory,Map<Integer,TravelSurveyZone> zoneIDs) {
 		// TODO Auto-generated method stub
-		Stream.of(props.getProperty("purposes.dummies.ids").split(","))
+		return Stream.of(props.getProperty("purposes.dummies.ids").split(","))
 		.map(id -> {
 			try {
 				return new DummyPurpose(directory.resolve(props.getProperty("purposes."+id+".file")),zoneIDs);
@@ -54,8 +54,7 @@ public class Market implements ODProfileProvider {
 				e.printStackTrace();
 				return null;
 			}
-		});
-		return null;
+		}).collect(Collectors.toSet());
 	}
 
 	public void updateSkims(Map<String,NetworkSkim> skims) {
@@ -63,7 +62,10 @@ public class Market implements ODProfileProvider {
 	}
 
 	public Stream<ODProfile> getODProfiles() {
-		return basicPurposes.values().stream().flatMap(Purpose::getODProfiles);
+		return Stream.concat(
+				basicPurposes.values().stream(),
+				dummyPurposes.stream())
+				.flatMap(Purpose::getODProfiles);
 	}
 
 	private Map<String,BasicPurpose> getBasicPurposes(

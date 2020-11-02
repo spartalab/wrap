@@ -11,14 +11,12 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 public class CopyingODMatrix implements ODMatrix {
 	private final Mode mode;
 	private final DemandMap[] demandMaps;
-	private final Float vot;
 	private final Collection<TravelSurveyZone> zones;
 	private final TimePeriod tp;
 
-	public CopyingODMatrix(ODMatrix parent, Float vot, Mode mode, TimePeriod tp) {
+	public CopyingODMatrix(ODMatrix parent, Mode mode, TimePeriod tp) {
 		this.mode = mode;
 		this.tp = tp;
-		this.vot = vot;
 		this.zones = parent.getZones();
 		demandMaps = new DemandMap[zones.size()];
 		
@@ -43,17 +41,6 @@ public class CopyingODMatrix implements ODMatrix {
 	public void put(TravelSurveyZone origin, TravelSurveyZone destination, Float demand) {
 		// TODO Auto-generated method stub
 		throw new RuntimeException("Read-only matrix");
-	}
-
-	@Override
-	public Float getVOT() {
-		return vot;
-	}
-
-	@Override
-	public void setVOT(float VOT) {
-		throw new RuntimeException("Read-only matrix");
-
 	}
 
 	@Override

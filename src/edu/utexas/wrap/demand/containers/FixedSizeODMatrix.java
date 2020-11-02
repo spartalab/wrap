@@ -10,15 +10,13 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class FixedSizeODMatrix<T extends DemandMap> implements ODMatrix {
 	
-	private float vot;
 	private final Mode mode;
 	private final Collection<TravelSurveyZone> zones;
 	private final DemandMap[] demandMaps;
 	private TimePeriod tp;
 	
-	public FixedSizeODMatrix(Float vot, Mode mode, Collection<TravelSurveyZone> zones) {
+	public FixedSizeODMatrix(Mode mode, Collection<TravelSurveyZone> zones) {
 		this.mode = mode;
-		this.vot = vot;
 		this.zones = zones;
 		this.demandMaps = new DemandMap[zones.size()];
 	}
@@ -39,16 +37,6 @@ public class FixedSizeODMatrix<T extends DemandMap> implements ODMatrix {
 	}
 
 	@Override
-	public Float getVOT() {
-		return vot;
-	}
-
-	@Override
-	public void setVOT(float VOT) {
-		this.vot = VOT;
-	}
-
-	@Override
 	public Collection<TravelSurveyZone> getZones() {
 		return zones;
 	}
@@ -60,11 +48,6 @@ public class FixedSizeODMatrix<T extends DemandMap> implements ODMatrix {
 	
 	public void setDemandMap(TravelSurveyZone origin, T demandMap) {
 		demandMaps[origin.getOrder()] = demandMap;
-	}
-
-	
-	public String toString() {
-		return mode + "_" + getVOT();
 	}
 
 	@Override

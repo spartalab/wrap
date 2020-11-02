@@ -217,7 +217,7 @@ class BasicPurpose implements Purpose {
 	
 	
 	private PassengerVehicleTripConverter vehicleConverter() {
-		return new PassengerVehicleTripConverter(getVOT());
+		return new PassengerVehicleTripConverter();
 	}
 	
 	
@@ -246,7 +246,7 @@ class BasicPurpose implements Purpose {
 	}
 
 	private TimeOfDaySplitter timeOfDaySplitter(){
-		return new TimeOfDaySplitter(departureRates(), arrivalRates());
+		return new TimeOfDaySplitter(departureRates(), arrivalRates(),getVOTs());
 	}
 
 	
@@ -305,8 +305,15 @@ class BasicPurpose implements Purpose {
 		this.skims = skims;
 	}
 	
-	private float getVOT() {
-		return Float.parseFloat(properties.getProperty("vot"));
+	private Map<TimePeriod,Float> getVOTs() {
+		Map<TimePeriod,Float> ret =  Stream.of(TimePeriod.values())
+				.filter(tp -> properties.getProperty("vot."+tp.toString()) != null)
+		.collect(
+				Collectors.toMap(
+						Function.identity(), 
+						tp->  Float.parseFloat(properties.getProperty("vot."+tp.toString()))
+						)
+				);
+		return ret;
 	}
-
 }

@@ -14,10 +14,11 @@ import java.util.Collection;
 import java.util.HashMap;
 
 import edu.utexas.wrap.ModelInput;
+import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.PAMatrix;
 import edu.utexas.wrap.demand.containers.AggregatePAHashMap;
-import edu.utexas.wrap.demand.containers.AggregatePAHashMatrix;
+import edu.utexas.wrap.demand.containers.FixedSizeAggregatePAMatrix;
 import edu.utexas.wrap.generation.AreaClassGenerationRate;
 import edu.utexas.wrap.generation.GeneralGenerationRate;
 import edu.utexas.wrap.generation.GenerationRate;
@@ -168,8 +169,8 @@ public class ProductionAttractionFactory {
 	 * @return PA Matrix from the file
 	 * @throws IOException
 	 */
-	public static PAMatrix readMatrix(Path path, boolean header, Map<Integer, TravelSurveyZone> zones) throws IOException {
-		PAMatrix ret = new AggregatePAHashMatrix(zones.values());
+	public static AggregatePAMatrix readMatrix(Path path, boolean header, Map<Integer, TravelSurveyZone> zones) throws IOException {
+		AggregatePAMatrix ret = new FixedSizeAggregatePAMatrix(zones.values());
 		BufferedReader in = null;
 
 		try {
