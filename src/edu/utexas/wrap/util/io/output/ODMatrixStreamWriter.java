@@ -23,7 +23,7 @@ public class ODMatrixStreamWriter {
         try {
 //            List<ODMatrix> temp = new ArrayList<ODMatrix>(ods);
             // Assuming that there is something in the ods
-        	Graph g = 
+        	Collection<TravelSurveyZone> g = 
         			ods.values().stream().flatMap(map -> map.values().stream())
         			.map(ODMatrix::getZones)
         			.findAny()
@@ -34,8 +34,8 @@ public class ODMatrixStreamWriter {
                 System.exit(1);
             }
             BufferedOutputStream bo = new BufferedOutputStream(stdin);
-            Collection<TravelSurveyZone> origins = g.getTSZs();
-            Collection<TravelSurveyZone> demands = g.getTSZs();
+            Collection<TravelSurveyZone> origins = g;
+            Collection<TravelSurveyZone> demands = g;
 //            System.out.println("There are " + origins.size() + " zones");
             ByteBuffer buffer = ByteBuffer.allocate(48 * demands.size()).order(ByteOrder.LITTLE_ENDIAN);
 //            Map<String, ODMatrix> od_info = new HashMap<>();
@@ -51,17 +51,17 @@ public class ODMatrixStreamWriter {
                     buffer.putInt(dest.getID());
 
 //                    System.out.println("-------------------------------------");
-                    buffer.putInt(Float.floatToRawIntBits(ods.get(Mode.SINGLE_OCC).get(0.35f).getDemand(orig,dest)));
-                    buffer.putInt(Float.floatToRawIntBits(ods.get(Mode.SINGLE_OCC).get(0.9f).getDemand(orig,dest)));
-                    buffer.putInt(Float.floatToRawIntBits(ods.get(Mode.HOV).get(0.35f).getDemand(orig,dest)));
-                    buffer.putInt(Float.floatToRawIntBits(ods.get(Mode.HOV).get(0.9f).getDemand(orig,dest)));
-                    buffer.putInt(Float.floatToRawIntBits(ods.get(Mode.SINGLE_OCC).get(0.17f).getDemand(orig,dest)));
-                    buffer.putInt(Float.floatToRawIntBits(ods.get(Mode.SINGLE_OCC).get(0.45f).getDemand(orig,dest)));
-                    buffer.putInt(Float.floatToRawIntBits(ods.get(Mode.HOV).get(0.17f).getDemand(orig,dest)));
-                    buffer.putInt(Float.floatToRawIntBits(ods.get(Mode.HOV).get(0.45f).getDemand(orig,dest)));
+                    buffer.putInt(Float.floatToRawIntBits(ods.get(Mode.SINGLE_OCC).get(0.8f).getDemand(orig,dest)));
+                    buffer.putInt(Float.floatToRawIntBits(ods.get(Mode.SINGLE_OCC).get(1.7f).getDemand(orig,dest)));
+                    buffer.putInt(Float.floatToRawIntBits(ods.get(Mode.HOV).get(0.8f).getDemand(orig,dest)));
+                    buffer.putInt(Float.floatToRawIntBits(ods.get(Mode.HOV).get(1.7f).getDemand(orig,dest)));
+                    buffer.putInt(Float.floatToRawIntBits(ods.get(Mode.SINGLE_OCC).get(0.5f).getDemand(orig,dest)));
+                    buffer.putInt(Float.floatToRawIntBits(ods.get(Mode.SINGLE_OCC).get(1.0f).getDemand(orig,dest)));
+                    buffer.putInt(Float.floatToRawIntBits(ods.get(Mode.HOV).get(0.5f).getDemand(orig,dest)));
+                    buffer.putInt(Float.floatToRawIntBits(ods.get(Mode.HOV).get(1.0f).getDemand(orig,dest)));
                     // MED_TRUCKS and HEAVY_TRUCKS
-                    buffer.putFloat(Float.floatToRawIntBits(0f));
-                    buffer.putFloat(Float.floatToRawIntBits(0f));
+                    buffer.putInt(Float.floatToRawIntBits(ods.get(Mode.MED_TRUCK).get(1.5f).getDemand(orig,dest)));
+                    buffer.putInt(Float.floatToRawIntBits(ods.get(Mode.HVY_TRUCK).get(1.5f).getDemand(orig,dest)));
 //                    System.out.println("r:" + orig.getNode().getID() + " s:" + dest.getNode().getID() + " "
 //                        + od_info.get("SINGLE_OCC_0.35") + " " + od_info.get("SINGLE_OCC_0.9")
 //                        + od_info.get("HOV_0.35") + " " + od_info.get("HOV_0.9")

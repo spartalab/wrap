@@ -6,9 +6,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.ToDoubleFunction;
@@ -30,6 +28,7 @@ public class StreamPassthroughAssigner implements StaticAssigner {
 	private final TimePeriod period;
 	private final Properties properties;
 	private final ProcessBuilder builder;
+	
 
 	public StreamPassthroughAssigner(Path propsFile) throws IOException {
 		// TODO Auto-generated constructor stub

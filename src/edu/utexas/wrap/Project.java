@@ -25,6 +25,7 @@ import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.io.SkimFactory;
+import edu.utexas.wrap.util.io.output.FilePassthroughDummyAssigner;
 
 public class Project {
 	private final Properties props;
@@ -163,6 +164,8 @@ public class Project {
 						projDir.resolve(props.getProperty("assigners."+id+".file")),
 						zones
 						);
+			case "file":
+				return new FilePassthroughDummyAssigner(projDir.resolve(props.getProperty("assigners."+id+".file")),zones);
 			default:
 				throw new RuntimeException("Not yet implemented");
 			}

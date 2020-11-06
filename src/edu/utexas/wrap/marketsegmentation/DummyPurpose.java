@@ -94,6 +94,7 @@ public class DummyPurpose implements Purpose {
 				);
 		return ret;
 	}
+	
 	@Override
 	public Stream<ODMatrix> getDailyODMatrices() {
 		// TODO Auto-generated method stub
