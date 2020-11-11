@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
@@ -72,8 +73,9 @@ public class Market implements ODProfileProvider {
 			Path directory
 			) throws IOException {
 
-
-		return Stream.of(props.getProperty("purposes.ids").split(","))
+		String ids = props.getProperty("purposes.ids");
+		if (ids == null || ids.isBlank()) return Collections.emptyMap();
+		return Stream.of(ids.split(","))
 				.collect(
 						Collectors.toMap(
 								Function.identity(), 
@@ -92,7 +94,9 @@ public class Market implements ODProfileProvider {
 
 	private Map<String,Demographic> getDemographics(Path directory, Map<Integer, TravelSurveyZone> zones) {
 		//TODO improve error handling here
-		return Stream.of(props.getProperty("demographics.ids").split(","))
+		String ids = props.getProperty("demographics.ids");
+		if (ids == null || ids.isBlank()) return Collections.emptyMap();
+		return Stream.of(ids.split(","))
 				.collect(
 						Collectors.toMap(
 								Function.identity(), 
@@ -109,7 +113,9 @@ public class Market implements ODProfileProvider {
 	}
 
 	private Map<String,FrictionFactorMap> getFrictionFactors(Path directory) {
-		return Stream.of(props.getProperty("frictFacts.ids").split(","))
+		String ids = props.getProperty("frictFacts.ids");
+		if (ids == null || ids.isBlank()) return Collections.emptyMap();
+		return Stream.of(ids.split(","))
 				.collect(
 						Collectors.toMap(
 								Function.identity(), 
