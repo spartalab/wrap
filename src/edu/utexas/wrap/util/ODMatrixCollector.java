@@ -10,18 +10,20 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collector;
 
+import edu.utexas.wrap.TimePeriod;
+import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class ODMatrixCollector implements Collector<ODMatrix, CombinedODMatrix, ODMatrix>{
 	private final Set<Characteristics> characteristics = new HashSet<Characteristics>(Arrays.asList(Collector.Characteristics.values()));
-	private double vot;
+	private TimePeriod tp;
 	private Mode mode;
 	
-	public ODMatrixCollector(Mode mode, Double vot) {
+	public ODMatrixCollector(Mode mode, TimePeriod tp) {
 		this.mode = mode;
-		this.vot = vot;
+		this.tp = tp;
 	}
 	
 	public ODMatrixCollector() {
@@ -30,7 +32,7 @@ public class ODMatrixCollector implements Collector<ODMatrix, CombinedODMatrix, 
 
 	@Override
 	public Supplier<CombinedODMatrix> supplier() {
-		return () -> new CombinedODMatrix(mode,vot);
+		return () -> new CombinedODMatrix(mode,tp);
 	}
 
 	@Override
@@ -61,13 +63,13 @@ public class ODMatrixCollector implements Collector<ODMatrix, CombinedODMatrix, 
 
 class CombinedODMatrix implements ODMatrix {
 	private Collection<ODMatrix> children;
-	private Float vot;
+	private TimePeriod tp;
 	private Mode mode;
 	
-	public CombinedODMatrix(Mode mode, Double vot) {
+	public CombinedODMatrix(Mode mode, TimePeriod tp) {
 		children = new HashSet<ODMatrix>();
-		this.vot = vot == null? 0.0f : vot.floatValue();
 		this.mode = mode;
+		this.tp = tp;
 	}
 	
 	public CombinedODMatrix() {
@@ -99,12 +101,20 @@ class CombinedODMatrix implements ODMatrix {
 	}
 
 	@Override
-	public Float getVOT() {
-		return vot;
+	public TimePeriod timePeriod() {
+		return tp;
 	}
 
 	@Override
-	public void setVOT(float VOT) {
-		vot = VOT;
+	public Collection<TravelSurveyZone> getZones() {
+		return children.stream().map(ODMatrix::getZones).findAny().orElseThrow(RuntimeException::new);
 	}
+
+	@Override
+	public DemandMap getDemandMap(TravelSurveyZone origin) {
+		// TODO Auto-generated method stub
+		throw new RuntimeException("Not yet implemented");
+	}
+
+
 }
