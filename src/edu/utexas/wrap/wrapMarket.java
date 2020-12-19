@@ -35,7 +35,7 @@ public class wrapMarket {
 			System.exit(-1);
 		}
 		
-		Collection<Market> markets = proj.getMarkets();
+		Collection<Market> markets = proj.loadMarkets();
 		Collection<DummyPurpose> dummies = proj.getDummyPurposes();
 		
 
@@ -44,10 +44,10 @@ public class wrapMarket {
 		int numFeedbacks = 1;
 		for (int i = 0; i < numFeedbacks; i++) {
 			System.out.println("Beginning feedback iteration "+i);
-			assigners = proj.getAssigners();
+			assigners = proj.loadAssigners();
 			
 			//Update skims and redistribute
-			Map<String,NetworkSkim> skims = i == 0? proj.getInitialSkims() : proj.getFeedbackSkims(assigners);
+			Map<String,NetworkSkim> skims = i == 0? proj.loadInitialSkims() : proj.updateFeedbackSkims(assigners);
 			//TODO project should have skims
 			markets.parallelStream().forEach(market -> market.updateSkims(skims));
 			
