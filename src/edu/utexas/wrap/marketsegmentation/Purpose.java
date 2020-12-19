@@ -49,6 +49,8 @@ public interface Purpose extends
 							ModalPAMatrixProvider, 
 							AggregatePAMatrixProvider, 
 							PAMapProvider {
+	
+	public double personTrips();
 };
 
 class BasicPurpose implements Purpose {
@@ -58,6 +60,7 @@ class BasicPurpose implements Purpose {
 	private final Market parent;
 	private Map<String,NetworkSkim> skims;
 	private Demographic ubProds, ubAttrs;
+	private String name;
 
 	public BasicPurpose(
 			Path purposeFile, 
@@ -68,6 +71,7 @@ class BasicPurpose implements Purpose {
 		this.parent = parent;
 		properties = new Properties();
 		properties.load(Files.newInputStream(purposeFile));
+		name = purposeFile.toString();
 		
 	}
 
@@ -315,5 +319,13 @@ class BasicPurpose implements Purpose {
 						)
 				);
 		return ret;
+	}
+
+	public double personTrips() {
+		return getPAMap().getAttractionMap().totalDemand();
+	}
+	
+	public String toString() {
+		return name;
 	}
 }

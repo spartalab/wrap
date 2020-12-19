@@ -35,9 +35,6 @@ public class wrapMarket {
 			System.exit(-1);
 		}
 		
-		
-		
-		
 		Collection<Market> markets = proj.getMarkets();
 		Collection<DummyPurpose> dummies = proj.getDummyPurposes();
 		

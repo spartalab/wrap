@@ -38,4 +38,8 @@ public interface DemandMap {
 	 * @return a copy of the DemandMap with all values as doubles
 	 */
 	public Map<TravelSurveyZone, Double> doubleClone();
+
+	public default double totalDemand() {
+		return getZones().stream().mapToDouble(this::get).sum();
+	};
 }

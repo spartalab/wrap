@@ -30,12 +30,14 @@ public class DummyPurpose implements Purpose {
 	private Properties props;
 	private Map<Integer, TravelSurveyZone> zones;
 	private Path dir;
+	private String name;
 	
 	public DummyPurpose(Path propsPath, Map<Integer, TravelSurveyZone> zones) throws IOException {
 		props = new Properties();
 		props.load(Files.newInputStream(propsPath));
 		this.zones = zones;
 		dir = propsPath.getParent().resolve(props.getProperty("dir"));
+		name = propsPath.toString();
 	}
 
 	@Override
@@ -137,7 +139,7 @@ public class DummyPurpose implements Purpose {
 				e.printStackTrace();
 			}
 		default:
-						throw new RuntimeException("Not yet implemented");
+			throw new RuntimeException("Not yet implemented");
 
 		}
 	}
@@ -200,5 +202,25 @@ public class DummyPurpose implements Purpose {
 	}
 
 	
+	public double personTrips() {
+		switch (props.getProperty("type")) {
+		
+		case "odMatrix":
+		case "odProfile":
+		case "modalODMatrix":
+			return 0.0;
+		default:
+			AggregatePAMatrix mtx = getAggregatePAMatrix();
+			return zones.values().stream()
+					.mapToDouble(
+							orig -> zones.values().stream()
+							.mapToDouble(dest -> mtx.getDemand(orig, dest))
+							.sum()
+							).sum();
+		}
+	}
 	
+	public String toString() {
+		return name;
+	}
 }
