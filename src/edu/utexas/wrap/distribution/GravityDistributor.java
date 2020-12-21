@@ -36,6 +36,15 @@ public class GravityDistributor extends TripDistributor {
 		this.skim = skim;
 	}
 	
+	/**This method distributes a given PAMap according to the doubly-
+	 * constrained gravity model. The method first iteratively calculates
+	 * proportion values (A and B) for each zone, then determines the
+	 * number of trips between any pair of zones as the product of the
+	 * origin's number of productions, the origin's A value, the destination's
+	 * number of attractions, the destination's B value, and the impedance
+	 * between the two zones.
+	 *
+	 */
 	public AggregatePAMatrix distribute(PAMap pa) {
 		//Begin by iteratively calculating each zone's A and B values
 

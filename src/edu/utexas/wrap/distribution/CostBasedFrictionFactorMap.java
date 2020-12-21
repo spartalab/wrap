@@ -17,12 +17,24 @@ public class CostBasedFrictionFactorMap implements FrictionFactorMap {
 	private NavigableMap<Integer, Float> costFactors;
 
 
+	/**
+	 * @param factors a set of bins which will be used to calculate the impedance
+	 * through interpolation of costs between the provided values, or the values
+	 * themselves if the cost is an integer for which a value is defined
+	 */
 	public CostBasedFrictionFactorMap(NavigableMap<Integer, Float> factors) {
 		costFactors = factors;
 	}
 	
+	/**Get the impedance value associated with the given cost as follows:
+	 * get the integer floor value of the cost; if this is equal to the cost
+	 * and the impedance for it is defined, return that impedance; otherwise,
+	 * get the ceiling value and interpolate between the two values. If the cost
+	 * is outside the range of the bins provided at initialization, the closest
+	 * value is used.
+	 *
+	 */
 	public Float get(float skimCost) {
-//		Float cost = travelCosts.getCost(producer, attractor);
 		if (skimCost < 0) throw new RuntimeException("Negative travel cost");
 		
 		//Get the nearest costFactors to this cost
