@@ -9,6 +9,17 @@ import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.net.Demographic;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
+/**A TripGenerator which generates multiple DemandMap components
+ * according to a given array of GenerationRates. The width of the
+ * input Demographic values are expected to be of the same size as
+ * the number of rates provided. For example, if five rates are
+ * provided, the supplied Demographic must provide at least five
+ * values for each zone. Each rate-demographic dot product is then
+ * stored as a DemandMap which forms a component of this generator.
+ * 
+ * @author William
+ *
+ */
 public class ComponentTripGenerator implements TripGenerator {
 
 	private Collection<TravelSurveyZone> zones;
