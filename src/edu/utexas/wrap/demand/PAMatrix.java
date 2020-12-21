@@ -44,6 +44,9 @@ public interface PAMatrix {
 	 */
 	public DemandMap getDemandMap(TravelSurveyZone producer);
 
+	/**
+	 * @return a Collection of TravelSurveyZones which produce trips
+	 */
 	public Collection<TravelSurveyZone> getProducers();
 
 }

@@ -36,9 +36,19 @@ public interface ODMatrix {
 	 */
 	public void put(TravelSurveyZone origin, TravelSurveyZone destination, Float demand);
 
+	/**
+	 * @return the TimePeriod in which trips in this matrix occur
+	 */
 	public TimePeriod timePeriod();
 	
+	/**
+	 * @return the TravelSurveyZones which serve as the origin or destination of trips in this matrix
+	 */
 	public Collection<TravelSurveyZone> getZones();
 	
+	/**
+	 * @param origin a TravelSurveyZone whose trips should be returned
+	 * @return a DemandMap containing all trips from the given TravelSurveyZone to all zones
+	 */
 	public DemandMap getDemandMap(TravelSurveyZone origin);
 }
