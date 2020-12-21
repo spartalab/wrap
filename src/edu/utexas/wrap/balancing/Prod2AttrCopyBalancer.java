@@ -17,7 +17,7 @@ public class Prod2AttrCopyBalancer implements TripBalancer {
 	public PAMap balance(PAMap paMap) {
 		Collection<TravelSurveyZone> nodes = paMap.getAttractors();
 		nodes.addAll(paMap.getProducers());
-		nodes.parallelStream().forEach(n -> paMap.putProductions(n, paMap.getAttractions(n)));
+		nodes.stream().forEach(n -> paMap.putProductions(n, paMap.getAttractions(n)));
 		return paMap;
 	}
 

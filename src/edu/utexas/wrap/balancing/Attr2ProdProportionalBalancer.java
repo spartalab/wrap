@@ -23,19 +23,19 @@ public class Attr2ProdProportionalBalancer implements TripBalancer {
 	
 	@Override
 	public PAMap balance(PAMap paMap) {
-		if (raas != null) raas.parallelStream().forEach(raa -> {
-			float prods = (float) raa.getTSZs().parallelStream().mapToDouble(tsz ->paMap.getProductions(tsz)).sum();
-			float attrs = (float) raa.getTSZs().parallelStream().mapToDouble(tsz -> paMap.getAttractions(tsz)).sum();
+		if (raas != null) raas.stream().forEach(raa -> {
+			float prods = (float) raa.getTSZs().stream().mapToDouble(tsz ->paMap.getProductions(tsz)).sum();
+			float attrs = (float) raa.getTSZs().stream().mapToDouble(tsz -> paMap.getAttractions(tsz)).sum();
 
 			float prop = prods/attrs;
-			raa.getTSZs().parallelStream().forEach(tsz -> paMap.putAttractions(tsz, paMap.getAttractions(tsz)*prop));
+			raa.getTSZs().stream().forEach(tsz -> paMap.putAttractions(tsz, paMap.getAttractions(tsz)*prop));
 		});
 		else {
-			double prods = paMap.getProducers().parallelStream().mapToDouble(prod -> paMap.getProductions(prod)).sum();
-			double attrs = paMap.getAttractors().parallelStream().mapToDouble(attr -> paMap.getAttractions(attr)).sum();
+			double prods = paMap.getProducers().stream().mapToDouble(prod -> paMap.getProductions(prod)).sum();
+			double attrs = paMap.getAttractors().stream().mapToDouble(attr -> paMap.getAttractions(attr)).sum();
 			
 			double scale = prods/attrs;
-			paMap.getAttractors().parallelStream().forEach(attr -> paMap.putAttractions(attr, (float) (paMap.getAttractions(attr)*scale)));
+			paMap.getAttractors().stream().forEach(attr -> paMap.putAttractions(attr, (float) (paMap.getAttractions(attr)*scale)));
 		}
 		return paMap;
 	}

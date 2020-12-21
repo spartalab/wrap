@@ -2,6 +2,13 @@ package edu.utexas.wrap.balancing;
 
 import edu.utexas.wrap.demand.PAMap;
 
+/**An interface which takes a PAMap of arbitrary number of productions and attractions,
+ * then returns a modified PAMap which guarantees that the number of productions is equal
+ * to the number of attractions.
+ * 
+ * @author William
+ *
+ */
 public interface TripBalancer {
 
 	/**
