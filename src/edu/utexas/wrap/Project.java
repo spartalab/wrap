@@ -42,7 +42,6 @@ import edu.utexas.wrap.util.io.output.FilePassthroughDummyAssigner;
  */
 public class Project {
 	private final Properties props;
-//	private Graph network;
 	private Map<Integer, TravelSurveyZone> zones;
 	private Path projDir;
 	private String name;
@@ -60,8 +59,6 @@ public class Project {
 		
 		projDir = projFile.getParent().resolve(props.getProperty("dir"));
 		zones = getZones();
-//		network = readNetwork();
-//		throw new RuntimeException("Zones not loaded");
 	}
 	
 	/**Project constructor from a Properties file (*.wrp)
@@ -119,7 +116,7 @@ public class Project {
 	}
 	
 	/**
-	 * @return
+	 * @return a Collection of DummyPurposes which are not affiliated with any particular Market
 	 */
 	public Collection<DummyPurpose> getDummyPurposes() {
 		// TODO Auto-generated method stub

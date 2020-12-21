@@ -12,7 +12,7 @@ import edu.utexas.wrap.marketsegmentation.Market;
 import edu.utexas.wrap.marketsegmentation.DummyPurpose;
 import edu.utexas.wrap.net.NetworkSkim;
 
-public class wrapMarket {
+public class wrap {
 	static Path projDir, projFile;
 	static Project proj;
 	
