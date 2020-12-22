@@ -56,7 +56,7 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 	private void consolidate() {
 		double dn = Math.log10(n)/phi;
 		int D = (int) Math.ceil(dn);
-		FibonacciLeaf[] AA = new FibonacciLeaf[D];
+		FibonacciLeaf<E>[] AA = new FibonacciLeaf[D];
 		
 //		Map<Integer, FibonacciLeaf<E>> A = new ConcurrentHashMap<Integer,FibonacciLeaf<E>>();
 		Set<FibonacciLeaf<E>> ignore = (new HashSet<FibonacciLeaf<E>>());

@@ -20,6 +20,15 @@ import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.io.FrictionFactorFactory;
 
+/**A grouping of people who make trips according to the same behavior model
+ * 
+ * This class defines, for a group of people, the demographics associated with
+ * the various TravelSurveyZones, the FrictionFactors used in modeling their
+ * trip distribution, and the Purposes for which they travel.
+ * 
+ * @author William
+ *
+ */
 public class Market implements ODProfileProvider {
 	private Properties props;
 	private Map<String,BasicPurpose> basicPurposes;
@@ -58,10 +67,17 @@ public class Market implements ODProfileProvider {
 		}).collect(Collectors.toSet());
 	}
 
+	/**Update each of the Market's BasicPurposes with new network cost skims
+	 * 
+	 * @param skims a Map from a skim ID to the most up-to-date NetworkSkim associated with the ID
+	 */
 	public void updateSkims(Map<String,NetworkSkim> skims) {
 		basicPurposes.values().stream().forEach(purpose -> purpose.updateSkims(skims));
 	}
 
+	/**Generate a Stream of ODProfiles for each Purpose associated with this Market
+	 *
+	 */
 	public Stream<ODProfile> getODProfiles() {
 		return Stream.concat(
 				basicPurposes.values().stream(),
@@ -132,18 +148,33 @@ public class Market implements ODProfileProvider {
 	}
 
 
+	/**Get the Demographic associated with a given id string
+	 * @param id the string name for a Demographic
+	 * @return the corresponding Demographic associated with this Market
+	 */
 	public Demographic getBasicDemographic(String id) {
 		return basicDemos.get(id);
 	}
 
+	/**Get the FrictionFactorMap associated with a given id string
+	 * @param id the string name for a FrictionFactorMap
+	 * @return the corresponding FrictionFactorMap associated with this Market
+	 */
 	public FrictionFactorMap getFrictionFactor(String id) {
 		return frictionFactors.get(id);
 	}
 
+	/**
+	 * @return the TravelSurveyZones associated with this Market
+	 */
 	public Collection<TravelSurveyZone> getZones() {
 		return zones;
 	}
 
+	/**Get the BasicPurpose associated with a given id string
+	 * @param id the string name for a BasicPurpose
+	 * @return the corresponding BasicPurpose associated with this Market
+	 */
 	public BasicPurpose getBasicPurpose(String id) {
 		return basicPurposes.get(id);
 	}

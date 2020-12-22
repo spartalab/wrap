@@ -4,15 +4,16 @@ import java.util.Set;
 
 import edu.utexas.wrap.assignment.bush.OldBushOrigin;
 import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class AllPathsRelativeGapCalculator extends Thread {
 	public Double val;
 	Graph graph;
-	Set<OldBushOrigin> origins;
+	Set<TravelSurveyZone> origins;
 	LowestCostPathCostCalculator lc;
 	TotalSystemGeneralizedCostCalculator cc;
 	
-	public AllPathsRelativeGapCalculator(Graph g, Set<OldBushOrigin> o, TotalSystemGeneralizedCostCalculator tc, LowestCostPathCostCalculator lc) {
+	public AllPathsRelativeGapCalculator(Graph g, Set<TravelSurveyZone> o, TotalSystemGeneralizedCostCalculator tc, LowestCostPathCostCalculator lc) {
 		graph = g;
 		origins = o;
 	}

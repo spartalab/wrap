@@ -3,7 +3,7 @@ package edu.utexas.wrap.net;
 public class TravelSurveyZone {
 	private final int nodeID;
 	private final int order;
-//	private RegionalAreaAnalysisZone parent;
+	private RegionalAreaAnalysisZone parent;
 	private final AreaClass ac;
 	
 	//Demographic data
@@ -24,13 +24,13 @@ public class TravelSurveyZone {
 		return "Zone "+this.getID();
 	}
 	
-//	public void setRAA(RegionalAreaAnalysisZone parent) {
-//		this.parent = parent;
-//	}
-//	
-//	public RegionalAreaAnalysisZone getRAA() {
-//		return parent;
-//	}
+	public void setRAA(RegionalAreaAnalysisZone parent) {
+		this.parent = parent;
+	}
+	
+	public RegionalAreaAnalysisZone getRAA() {
+		return parent;
+	}
 
 	public int getOrder() {
 		return order;

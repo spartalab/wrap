@@ -25,6 +25,20 @@ import edu.utexas.wrap.util.TimeOfDaySplitter;
 import edu.utexas.wrap.util.io.ODProfileFactory;
 import edu.utexas.wrap.util.io.ProductionAttractionFactory;
 
+/**An implementation of a Purpose that allows for reading a demand
+ * container from a file, then completing the remaining steps of
+ * the specified model using the provided model properties. 
+ * 
+ * The DummyProject Properties file (*.wrd) supplies a "type" which
+ * identifies at which point in the Urban Transportation Modeling
+ * System this model begins. This allows for skipping preliminary
+ * steps of the model that may not be able to be modeled in this
+ * framework yet, but can be supplanted with demand containers
+ * read from external sources.
+ * 
+ * @author William
+ *
+ */
 public class DummyPurpose implements Purpose {
 	
 	private Properties props;
@@ -40,6 +54,24 @@ public class DummyPurpose implements Purpose {
 		name = propsPath.toString();
 	}
 
+	/**Develop an ODProfile according to the DummyPurpose's specifications
+	 * 
+	 * This method reads the {@code type} property and,
+	 * if it is set to {@code odProfile}, loads a profile 
+	 * per Mode. That is, it then reads the property
+	 * {@code odProfile.modes} and, for each valid Mode
+	 * {@code foo} listed, reads an OD profile whose location
+	 * is specified by the property {@code odProfile.foo.file}.
+	 * The ODProfile is associated with the values of time
+	 * specified by the key {@code odProfile.foo.vot.bar},
+	 * where {@code bar} is a valid TimePeriod.
+	 * 
+	 * If the {@code type} property is set to any other value
+	 * or is null, a new TimeOfDaySplitter is instantiated
+	 * as in a BasicPurpose, then is used to split the daily
+	 * ODMatrices provided by {@code getDailyODMatrices()}
+	 *
+	 */
 	@Override
 	public Stream<ODProfile> getODProfiles() {
 		// TODO Auto-generated method stub
@@ -97,6 +129,21 @@ public class DummyPurpose implements Purpose {
 		return ret;
 	}
 	
+	/**Develop a daily ODMatrix according to the DummyPurpose's specifications
+	 * 
+	 * This method reads the {@code type} property and,
+	 * if it is set to {@code odMatrix}, should read an
+	 * ODMatrix which encapsulates a full day's demand 
+	 * from a file. (As of this writing, this behavior
+	 * has not yet been implemented and is left as a 
+	 * placeholder)
+	 * 
+	 * If the {@code type} property is set to any other value
+	 * or is null, a new VehicleConverter is instantiated as
+	 * in a BasicPurpose, then is used to split the ModalPAMatrices
+	 * provided by {@code getModalPAMatrices()}
+	 *
+	 */
 	@Override
 	public Stream<ODMatrix> getDailyODMatrices() {
 		// TODO Auto-generated method stub
@@ -109,6 +156,17 @@ public class DummyPurpose implements Purpose {
 		
 	}
 
+	/**Develop ModalPAMatrices according to the DummyPurpose's specifications
+	 * 
+	 * This method reads the {@code type} property and,
+	 * if it is set to {@code modalPAMatrix}, reads the
+	 * property {@code modalPAMatrix.mode} to determine the
+	 * relevant Mode and associates it with a PAMatrix
+	 * which is read from a file located by the property
+	 * {@code modalPAMatrix.file}, via the ProductionAttractionFactory's
+	 * {@code readMatrix} method.
+	 *
+	 */
 	@Override
 	public Stream<ModalPAMatrix> getModalPAMatrices() {
 		// TODO Auto-generated method stub
@@ -116,7 +174,9 @@ public class DummyPurpose implements Purpose {
 		case "modalPAMatrix":
 			try {
 				Mode mode = Mode.valueOf(props.getProperty("modalPAMatrix.mode"));
-				return Stream.of(new FixedMultiplierPassthroughModalPAMatrix(mode, 1.0f, ProductionAttractionFactory.readMatrix(dir.resolve(props.getProperty("modalPAMatrix.file")), false, zones)));
+				return Stream.of(
+						new FixedMultiplierPassthroughModalPAMatrix(mode, 1.0f, 
+								ProductionAttractionFactory.readMatrix(dir.resolve(props.getProperty("modalPAMatrix.file")), false, zones)));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -127,6 +187,18 @@ public class DummyPurpose implements Purpose {
 		
 	}
 
+	/**Develop an AggregatePAMatrix according to the specifications
+	 * 
+	 * This method reads the {@code type} property and,
+	 * if it is set to {@code aggPAMatrix}, reads an AggregatePAMatrix
+	 * from the file located by the property {@code aggPAMatrix.file}.
+	 * 
+	 * Otherwise, it should develop a PAMap then distribute it
+	 * according to the DummyPurpose's specifications. (This behavior
+	 * is, as of this writing, not yet implemented and is left as a
+	 * placeholder)
+	 *
+	 */
 	@Override
 	public AggregatePAMatrix getAggregatePAMatrix() {
 		// TODO Auto-generated method stub
@@ -144,6 +216,13 @@ public class DummyPurpose implements Purpose {
 		}
 	}
 
+	/**Develop a PAMap according to the specifications
+	 * 
+	 * This is a stub method, and it is unlikely that a PAMap would
+	 * be read from a file through this manner rather than using a
+	 * BasicPurpose
+	 *
+	 */
 	@Override
 	public PAMap getPAMap() {
 		// TODO Auto-generated method stub
@@ -166,13 +245,9 @@ public class DummyPurpose implements Purpose {
 		return new FixedProportionSplitter(modeShares());
 	}
 	
-	
-	
 	private PassengerVehicleTripConverter vehicleConverter() {
 		return new PassengerVehicleTripConverter();
 	}
-	
-	
 	
 	private Map<TimePeriod,Float> departureRates(){
 		return Stream.of(TimePeriod.values())
@@ -201,7 +276,9 @@ public class DummyPurpose implements Purpose {
 		return new TimeOfDaySplitter(departureRates(), arrivalRates(),getVOTs());
 	}
 
-	
+	/**
+	 *
+	 */
 	public double personTrips() {
 		switch (props.getProperty("type")) {
 		

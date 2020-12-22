@@ -43,6 +43,18 @@ import edu.utexas.wrap.util.AggregatePAMatrixCollector;
 import edu.utexas.wrap.util.PassengerVehicleTripConverter;
 import edu.utexas.wrap.util.TimeOfDaySplitter;
 
+/**An interface for providing a full implementation of the UTMS
+ * 
+ * A class implementing this interface should be able to provide
+ * data for any step in the four-step Urban Transportation Modeling
+ * System; that is, it should be able to provide a PAMap, an
+ * AggregatePAMatrix, a collection of ModalPAMatrices, a collection
+ * of daily ODMatrices, and a collection of ODProfiles, each developed
+ * according to their respective model.
+ * 
+ * @author William
+ *
+ */
 public interface Purpose extends 
 							ODProfileProvider, 
 							DailyODMatrixProvider, 
@@ -53,6 +65,11 @@ public interface Purpose extends
 	public double personTrips();
 };
 
+/**A basic implementation of Purpose which completes the full UTMS
+ * 
+ * @author William
+ *
+ */
 class BasicPurpose implements Purpose {
 	
 	private final Properties properties;
@@ -257,16 +274,44 @@ class BasicPurpose implements Purpose {
 	
 	
 	
+	/**Instantiate a vehicle converter and convert ModalPAMatrices
+	 * 
+	 * This method creates a PassengerVehicleConverter according to the
+	 * properties associated with this Purpose, then converts the matrices
+	 * returned from the mode choice step of the model.
+	 *
+	 */
 	@Override
 	public Stream<ODMatrix> getDailyODMatrices() {
 		return vehicleConverter().convert(getModalPAMatrices());
 	}
 
+	/**Instantiate a mode splitter and split the AggregatePAMatrix
+	 * 
+	 * This method creates a FixedProportionSplitter according to the
+	 * properties associated with this Purpose, then converts the
+	 * AggregatePAMatrix returned from the distribution step of the model.
+	 * 
+	 * For each utilized mode foo, the key {@code modeChoice.proportion.foo} identifies
+	 * the fraction of total trips which utilize this mode.
+	 *
+	 */
 	@Override
 	public Stream<ModalPAMatrix> getModalPAMatrices() {
 		return modeSplitter().split(getAggregatePAMatrix());
 	}
 
+	/**Instantiate distribution modules and distribute the model's PAMap, then combine together
+	 * 
+	 * This method determines the shares of trips that are distributed using a named FrictionFactorMap,
+	 * then distributes the model's PAMap accordingly via a gravity distributor and multiplies the result
+	 * by the distributor's share of overall demand. This is repeated for each associated distributor,
+	 * then all results are combined together by summation.
+	 *
+	 * The list of associated FrictionFactorMap names is held in the property {@code distrib.ids},
+	 * and each id {@code foo} is associated with two other keys: {@code distrib.foo.split}
+	 * and {@code distrib.foo.frictFacts}.
+	 */
 	@Override
 	public AggregatePAMatrix getAggregatePAMatrix() {
 		return distributionShares().entrySet().parallelStream()
@@ -279,6 +324,30 @@ class BasicPurpose implements Purpose {
 
 	}
 
+	/**Generate a set of productions and attractions, then balance them
+	 * 
+	 * First, the production and attraction source demographics' types are indicated
+	 * by the properties {@code prodDemographic.type} and {@code attrDemographic.type}.
+	 * These demographics are then identified using the keys {@code prodDemographic.id}
+	 * and {@code attrDemographic.id}.
+	 * 
+	 * Next, the production and attraction rate types are indicated by the keys
+	 * {@code prodType} and {@code attrType}, respectively. If these are basic rates, i.e.
+	 * not dependent on the zone's area class, they will be associated with the single keys
+	 * {@code prodRate} and {@code attrRate}; however, if the rates are dependent on the area
+	 * class, then for each AreaClass foo, there will be an associated key {@code attrRate.foo}.
+	 * Each of these keys' values will be a comma-separated list that should match the
+	 * dimensionality of its associated demographic. Mixing of rate types is allowed
+	 * 
+	 * The unbalanced productions and attractions are calculated as a dot product of the
+	 * rates and the demographics, and the results are stored as demographics for later use
+	 * by trip purposes that extend from this purpose.
+	 * 
+	 * Finally, a TripBalancer is instantiated based on the type identified by the property
+	 * {@code balancer.class}. This balancing method is then used to ensure that the number
+	 * of productions and attractions is equal.
+	 *
+	 */
 	@Override
 	public PAMap getPAMap() {
 		
@@ -300,6 +369,18 @@ class BasicPurpose implements Purpose {
 		return balancer().balance(new PAPassthroughMap(unbalancedProds,unbalancedAttrs));
 	}
 
+	/**Split the daily ODMatrix according to various time-of-day shares
+	 *
+	 * For each utilized TimePeriod foo, the keys {@code depRate.foo}, {@code arrRate.foo},
+	 * and {@code vot.foo} are all required. These represent, respectively, the share of
+	 * trips departing in time period {@code foo}, arriving in time period {@code foo}, and
+	 * the value of time of trips occuring for this purpose during time period {@code foo}.
+	 * 
+	 * This data is utilized to instantiate a time-of-day splitter which multiplies the daily
+	 * ODMatrix to create a series of ODMatrices combined into an ODProfile. Each ODMatrix is
+	 * associated with its corresponding value of time.
+	 *
+	 */
 	@Override
 	public Stream<ODProfile> getODProfiles() {
 		return timeOfDaySplitter().split(getDailyODMatrices());

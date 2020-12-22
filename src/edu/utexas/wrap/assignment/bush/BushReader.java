@@ -14,7 +14,6 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
@@ -45,7 +44,7 @@ public class BushReader implements AssignmentProvider<Bush> {
 		in.close();
 	}
 	
-	private BackVector[] newRead(Path p) throws IOException {
+	public BackVector[] newRead(Path p) throws IOException {
 		FileChannel channel = FileChannel.open(p, StandardOpenOption.READ);
 		final long fileSize = channel.size();
 		final int bufSize = Integer.BYTES*2 + Double.BYTES;
