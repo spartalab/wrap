@@ -3,8 +3,9 @@ package edu.utexas.wrap.net;
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.modechoice.Mode;
 
-/**
- * @author SYSTEM
+/**A tolled link whose travel time function is modeled by a conic VDF
+ * 
+ * @author William
  *
  */
 public class TolledEnhancedLink extends TolledLink {

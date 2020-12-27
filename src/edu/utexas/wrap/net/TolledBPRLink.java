@@ -3,6 +3,11 @@ package edu.utexas.wrap.net;
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.modechoice.Mode;
 
+/**A tolled link whose travel time function is modeled using a BPR VDF
+ * 
+ * @author William
+ *
+ */
 public class TolledBPRLink extends TolledLink {
 	
 	private final float b, power, toll;
