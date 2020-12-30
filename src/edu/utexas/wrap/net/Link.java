@@ -9,7 +9,8 @@ import edu.utexas.wrap.assignment.bush.BackVector;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.util.NegativeFlowException;
 
-/**
+/**A link, as in graph theory, between two nodes of a network, with arbitrary cost function
+ * 
  * @author rahulpatel
  *
  */

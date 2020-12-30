@@ -17,12 +17,21 @@ public class TravelSurveyZone {
 	private RegionalAreaAnalysisZone parent;
 	private final AreaClass ac;
 	
+	/**Create a TSZ with defined ID number, vectorization index, and AreaClass
+	 * 
+	 * @param nodeID the ID associated with this TSZ and its corresponding Node in graphs
+	 * @param order the index of this TSZ in a vectorized listing of all the network's TSZs
+	 * @param ac the AreaClass associated with this TSZ
+	 */
 	public TravelSurveyZone(int nodeID, int order, AreaClass ac) {
 		this.nodeID = nodeID;
 		this.order = order;
 		this.ac = ac;
 	}
 	
+	/**
+	 * @return the ID associated with this TSZ and its corresponding Node in graphs
+	 */
 	public int getID() {
 		return nodeID;
 	}
@@ -31,18 +40,33 @@ public class TravelSurveyZone {
 		return "Zone "+this.getID();
 	}
 	
+	/**Attach an RAA to the zone for aggregation purposes
+	 * 
+	 * This method defines the singular RAA associated with this TSZ
+	 * 
+	 * @param parent the RAA which contains this TSZ
+	 */
 	public void setRAA(RegionalAreaAnalysisZone parent) {
 		this.parent = parent;
 	}
 	
+	/**
+	 * @return the RAA which encapsulates this TSZ
+	 */
 	public RegionalAreaAnalysisZone getRAA() {
 		return parent;
 	}
 
+	/**
+	 * @return the index of this TSZ in a vectorized representation of the network's TSZs
+	 */
 	public int getOrder() {
 		return order;
 	}
 	
+	/**
+	 * @return the AreaClass assigned to this TSZ
+	 */
 	public AreaClass getAreaClass() {
 		return ac;
 	}

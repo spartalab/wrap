@@ -3,6 +3,7 @@ package edu.utexas.wrap.net;
 import edu.utexas.wrap.modechoice.Mode;
 
 /**A roadway which charges a toll for various modes of travel
+ * 
  * @author William
  *
  */
