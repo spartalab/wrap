@@ -33,10 +33,9 @@ public class ODMatrixFactory {
 		} while (!line.startsWith("Origin"));
 		
 		if (numZones <= 0) throw new IOException("Invalid number of zones: "+numZones+"\r\nCheck file metadata");
-		else g.setNumZones(numZones);
 		
-		numZones = 0;
-		FixedSizeODMatrix<FixedSizeDemandMap> od = new FixedSizeODMatrix<FixedSizeDemandMap>(null,g);
+		numZones = g.numZones();
+		FixedSizeODMatrix<FixedSizeDemandMap> od = new FixedSizeODMatrix<FixedSizeDemandMap>(null,g.getTSZs());
 		
 		while (true) {
 			while (line != null && !line.startsWith("O"))
@@ -49,11 +48,7 @@ public class ODMatrixFactory {
 			
 			TravelSurveyZone zone = root.getZone();
 			
-			if (zone == null) {
-				zone = new TravelSurveyZone(root,numZones++,null);
-				root.setTravelSurveyZone(zone);
-				g.addZone(zone);
-			}
+			if (zone == null) throw new RuntimeException("Demand specified for missing TravelSurveyZone: "+origID);
 			System.out.print("\rReading demand for origin " + origID);
 			FixedSizeDemandMap unified = readTNTPDemandMap(of, g, numZones);
 			
@@ -79,7 +74,7 @@ public class ODMatrixFactory {
 		String[] cols;
 		Integer destID;
 		Float demand;
-		FixedSizeDemandMap dests = new FixedSizeDemandMap(g);
+		FixedSizeDemandMap dests = new FixedSizeDemandMap(g.getTSZs());
 
 		while (true) {
 			String line = of.readLine();
@@ -93,11 +88,7 @@ public class ODMatrixFactory {
 				demand = Float.parseFloat(cols[1].trim());
 				if (demand > 0.0) {
 					TravelSurveyZone tsz = g.getNode(destID).getZone();
-					if (tsz == null) { 
-						tsz = new TravelSurveyZone(g.getNode(destID),zoneCount++,null);
-						g.getNode(destID).setTravelSurveyZone(tsz);
-						g.addZone(tsz);
-					}
+					if (tsz == null) throw new RuntimeException("Demand specified for missing TravelSurveyZone: "+destID);
 					dests.put(tsz, demand);
 				}
 			}
@@ -108,20 +99,21 @@ public class ODMatrixFactory {
 	public static Collection<ODMatrix> readConicTrips(File odMatrix, Graph g) throws FileNotFoundException,IOException {
 		
 		BufferedReader matrixFile = Files.newBufferedReader(odMatrix.toPath());
+		Collection<TravelSurveyZone> zones = g.getTSZs();
 		
 		FixedSizeODMatrix<FixedSizeDemandMap> 
-		solo17 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.SINGLE_OCC, g), 
-		solo35 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.SINGLE_OCC, g), 
-		solo45 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.SINGLE_OCC, g), 
-		solo90 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.SINGLE_OCC, g),
+		solo17 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.SINGLE_OCC, zones), 
+		solo35 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.SINGLE_OCC, zones), 
+		solo45 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.SINGLE_OCC, zones), 
+		solo90 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.SINGLE_OCC, zones),
 
-		hov17 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.HOV, g), 
-		hov35 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.HOV, g), 
-		hov45 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.HOV, g), 
-		hov90 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.HOV, g),
+		hov17 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.HOV, zones), 
+		hov35 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.HOV, zones), 
+		hov45 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.HOV, zones), 
+		hov90 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.HOV, zones),
 
-		medTrucks = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.MED_TRUCK, g), 
-		hvyTrucks = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.MED_TRUCK, g);
+		medTrucks = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.MED_TRUCK, zones), 
+		hvyTrucks = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.MED_TRUCK, zones);
 		
 
 		matrixFile.lines().sequential().forEach(line -> {
@@ -140,9 +132,9 @@ public class ODMatrixFactory {
 			put(hov35, orig, dest, args[4]);
 			put(hov45, orig, dest, args[9]);
 			put(hov90, orig, dest, args[5]);
-//
-//			put(medTrucks, orig, dest, args[10]);
-//			put(hvyTrucks, orig, dest, args[11]);
+
+			put(medTrucks, orig, dest, args[10]);
+			put(hvyTrucks, orig, dest, args[11]);
 
 			
 		});
@@ -158,8 +150,8 @@ public class ODMatrixFactory {
 		ret.add(hov45);
 		ret.add(hov90);
 //		
-//		ret.add(medTrucks);
-//		ret.add(hvyTrucks);
+		ret.add(medTrucks);
+		ret.add(hvyTrucks);
 		
 		matrixFile.close();
 		return ret;
@@ -175,7 +167,7 @@ public class ODMatrixFactory {
 		}
 		
 		if (matrix.getDemandMap(orig) == null) 
-			matrix.setDemandMap(orig, new FixedSizeDemandMap(matrix.getGraph()));
+			matrix.setDemandMap(orig, new FixedSizeDemandMap(matrix.getZones()));
 		matrix.put(orig, dest, da17);
 	}
 
