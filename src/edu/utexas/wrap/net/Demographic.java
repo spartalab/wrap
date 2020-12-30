@@ -27,6 +27,10 @@ public interface Demographic {
 	//TODO provide a size() method for retrieval of vector length
 	//TODO enforce size consistency
 
+	/**
+	 * @param zone an area in the network whose demographic vector should be returned
+	 * @return the demographic vector data associated with this zone for this demographic
+	 */
 	public Float[] valueFor(TravelSurveyZone zone);
 	
 }
