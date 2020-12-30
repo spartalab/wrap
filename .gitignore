@@ -8,7 +8,11 @@ src/edu/utexas/wrap/main.c
 *.txt
 *.xlsx
 *.jar
-inputs.properties
+*.properties
 /bin/
 /.classpath
 /.settings
+/doc/
+*.phd
+*.trc
+*.dmp
