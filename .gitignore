@@ -10,3 +10,5 @@ src/edu/utexas/wrap/main.c
 *.jar
 inputs.properties
 /bin/
+/.classpath
+/.settings
