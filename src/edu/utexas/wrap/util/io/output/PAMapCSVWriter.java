@@ -21,7 +21,7 @@ public class PAMapCSVWriter {
 					StandardOpenOption.TRUNCATE_EXISTING);
 			out.write("TSZ,Productions,Attractions\r\n");
 
-			map.getGraph().getTSZs().parallelStream().forEach(
+			map.getProducers().parallelStream().forEach(
 					zone -> {
 						try {
 							out.write(zone.toString()

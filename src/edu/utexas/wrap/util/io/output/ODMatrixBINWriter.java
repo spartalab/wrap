@@ -25,10 +25,6 @@ import edu.utexas.wrap.modechoice.Mode;
  */
 public class ODMatrixBINWriter {
 	
-	public static void write(String outputDirectory, TimePeriod timePeriod, ODMatrix matrix) {
-		write(outputDirectory,timePeriod,matrix.getMode(),matrix.getVOT(),matrix);
-	}
-	
 	public static void write(String outputDirectory, TimePeriod timePeriod, Mode mode, Float vot, ODMatrix matrix) {
 		Path path = Paths.get(outputDirectory, 
 				timePeriod.toString(), 
@@ -38,8 +34,8 @@ public class ODMatrixBINWriter {
 			Files.createDirectories(path.getParent());
 			OutputStream out = Files.newOutputStream(path,
 					StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
-			matrix.getZones().getTSZs().parallelStream().forEach( orig -> {
-				matrix.getZones().getTSZs().parallelStream()
+			matrix.getZones().parallelStream().forEach( orig -> {
+				matrix.getZones().stream()
 //				.filter(dest -> matrix.getDemand(orig,dest) > 0)
 				.forEach(dest ->{
 					try {

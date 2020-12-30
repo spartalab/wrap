@@ -12,11 +12,11 @@ import edu.utexas.wrap.demand.ODMatrix;
 
 public class ODMatrixCSVWriter {
 
-	public static void write(String outputDirectory, TimePeriod timePeriod, ODMatrix matrix) {
+	public static void write(String outputDirectory, TimePeriod timePeriod, Float vot, ODMatrix matrix) {
 		Path path = Paths.get(outputDirectory, 
 				timePeriod.toString(), 
 				matrix.getMode().toString(), 
-				matrix.getVOT().toString()+".matrix");
+				vot.toString()+".matrix");
 		try{
 			Files.createDirectories(path.getParent());
 			BufferedWriter out = Files.newBufferedWriter(path,

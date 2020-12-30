@@ -2,7 +2,6 @@ package edu.utexas.wrap.util.io.output;
 
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.modechoice.Mode;
-import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 import java.io.BufferedOutputStream;
@@ -12,9 +11,6 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.Collection;
 import java.util.Map;
-
-//import static edu.utexas.wrap.wrapNCTCOG.printTimeStamp;
-
 
 public class ODMatrixStreamWriter {
 
