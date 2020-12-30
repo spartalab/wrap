@@ -1,7 +1,5 @@
 package edu.utexas.wrap.tests.pa2od;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;

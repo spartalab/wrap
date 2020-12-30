@@ -2,6 +2,7 @@ package edu.utexas.wrap.tests.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -22,30 +23,30 @@ class SPAlgorithmsTest {
 	
 	@BeforeClass
 	void setUpBraess(){
-		graph = new Graph();
+		graph = new Graph(Collections.emptySet());
 		
-		A = new Node(1,false,0);
-		B = new Node(2,false,1);
-		C = new Node(3,false,2);
-		D = new Node(4,false,3);
+		A = new Node(1,0,null);
+		B = new Node(2,1,null);
+		C = new Node(3,2,null);
+		D = new Node(4,3,null);
 		
-		AB = new TolledBPRLink(A, B, null, null, null, null, null,null) {
+		AB = new TolledBPRLink(A, B, null, null, null, null, null,null,0) {
 			@Override
 			public double getTravelTime() { return 15.0;}
 		};
-		AC = new TolledBPRLink(A, C, null, null, null, null, null, null) {
+		AC = new TolledBPRLink(A, C, null, null, null, null, null, null,1) {
 			@Override
 			public double getTravelTime() { return 22.0;}
 		};
-		BC = new TolledBPRLink(B, C, null, null, null, null, null, null) {
+		BC = new TolledBPRLink(B, C, null, null, null, null, null, null,2) {
 			@Override
 			public double getTravelTime() { return 5.0;}
 		};
-		CD = new TolledBPRLink(C, D, null, null, null, null, null, null) {
+		CD = new TolledBPRLink(C, D, null, null, null, null, null, null,3) {
 			@Override
 			public double getTravelTime() { return 6.0;}
 		};
-		BD = new TolledBPRLink(B, D, null, null, null, null, null, null) {
+		BD = new TolledBPRLink(B, D, null, null, null, null, null, null,4) {
 			@Override
 			public double getTravelTime() { return 17.0;}
 		};
