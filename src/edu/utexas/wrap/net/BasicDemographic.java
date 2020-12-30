@@ -8,9 +8,26 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.stream.IntStream;
 
+/**Implementation of Demographic which maps TSZs to an in-memory Float array
+ * 
+ * @author William
+ *
+ */
 public class BasicDemographic implements Demographic {
 	Map<TravelSurveyZone,Float[]> zoneData;
 
+	/**Read a CSV file containing a table of Demographics
+	 * 
+	 * A Path to a given CSV demographic table is provided. This file is read
+	 * line-by-line, with one line provided for each TSZ. The format of the CSV
+	 * should be as follows:
+	 * 
+	 * ID,Demo[0],Demo[1],...
+	 * 
+	 * @param demographicFile locates the CSV file to be read
+	 * @param zoneIDs a mapping from Integer TSZ ids to the corresponding object
+	 * @throws IOException if the file is corrupted, missing, or another IO error occurs
+	 */
 	public BasicDemographic(Path demographicFile, Map<Integer,TravelSurveyZone> zoneIDs) throws IOException {
 		zoneData = new HashMap<TravelSurveyZone,Float[]>();
 		BufferedReader reader = Files.newBufferedReader(demographicFile);

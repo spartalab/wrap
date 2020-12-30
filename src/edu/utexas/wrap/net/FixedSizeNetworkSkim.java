@@ -1,5 +1,13 @@
 package edu.utexas.wrap.net;
 
+/**A NetworkSkim implementation which stores the full matrix in memory vectors
+ * 
+ * This implementation provides a re-writable matrix which stores cost data as
+ * float vectors.
+ * 
+ * @author William
+ *
+ */
 public class FixedSizeNetworkSkim implements NetworkSkim {
 	
 	float[][] skimData;
@@ -13,7 +21,6 @@ public class FixedSizeNetworkSkim implements NetworkSkim {
 	}
 
 	public float getCost(TravelSurveyZone producer, TravelSurveyZone attractor) {
-		// TODO Auto-generated method stub
 		return skimData[producer.getOrder()][attractor.getOrder()];
 	}
 	
