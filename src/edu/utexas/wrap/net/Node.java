@@ -1,5 +1,10 @@
 package edu.utexas.wrap.net;
 
+/**A node, as in graph theory, which connects to others via several Links
+ * 
+ * @author William
+ *
+ */
 public class Node {
 
 	private final int ID;

@@ -20,6 +20,11 @@ import edu.utexas.wrap.assignment.sensitivity.DerivativeLink;
 import edu.utexas.wrap.util.FibonacciHeap;
 import edu.utexas.wrap.util.FibonacciLeaf;
 
+/**A representation of links and nodes in an interconnected directed graph
+ * 
+ * @author William
+ *
+ */
 public class Graph {
 	
 	private Map<Node, Set<Link>> outLinks;
