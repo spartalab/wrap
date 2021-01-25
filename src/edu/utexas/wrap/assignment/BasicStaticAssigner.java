@@ -108,7 +108,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 
 		switch (props.getProperty("initializer")) {
 		case "bush":
-			initializer = (AssignmentInitializer<C>) new BushInitializer(provider, primaryConsumer,builder,network);
+			initializer = (AssignmentInitializer<C>) new BushInitializer(provider, primaryConsumer,evaluationConsumer,builder,network);
 			break;
 		default:
 			throw new RuntimeException("Not yet implemented");

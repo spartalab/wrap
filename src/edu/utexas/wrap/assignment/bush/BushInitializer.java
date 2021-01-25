@@ -16,19 +16,21 @@ public class BushInitializer implements AssignmentInitializer<Bush>{
 	
 	private Graph network;
 	private AssignmentProvider<Bush> provider;
-	private AssignmentConsumer<Bush> consumer;
+	private AssignmentConsumer<Bush> consumer,altConsumer;
 	private AssignmentBuilder<Bush> builder;
 	private Stream<Bush> containers;
 	
 	public BushInitializer(
 			AssignmentProvider<Bush> provider, 
 			AssignmentConsumer<Bush> consumer, 
+			AssignmentConsumer<Bush> altConsumer,
 			AssignmentBuilder<Bush> builder,
 			Graph network) {
 		this.provider = provider;
 		this.consumer = consumer;
 		this.builder = builder;
 		this.network = network;
+		this.altConsumer = altConsumer;
 	}
 	
 	public void add(ODMatrix matrix, Float vot) {
@@ -63,6 +65,11 @@ public class BushInitializer implements AssignmentInitializer<Bush>{
 			consumer.consumeStructure(bush);
 		} catch (IOException e) {
 			System.err.println("WARN: Could not write structure for "+bush+". Source may be corrupted");
+		} else try {
+			altConsumer.consumeStructure(bush);
+		
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 	
