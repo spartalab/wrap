@@ -1,5 +1,6 @@
 package edu.utexas.wrap.assignment.bush;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -39,7 +40,7 @@ public class BushReader implements AssignmentProvider<Bush> {
 		
 		
 		
-		InputStream in = Files.newInputStream(p);
+		InputStream in = new BufferedInputStream(Files.newInputStream(p));
 		readFromStream(bush, in);
 		in.close();
 	}

@@ -1,5 +1,6 @@
 package edu.utexas.wrap.assignment.bush;
 
+import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -23,14 +24,14 @@ public class BushWriter implements AssignmentConsumer<Bush> {
 	}
 	
 	public void consumeStructure(Bush bush) throws IOException {
-		OutputStream out = Files.newOutputStream(
+		OutputStream out = new BufferedOutputStream(Files.newOutputStream(
 				outputPath
 				.resolve(network.toString())
 				.resolve(Integer.toString(bush.hashCode())),
 				
 				StandardOpenOption.CREATE, 
 				StandardOpenOption.TRUNCATE_EXISTING
-				);
+				));
 		writeToStream(bush, out);
 		bush.setQ(null);
 		bush.clear();
