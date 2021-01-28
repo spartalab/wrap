@@ -60,7 +60,9 @@ public class FibonacciHeap<E> extends AbstractQueue<FibonacciLeaf<E>>{
 		
 //		Map<Integer, FibonacciLeaf<E>> A = new ConcurrentHashMap<Integer,FibonacciLeaf<E>>();
 		Set<FibonacciLeaf<E>> ignore = (new HashSet<FibonacciLeaf<E>>());
-		rootList.parallelStream().filter(x -> !ignore.contains(x)).sequential().forEach(w->{
+		rootList.stream()
+		.filter(x -> !ignore.contains(x))
+		.forEach(w->{
 			FibonacciLeaf<E> x = w;
 			Integer d = x.degree;
 			FibonacciLeaf<E> y = AA[d];

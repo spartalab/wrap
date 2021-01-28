@@ -363,9 +363,9 @@ public class Bush implements AssignmentContainer {
 	 */
 	public Stream<Link> getUsedLinkStream(){
 		//Include all standalone Links
-		Stream<Link> a = Stream.of(q).parallel().filter(bv -> bv instanceof Link).map(l -> (Link) l);
+		Stream<Link> a = Stream.of(q).filter(bv -> bv instanceof Link).map(l -> (Link) l);
 		//and Links stored inside a BackVector
-		Stream<Link> b = Stream.of(q).parallel().filter(bv -> bv instanceof BushMerge).map(bv -> (BushMerge) bv).flatMap(bv -> bv.getLinks().parallel());
+		Stream<Link> b = Stream.of(q).filter(bv -> bv instanceof BushMerge).map(bv -> (BushMerge) bv).flatMap(bv -> bv.getLinks());
 		return Stream.concat(a, b);
 	}
 	
@@ -406,7 +406,7 @@ public class Bush implements AssignmentContainer {
 	 */
 	public double incurredCost() {
 		Map<Link,Double> flows = flows();
-		return getUsedLinkStream().parallel().mapToDouble(l -> flows.getOrDefault(l, 0.0)*l.getPrice(vot, c)).sum();
+		return getUsedLinkStream().mapToDouble(l -> flows.getOrDefault(l, 0.0)*l.getPrice(vot, c)).sum();
 	}
 //	
 //	/**

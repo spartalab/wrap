@@ -146,8 +146,6 @@ public class BushReader implements AssignmentProvider<Bush> {
 			ByteBuffer bb = ByteBuffer.wrap(b);
 			processBytes(bush, q, bb);
 
-//			bush.add(bv);
-//			throw new RuntimeException("BackVector splits aren't implemented yet");
 		}
 		bush.setQ(q);
 	}
@@ -160,7 +158,7 @@ public class BushReader implements AssignmentProvider<Bush> {
 
 		//Find the appropriate link instance
 //			Link bv = null;
-		Optional<Link> bvo = Stream.of(n.reverseStar()).parallel().filter(l -> l.hashCode()==bvhc).findAny();
+		Optional<Link> bvo = Stream.of(n.reverseStar()).filter(l -> l.hashCode()==bvhc).findAny();
 
 		//If it can't be found, throw an error
 		if (!bvo.isPresent()) throw new RuntimeException("Unknown Link econuntered. Node ID: "+nid+"\tHash: "+bvhc);

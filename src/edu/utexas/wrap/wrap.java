@@ -56,11 +56,12 @@ public class wrap {
 
 			System.out.println("Calculating disaggregated ODProfiles");
 			Stream.concat(
-					markets.parallelStream()
+					markets.stream()
 					.flatMap(market -> market.getODProfiles()),
-					dummies.parallelStream()
+					dummies.stream()
 					.flatMap(dummy -> dummy.getODProfiles())
 					)
+			.parallel()
 			.forEach(
 					od -> 
 					ac.stream().forEach(assigner -> assigner.process(od))
