@@ -1,6 +1,7 @@
 package edu.utexas.wrap.assignment.bush;
 
 import java.util.Collection;
+import java.util.LinkedList;
 import java.util.function.ToDoubleFunction;
 
 import edu.utexas.wrap.assignment.AssignmentBuilder;
@@ -32,17 +33,18 @@ public class BushBuilder implements AssignmentBuilder<Bush> {
 		Collection<Node> nodes = network.getNodes();
 		BackVector[] initMap = new BackVector[nodes.size()];
 		FibonacciHeap<Node> Q = new FibonacciHeap<Node>(nodes.size(),1.0f);
+		LinkedList<Node> topologicalOrder = new LinkedList<Node>();
+		
 		for (Node n : nodes) {
 			if (!n.getID().equals(bush.root().getID())) {
 				Q.add(n, Double.MAX_VALUE);
 			}
 			else Q.add(n,0.0);
 		}
-//		Q.add(bush.root().node(), 0.0);
 
 		while (!Q.isEmpty()) {
 			FibonacciLeaf<Node> u = Q.poll();
-			
+			topologicalOrder.add(u.node);
 			
 			for (Link uv : u.node.forwardStar()) {
 				if (!bush.canUseLink(uv)) continue;
@@ -61,6 +63,7 @@ public class BushBuilder implements AssignmentBuilder<Bush> {
 		}
 		
 		bush.setQ(initMap);
+		bush.setTopologicalOrder(topologicalOrder);
 	}
 
 }

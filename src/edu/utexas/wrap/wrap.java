@@ -61,7 +61,7 @@ public class wrap {
 					dummies.stream()
 					.flatMap(dummy -> dummy.getODProfiles())
 					)
-			.parallel()
+//			.parallel()
 			.forEach(
 					od -> 
 					ac.stream().forEach(assigner -> assigner.process(od))

@@ -7,6 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.stream.Stream;
 
 import edu.utexas.wrap.assignment.AssignmentConsumer;
 import edu.utexas.wrap.net.Graph;
@@ -33,7 +34,6 @@ public class BushWriter implements AssignmentConsumer<Bush> {
 				StandardOpenOption.TRUNCATE_EXISTING
 				));
 		writeToStream(bush, out);
-		bush.setQ(null);
 		bush.clear();
 		out.close();
 	}
@@ -43,7 +43,7 @@ public class BushWriter implements AssignmentConsumer<Bush> {
 		
 		
 		//For each node
-		network.getNodes().parallelStream().filter(n -> n != null).forEach(n ->{
+		Stream.of(bush.getTopologicalOrder(true)).filter(n -> n != null).forEach(n ->{
 			BackVector qn = bush.getBackVector(n);
 			//get all the links leading to the node
 			//write them to a file

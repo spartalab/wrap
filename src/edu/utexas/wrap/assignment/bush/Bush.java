@@ -270,7 +270,7 @@ public class Bush implements AssignmentContainer {
 	 * Remove unused links that aren't needed for connectivity
 	 */
 	public void prune() {
-		Stream.of(q).parallel().filter(v -> v instanceof BushMerge).forEach(v ->{	//For every BushMerge in the bush
+		Stream.of(q).filter(v -> v instanceof BushMerge).forEach(v ->{	//For every BushMerge in the bush
 
 			//Duplicate the link list to avoid a ConcurrentModificationException
 			BushMerge bm = new BushMerge((BushMerge) v);
@@ -297,7 +297,7 @@ public class Bush implements AssignmentContainer {
 //		Map<Node,Double> nodeFlow = tszFlow.keySet().parallelStream()
 //				.collect(Collectors.toMap(x -> x.node(), x -> tszFlow.get(x)));
 		Map<Node,Double> nodeFlow = 
-				getNodes().stream()
+				getNodes()
 				.filter(node -> node.getZone() != null)
 				.collect(
 						Collectors.toMap(
@@ -340,6 +340,8 @@ public class Bush implements AssignmentContainer {
 				});
 
 			}
+			
+			else if (downstream == 0.0) continue;
 
 			//If we've reached a dead end in the topological ordering, throw an exception
 			else if (back == null && !n.getID().equals(origin.getID())) {
@@ -380,7 +382,7 @@ public class Bush implements AssignmentContainer {
 	 * @return a Collection of all Links not used by the bush that could be added
 	 */
 	public Stream<Link> getUnusedLinks(){
-		return Stream.of(q).parallel().flatMap(bv ->{
+		return Stream.of(q).flatMap(bv ->{
 			if (bv instanceof Link)
 				return Stream.of(bv.getHead().reverseStar()).filter(link -> link != bv);
 			else if (bv instanceof BushMerge)
@@ -398,6 +400,7 @@ public class Bush implements AssignmentContainer {
 	 */
 	public void clear() {
 		cachedTopoOrder = null;
+		q = null;
 	}
 
 
@@ -472,9 +475,13 @@ public class Bush implements AssignmentContainer {
 		return n.getZone() == null? 0.0 : demand.get(n.getZone());
 	}
 
-	public Collection<Node> getNodes(){
-		Collection<Node> nodes = getQ().filter(x -> x != null).map(BackVector::getHead).collect(Collectors.toSet());
-		nodes.add(origin);
-		return nodes;
+	public Stream<Node> getNodes(){
+		Stream<Node> nodes = getQ().filter(x -> x != null).map(BackVector::getHead);
+		return Stream.concat(Stream.of(origin), nodes);
+	}
+
+	public void setTopologicalOrder(LinkedList<Node> topologicalOrder) {
+		// TODO Auto-generated method stub
+		this.cachedTopoOrder = topologicalOrder.toArray(Node[]::new);
 	}
 }

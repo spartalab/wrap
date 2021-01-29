@@ -4,11 +4,13 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -17,8 +19,6 @@ import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.bush.BackVector;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.sensitivity.DerivativeLink;
-import edu.utexas.wrap.util.FibonacciHeap;
-import edu.utexas.wrap.util.FibonacciLeaf;
 
 /**A representation of links and nodes in an interconnected directed graph
  * 
@@ -330,23 +330,33 @@ public class Graph {
 		// TODO Auto-generated method stub
 		Collection<Node> nodes = getNodes();
 		BackVector[] initMap = new BackVector[nodes.size()];
-		FibonacciHeap<Node> Q = new FibonacciHeap<Node>(nodes.size(),1.0f);
+//		FibonacciHeap<Node> Q = new FibonacciHeap<Node>(nodes.size(),1.0f);
+		
+		Double[] curKeys = new Double[nodes.size()];
+		Comparator<Node> comparator = (a,b) -> Double.compare(curKeys[a.getOrder()],curKeys[b.getOrder()]);
+		TreeSet<Node> newQ = new TreeSet<Node>(comparator);
 		
 		Double cost = 0.0;
 		
 		for (Node n : nodes) {
 			if (!n.getID().equals(container.root().getID())) {
-				Q.add(n, Double.MAX_VALUE);
+//				Q.add(n, Double.MAX_VALUE);
+				curKeys[n.getOrder()] = Double.MAX_VALUE;
+				
 			}
-			else Q.add(n,0.0);
+			else {
+//				Q.add(n,0.0);
+				curKeys[n.getOrder()] = 0.;
+			}
+			newQ.add(n);
 		}
 //		Q.add(container.root().node(), 0.0);
 
-		while (!Q.isEmpty()) {
-			FibonacciLeaf<Node> u = Q.poll();
-			cost += container.demand(u.node) * u.key;
+		while (!newQ.isEmpty()) {
+			Node u = newQ.pollFirst();
+			cost += container.demand(u) * curKeys[u.getOrder()];
 			
-			for (Link uv : u.node.forwardStar()) {
+			for (Link uv : u.forwardStar()) {
 				//TODO expand this admissibility check to other implementations of AssignmentContainer
 				if (container instanceof Bush && !((Bush) container).canUseLink(uv)) continue;
 //				if (!uv.allowsClass(c) || isInvalidConnector(uv)) continue;
@@ -356,11 +366,14 @@ public class Graph {
 				//This was removed to allow flow onto all links for the initial bush, and any illegal
 				//flow will be removed on the first flow shift due to high price
 				
-				FibonacciLeaf<Node> v = Q.getLeaf(uv.getHead());
-				Double alt = uv.getPrice(container)+u.key;
-				if (alt<v.key) {
-					Q.decreaseKey(v, alt);
-					initMap[v.node.getOrder()] = uv;
+				Node v = uv.getHead();
+				Double alt = uv.getPrice(container)+curKeys[u.getOrder()];
+				if (alt<curKeys[v.getOrder()]) {
+					newQ.remove(v);
+					curKeys[v.getOrder()] = alt;
+					newQ.add(v);
+//					Q.decreaseKey(v, alt);
+					initMap[v.getOrder()] = uv;
 				}
 			}
 		}

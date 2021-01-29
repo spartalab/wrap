@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.AbstractMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -132,8 +133,8 @@ public class BushReader implements AssignmentProvider<Bush> {
 		BackVector[] q = new BackVector[network.numNodes()];
 		
 		
-		
-		
+		LinkedList<Node> topologicalOrder = new LinkedList<Node>();
+		topologicalOrder.add(network.getNode(bush.root().getID()));
 		
 		
 		byte[] b = new byte[bufSize];
@@ -144,17 +145,20 @@ public class BushReader implements AssignmentProvider<Bush> {
 			in.read(b);
 			pos += bufSize;
 			ByteBuffer bb = ByteBuffer.wrap(b);
-			processBytes(bush, q, bb);
+			processBytes(bush, q, bb,topologicalOrder);
 
 		}
 		bush.setQ(q);
+		bush.setTopologicalOrder(topologicalOrder);
 	}
 
-	private void processBytes(Bush bush, BackVector[] q, ByteBuffer bb) {
+	private void processBytes(Bush bush, BackVector[] q, ByteBuffer bb, LinkedList<Node> topologicalOrder) {
 		Integer nid = bb.getInt();
 		Integer bvhc = bb.getInt();
 		Double split = bb.getDouble();
 		Node n = network.getNode(nid);
+		
+		if (topologicalOrder.isEmpty() || topologicalOrder.getLast() != n) topologicalOrder.add(n); 
 
 		//Find the appropriate link instance
 //			Link bv = null;

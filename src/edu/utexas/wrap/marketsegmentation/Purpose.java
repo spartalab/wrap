@@ -314,7 +314,7 @@ class BasicPurpose implements Purpose {
 	 */
 	@Override
 	public AggregatePAMatrix getAggregatePAMatrix() {
-		return distributionShares().entrySet().parallelStream()
+		return distributionShares().entrySet().stream()
 				.map(
 						entry -> new FixedMultiplierPassthroughAggregateMatrix(
 								distributor(entry.getKey()).distribute(getPAMap()),
