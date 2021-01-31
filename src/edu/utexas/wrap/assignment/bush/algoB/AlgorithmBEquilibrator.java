@@ -1,8 +1,8 @@
 package edu.utexas.wrap.assignment.bush.algoB;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 //import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
@@ -27,7 +27,7 @@ public class AlgorithmBEquilibrator {
 
 		//Assign the correct back-pointers to BushMerges using topological search
 		//Get the flows on the current bush
-		Map<Link,Double> bushFlows = new ConcurrentHashMap<Link, Double>(bush.flows());
+		Map<Link,Double> bushFlows = new HashMap<Link, Double>(bush.flows());
 //		PathCostCalculator pcc = new PathCostCalculator(bush);
 		synchronized (this) {
 			//In reverse topological order,
