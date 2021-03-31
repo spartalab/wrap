@@ -16,11 +16,8 @@ import edu.utexas.wrap.util.NegativeFlowException;
  */
 public abstract class Link implements Priced, BackVector {
 
-	protected final Float capacity;
-	protected final Float length;
-	protected final Float fftime;
-	private final Node head;
-	private final Node tail;
+	protected final Float capacity, length, fftime;
+	private final Node head, tail;
 	protected ReadWriteLock ttLock;
 	private int headIdx;
 	

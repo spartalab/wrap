@@ -2,17 +2,17 @@ package edu.utexas.wrap.util.calc;
 
 import java.util.Set;
 
-import edu.utexas.wrap.assignment.bush.OldBushOrigin;
+import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.net.Graph;
 
 public class AverageExcessCostCalculator extends Thread {
 	public Double val;
 	Graph graph;
-	Set<OldBushOrigin> origins;
+	Set<Bush> origins;
 	TotalSystemGeneralizedCostCalculator cc;
 	LowestCostPathCostCalculator lc;
 	
-	public AverageExcessCostCalculator(Graph g, Set<OldBushOrigin> o, TotalSystemGeneralizedCostCalculator tc, LowestCostPathCostCalculator lc) {
+	public AverageExcessCostCalculator(Graph g, Set<Bush> o, TotalSystemGeneralizedCostCalculator tc, LowestCostPathCostCalculator lc) {
 		graph = g;
 		origins = o;
 		this.cc = tc;
@@ -31,7 +31,7 @@ public class AverageExcessCostCalculator extends Thread {
 			lc.start();
 		}
 		
-		Double demand = origins.parallelStream().flatMap(o -> o.getContainers().parallelStream()).mapToDouble(b -> b.totalDemand()).sum();
+		Double demand = origins.parallelStream().mapToDouble(b -> b.getDemandMap().totalDemand()).sum();
 		
 		val = null;
 		try {

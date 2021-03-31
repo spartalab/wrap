@@ -2,20 +2,19 @@ package edu.utexas.wrap.util.calc;
 
 import java.util.Set;
 
-import edu.utexas.wrap.assignment.bush.OldBushOrigin;
+import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class AllPathsRelativeGapCalculator extends Thread {
 	public Double val;
 	Graph graph;
-	Set<TravelSurveyZone> origins;
+	Set<Bush> bushes;
 	LowestCostPathCostCalculator lc;
 	TotalSystemGeneralizedCostCalculator cc;
 	
-	public AllPathsRelativeGapCalculator(Graph g, Set<TravelSurveyZone> o, TotalSystemGeneralizedCostCalculator tc, LowestCostPathCostCalculator lc) {
+	public AllPathsRelativeGapCalculator(Graph g, Set<Bush> o, TotalSystemGeneralizedCostCalculator tc, LowestCostPathCostCalculator lc) {
 		graph = g;
-		origins = o;
+		bushes = o;
 	}
 	
 	@Override
@@ -23,11 +22,11 @@ public class AllPathsRelativeGapCalculator extends Thread {
 		val = null;
 
 		if (cc == null) {
-			cc = new TotalSystemGeneralizedCostCalculator(graph, origins);
+			cc = new TotalSystemGeneralizedCostCalculator(graph, bushes);
 			cc.start();
 		}
 		if (lc == null) {
-			lc = new LowestCostPathCostCalculator(graph,origins);
+			lc = new LowestCostPathCostCalculator(graph,bushes);
 			lc.start();
 		}
 

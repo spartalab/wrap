@@ -3,7 +3,7 @@ package edu.utexas.wrap.util.calc;
 import java.util.Set;
 import java.util.concurrent.atomic.DoubleAdder;
 
-import edu.utexas.wrap.assignment.bush.OldBushOrigin;
+import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.TravelSurveyZone;
@@ -12,12 +12,12 @@ import edu.utexas.wrap.util.UnreachableException;
 public class UsedPathsRelativeGapCalculator extends Thread {
 	public Double val;
 	Graph graph;
-	Set<OldBushOrigin> origins;
+	Set<Bush> bushes;
 	TotalSystemGeneralizedCostCalculator cc;
 	
-	public UsedPathsRelativeGapCalculator(Graph g, Set<OldBushOrigin> o, TotalSystemGeneralizedCostCalculator tc) {
+	public UsedPathsRelativeGapCalculator(Graph g, Set<Bush> o, TotalSystemGeneralizedCostCalculator tc) {
 		graph = g;
-		origins = o;
+		bushes = o;
 	}
 	
 	@Override
@@ -25,12 +25,12 @@ public class UsedPathsRelativeGapCalculator extends Thread {
 		val = null;
 
 		if (cc == null) {
-			cc = new TotalSystemGeneralizedCostCalculator(graph, origins);
+			cc = new TotalSystemGeneralizedCostCalculator(graph, bushes);
 			cc.start();
 		}
 		DoubleAdder denominator = new DoubleAdder();
 		
-		origins.parallelStream().flatMap(o -> o.getContainers().parallelStream()).forEach(b ->{
+		bushes.parallelStream().forEach(b ->{
 			b.shortTopoSearch();
 			Double[] cache = new Double[graph.numNodes()];
 			DemandMap dem = b.getDemandMap(); 

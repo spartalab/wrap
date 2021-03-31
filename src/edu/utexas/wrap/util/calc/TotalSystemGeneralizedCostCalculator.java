@@ -2,24 +2,22 @@ package edu.utexas.wrap.util.calc;
 
 import java.util.Set;
 
-import edu.utexas.wrap.assignment.Origin;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.net.Graph;
 
 public class TotalSystemGeneralizedCostCalculator extends Thread {
 	public Double val;
 	Graph graph;
-	Set<? extends Origin> origins;
+	Set<Bush> bushes;
 	
-	public TotalSystemGeneralizedCostCalculator(Graph g, Set<? extends Origin> o) {
+	public TotalSystemGeneralizedCostCalculator(Graph g, Set<Bush> o) {
 		graph = g;
-		origins = o;
+		bushes = o;
 	}
 	
 	@Override
 	public void run() {
-		val = origins.parallelStream().flatMap(o -> o.getContainers().parallelStream())
-				.filter(c -> c instanceof Bush).map(c -> (Bush) c)
+		val = bushes.parallelStream()
 				.mapToDouble(b -> b.incurredCost()).sum();
 	}
 }

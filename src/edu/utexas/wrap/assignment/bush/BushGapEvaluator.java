@@ -32,7 +32,7 @@ public class BushGapEvaluator implements BushEvaluator {
 		
 		for (int i = to.length-1; i > 0; i--) {
 			if (to[i] == null) continue;
-			double toDemand = bush.getDemand(to[i]) + latent[to[i].getOrder()];
+			double toDemand = bush.demand(to[i]) + latent[to[i].getOrder()];
 			Link q = pcc.getqShort(to[i]);
 			double linkCost = q.getPrice(bush);
 			
