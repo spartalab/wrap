@@ -2,20 +2,20 @@ package edu.utexas.wrap.util.calc;
 
 import java.util.Set;
 
-import edu.utexas.wrap.assignment.bush.OldBushOrigin;
+import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.net.Graph;
 
 public class LowestCostPathCostCalculator extends Thread {
 	public Graph graph;
-	public Set<OldBushOrigin> origins;
+	public Set<AssignmentContainer> origins;
 	public Double val;
 
-	public LowestCostPathCostCalculator(Graph g, Set<OldBushOrigin> origins) {
+	public LowestCostPathCostCalculator(Graph g, Set<AssignmentContainer> origins) {
 		graph = g;
 		this.origins = origins;
 	}
 	public void run() {
 		val = null;
-		val = origins.parallelStream().flatMap(o -> o.getContainers().parallelStream()).mapToDouble(b -> b.lowestCostPathCost()).sum();
+		val = origins.parallelStream().mapToDouble(b -> b.lowestCostPathCost()).sum();
 	}
 }

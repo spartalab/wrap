@@ -43,4 +43,6 @@ public interface AssignmentContainer {
 	
 	public double demand(Node n);
 	
+	public double totalDemand();
+	
 }

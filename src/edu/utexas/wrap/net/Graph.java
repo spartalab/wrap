@@ -16,7 +16,7 @@ import java.util.stream.IntStream;
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.bush.BackVector;
 import edu.utexas.wrap.assignment.bush.Bush;
-import edu.utexas.wrap.assignment.sensitivity.DerivativeLink;
+//import edu.utexas.wrap.assignment.sensitivity.DerivativeLink;
 import edu.utexas.wrap.util.FibonacciHeap;
 import edu.utexas.wrap.util.FibonacciLeaf;
 
@@ -221,23 +221,23 @@ public class Graph {
 		return numLinks;
 	}
 	
-	public Map<Link, Link> getDerivativeLinks(Map<Link,Double> derivs, Link oldFocus, Link newFocus, Map<Node,Node> nodeMap){
-		Map<Link, Link> linkMap = new HashMap<Link,Link>(numLinks,1.0f);
-
-		
-		IntStream.range(0,forwardStar.length).parallel().forEach(j ->{
-			Link[] oldLinks = forwardStar[j];
-			if (oldLinks == null) return;
-			for (int i = 0; i < oldLinks.length; i++) {
-				Link oldLink = oldLinks[i];
-				Link newLink;
-				if (oldLink.equals(oldFocus)) newLink = newFocus;
-				else  newLink = new DerivativeLink(nodeMap.get(oldLink.getTail()), nodeMap.get(oldLink.getHead()), oldLink.getCapacity(), oldLink.getLength(), oldLink.freeFlowTime(), oldLink, derivs);
-				linkMap.put(oldLink, newLink);
-			}
-		});
-		return linkMap;
-	}
+//	public Map<Link, Link> getDerivativeLinks(Map<Link,Double> derivs, Link oldFocus, Link newFocus, Map<Node,Node> nodeMap){
+//		Map<Link, Link> linkMap = new HashMap<Link,Link>(numLinks,1.0f);
+//
+//		
+//		IntStream.range(0,forwardStar.length).parallel().forEach(j ->{
+//			Link[] oldLinks = forwardStar[j];
+//			if (oldLinks == null) return;
+//			for (int i = 0; i < oldLinks.length; i++) {
+//				Link oldLink = oldLinks[i];
+//				Link newLink;
+//				if (oldLink.equals(oldFocus)) newLink = newFocus;
+//				else  newLink = new DerivativeLink(nodeMap.get(oldLink.getTail()), nodeMap.get(oldLink.getHead()), oldLink.getCapacity(), oldLink.getLength(), oldLink.freeFlowTime(), oldLink, derivs);
+//				linkMap.put(oldLink, newLink);
+//			}
+//		});
+//		return linkMap;
+//	}
 	
 	public Map<Node,Node> duplicateNodes(){
 		return order.stream().collect(Collectors.toMap(Function.identity(), x -> new Node(x)));

@@ -184,6 +184,10 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	public double demand(Node n) {
 		return 0.;
 	}
+	
+	public double totalDemand() {
+		return 0.;
+	}
 
 	/* (non-Javadoc)
 	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getLinks()

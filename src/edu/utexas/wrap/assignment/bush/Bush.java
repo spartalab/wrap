@@ -477,4 +477,8 @@ public class Bush implements AssignmentContainer {
 		nodes.add(origin);
 		return nodes;
 	}
+	
+	public double totalDemand() {
+		return demand.totalDemand();
+	}
 }
