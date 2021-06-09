@@ -16,7 +16,6 @@ import java.util.stream.Stream;
 
 import edu.utexas.wrap.assignment.Assigner;
 import edu.utexas.wrap.assignment.BasicStaticAssigner;
-import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.bush.StreamPassthroughAssigner;
 import edu.utexas.wrap.marketsegmentation.DummyPurpose;
 import edu.utexas.wrap.marketsegmentation.Market;
@@ -40,7 +39,7 @@ import edu.utexas.wrap.util.io.output.FilePassthroughDummyAssigner;
  * @author William
  *
  */
-public class Project {
+public class Project implements Runnable {
 	private final Properties props;
 	private Map<Integer, TravelSurveyZone> zones;
 	private Path projDir;
@@ -93,7 +92,7 @@ public class Project {
 	 * 
 	 * @return a Collection of initialized Markets read from files
 	 */
-	public Collection<Market> loadMarkets(){
+	private Collection<Market> loadMarkets(){
 		System.out.println("Reading Market configurations");
 
 		String projNames = props.getProperty("markets.ids");
@@ -118,7 +117,7 @@ public class Project {
 	/**
 	 * @return a Collection of DummyPurposes which are not affiliated with any particular Market
 	 */
-	public Collection<DummyPurpose> getDummyPurposes() {
+	private Collection<DummyPurpose> getDummyPurposes() {
 		// TODO Auto-generated method stub
 		String dummyNames = props.getProperty("dummies.ids");
 		
@@ -149,7 +148,7 @@ public class Project {
 	 * 
 	 * @return a Map from an Assigner's id to newly-generated instance.
 	 */
-	public Map<String,Assigner> loadAssigners(){
+	private Map<String,Assigner> loadAssigners(){
 		System.out.println("Reading Assigner configurations");
 
 		return Stream.of(props.getProperty("assigners.ids").split(","))
@@ -169,7 +168,7 @@ public class Project {
 	 * 
 	 * @return a Map from a NetworkSkim's id to its newly-generated instance
 	 */
-	public Map<String,NetworkSkim> loadInitialSkims(){
+	private Map<String,NetworkSkim> loadInitialSkims(){
 		System.out.println("Reading initial NetworkSkims");
 		
 		return Stream.of(props.getProperty("skims.ids").split(","))
@@ -200,7 +199,7 @@ public class Project {
 	 * @param assigners a Map from Assigner ids to their current instance
 	 * @return a Map from NetworkSkim ids to their updated instance
 	 */
-	public Map<String,NetworkSkim> updateFeedbackSkims(Map<String,Assigner> assigners){
+	private Map<String,NetworkSkim> updateFeedbackSkims(Map<String,Assigner> assigners){
 		System.out.println("Updating NetworkSkims");
 
 		return Stream.of(props.getProperty("skims.ids").split(","))
@@ -235,7 +234,7 @@ public class Project {
 
 
 			case "bush":
-				return new BasicStaticAssigner<Bush>(
+				return BasicStaticAssigner.fromPropsFile(
 						projDir.resolve(props.getProperty("assigners."+id+".file")),
 						zones
 						);
@@ -255,7 +254,7 @@ public class Project {
 	/**
 	 * @param assigners
 	 */
-	public void output(Map<String,Assigner> assigners) {
+	private void output(Map<String,Assigner> assigners) {
 		// TODO Auto-generated method stub
 		Map<String,NetworkSkim> finalSkims = updateFeedbackSkims(assigners);
 		System.out.println("Printing final skims");
@@ -282,6 +281,55 @@ public class Project {
 	 */
 	public String toString() {
 		return name;
+	}
+
+	@Override
+	public void run() {
+		Collection<Market> markets = loadMarkets();
+		Collection<DummyPurpose> dummies = getDummyPurposes();
+		
+
+		Map<String,Assigner> assigners = null;
+		
+		int numFeedbacks = 1;
+		for (int i = 0; i < numFeedbacks; i++) {
+			System.out.println("Beginning feedback iteration "+i);
+			assigners = loadAssigners();
+			
+			//Update skims and redistribute
+			Map<String,NetworkSkim> skims = i == 0? loadInitialSkims() : updateFeedbackSkims(assigners);
+			//TODO project should have skims
+			markets.parallelStream().forEach(market -> market.updateSkims(skims));
+			
+			
+			Collection<Assigner> ac = assigners.values();
+
+			System.out.println("Calculating disaggregated ODProfiles");
+			Stream.concat(
+					markets.parallelStream()
+					.flatMap(market -> market.getODProfiles()),
+					dummies.parallelStream()
+					.flatMap(dummy -> dummy.getODProfiles())
+					)
+			.forEach(
+					od -> 
+					ac.stream().forEach(assigner -> assigner.process(od))
+					);
+
+			
+			System.out.println("Starting assignment");
+			ac.stream().forEach(Assigner::run);
+			
+
+			
+		}
+		
+		System.out.println("Feedback loop(s) completed");
+		
+		output(assigners);
+		
+		
+		System.out.println("Done");
 	}
 
 

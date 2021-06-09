@@ -49,38 +49,78 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	private final int maxIterations;
 	private final Graph network;
 	private final TimePeriod tp;
-
-	public BasicStaticAssigner(
-			AssignmentInitializer<C> initializer,
+	
+	private BasicStaticAssigner(
 			AssignmentEvaluator<C> evaluator,
 			AssignmentOptimizer<C> optimizer,
+			AssignmentInitializer<C> initializer,
 			double threshold,
-			TimePeriod tp){
-		this.initializer = initializer;
+			int maxIterations,
+			Graph network,
+			TimePeriod tp
+			){
 		this.evaluator = evaluator;
 		this.optimizer = optimizer;
+		this.initializer = initializer;
 		this.threshold = threshold;
-		maxIterations = 100;
-		network = null;
-		this.tp=tp;
+		this.maxIterations = maxIterations;
+		this.network = network;
+		this.tp = tp;
 		disaggregatedMtxs = new HashMap<ODMatrix,Float>();
+
 	}
+	
 
 
-
-	public BasicStaticAssigner(Path path, Map<Integer,TravelSurveyZone> zones) throws IOException {
+	public static BasicStaticAssigner<?> fromPropsFile(Path path, Map<Integer,TravelSurveyZone> zones) throws IOException {
 		// TODO Auto-generated constructor stub
 
 		Properties props = new Properties();
 		props.load(Files.newInputStream(path));
 
-		this.network = readNetwork(props, path.getParent(), zones);
+		Graph network = readNetwork(props, path.getParent(), zones);
+		TimePeriod tp = TimePeriod.valueOf(props.getProperty("timePeriod"));
+		Double threshold = Double.parseDouble(props.getProperty("evaluator.threshold"));
+		Integer maxIterations = Integer.parseInt(props.getProperty("maxIterations"));
 
 		Files.createDirectories(Paths.get(network.toString()));
 
+
+		switch (props.getProperty("containerType")) {
+
+		case "bush":
+			return bushAssignerFromProps(props, network, tp, threshold, maxIterations);
+
+		case "path":
+			return pathAssignerFromProps(props, network, tp, threshold, maxIterations);
+			
+		case "link":
+			return linkAssignerFromProps(props, network, tp, threshold, maxIterations);
+			
+		default:
+			throw new RuntimeException("Unknown containerType: " + props.getProperty("containerType"));
+		}
+
+	}
+	
+	private static BasicStaticAssigner<?> linkAssignerFromProps(Properties props, Graph network, TimePeriod tp,
+			Double threshold, Integer maxIterations) throws IOException {
+		throw new RuntimeException("Not yet implemented");
+	}
+
+	private static BasicStaticAssigner<edu.utexas.wrap.assignment.Path> pathAssignerFromProps(Properties props, Graph network, TimePeriod tp,
+			Double threshold, Integer maxIterations) throws IOException{
+		throw new RuntimeException("Not yet implemented");
+	}
+
+	private static BasicStaticAssigner<Bush> bushAssignerFromProps(Properties props, Graph network, TimePeriod tp,
+			Double threshold, Integer maxIterations) throws IOException {
 		AssignmentProvider<Bush> provider;
 		AssignmentConsumer<Bush> primaryConsumer, evaluationConsumer;
-
+		AssignmentEvaluator<Bush> evaluator;
+		AssignmentOptimizer<Bush> optimizer;
+		AssignmentInitializer<Bush> initializer;
+		
 		switch (props.getProperty("providerConsumer")) {
 		case "bushIOsuite":
 			//TODO custom paths
@@ -92,9 +132,6 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		default:
 			throw new RuntimeException("Not yet implented");
 		}
-
-
-
 		AssignmentBuilder<Bush> builder;
 		switch (props.getProperty("builder")) {
 		case "bush":
@@ -108,23 +145,22 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 
 		switch (props.getProperty("initializer")) {
 		case "bush":
-			initializer = (AssignmentInitializer<C>) new BushInitializer(provider, primaryConsumer,builder,network);
+			initializer = new BushInitializer(provider, primaryConsumer,builder,network);
 			break;
 		default:
 			throw new RuntimeException("Not yet implemented");
 		}
+
 
 
 
 		switch (props.getProperty("evaluator")) {
 		case "gap":
-			evaluator = (AssignmentEvaluator<C>) new GapEvaluator<Bush>(network, provider, evaluationConsumer);
+			evaluator = new GapEvaluator<Bush>(network, provider, evaluationConsumer);
 			break;
 		default:
 			throw new RuntimeException("Not yet implemented");
 		}
-
-
 		switch (props.getProperty("optimizer")) {
 		case "algoB":
 			BushEvaluator iterEvaluator;
@@ -141,7 +177,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 			double iterThreshold = Double.parseDouble(props.getProperty("optimizer.iterThreshold"));
 
 
-			optimizer = (AssignmentOptimizer<C>) new AlgorithmBOptimizer(
+			optimizer = new AlgorithmBOptimizer(
 					provider, 
 					primaryConsumer, 
 					iterEvaluator,
@@ -150,13 +186,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		default:
 			throw new RuntimeException("Not yet implemented");
 		}
-
-
-		tp = TimePeriod.valueOf(props.getProperty("timePeriod"));
-		threshold = Double.parseDouble(props.getProperty("evaluator.threshold"));
-		maxIterations = Integer.parseInt(props.getProperty("maxIterations"));
-		disaggregatedMtxs = new HashMap<ODMatrix,Float>();
-		//		throw new RuntimeException("Not finished implementing");
+		return new BasicStaticAssigner<Bush>(evaluator, optimizer, initializer, threshold, maxIterations, network, tp);
 	}
 
 
@@ -238,7 +268,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	}
 
 
-	private Graph readNetwork(Properties props, Path projDir, Map<Integer,TravelSurveyZone> zoneIDs) {
+	private static Graph readNetwork(Properties props, Path projDir, Map<Integer,TravelSurveyZone> zoneIDs) {
 		System.out.println("Reading network");
 
 		try {
