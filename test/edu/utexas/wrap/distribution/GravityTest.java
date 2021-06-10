@@ -1,4 +1,4 @@
-package edu.utexas.wrap.tests.distribution;
+package edu.utexas.wrap.distribution;
 
 import static org.junit.jupiter.api.Assertions.*;
 

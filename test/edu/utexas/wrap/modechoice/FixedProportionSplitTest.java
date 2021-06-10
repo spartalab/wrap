@@ -1,4 +1,4 @@
-package edu.utexas.wrap.tests.modechoice;
+package edu.utexas.wrap.modechoice;
 
 import java.io.File;
 import java.io.IOException;

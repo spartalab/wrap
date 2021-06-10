@@ -1,4 +1,4 @@
-package edu.utexas.wrap.tests.util;
+package edu.utexas.wrap.util;
 
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.util.io.GraphFactory;

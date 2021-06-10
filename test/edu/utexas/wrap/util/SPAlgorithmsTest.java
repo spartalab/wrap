@@ -1,4 +1,4 @@
-package edu.utexas.wrap.tests.util;
+package edu.utexas.wrap.util;
 
 import static org.junit.jupiter.api.Assertions.*;
 
