@@ -92,26 +92,16 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 			return bushAssignerFromProps(props, network, tp, threshold, maxIterations);
 
 		case "path":
-			return pathAssignerFromProps(props, network, tp, threshold, maxIterations);
 			
 		case "link":
-			return linkAssignerFromProps(props, network, tp, threshold, maxIterations);
 			
 		default:
 			throw new RuntimeException("Unknown containerType: " + props.getProperty("containerType"));
 		}
 
 	}
-	
-	private static BasicStaticAssigner<?> linkAssignerFromProps(Properties props, Graph network, TimePeriod tp,
-			Double threshold, Integer maxIterations) throws IOException {
-		throw new RuntimeException("Not yet implemented");
-	}
 
-	private static BasicStaticAssigner<edu.utexas.wrap.assignment.Path> pathAssignerFromProps(Properties props, Graph network, TimePeriod tp,
-			Double threshold, Integer maxIterations) throws IOException{
-		throw new RuntimeException("Not yet implemented");
-	}
+
 
 	private static BasicStaticAssigner<Bush> bushAssignerFromProps(Properties props, Graph network, TimePeriod tp,
 			Double threshold, Integer maxIterations) throws IOException {

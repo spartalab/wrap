@@ -4,20 +4,21 @@ import java.util.Set;
 import java.util.concurrent.atomic.DoubleAdder;
 
 import edu.utexas.wrap.assignment.AssignmentContainer;
+import edu.utexas.wrap.assignment.bush.Bush;
+import edu.utexas.wrap.assignment.bush.PathCostCalculator;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.TravelSurveyZone;
-import edu.utexas.wrap.util.UnreachableException;
+import edu.utexas.wrap.net.Node;
 
 public class UsedPathsRelativeGapCalculator extends Thread {
 	public Double val;
 	Graph graph;
-	Set<AssignmentContainer> origins;
+	Set<AssignmentContainer> assignmentContainers;
 	TotalSystemGeneralizedCostCalculator cc;
 	
 	public UsedPathsRelativeGapCalculator(Graph g, Set<AssignmentContainer> o, TotalSystemGeneralizedCostCalculator tc) {
 		graph = g;
-		origins = o;
+		assignmentContainers = o;
 	}
 	
 	@Override
@@ -25,23 +26,25 @@ public class UsedPathsRelativeGapCalculator extends Thread {
 		val = null;
 
 		if (cc == null) {
-			cc = new TotalSystemGeneralizedCostCalculator(graph, origins);
+			cc = new TotalSystemGeneralizedCostCalculator(graph, assignmentContainers);
 			cc.start();
 		}
 		DoubleAdder denominator = new DoubleAdder();
 		
-		origins.parallelStream().forEach(b ->{
-			b.shortTopoSearch();
-			Double[] cache = new Double[graph.numNodes()];
+		assignmentContainers.parallelStream()
+		.filter(b -> b instanceof Bush)
+		.map(b -> (Bush) b)
+		.forEach(b ->{
+			
+			PathCostCalculator pcc = new PathCostCalculator(b);
+			
 			DemandMap dem = b.getDemandMap(); 
-			b.getNodes().parallelStream().forEach(d -> {
-				TravelSurveyZone tsz = d.getZone();
-				if (tsz == null) return;
-				Float demand = dem.get(d.getZone());
-				if (demand > 0.0F) try {
-					denominator.add(b.getCachedL(d,cache) * demand);
-				} catch (UnreachableException e) {
-						e.printStackTrace();
+			dem.getZones().parallelStream().forEach(tsz -> {
+				Float demand = dem.get(tsz);
+				if (demand > 0.0F) {
+					Node destination = graph.getNode(tsz.getID());
+					
+					denominator.add(pcc.getShortestPathCost(destination) * demand);
 				}
 			});
 		});

@@ -2,21 +2,22 @@ package edu.utexas.wrap.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import edu.utexas.wrap.net.Node;
 
-public class FibonacciLeaf<E>{
-	public E node;
+public class FibonacciLeaf{
+	public Node node;
 	public double key;
 	public int degree;
-	public FibonacciLeaf<E> parent;
-	public List<FibonacciLeaf<E>> child;
+	public FibonacciLeaf parent;
+	public List<FibonacciLeaf> child;
 	public boolean mark;
 	
-	public FibonacciLeaf(E n, Double d) {
+	public FibonacciLeaf(Node n, Double d) {
 		this.node = n;
 		this.key = d;
 		degree = 0;
 		parent = null;
-		child = new ArrayList<FibonacciLeaf<E>>();
+		child = new ArrayList<FibonacciLeaf>();
 		mark = false;
 	}
 

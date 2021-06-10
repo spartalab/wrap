@@ -7,15 +7,15 @@ import edu.utexas.wrap.net.Graph;
 
 public class LowestCostPathCostCalculator extends Thread {
 	public Graph graph;
-	public Set<AssignmentContainer> origins;
+	public Set<AssignmentContainer> containers;
 	public Double val;
 
-	public LowestCostPathCostCalculator(Graph g, Set<AssignmentContainer> origins) {
+	public LowestCostPathCostCalculator(Graph g, Set<AssignmentContainer> containers) {
 		graph = g;
-		this.origins = origins;
+		this.containers = containers;
 	}
 	public void run() {
 		val = null;
-		val = origins.parallelStream().mapToDouble(b -> b.lowestCostPathCost()).sum();
+		val = containers.parallelStream().mapToDouble(b -> graph.cheapestCostPossible(b)).sum();
 	}
 }

@@ -16,7 +16,7 @@ public class SPAlgorithms {
 	public static Path dijkstra(Graph g, Node origin, Node destination) {
 		
 		Map<Node, Link> back = new HashMap<Node, Link>();
-		FibonacciHeap<Node> Q = new FibonacciHeap<Node>();
+		FibonacciHeap Q = new FibonacciHeap();
 		
 		for (Node n : g.getNodes()) {
 			if (!n.equals(origin)) {
@@ -26,9 +26,9 @@ public class SPAlgorithms {
 		Q.add(origin, 0.0);
 		
 		while (!Q.isEmpty()) {
-			FibonacciLeaf<Node> u = Q.poll();
+			FibonacciLeaf u = Q.poll();
 			for (Link uv : u.node.forwardStar()) {
-				FibonacciLeaf<Node> v = Q.getLeaf(uv.getHead());
+				FibonacciLeaf v = Q.getLeaf(uv.getHead());
 				Double alt = uv.getTravelTime() + u.key;
 				if (alt < v.key) {
 					Q.decreaseKey(v, alt);

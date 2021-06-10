@@ -330,7 +330,7 @@ public class Graph {
 		// TODO Auto-generated method stub
 		Collection<Node> nodes = getNodes();
 		BackVector[] initMap = new BackVector[nodes.size()];
-		FibonacciHeap<Node> Q = new FibonacciHeap<Node>(nodes.size(),1.0f);
+		FibonacciHeap Q = new FibonacciHeap(nodes.size(),1.0f);
 		
 		Double cost = 0.0;
 		
@@ -343,7 +343,7 @@ public class Graph {
 //		Q.add(container.root().node(), 0.0);
 
 		while (!Q.isEmpty()) {
-			FibonacciLeaf<Node> u = Q.poll();
+			FibonacciLeaf u = Q.poll();
 			cost += container.demand(u.node) * u.key;
 			
 			for (Link uv : u.node.forwardStar()) {
@@ -356,7 +356,7 @@ public class Graph {
 				//This was removed to allow flow onto all links for the initial bush, and any illegal
 				//flow will be removed on the first flow shift due to high price
 				
-				FibonacciLeaf<Node> v = Q.getLeaf(uv.getHead());
+				FibonacciLeaf v = Q.getLeaf(uv.getHead());
 				Double alt = uv.getPrice(container)+u.key;
 				if (alt<v.key) {
 					Q.decreaseKey(v, alt);

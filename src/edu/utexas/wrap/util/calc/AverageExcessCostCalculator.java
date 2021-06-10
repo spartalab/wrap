@@ -31,7 +31,7 @@ public class AverageExcessCostCalculator extends Thread {
 			lc.start();
 		}
 		
-		Double demand = origins.parallelStream().mapToDouble(b -> b.totalDemand()).sum();
+		Double demand = origins.parallelStream().mapToDouble(b -> b.getDemandMap().totalDemand()).sum();
 		
 		val = null;
 		try {

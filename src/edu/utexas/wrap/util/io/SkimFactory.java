@@ -88,7 +88,7 @@ public class SkimFactory {
 		zones.stream()
 		
 		.forEach(orig -> {
-			FibonacciHeap<Node> Q = new FibonacciHeap<Node>(zones.size(),1.0f);
+			FibonacciHeap Q = new FibonacciHeap(zones.size(),1.0f);
 			for (Node n : network.getNodes()) {
 				if (!n.getID().equals(orig.getID())) {
 					Q.add(n, Double.MAX_VALUE);
@@ -97,7 +97,7 @@ public class SkimFactory {
 			}
 
 			while (!Q.isEmpty()) {
-				FibonacciLeaf<Node> u = Q.poll();
+				FibonacciLeaf u = Q.poll();
 				if (u.node.getZone() != null) {
 					skim.putCost(orig, u.node.getZone(), (float) u.key);
 				}
@@ -105,7 +105,7 @@ public class SkimFactory {
 				for (Link uv : u.node.forwardStar()) {
 
 
-					FibonacciLeaf<Node> v = Q.getLeaf(uv.getHead());
+					FibonacciLeaf v = Q.getLeaf(uv.getHead());
 					Double alt = costFunction.applyAsDouble(uv)+u.key;
 					if (alt<v.key) {
 						Q.decreaseKey(v, alt);

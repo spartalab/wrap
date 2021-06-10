@@ -1,52 +1,42 @@
 package edu.utexas.wrap.assignment;
 
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.Priced;
-import edu.utexas.wrap.net.TravelSurveyZone;
 
 /** A sequential list of {@link edu.utexas.wrap.net.Link} objects.
  * 
  * @author William
  *
  */
-public class Path extends LinkedList<Link> implements Priced, AssignmentContainer {
+
+public class Path extends LinkedList<Link> implements Priced {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 8522817449668927596L;
 	
-	private final Mode c;
-	private final Float vot;
-//	private DemandHashMap demand;
 	
 	/**
 	 * Instantiate a Path with no vehicle class or vot
 	 * (general purpose but may be unstable)
+	 * @param list 
 	 */
-	public Path() {
-		this.c = null;
-		this.vot = null;
+	public Path(List<Link> list) {
+		super(list);
 	}
 	
-	/**
-	 * @param c the Mode of travel on the path
-	 * @param vot the VOT of travelers on the path
-	 */
-	public Path(Mode c, Float vot) {
-		this.c=c;
-		this.vot=vot;
+	public Path() {
+		
 	}
-
+	
 	/**
 	 * @param spurPath the link to be appended to this
 	 */
@@ -101,21 +91,6 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 		return this.stream().mapToDouble(x -> x.getPrice(vot, c)).sum();
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getVehicleClass()
-	 */
-	@Override
-	public Mode vehicleClass() {
-		return c;
-	}
-
-	/* (non-Javadoc)
-	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getVOT()
-	 */
-	@Override
-	public Float valueOfTime() {
-		return vot;
-	}
 
 	/**
 	 * @param n the Node whose index should be returned
@@ -161,11 +136,8 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 	 * @return the subPath between the two given points
 	 */
 	public Path subPath(Integer start, Integer end) {
-		Path sp = new Path(vehicleClass(), valueOfTime());
-		for (Integer i = start; i < size() && i < end; i++) {
-			sp.add(get(i));
-		}
-		return sp;
+		return new Path(this.subList(start, end));
+
 	}
 
 	/* (non-Javadoc)
@@ -177,51 +149,6 @@ public class Path extends LinkedList<Link> implements Priced, AssignmentContaine
 		return ret+"]";
 	}
 
-	/* (non-Javadoc)
-	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getDemand(edu.utexas.wrap.net.Node)
-	 */
-	@Override
-	public double demand(Node n) {
-		return 0.;
-	}
-	
-	public double totalDemand() {
-		return 0.;
-	}
 
-	/* (non-Javadoc)
-	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getLinks()
-	 */
-	@Override
-	public Set<Link> usedLinks() {
-		return new HashSet<Link>(this);
-	}
-
-	/* (non-Javadoc)
-	 * @see edu.utexas.wrap.assignment.AssignmentContainer#getFlow(edu.utexas.wrap.net.Link)
-	 */
-//	@Override
-//	public Double getFlow(Link l) {
-//		//TODO
-//		throw new RuntimeException("Not Yet Implemented");
-//	}
-
-	@Override
-	public Map<Link, Double> flows() {
-		//TODO
-		throw new RuntimeException("Not Yet Implemented");
-	}
-
-	@Override
-	public double incurredCost() {
-		// TODO Auto-generated method stub
-		throw new RuntimeException("Not yet implemented");
-	}
-
-	@Override
-	public TravelSurveyZone root() {
-		// TODO Auto-generated method stub
-		return node(0).getZone();
-	}
 
 }

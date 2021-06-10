@@ -3,6 +3,7 @@ package edu.utexas.wrap.assignment;
 import java.util.Collection;
 import java.util.Map;
 
+import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
@@ -42,7 +43,7 @@ public interface AssignmentContainer {
 	public TravelSurveyZone root();
 	
 	public double demand(Node n);
-	
-	public double totalDemand();
+
+	public DemandMap getDemandMap();
 	
 }

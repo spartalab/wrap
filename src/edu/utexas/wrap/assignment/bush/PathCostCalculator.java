@@ -39,6 +39,14 @@ public class PathCostCalculator {
 				)).orElseThrow(RuntimeException::new);
 	}
 
+	public double getShortestPathCost(Node destination) {
+		synchronized (this) {
+			if (shortCache == null) getShortestPathCosts();
+		}
+		
+		return shortCache[destination.getOrder()];
+	}
+	
 	private void getShortestPathCosts() {
 		// TODO Auto-generated method stub
 //		bush.clear();
