@@ -33,17 +33,19 @@ public class BushInitializer implements AssignmentInitializer<Bush>{
 	
 	private Graph network;
 	private AssignmentProvider<Bush> provider;
-	private AssignmentConsumer<Bush> consumer;
+	private AssignmentConsumer<Bush> writer, forgetter;
 	private AssignmentBuilder<Bush> builder;
 	private Stream<Bush> containers;
 	
 	public BushInitializer(
 			AssignmentProvider<Bush> provider, 
-			AssignmentConsumer<Bush> consumer, 
+			AssignmentConsumer<Bush> writer,
+			AssignmentConsumer<Bush> forgetter,
 			AssignmentBuilder<Bush> builder,
 			Graph network) {
 		this.provider = provider;
-		this.consumer = consumer;
+		this.writer = writer;
+		this.forgetter = forgetter;
 		this.builder = builder;
 		this.network = network;
 	}
@@ -76,10 +78,12 @@ public class BushInitializer implements AssignmentInitializer<Bush>{
 		
 		network.loadDemand(bush);
 		
-		if (needsWriting) try{
-			consumer.consumeStructure(bush);
+		try{
+			if (needsWriting) writer.consumeStructure(bush);
+			else forgetter.consumeStructure(bush);
 		} catch (IOException e) {
 			System.err.println("WARN: Could not write structure for "+bush+". Source may be corrupted");
+		
 		}
 	}
 	

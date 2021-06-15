@@ -123,7 +123,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	private static BasicStaticAssigner<Bush> bushAssignerFromProps(Properties props, Graph network, TimePeriod tp,
 			Double threshold, Integer maxIterations) throws IOException {
 		AssignmentProvider<Bush> provider;
-		AssignmentConsumer<Bush> primaryConsumer, evaluationConsumer;
+		AssignmentConsumer<Bush> writer, forgetter;
 		AssignmentEvaluator<Bush> evaluator;
 		AssignmentOptimizer<Bush> optimizer;
 		AssignmentInitializer<Bush> initializer;
@@ -133,8 +133,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 			//TODO custom paths
 			Path ioPath = Paths.get(props.getProperty("providerConsumer.source"));
 			provider = new BushReader(network,ioPath);
-			primaryConsumer = new BushWriter(network,ioPath);
-			evaluationConsumer = new BushForgetter();
+			writer = new BushWriter(network,ioPath);
+			forgetter = new BushForgetter();
 			break;
 		default:
 			throw new RuntimeException("Not yet implented");
@@ -152,7 +152,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 
 		switch (props.getProperty("initializer")) {
 		case "bush":
-			initializer = new BushInitializer(provider, primaryConsumer,builder,network);
+			initializer = new BushInitializer(provider, writer, forgetter, builder,network);
 			break;
 		default:
 			throw new RuntimeException("Not yet implemented");
@@ -163,7 +163,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 
 		switch (props.getProperty("evaluator")) {
 		case "gap":
-			evaluator = new GapEvaluator<Bush>(network, provider, evaluationConsumer);
+			evaluator = new GapEvaluator<Bush>(network, provider, forgetter);
 			break;
 		default:
 			throw new RuntimeException("Not yet implemented");
@@ -186,7 +186,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 
 			optimizer = new AlgorithmBOptimizer(
 					provider, 
-					primaryConsumer, 
+					writer, 
 					iterEvaluator,
 					iterThreshold);
 			break;
