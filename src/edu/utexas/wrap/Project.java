@@ -308,7 +308,7 @@ public class Project implements Runnable {
 
 		Map<String,Assigner> assigners = null;
 		
-		int numFeedbacks = Integer.parseInt(props.getProperty("feedbackIters"));
+		int numFeedbacks = Integer.parseInt(props.getProperty("feedbackIters","1"));
 		for (int i = 0; i < numFeedbacks; i++) {
 			System.out.println("Beginning feedback iteration "+i);
 			assigners = loadAssigners();
