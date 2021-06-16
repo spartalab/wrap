@@ -36,6 +36,7 @@ import edu.utexas.wrap.assignment.BasicStaticAssigner;
 import edu.utexas.wrap.assignment.bush.StreamPassthroughAssigner;
 import edu.utexas.wrap.marketsegmentation.DummyPurpose;
 import edu.utexas.wrap.marketsegmentation.Market;
+import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.NetworkSkim;
@@ -228,6 +229,10 @@ public class Project implements Runnable {
 							Assigner assigner = assigners.get(props.getProperty("skims."+id+".assigner"));
 							ToDoubleFunction<Link> func;
 							switch (props.getProperty("skims."+id+".function")) {
+							case "travelTimeSingleOcc":
+								func = (Link x) -> 
+									x.allowsClass(Mode.SINGLE_OCC)? x.getTravelTime() : Double.MAX_VALUE;
+									break;
 							default:
 								System.err.println("Skim funciton not yet implemented. Reverting to travel time");
 							case "travelTime":
