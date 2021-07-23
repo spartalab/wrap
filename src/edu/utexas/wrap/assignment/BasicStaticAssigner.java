@@ -86,7 +86,6 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		disaggregatedMtxs = new HashMap<ODMatrix,Float>();
 
 	}
-	
 
 
 	public static BasicStaticAssigner<?> fromPropsFile(Path path, Map<Integer,TravelSurveyZone> zones) throws IOException {
@@ -119,7 +118,6 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	}
 
 
-
 	private static BasicStaticAssigner<Bush> bushAssignerFromProps(Properties props, Graph network, TimePeriod tp,
 			Double threshold, Integer maxIterations) throws IOException {
 		AssignmentProvider<Bush> provider;
@@ -127,6 +125,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		AssignmentEvaluator<Bush> evaluator;
 		AssignmentOptimizer<Bush> optimizer;
 		AssignmentInitializer<Bush> initializer;
+		AssignmentBuilder<Bush> builder;
+		
 		
 		switch (props.getProperty("providerConsumer")) {
 		case "bushIOsuite":
@@ -139,7 +139,9 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		default:
 			throw new RuntimeException("Not yet implented");
 		}
-		AssignmentBuilder<Bush> builder;
+
+
+
 		switch (props.getProperty("builder")) {
 		case "bush":
 			builder = new BushBuilder(network);
@@ -160,7 +162,6 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 
 
 
-
 		switch (props.getProperty("evaluator")) {
 		case "gap":
 			evaluator = new GapEvaluator<Bush>(network, provider, forgetter);
@@ -168,9 +169,13 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		default:
 			throw new RuntimeException("Not yet implemented");
 		}
+
+
+
 		switch (props.getProperty("optimizer")) {
 		case "algoB":
 			BushEvaluator iterEvaluator;
+			
 			switch(props.getProperty("optimizer.iterEvaluator")) {
 			case "bushGap":
 				iterEvaluator = new BushGapEvaluator(network);
@@ -179,10 +184,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 				throw new RuntimeException("Not yet implemented");
 			}
 
-
-
 			double iterThreshold = Double.parseDouble(props.getProperty("optimizer.iterThreshold"));
-
 
 			optimizer = new AlgorithmBOptimizer(
 					provider, 
@@ -193,9 +195,11 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		default:
 			throw new RuntimeException("Not yet implemented");
 		}
+
+
+
 		return new BasicStaticAssigner<Bush>(evaluator, optimizer, initializer, threshold, maxIterations, network, tp);
 	}
-
 
 
 	public void run() {

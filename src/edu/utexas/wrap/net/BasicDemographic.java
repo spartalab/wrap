@@ -64,6 +64,7 @@ public class BasicDemographic implements Demographic {
 			
 			zoneData.put(zone, demos);
 		});
+		reader.close();
 	}
 	
 	@Override

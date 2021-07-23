@@ -65,7 +65,7 @@ public class Market implements ODProfileProvider {
 		this.zones = zoneIDs.values();
 		this.basicDemos = getDemographics(directory,zoneIDs);
 		this.frictionFactors = getFrictionFactors(directory);
-		basicPurposes = getBasicPurposes(directory);
+		basicPurposes = getBasicPurposes(directory,zoneIDs);
 		dummyPurposes = getDummyPurposes(directory,zoneIDs);
 
 	}
@@ -106,7 +106,8 @@ public class Market implements ODProfileProvider {
 	}
 
 	private Map<String,BasicPurpose> getBasicPurposes(
-			Path directory
+			Path directory, 
+			Map<Integer,TravelSurveyZone> zones
 			) throws IOException {
 
 		String ids = props.getProperty("purposes.ids");
@@ -117,7 +118,10 @@ public class Market implements ODProfileProvider {
 								Function.identity(), 
 								id -> {
 									try {
-										return new BasicPurpose(directory.resolve(props.getProperty("purposes."+id+".file")),this);
+										return new BasicPurpose(
+												directory.resolve(props.getProperty("purposes."+id+".file")),
+												this,
+												zones);
 									} catch (IOException e1) {
 										System.err.println("Error while reading purpose file: "+id);
 										return null;
