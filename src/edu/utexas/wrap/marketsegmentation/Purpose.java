@@ -43,6 +43,8 @@ import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.PAMapProvider;
 import edu.utexas.wrap.demand.containers.FixedMultiplierPassthroughAggregateMatrix;
 import edu.utexas.wrap.demand.containers.PAPassthroughMap;
+import edu.utexas.wrap.distribution.BasicDistributionWeights;
+import edu.utexas.wrap.distribution.DistributionWeights;
 import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.distribution.GravityDistributor;
 import edu.utexas.wrap.distribution.TripDistributor;
@@ -56,6 +58,7 @@ import edu.utexas.wrap.modechoice.TripInterchangeSplitter;
 import edu.utexas.wrap.net.Demographic;
 import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.SecondaryDemographic;
+import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.AggregatePAMatrixCollector;
 import edu.utexas.wrap.util.PassengerVehicleTripConverter;
 import edu.utexas.wrap.util.TimeOfDaySplitter;
@@ -92,17 +95,22 @@ class BasicPurpose implements Purpose {
 	private final Properties properties;
 	
 	private final Market parent;
+	private final Path directory;
 	private Map<String,NetworkSkim> skims;
 	private Demographic ubProds, ubAttrs;
 	private String name;
+	private final Map<Integer,TravelSurveyZone> zones;
 
 	public BasicPurpose(
 			Path purposeFile, 
-			Market parent
+			Market parent,
+			Map<Integer,TravelSurveyZone> zones
 			) throws IOException {
 
 //		this.network = network;
 		this.parent = parent;
+		this.directory = purposeFile.getParent();
+		this.zones = zones;
 		properties = new Properties();
 		properties.load(Files.newInputStream(purposeFile));
 		name = purposeFile.toString();
@@ -227,11 +235,16 @@ class BasicPurpose implements Purpose {
 				);
 	}
 	
+	private DistributionWeights distributionWeights(String source) {
+		return new BasicDistributionWeights(zones,source == null? null : directory.resolve(source));
+	}
+	
 	private TripDistributor distributor(String skimID) {
 		return new GravityDistributor(
-				parent.getZones(), 
+				zones.values(), 
 				skims.get(skimID), 
-				frictionFactors(properties.getProperty("distrib."+skimID+".frictFacts")));
+				frictionFactors(properties.getProperty("distrib."+skimID+".frictFacts")),
+				distributionWeights(properties.getProperty("distrib."+skimID+".weights")));
 	}
 	
 	
@@ -373,8 +386,8 @@ class BasicPurpose implements Purpose {
 		attractionDemographic = attractionDemographic();
 		
 		ComponentTripGenerator
-		producer = new ComponentTripGenerator(parent.getZones(),productionRates()),
-		attractor = new ComponentTripGenerator(parent.getZones(),attractionRates());
+		producer = new ComponentTripGenerator(zones.values(),productionRates()),
+		attractor = new ComponentTripGenerator(zones.values(),attractionRates());
 
 		DemandMap 
 		unbalancedProds = producer.generate(productionDemographic),

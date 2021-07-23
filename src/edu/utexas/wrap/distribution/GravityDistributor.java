@@ -45,12 +45,19 @@ public class GravityDistributor extends TripDistributor {
 	private final FrictionFactorMap friction;
 	private final Collection<TravelSurveyZone> zones;
 	private final Double margin = 0.001;
+	protected Double[] producerWeights, attractorWeights;
+	protected DistributionWeights weights;
 //	private final Graph g;
 
-	public GravityDistributor(Collection<TravelSurveyZone> zones, NetworkSkim skim, FrictionFactorMap fm) {
+	public GravityDistributor(Collection<TravelSurveyZone> zones, NetworkSkim skim, FrictionFactorMap fm, DistributionWeights weights) {
 		this.zones = zones;
 		friction = fm;
 		this.skim = skim;
+		this.weights = weights;
+		producerWeights = weights.getProductionWeights();
+		attractorWeights = weights.getAttractionWeights();
+		
+		
 	}
 	
 	/**This method distributes a given PAMap according to the doubly-
@@ -65,8 +72,6 @@ public class GravityDistributor extends TripDistributor {
 	public AggregatePAMatrix distribute(PAMap pa) {
 		//Begin by iteratively calculating each zone's A and B values
 
-		Double[] a = new Double[zones.size()];
-		Double[] b = new Double[zones.size()];
 		
 		Float[][] ff = new Float[zones.size()][zones.size()];
 		
@@ -89,7 +94,7 @@ public class GravityDistributor extends TripDistributor {
 				//Calculate a new denominator as sum_attractors(attractions*impedance*b)
 				Double denom = zones.stream()
 						.mapToDouble(x -> 
-						(b[x.getOrder()] == null? 1.0 : b[x.getOrder()])
+						(attractorWeights[x.getOrder()] == null? 1.0 : attractorWeights[x.getOrder()])
 						*pa.getAttractions(x)*ff[i.getOrder()][x.getOrder()])
 						.sum();
 				
@@ -97,11 +102,11 @@ public class GravityDistributor extends TripDistributor {
 				if (denom == 0.0 || denom.isNaN()) throw new RuntimeException();
 				
 				//Write a new A value for this producer
-				Double temp = a[i.getOrder()];
-				a[i.getOrder()] = 1.0/denom;
+				Double temp = producerWeights[i.getOrder()];
+				producerWeights[i.getOrder()] = 1.0/denom;
 				
 				//If no A value exists yet or this is not within the numerical tolerance of the previous value
-				if (temp == null || !converged(temp, a[i.getOrder()])) {
+				if (temp == null || !converged(temp, producerWeights[i.getOrder()])) {
 					converged.set(false);
 				}
 			});
@@ -113,7 +118,7 @@ public class GravityDistributor extends TripDistributor {
 				//Calculate a new denominator as sum_producers(productions*impedance*a)
 				Double denom = zones.stream()
 						.mapToDouble(x-> 
-						(a[x.getOrder()] == null? 1.0 : a[x.getOrder()])
+						(producerWeights[x.getOrder()] == null? 1.0 : producerWeights[x.getOrder()])
 						*pa.getProductions(x)*ff[x.getOrder()][j.getOrder()])
 						.sum();
 				
@@ -121,17 +126,17 @@ public class GravityDistributor extends TripDistributor {
 				if (denom == 0.0 || denom.isNaN()) throw new RuntimeException();
 				
 				//Write a new B value for this attractor
-				Double temp = b[j.getOrder()];
-				b[j.getOrder()] = 1.0/denom;
+				Double temp = attractorWeights[j.getOrder()];
+				attractorWeights[j.getOrder()] = 1.0/denom;
 				
 				//If no B value exists yet or this is not within the numerical tolerance of the previous value
-				if (temp == null || !converged(temp, b[j.getOrder()])) {
+				if (temp == null || !converged(temp, attractorWeights[j.getOrder()])) {
 					converged.set(false);
 				}	
 			});
 		}
 		
-
+		weights.updateWeights(producerWeights,attractorWeights);
 		
 		
 		//Now begin constructing the matrix
@@ -144,9 +149,9 @@ public class GravityDistributor extends TripDistributor {
 			for (TravelSurveyZone attractor : zones) {
 				//Calculate the number of trips between these two as a*productions*b*attractions*impedance
 				Double Tij = 
-						a[producer.getOrder()]
+						producerWeights[producer.getOrder()]
 						*pa.getProductions(producer)
-						*b[attractor.getOrder()]
+						*attractorWeights[attractor.getOrder()]
 						*pa.getAttractions(attractor)
 						*ff[producer.getOrder()][ attractor.getOrder()];
 				

@@ -40,22 +40,18 @@ public class ModularGravityDistributor extends GravityDistributor {
 	private final FrictionFactorMap friction;
 	private final Collection<TravelSurveyZone> zones;
 
-	private final Double[] a;
-	private final Double[] b;
 	private final PAMap pa;
 	private final AtomicBoolean converged;
 	private final Double margin;
 
-	public ModularGravityDistributor(Collection<TravelSurveyZone> zones, NetworkSkim skim, FrictionFactorMap fm,
+	public ModularGravityDistributor(Collection<TravelSurveyZone> zones, NetworkSkim skim, FrictionFactorMap fm, DistributionWeights weights,
 									 PAMap pa, Double margin) {
-		super(zones, skim, fm);
+		super(zones, skim, fm, weights);
 
 		this.zones = zones;
 		friction = fm;
 		this.skim = skim;
 
-		a = new Double[zones.size()];
-		b = new Double[zones.size()];
 		this.pa = pa;
 		converged = new AtomicBoolean(false);
 		this.margin = margin;
@@ -74,7 +70,7 @@ public class ModularGravityDistributor extends GravityDistributor {
 			//Calculate a new denominator as sum_attractors(attractions*impedance*b)
 			Double denom = zones.stream()
 					.mapToDouble(x ->
-							(b[x.getOrder()] == null? 1.0 : b[x.getOrder()])
+							(attractorWeights[x.getOrder()] == null? 1.0 : attractorWeights[x.getOrder()])
 									*pa.getAttractions(x)*friction.get(skim.getCost(i, x)))
 					.sum();
 
@@ -82,11 +78,11 @@ public class ModularGravityDistributor extends GravityDistributor {
 			if (denom == 0.0 || denom.isNaN()) throw new RuntimeException();
 
 			//Write a new A value for this producer
-			Double temp = a[i.getOrder()];
-			a[i.getOrder()] = 1.0/denom;
+			Double temp = producerWeights[i.getOrder()];
+			producerWeights[i.getOrder()] = 1.0/denom;
 
 			//If no A value exists yet or this is not within the numerical tolerance of the previous value
-			if (temp == null || !converged(temp, a[i.getOrder()])) {
+			if (temp == null || !converged(temp, producerWeights[i.getOrder()])) {
 				converged.set(false);
 			}
 		});
@@ -102,7 +98,7 @@ public class ModularGravityDistributor extends GravityDistributor {
 			//Calculate a new denominator as sum_producers(productions*impedance*a)
 			Double denom = zones.stream()
 					.mapToDouble(x->
-							(a[x.getOrder()] == null? 1.0 : a[x.getOrder()])
+							(producerWeights[x.getOrder()] == null? 1.0 : producerWeights[x.getOrder()])
 									*pa.getProductions(x)*friction.get(skim.getCost(x, j)))
 					.sum();
 
@@ -110,11 +106,11 @@ public class ModularGravityDistributor extends GravityDistributor {
 			if (denom == 0.0 || denom.isNaN()) throw new RuntimeException();
 
 			//Write a new B value for this attractor
-			Double temp = b[j.getOrder()];
-			b[j.getOrder()] = 1.0/denom;
+			Double temp = attractorWeights[j.getOrder()];
+			attractorWeights[j.getOrder()] = 1.0/denom;
 
 			//If no B value exists yet or this is not within the numerical tolerance of the previous value
-			if (temp == null || !converged(temp, b[j.getOrder()])) {
+			if (temp == null || !converged(temp, attractorWeights[j.getOrder()])) {
 				converged.set(false);
 			}
 		});
@@ -122,6 +118,8 @@ public class ModularGravityDistributor extends GravityDistributor {
 	}
 	
 	public AggregatePAMatrix getMatrix() {
+		
+		weights.updateWeights(producerWeights,attractorWeights);
 		
 		//Now begin constructing the matrix
 		FixedSizeAggregatePAMatrix pam = new FixedSizeAggregatePAMatrix(zones);
@@ -133,9 +131,9 @@ public class ModularGravityDistributor extends GravityDistributor {
 			for (TravelSurveyZone attractor : zones) {
 				//Calculate the number of trips between these two as a*productions*b*attractions*impedance
 				Double Tij = 
-						a[producer.getOrder()]
+						producerWeights[producer.getOrder()]
 						*pa.getProductions(producer)
-						*b[attractor.getOrder()]
+						*attractorWeights[attractor.getOrder()]
 						*pa.getAttractions(attractor)
 						*friction.get(skim.getCost(producer, attractor));
 				
