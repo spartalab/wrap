@@ -17,5 +17,12 @@
  */
 module wrap {
 	requires java.base;
+	requires javafx.fxml;
+	requires javafx.controls;
+	requires transitive javafx.graphics;
+	requires transitive javafx.base;
 	exports edu.utexas.wrap;
+	exports edu.utexas.wrap.gui;
+	opens edu.utexas.wrap.gui;
+	
 }

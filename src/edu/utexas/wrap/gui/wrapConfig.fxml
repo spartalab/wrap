@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--
+  Copyright (c) 2015, 2019, Gluon and/or its affiliates.
+  All rights reserved. Use is subject to license terms.
+
+  This file is available and licensed under the following license:
+
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions
+  are met:
+
+  - Redistributions of source code must retain the above copyright
+    notice, this list of conditions and the following disclaimer.
+  - Redistributions in binary form must reproduce the above copyright
+    notice, this list of conditions and the following disclaimer in
+    the documentation and/or other materials provided with the distribution.
+  - Neither the name of Oracle Corporation nor the names of its
+    contributors may be used to endorse or promote products derived
+    from this software without specific prior written permission.
+
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+  "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+  LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+  A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+  OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+  LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+  THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+  OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-->
+
+<?import javafx.geometry.Insets?>
+<?import javafx.geometry.Point3D?>
+<?import javafx.scene.Scene?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToolBar?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.TilePane?>
+<?import javafx.scene.layout.VBox?>
+
+
+<Scene xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.utexas.wrap.gui.ConfigController">
+   <root>
+      <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="480.0" prefWidth="640.0">
+        <children>
+          <MenuBar VBox.vgrow="NEVER">
+            <menus>
+              <Menu mnemonicParsing="false" text="File">
+                <items>
+                  <MenuItem fx:id="modelNew" mnemonicParsing="false" onAction="#openModel" text="New Model" />
+                  <MenuItem fx:id="modelOpen" mnemonicParsing="false" onAction="#openModel" text="Open Model…" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem fx:id="modelClose" mnemonicParsing="false" text="Close Model" />
+                  <MenuItem fx:id="modelSave" mnemonicParsing="false" text="Save Model" />
+                  <MenuItem fx:id="modelSaveAs" mnemonicParsing="false" text="Save Model As…" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem fx:id="exit" mnemonicParsing="false" text="Exit" />
+                </items>
+              </Menu>
+              <Menu mnemonicParsing="false" text="Edit">
+                <items>
+                  <MenuItem mnemonicParsing="false" text="Undo" />
+                  <MenuItem mnemonicParsing="false" text="Redo" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem mnemonicParsing="false" text="Cut" />
+                  <MenuItem mnemonicParsing="false" text="Copy" />
+                  <MenuItem mnemonicParsing="false" text="Paste" />
+                  <MenuItem mnemonicParsing="false" text="Delete" />
+                  <SeparatorMenuItem mnemonicParsing="false" />
+                  <MenuItem mnemonicParsing="false" text="Select All" />
+                  <MenuItem mnemonicParsing="false" text="Unselect All" />
+                </items>
+              </Menu>
+              <Menu mnemonicParsing="false" text="Help">
+                <items>
+                  <MenuItem mnemonicParsing="false" text="About wrap" />
+                </items>
+              </Menu>
+            </menus>
+          </MenuBar>
+            <ToolBar maxHeight="-Infinity" minWidth="350.0" nodeOrientation="RIGHT_TO_LEFT" prefHeight="35.0" prefWidth="650.0" VBox.vgrow="NEVER">
+              <items>
+                <Button fx:id="modelRun" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" text="Run" textAlignment="CENTER" />
+                  <Spinner id="feedbackCountSpinner" fx:id="modelFeedbackSpinner" editable="true" minWidth="-Infinity" nodeOrientation="LEFT_TO_RIGHT" prefWidth="75.0" />
+                  <Label alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" text="Feedback Iterations:">
+                     <rotationAxis>
+                        <Point3D />
+                     </rotationAxis>
+                  </Label>
+              </items>
+            </ToolBar>
+            <AnchorPane prefHeight="600.0" prefWidth="900.0" VBox.vgrow="ALWAYS">
+               <children>
+                  <TabPane fx:id="tabPane" layoutX="-24.0" layoutY="-18.0" minWidth="350.0" prefHeight="553.0" prefWidth="900.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <tabs>
+                      <Tab fx:id="zoneTab" closable="false" onSelectionChanged="#updateZones" text="Zones">
+                        <content>
+                              <AnchorPane>
+                                 <children>
+                                    <HBox spacing="5.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
+                                       <children>
+                                          <VBox maxWidth="-Infinity" minWidth="-Infinity" prefWidth="200.0" spacing="5.0" HBox.hgrow="ALWAYS">
+                                             <children>
+                                                <TableView id="zoneTable" fx:id="zoneList" prefWidth="200.0" VBox.vgrow="ALWAYS">
+                                                  <columns>
+                                                    <TableColumn id="zoneIDList" prefWidth="75.0" resizable="false" text="Zone ID" />
+                                                    <TableColumn id="zoneAreaClassList" prefWidth="100.0" resizable="false" text="Area Class" />
+                                                  </columns>
+                                                   <VBox.margin>
+                                                      <Insets />
+                                                   </VBox.margin>
+                                                </TableView>
+                                                <HBox spacing="5.0" VBox.vgrow="NEVER">
+                                                   <children>
+                                                    <Button id="addZone" fx:id="zoneAdd" alignment="CENTER" mnemonicParsing="false" text="+" HBox.hgrow="NEVER" />
+                                                      <Button id="removeZone" fx:id="zoneRemove" alignment="CENTER" disable="true" mnemonicParsing="false" text="-" HBox.hgrow="NEVER" />
+                                                      <Button id="editZone" fx:id="zoneEdit" alignment="CENTER" disable="true" mnemonicParsing="false" text="Edit..." HBox.hgrow="NEVER" />
+                                                   </children>
+                                                   <VBox.margin>
+                                                      <Insets />
+                                                   </VBox.margin>
+                                                </HBox>
+                                             </children>
+                                             <HBox.margin>
+                                                <Insets />
+                                             </HBox.margin>
+                                          </VBox>
+                                          <TilePane id="zoneViewer" prefHeight="394.0" prefWidth="425.0" HBox.hgrow="ALWAYS" />
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </AnchorPane>
+                        </content>
+                      </Tab>
+                      <Tab fx:id="skimTab" closable="false" onSelectionChanged="#updateSkims" text="Skims">
+                        <content>
+                          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                 <children>
+                                    <HBox spacing="10.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
+                                       <children>
+                                          <VBox>
+                                             <children>
+                                                <Label text="Skim ID" />
+                                                <ListView id="skimList" fx:id="skimList" prefHeight="340.0" prefWidth="150.0" />
+                                                <HBox spacing="5.0">
+                                                   <children>
+                                                      <Button id="addSkim" fx:id="skimAdd" alignment="CENTER" mnemonicParsing="false" text="+" />
+                                                      <Button id="removeSkim" fx:id="skimRemove" alignment="CENTER" disable="true" mnemonicParsing="false" text="-" />
+                                                   </children>
+                                                   <VBox.margin>
+                                                      <Insets top="5.0" />
+                                                   </VBox.margin>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                          <VBox fx:id="skimBox" disable="true" prefHeight="404.0" prefWidth="61.0">
+                                             <children>
+                                                <Label text="Data Source:" />
+                                                <HBox spacing="10.0">
+                                                   <children>
+                                                      <TextField id="skimSourcePath" fx:id="skimSourceURI" editable="false" minWidth="-Infinity" onAction="#changeSkimSourceURI" prefHeight="25.0" prefWidth="250.0" />
+                                                      <Button id="skimSourceBrowse" fx:id="skimSourceBrowse" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#browseSkim" prefWidth="70.0" text="Browse..." />
+                                                   </children>
+                                                </HBox>
+                                                <Label layoutX="10.0" layoutY="10.0" text="Assigner:">
+                                                   <padding>
+                                                      <Insets top="5.0" />
+                                                   </padding>
+                                                   <VBox.margin>
+                                                      <Insets />
+                                                   </VBox.margin>
+                                                </Label>
+                                                <HBox layoutX="10.0" layoutY="27.0">
+                                                   <children>
+                                                      <ComboBox fx:id="skimAssignerChooser" onAction="#changeSkimAssigner" prefHeight="25.0" prefWidth="200.0" />
+                                                   </children>
+                                                </HBox>
+                                                <Label layoutX="10.0" layoutY="62.0" text="Skim Function:">
+                                                   <padding>
+                                                      <Insets top="5.0" />
+                                                   </padding>
+                                                   <VBox.margin>
+                                                      <Insets />
+                                                   </VBox.margin>
+                                                </Label>
+                                                <HBox prefHeight="100.0" prefWidth="200.0">
+                                                   <children>
+                                                      <ComboBox fx:id="skimFunctionChooser" onAction="#changeSkimFunction" prefHeight="25.0" prefWidth="200.0" />
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </AnchorPane>
+                        </content>
+                      </Tab>
+                        <Tab fx:id="marketTab" closable="false" onSelectionChanged="#updateMarkets" text="Markets">
+                          <content>
+                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                 <children>
+                                    <HBox spacing="5.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
+                                       <children>
+                                          <VBox>
+                                             <children>
+                                                <Label text="Purposes" />
+                                                <ListView id="purposeList" fx:id="purposeList" prefHeight="340.0" prefWidth="150.0" />
+                                                <HBox spacing="5.0">
+                                                   <children>
+                                                      <Button id="addPurpose" fx:id="purposeAdd" alignment="CENTER" mnemonicParsing="false" text="+" />
+                                                      <Button id="removePurpose" fx:id="purposeRemove" alignment="CENTER" disable="true" mnemonicParsing="false" text="-" />
+                                                      <Button id="editPurpose" fx:id="purposeEdit" alignment="CENTER" disable="true" layoutX="35.0" layoutY="10.0" mnemonicParsing="false" text="Edit..." />
+                                                   </children>
+                                                   <padding>
+                                                      <Insets top="5.0" />
+                                                   </padding>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                          <VBox>
+                                             <children>
+                                                <Label text="Demographics" />
+                                                <ListView id="demographicList" fx:id="demographicList" prefHeight="340.0" prefWidth="150.0" />
+                                                <HBox spacing="5.0">
+                                                   <children>
+                                                      <Button id="addDemographic" fx:id="demographicAdd" alignment="CENTER" mnemonicParsing="false" text="+" />
+                                                      <Button id="removeDemographic" fx:id="demographicRemove" alignment="CENTER" disable="true" mnemonicParsing="false" text="-" />
+                                                      <Button id="editDemographic" fx:id="demographicEdit" alignment="CENTER" disable="true" layoutX="35.0" layoutY="10.0" mnemonicParsing="false" text="Edit..." />
+                                                   </children>
+                                                   <padding>
+                                                      <Insets top="5.0" />
+                                                   </padding>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                          <VBox>
+                                             <children>
+                                                <Label text="Friction Function" />
+                                                <ListView id="frictionFunctionList" fx:id="frictionFunctionList" prefHeight="340.0" prefWidth="150.0" />
+                                                <HBox spacing="5.0">
+                                                   <children>
+                                                      <Button id="addFrictionFunction" fx:id="frictionFunctionAdd" alignment="CENTER" mnemonicParsing="false" text="+" />
+                                                      <Button id="removeFrictionFunction" fx:id="frictionFunctionRemove" alignment="CENTER" disable="true" mnemonicParsing="false" text="-" />
+                                                      <Button id="editFrictionFunction" fx:id="frictionFunctionEdit" alignment="CENTER" disable="true" layoutX="35.0" layoutY="10.0" mnemonicParsing="false" text="Edit..." />
+                                                   </children>
+                                                   <padding>
+                                                      <Insets top="5.0" />
+                                                   </padding>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </AnchorPane>
+                          </content>
+                        </Tab>
+                        <Tab fx:id="assignerTab" closable="false" onSelectionChanged="#updateAssigners" text="Assigners">
+                          <content>
+                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                 <children>
+                                    <HBox spacing="10.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
+                                       <children>
+                                          <VBox>
+                                             <children>
+                                                <Label text="Assigner ID" />
+                                                <ListView id="assignerList" fx:id="assignerList" prefHeight="340.0" prefWidth="150.0" />
+                                                <HBox spacing="5.0">
+                                                   <children>
+                                                      <Button id="addAssigner" fx:id="assignerAdd" alignment="CENTER" mnemonicParsing="false" text="+" />
+                                                      <Button id="removeAssigner" fx:id="assignerRemove" alignment="CENTER" disable="true" mnemonicParsing="false" text="-" />
+                                                   </children>
+                                                   <padding>
+                                                      <Insets top="5.0" />
+                                                   </padding>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                          <VBox disable="true" prefHeight="404.0" prefWidth="61.0">
+                                             <children>
+                                                <Label layoutX="10.0" layoutY="10.0" text="Class:" />
+                                                <HBox layoutX="10.0" layoutY="27.0">
+                                                   <children>
+                                                      <ComboBox fx:id="assignerClass" prefHeight="25.0" prefWidth="200.0" />
+                                                   </children>
+                                                </HBox>
+                                                <Label text="Configuration File:">
+                                                   <padding>
+                                                      <Insets top="5.0" />
+                                                   </padding>
+                                                </Label>
+                                                <HBox spacing="5.0">
+                                                   <children>
+                                                      <TextField id="assignerConfigurationPath" fx:id="assignerConfigurationSource" editable="false" minWidth="-Infinity" prefHeight="25.0" prefWidth="250.0" />
+                                                      <Button id="assignerConfigurationBrowse" fx:id="assignerConfigurationBrowse" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefWidth="70.0" text="Browse..." />
+                                                      <Button id="assignerConfigurationEdit" fx:id="assignerConfigurationEdit" layoutX="332.0" layoutY="10.0" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" prefWidth="70.0" text="Edit..." />
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </AnchorPane>
+                          </content>
+                        </Tab>
+                    </tabs>
+                  </TabPane>
+               </children>
+            </AnchorPane>
+            <Separator prefWidth="200.0" VBox.vgrow="NEVER" />
+          <HBox id="HBox" alignment="CENTER_LEFT" spacing="5.0" VBox.vgrow="NEVER">
+            <children>
+              <Label disable="true" maxHeight="-Infinity" maxWidth="-1.0" minWidth="50.0" prefHeight="25.0" text="Scenario:" HBox.hgrow="NEVER" />
+                  <Label id="projectName" fx:id="modelName" maxHeight="-Infinity" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="250.0" HBox.hgrow="NEVER" />
+                  <Separator maxHeight="-Infinity" orientation="VERTICAL" prefHeight="25.0" HBox.hgrow="NEVER" />
+              <Label disable="true" maxHeight="-Infinity" maxWidth="-1.0" minWidth="55.0" prefHeight="25.0" text="Directory: " HBox.hgrow="NEVER" />
+                  <Label id="projectDirectory" fx:id="modelDirectory" layoutX="55.0" layoutY="15.0" maxHeight="-Infinity" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="250.0" HBox.hgrow="NEVER" />
+            </children>
+               <padding>
+                  <Insets bottom="3.0" left="3.0" right="3.0" />
+               </padding>
+          </HBox>
+        </children>
+      </VBox>
+   </root>
+</Scene>

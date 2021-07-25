@@ -18,33 +18,55 @@
 
 package edu.utexas.wrap;
 
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.net.URL;
 
-public class wrap {
-	static Path projDir, projFile;
-	static Project proj;
-	
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+import javafx.application.Application;
+
+public class wrap extends Application{
+
 	public static void main(String[] args) {
+		
+		launch(args);
 		//Get a path to the project file (a Properties file of arbitrary extension)
-		if (args.length < 1) {
-			System.err.println("No model input file supplied");
-			System.exit(1);
-		}
-		projFile = Paths.get(args[0]);
-		
-		
-		//Load the project from the given path
-		try {
-			proj = new Project(projFile);
-		} catch (IOException e) {
-			System.err.println("Error loading project properties");
-			e.printStackTrace();
-			proj = null;
-			System.exit(-1);
-		}
-		
-		proj.run();
+//		if (args.length < 1) {
+//			System.err.println("No model input file supplied");
+//			System.exit(1);
+//		}
+//		projFile = Paths.get(args[0]);
+//		
+//		
+//		//Load the project from the given path
+//		try {
+//			proj = new Project(projFile);
+//		} catch (IOException e) {
+//			System.err.println("Error loading project properties");
+//			e.printStackTrace();
+//			proj = null;
+//			System.exit(-1);
+//		}
+//		
+//		proj.run();
 	}
+
+	@Override
+	public void start(Stage primaryStage) throws Exception {
+		
+		
+		// TODO Auto-generated method stub
+		primaryStage.setTitle("wrap");
+		URL url = getClass().getResource("/edu/utexas/wrap/gui/wrapConfig.fxml");
+	
+		
+		Scene scene  = FXMLLoader.load(url);
+		
+//		Scene scene = new Scene(pane);
+		primaryStage.setScene(scene);
+		primaryStage.show();
+		
+		
+	}
+
 }

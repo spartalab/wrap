@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -60,7 +61,7 @@ import edu.utexas.wrap.util.io.output.FilePassthroughDummyAssigner;
 public class Project implements Runnable {
 	private final Properties props;
 	private Map<Integer, TravelSurveyZone> zones;
-	private Path projDir;
+	private final Path projDir;
 	private String name;
 	
 	/**Constructor with custom id for Project
@@ -169,7 +170,7 @@ public class Project implements Runnable {
 	private Map<String,Assigner> loadAssigners(){
 		System.out.println("Reading Assigner configurations");
 
-		return Stream.of(props.getProperty("assigners.ids").split(","))
+		return getAssignerIDs().stream()
 		.collect(Collectors.toMap(Function.identity(), id -> initializeAssigner(id)));
 	}
 	
@@ -189,7 +190,7 @@ public class Project implements Runnable {
 	private Map<String,NetworkSkim> loadInitialSkims(){
 		System.out.println("Reading initial NetworkSkims");
 		
-		return Stream.of(props.getProperty("skims.ids").split(","))
+		return getSkimIDs().stream()
 				.parallel()
 				.collect(
 						Collectors.toMap(
@@ -220,7 +221,7 @@ public class Project implements Runnable {
 	private Map<String,NetworkSkim> updateFeedbackSkims(Map<String,Assigner> assigners){
 		System.out.println("Updating NetworkSkims");
 
-		return Stream.of(props.getProperty("skims.ids").split(","))
+		return getSkimIDs().stream()
 		.parallel()
 		.collect(
 				Collectors.toMap(
@@ -305,6 +306,10 @@ public class Project implements Runnable {
 		return name;
 	}
 
+	public Path getDirectory() {
+		return projDir;
+	}
+	
 	@Override
 	public void run() {
 		Collection<Market> markets = loadMarkets();
@@ -313,8 +318,7 @@ public class Project implements Runnable {
 
 		Map<String,Assigner> assigners = null;
 		
-		int numFeedbacks = Integer.parseInt(props.getProperty("feedbackIters","1"));
-		for (int i = 0; i < numFeedbacks; i++) {
+		for (int i = 0; i < getMaxIterations(); i++) {
 			System.out.println("Beginning feedback iteration "+i);
 			assigners = loadAssigners();
 			
@@ -354,6 +358,30 @@ public class Project implements Runnable {
 		System.out.println("Done");
 	}
 
+	public Integer getMaxIterations() {
+		// TODO Auto-generated method stub
+		return Integer.parseInt(props.getProperty("feedbackIters","1"));
+	}
 
+	public List<String> getSkimIDs() {
+		// TODO Auto-generated method stub
+		return List.of(props.getProperty("skims.ids").split(","));
+	}
 
+	public List<String> getAssignerIDs() {
+		// TODO Auto-generated method stub
+		return List.of(props.getProperty("assigners.ids").split(","));
+	}
+
+	public String getSkimFile(String skimID) {
+		return props.getProperty("skims."+skimID+".file");
+	}
+
+	public String getSkimAssigner(String skimID) {
+		return props.getProperty("skims."+skimID+".assigner");
+	}
+	
+	public String getSkimFunction(String skimID) {
+		return props.getProperty("skims."+skimID+".function");
+	}
 }
