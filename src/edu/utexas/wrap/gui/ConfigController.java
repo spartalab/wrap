@@ -13,14 +13,19 @@ import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.marketsegmentation.Purpose;
 import edu.utexas.wrap.net.Demographic;
 import edu.utexas.wrap.net.TravelSurveyZone;
+
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
@@ -30,6 +35,8 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
@@ -193,7 +200,9 @@ public class ConfigController {
 			public void changed(ObservableValue<? extends String> arg0, String oldValue, String newValue) {
 				// TODO Auto-generated method stub
 				if (newValue != null) {
+					
 					skimBox.setDisable(false);
+					skimRemove.setDisable(false);
 					skimSourceURI.setText(currentProject.getSkimFile(newValue));
 					skimAssignerChooser.getSelectionModel().select(currentProject.getSkimAssigner(newValue));
 					String value = "";
@@ -203,11 +212,14 @@ public class ConfigController {
 						break;
 					case "travelTime":
 						value = "Travel time";
-
-
 					}
 					skimFunctionChooser.getSelectionModel().select(value);
-
+				} else {
+					skimSourceURI.clear();
+					skimAssignerChooser.getSelectionModel().clearSelection();
+					skimFunctionChooser.getSelectionModel().clearSelection();
+					skimRemove.setDisable(true);
+					skimBox.setDisable(true);
 				}
 			}
 
@@ -249,21 +261,26 @@ public class ConfigController {
 		}
 	}
 
+	
+	
+	
+	
 	@FXML
 	public void updateSkims(Event e) {
 
 		if (skimTab.isSelected()) {
-			System.out.println("Updating skims");
+
 			if (!skimList.getSelectionModel().isEmpty()) {
 				skimList.getSelectionModel().clearSelection();
 				skimSourceURI.clear();
 				skimAssignerChooser.getSelectionModel().clearSelection();
 				skimFunctionChooser.getSelectionModel().clearSelection();
+				skimRemove.setDisable(true);
 
 			}
+			
 			if (currentProject != null) {
-				skimList.setItems(FXCollections.observableList(currentProject.getSkimIDs()));
-
+				skimList.setItems(FXCollections.observableArrayList(currentProject.getSkimIDs()));
 				skimBox.setDisable(true);
 			}
 		}
@@ -296,6 +313,62 @@ public class ConfigController {
 		}
 	}
 	
+	public void addSkim(Event e) {
+		System.out.println("Add skim");
+		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+		try {
+			FXMLLoader loader = new FXMLLoader();
+			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/newSkimDialog.fxml").openStream());
+			NewSkimController controller = loader.getController();
+			controller.setProject(currentProject);
+			DialogPane pane = new DialogPane();
+			
+			pane.setContent(vbox);
+			pane.getButtonTypes().add(ButtonType.CANCEL);
+			pane.getButtonTypes().add(ButtonType.OK);
+
+			
+			dialog.setDialogPane(pane);
+			dialog.setTitle("New skim");
+			Button ok = (Button) pane.lookupButton(ButtonType.OK);
+			ok.disableProperty().bind(controller.notReady());	
+			dialog.showAndWait();
+		
+			if (dialog.getResult() == ButtonType.OK) {
+				currentProject.addSkim(controller.getSkimID(), 
+						controller.getSkimAssigner(), 
+						controller.getSkimFunction(), 
+						controller.getSkimSourceURI());
+				skimList.getItems().add(controller.getSkimID());
+				markChanged();
+			}
+
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+
+
+	}
+	
+	public void removeSkim(Event e) {
+
+		String skimName = skimList.getSelectionModel().getSelectedItem();
+		if (skimName != null) {
+			Alert alert = new Alert(AlertType.CONFIRMATION,"Delete skim "+skimName+"?",ButtonType.YES,ButtonType.NO);
+			alert.showAndWait();
+			
+			if (alert.getResult() == ButtonType.YES) {
+				skimList.getItems().remove(skimName);
+				currentProject.removeSkim(skimName);
+				markChanged();
+			}
+		}
+	}
+	
+	
+	
+	
 	@FXML
 	public void updateMarkets(Event e) {
 		if (marketTab.isSelected()) System.out.println("Updating markets");
@@ -309,6 +382,13 @@ public class ConfigController {
 
 	private void markChanged() {
 		unsavedChanges = true;
-		if (unsavedChanges) {};
+	}
+	
+	@FXML
+	private void saveModel() {
+		if (unsavedChanges) {
+			//TODO write project to file
+			unsavedChanges = false;
+		}
 	}
 }

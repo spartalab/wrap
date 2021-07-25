@@ -21,11 +21,13 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
@@ -365,7 +367,10 @@ public class Project implements Runnable {
 
 	public List<String> getSkimIDs() {
 		// TODO Auto-generated method stub
-		return List.of(props.getProperty("skims.ids").split(","));
+		String prop = props.getProperty("skims.ids");
+		if (prop == null) return Collections.emptyList();
+		String[] ids = prop.split(",");
+		return new ArrayList<String>(List.of(ids));
 	}
 
 	public List<String> getAssignerIDs() {
@@ -383,5 +388,28 @@ public class Project implements Runnable {
 	
 	public String getSkimFunction(String skimID) {
 		return props.getProperty("skims."+skimID+".function");
+	}
+	
+	public void removeSkim(String skimID) {
+		List<String> ids = getSkimIDs();
+		ids.remove(skimID);
+		if (!ids.isEmpty()) props.setProperty("skims.ids", String.join(",", ids));
+		else props.remove("skims.ids");
+		
+		Set<String> keys = props.stringPropertyNames();
+		for (String key : keys) {
+			if (key.startsWith("skims."+skimID)) props.remove(key);
+		}
+	}
+
+	public void addSkim(String skimID, String assignerID, String skimFunction, String skimSourceURI) {
+		List<String> ids = getSkimIDs();
+		ids.add(skimID);
+		props.setProperty("skims.ids", String.join(",", ids));
+		
+		props.setProperty("skims."+skimID+".file", skimSourceURI);
+		props.setProperty("skims."+skimID+".assigner", assignerID);
+		props.setProperty("skims."+skimID+".function", skimFunction);
+		
 	}
 }

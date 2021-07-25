@@ -56,7 +56,6 @@
 <?import javafx.scene.layout.TilePane?>
 <?import javafx.scene.layout.VBox?>
 
-
 <Scene xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.utexas.wrap.gui.ConfigController">
    <root>
       <VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="480.0" prefWidth="640.0">
@@ -69,7 +68,7 @@
                   <MenuItem fx:id="modelOpen" mnemonicParsing="false" onAction="#openModel" text="Open Model…" />
                   <SeparatorMenuItem mnemonicParsing="false" />
                   <MenuItem fx:id="modelClose" mnemonicParsing="false" text="Close Model" />
-                  <MenuItem fx:id="modelSave" mnemonicParsing="false" text="Save Model" />
+                  <MenuItem fx:id="modelSave" mnemonicParsing="false" onAction="#saveModel" text="Save Model" />
                   <MenuItem fx:id="modelSaveAs" mnemonicParsing="false" text="Save Model As…" />
                   <SeparatorMenuItem mnemonicParsing="false" />
                   <MenuItem fx:id="exit" mnemonicParsing="false" text="Exit" />
@@ -162,8 +161,8 @@
                                                 <ListView id="skimList" fx:id="skimList" prefHeight="340.0" prefWidth="150.0" />
                                                 <HBox spacing="5.0">
                                                    <children>
-                                                      <Button id="addSkim" fx:id="skimAdd" alignment="CENTER" mnemonicParsing="false" text="+" />
-                                                      <Button id="removeSkim" fx:id="skimRemove" alignment="CENTER" disable="true" mnemonicParsing="false" text="-" />
+                                                      <Button id="addSkim" fx:id="skimAdd" alignment="CENTER" mnemonicParsing="false" onAction="#addSkim" text="+" />
+                                                      <Button id="removeSkim" fx:id="skimRemove" alignment="CENTER" disable="true" mnemonicParsing="false" onAction="#removeSkim" text="-" />
                                                    </children>
                                                    <VBox.margin>
                                                       <Insets top="5.0" />
