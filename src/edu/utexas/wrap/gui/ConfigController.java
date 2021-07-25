@@ -35,6 +35,7 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToolBar;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.VBox;
@@ -180,6 +181,9 @@ public class ConfigController {
 
 	@FXML
 	private Tab assignerTab;
+	
+	@FXML
+	private ToolBar toolBar;
 
 	private Project currentProject;
 	private Boolean unsavedChanges;
@@ -225,6 +229,11 @@ public class ConfigController {
 
 		});
 	}
+	
+	@FXML
+	public void newModel(ActionEvent e) {
+		
+	}
 
 	@FXML
 	public void openModel(ActionEvent e) {
@@ -245,8 +254,11 @@ public class ConfigController {
 
 			skimAssignerChooser.getItems().addAll(currentProject.getAssignerIDs());
 
-
+			
 			tabPane.getSelectionModel().getSelectedItem().getOnSelectionChanged().handle(e);
+			tabPane.setDisable(false);
+			toolBar.setDisable(false);
+			
 
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
@@ -254,6 +266,9 @@ public class ConfigController {
 		} 
 	}
 
+	
+	
+	
 	@FXML
 	public void updateZones(Event e) {
 		if (zoneTab.isSelected()) {

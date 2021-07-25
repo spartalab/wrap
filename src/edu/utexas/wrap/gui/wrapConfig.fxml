@@ -64,7 +64,7 @@
             <menus>
               <Menu mnemonicParsing="false" text="File">
                 <items>
-                  <MenuItem fx:id="modelNew" mnemonicParsing="false" onAction="#openModel" text="New Model" />
+                  <MenuItem fx:id="modelNew" mnemonicParsing="false" onAction="#newModel" text="New Model" />
                   <MenuItem fx:id="modelOpen" mnemonicParsing="false" onAction="#openModel" text="Open Model…" />
                   <SeparatorMenuItem mnemonicParsing="false" />
                   <MenuItem fx:id="modelClose" mnemonicParsing="false" text="Close Model" />
@@ -95,7 +95,7 @@
               </Menu>
             </menus>
           </MenuBar>
-            <ToolBar maxHeight="-Infinity" minWidth="350.0" nodeOrientation="RIGHT_TO_LEFT" prefHeight="35.0" prefWidth="650.0" VBox.vgrow="NEVER">
+            <ToolBar fx:id="toolBar" disable="true" maxHeight="-Infinity" minWidth="350.0" nodeOrientation="RIGHT_TO_LEFT" prefHeight="35.0" prefWidth="650.0" VBox.vgrow="NEVER">
               <items>
                 <Button fx:id="modelRun" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" text="Run" textAlignment="CENTER" />
                   <Spinner id="feedbackCountSpinner" fx:id="modelFeedbackSpinner" editable="true" minWidth="-Infinity" nodeOrientation="LEFT_TO_RIGHT" prefWidth="75.0" />
@@ -108,7 +108,7 @@
             </ToolBar>
             <AnchorPane prefHeight="600.0" prefWidth="900.0" VBox.vgrow="ALWAYS">
                <children>
-                  <TabPane fx:id="tabPane" layoutX="-24.0" layoutY="-18.0" minWidth="350.0" prefHeight="553.0" prefWidth="900.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                  <TabPane fx:id="tabPane" disable="true" layoutX="-24.0" layoutY="-18.0" minWidth="350.0" prefHeight="553.0" prefWidth="900.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                     <tabs>
                       <Tab fx:id="zoneTab" closable="false" onSelectionChanged="#updateZones" text="Zones">
                         <content>
