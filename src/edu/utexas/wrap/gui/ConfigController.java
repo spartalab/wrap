@@ -349,7 +349,7 @@ public class ConfigController {
 	@FXML
 	private boolean newModel(Event event) {
 		
-		if (currentProject != null) closeModel(event);
+		if (currentProject != null && !closeModel(event)) return false;
 		
 		FileChooser modelChooser = new FileChooser();
 		modelChooser.setTitle("New Model");
