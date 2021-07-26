@@ -66,40 +66,30 @@ public class Project implements Runnable {
 	private final Path projDir;
 	private String name;
 	
-	/**Constructor with custom id for Project
-	 * 
-	 * @param projFile The location of a Project Properties file (*.wrp)
-	 * @param id a custom name of this project
-	 * @throws IOException if the file located by {@code projFile} does not exist or is corrupt 
-	 */
-	public Project(Path projFile, String id) throws IOException {
-		props = new Properties();
-		props.load(Files.newInputStream(projFile));
-		this.name = id;
-		
-		projDir = projFile.getParent().resolve(props.getProperty("dir"));
-		zones = getZones();
-	}
-	
 	/**Project constructor from a Properties file (*.wrp)
 	 * @param projFile the location of a Project Properties (*.wrp) file
 	 * @throws IOException if the file located by {@code projFile} does not exist or is corrupt
 	 */
-	public Project(Path projFile) throws IOException {
-		this(projFile, projFile.getFileName().toString());
+	public Project(Path projFile) throws IOException, NullPointerException {
+		props = new Properties();
+		name = projFile.getFileName().toString();
+		projDir = projFile.getParent();
 	}
-	
-	private Map<Integer, TravelSurveyZone> getZones() throws IOException {
+
+	public void loadPropsFromFile() throws IOException {
+		props.load(Files.newInputStream(projDir.resolve(name)));
+	}
+
+	public void loadZones() throws IOException {
 		BufferedReader reader = Files.newBufferedReader(projDir.resolve(props.getProperty("network.zones")));
 		reader.readLine();
 		AtomicInteger idx = new AtomicInteger(0);
 
-		Map<Integer, TravelSurveyZone> zones = reader.lines()
+		zones = reader.lines()
 				.map(string -> string.split(","))
 				.collect(Collectors.toMap(
 						args -> Integer.parseInt(args[0]), 
 						args -> new TravelSurveyZone(Integer.parseInt(args[0]),idx.getAndIncrement(),AreaClass.values()[Integer.parseInt(args[1])-1])));
-		return zones;
 	}
 
 	/**Read a list of Market ids from the Project Properties, then load the
@@ -375,7 +365,9 @@ public class Project implements Runnable {
 
 	public List<String> getAssignerIDs() {
 		// TODO Auto-generated method stub
-		return List.of(props.getProperty("assigners.ids").split(","));
+		String params = props.getProperty("assigners.ids");
+		if (params == null || params.isBlank()) return new ArrayList<String>();
+		return new ArrayList<String>(List.of(params.split(",")));
 	}
 
 	public String getSkimFile(String skimID) {
@@ -411,5 +403,18 @@ public class Project implements Runnable {
 		props.setProperty("skims."+skimID+".assigner", assignerID);
 		props.setProperty("skims."+skimID+".function", skimFunction);
 		
+	}
+
+	
+	public void setSkimFile(String curSkimID, String text) {
+		props.setProperty("skims."+curSkimID+".file", text);
+	}
+	
+	public void setSkimAssigner(String curSkimID, String assignerID) {
+		props.setProperty("skims."+curSkimID+".assigner", assignerID);
+	}
+	
+	public void setSkimFunction(String curSkimID, String functionID) {
+		props.setProperty("skims."+curSkimID+".function", functionID);
 	}
 }

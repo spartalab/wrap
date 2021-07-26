@@ -67,11 +67,11 @@
                   <MenuItem fx:id="modelNew" mnemonicParsing="false" onAction="#newModel" text="New Model" />
                   <MenuItem fx:id="modelOpen" mnemonicParsing="false" onAction="#openModel" text="Open Model…" />
                   <SeparatorMenuItem mnemonicParsing="false" />
-                  <MenuItem fx:id="modelClose" mnemonicParsing="false" text="Close Model" />
-                  <MenuItem fx:id="modelSave" mnemonicParsing="false" onAction="#saveModel" text="Save Model" />
-                  <MenuItem fx:id="modelSaveAs" mnemonicParsing="false" text="Save Model As…" />
+                  <MenuItem fx:id="modelClose" disable="true" mnemonicParsing="false" onAction="#closeModel" text="Close Model" />
+                  <MenuItem fx:id="modelSave" disable="true" mnemonicParsing="false" onAction="#saveModel" text="Save Model" />
+                  <MenuItem fx:id="modelSaveAs" disable="true" mnemonicParsing="false" onAction="#saveModelAs" text="Save Model As…" />
                   <SeparatorMenuItem mnemonicParsing="false" />
-                  <MenuItem fx:id="exit" mnemonicParsing="false" text="Exit" />
+                  <MenuItem fx:id="exit" mnemonicParsing="false" onAction="#exit" text="Exit" />
                 </items>
               </Menu>
               <Menu mnemonicParsing="false" text="Edit">

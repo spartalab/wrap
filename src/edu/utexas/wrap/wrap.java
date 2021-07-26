@@ -20,35 +20,19 @@ package edu.utexas.wrap;
 
 import java.net.URL;
 
+import edu.utexas.wrap.gui.ConfigController;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import javafx.application.Application;
+import javafx.event.EventHandler;
 
 public class wrap extends Application{
 
 	public static void main(String[] args) {
 		
 		launch(args);
-		//Get a path to the project file (a Properties file of arbitrary extension)
-//		if (args.length < 1) {
-//			System.err.println("No model input file supplied");
-//			System.exit(1);
-//		}
-//		projFile = Paths.get(args[0]);
-//		
-//		
-//		//Load the project from the given path
-//		try {
-//			proj = new Project(projFile);
-//		} catch (IOException e) {
-//			System.err.println("Error loading project properties");
-//			e.printStackTrace();
-//			proj = null;
-//			System.exit(-1);
-//		}
-//		
-//		proj.run();
 	}
 
 	@Override
@@ -59,8 +43,22 @@ public class wrap extends Application{
 		primaryStage.setTitle("wrap");
 		URL url = getClass().getResource("/edu/utexas/wrap/gui/wrapConfig.fxml");
 	
+		FXMLLoader loader = new FXMLLoader();
+		loader.setLocation(url);
+		Scene scene  = loader.load();
 		
-		Scene scene  = FXMLLoader.load(url);
+		ConfigController controller = loader.getController();
+		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+
+			@Override
+			public void handle(WindowEvent arg0) {
+				// TODO Auto-generated method stub
+				controller.exit(arg0);
+				arg0.consume();
+			}
+			
+		});
+
 		
 //		Scene scene = new Scene(pane);
 		primaryStage.setScene(scene);
