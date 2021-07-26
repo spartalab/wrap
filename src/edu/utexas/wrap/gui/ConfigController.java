@@ -5,16 +5,23 @@
 package edu.utexas.wrap.gui;
 
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import edu.utexas.wrap.Project;
 import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.marketsegmentation.Purpose;
+import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Demographic;
 import edu.utexas.wrap.net.TravelSurveyZone;
-
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -34,15 +41,19 @@ import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.util.Callback;
 
 public class ConfigController {
 
@@ -65,10 +76,39 @@ public class ConfigController {
 	private MenuItem exit;
 
 	@FXML
+	private MenuItem about;
+	
+	
+	
+	
+	
+	@FXML
+	private ToolBar toolBar;
+
+	@FXML
 	private Button modelRun;
 
 	@FXML
 	private Spinner<Integer> modelFeedbackSpinner;
+
+	@FXML
+	private TabPane tabPane;
+
+	@FXML
+	private Label modelName;
+
+	@FXML
+	private Label modelDirectory;
+	
+	
+	
+	
+	
+	@FXML
+	private Tab zoneTab;
+
+	@FXML
+	private HBox zoneBox;
 
 	@FXML
 	private TableView<TravelSurveyZone> zoneList;
@@ -81,6 +121,28 @@ public class ConfigController {
 
 	@FXML
 	private Button zoneEdit;
+	
+	@FXML
+	private Button zoneBrowse;
+	
+	@FXML
+	private TextField zoneSourceURI;
+
+	@FXML
+	private TableColumn<TravelSurveyZone,Integer> zoneIDList;
+	
+	@FXML
+	private TableColumn<TravelSurveyZone,String> zoneClassList;
+	
+	
+	
+	
+	
+	@FXML
+	private Tab skimTab;
+	
+	@FXML
+	private VBox skimBox;
 
 	@FXML
 	private ListView<String> skimList;
@@ -102,7 +164,14 @@ public class ConfigController {
 
 	@FXML
 	private ComboBox<String> skimFunctionChooser;
-
+	
+	
+	
+	
+	
+	@FXML
+	private Tab marketTab;
+	
 	@FXML
 	private ListView<Purpose> purposeList;
 
@@ -114,7 +183,9 @@ public class ConfigController {
 
 	@FXML
 	private Button purposeEdit;
-
+	
+	
+	
 	@FXML
 	private ListView<Demographic> demographicList;
 
@@ -126,7 +197,9 @@ public class ConfigController {
 
 	@FXML
 	private Button demographicEdit;
-
+	
+	
+	
 	@FXML
 	private ListView<FrictionFactorMap> frictionFunctionList;
 
@@ -138,7 +211,14 @@ public class ConfigController {
 
 	@FXML
 	private Button frictionFunctionEdit;
-
+	
+	
+	
+	
+	
+	@FXML
+	private Tab assignerTab;
+	
 	@FXML
 	private ListView<String> assignerList;
 
@@ -159,33 +239,12 @@ public class ConfigController {
 
 	@FXML
 	private Button assignerConfigurationEdit;
-
-	@FXML
-	private Label modelName;
-
-	@FXML
-	private Label modelDirectory;
-
-	@FXML
-	private TabPane tabPane;
-
-	@FXML
-	private Tab zoneTab;
-
-	@FXML
-	private Tab skimTab;
-
-	@FXML
-	private VBox skimBox;
-
-	@FXML
-	private Tab marketTab;
-
-	@FXML
-	private Tab assignerTab;
 	
-	@FXML
-	private ToolBar toolBar;
+	
+	
+	
+	
+	
 
 	private Project currentProject;
 	
@@ -235,6 +294,26 @@ public class ConfigController {
 			
 		});
 
+		zoneIDList.setCellValueFactory(new Callback<CellDataFeatures<TravelSurveyZone, Integer>, ObservableValue<Integer>>(){
+
+			@Override
+			public ObservableValue<Integer> call(CellDataFeatures<TravelSurveyZone, Integer> arg0) {
+				// TODO Auto-generated method stub
+				return new ReadOnlyObjectWrapper<Integer>(arg0.getValue().getID());
+			}
+			
+		});
+		
+		zoneClassList.setCellValueFactory(new Callback<CellDataFeatures<TravelSurveyZone,String>,ObservableValue<String>>(){
+
+			@Override
+			public ObservableValue<String> call(CellDataFeatures<TravelSurveyZone, String> arg0) {
+				// TODO Auto-generated method stub
+				return new ReadOnlyObjectWrapper<String>(arg0.getValue().getAreaClass().name());
+			}
+			
+		});
+		
 		skimFunctionChooser.getItems().addAll("Travel time","Travel time (exclude HOV)");
 
 
@@ -250,7 +329,8 @@ public class ConfigController {
 
 							skimBox.setDisable(false);
 							skimRemove.setDisable(false);
-							skimSourceURI.setText(currentProject.getSkimFile(newValue));
+							Path newURI = currentProject.getDirectory().resolve(currentProject.getSkimFile(newValue));
+							skimSourceURI.setText(currentProject.getDirectory().toUri().relativize(newURI.toUri()).getPath());
 							skimAssignerChooser.getSelectionModel().select(currentProject.getSkimAssigner(newValue));
 							skimFunctionChooser.getSelectionModel().select(getDisplayString(currentProject.getSkimFunction(newValue)));
 						}
@@ -268,6 +348,8 @@ public class ConfigController {
 	
 	@FXML
 	private boolean newModel(Event event) {
+		
+		if (currentProject != null) closeModel(event);
 		
 		FileChooser modelChooser = new FileChooser();
 		modelChooser.setTitle("New Model");
@@ -408,7 +490,83 @@ public class ConfigController {
 	private void updateZones(Event e) {
 		if (zoneTab.isSelected()) {
 			//TODO (re)populate zone list
-			System.out.println("Update zones");
+			
+			if (currentProject != null) {
+				String zoneFile = currentProject.getZoneFile();
+				
+				if (zoneFile != null && !zoneFile.isBlank()) {
+					Path zonePath = currentProject.getDirectory().resolve(zoneFile);
+					String relativePath = currentProject.getDirectory().toUri()
+							.relativize(zonePath.toUri()).getPath();
+					
+					
+					if (reloadZones(currentProject.getDirectory().resolve(currentProject.getZoneFile()))) {
+						zoneSourceURI.setText(relativePath.toString());
+						zoneBox.setDisable(false);
+					}
+				} else {
+					zoneSourceURI.clear();
+					zoneBox.setDisable(true);
+					
+				}
+			} else {
+				zoneSourceURI.clear();
+				zoneList.getItems().clear();
+				
+			}
+		}
+	}
+	
+	private boolean reloadZones(Path path) {
+		try {
+			System.out.println("Reload zones");
+			BufferedReader reader = Files.newBufferedReader(path);
+			reader.readLine();
+			AtomicInteger idx = new AtomicInteger(0);
+
+			Set<TravelSurveyZone> zones = reader.lines()
+					.map(string -> string.split(","))
+					.map(args -> new TravelSurveyZone(Integer.parseInt(args[0]),idx.getAndIncrement(),AreaClass.values()[Integer.parseInt(args[1])-1]))
+					.collect(Collectors.toSet());
+			
+			zoneList.getItems().setAll(zones);
+			zoneList.getSortOrder().add(zoneIDList);
+			return true;
+			
+		} catch (Exception e) {
+			zoneSourceURI.clear();
+			Alert alert = new Alert(AlertType.ERROR,"Error encountered while loading zone file. It may be corrupted.\n\nFile: "+path.toString()+"\n\nDetails: "+e.getLocalizedMessage());
+			alert.getDialogPane().setMinWidth(Region.USE_PREF_SIZE);
+			alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+			alert.show();
+			return false;
+		}
+	}
+	
+	@FXML
+	private void browseZones(ActionEvent e) {
+		FileChooser zoneChooser = new FileChooser();
+		zoneChooser.setTitle("Open Zones");
+		zoneChooser.setInitialDirectory(currentProject.getDirectory().toFile());
+		zoneChooser.getExtensionFilters().add(new ExtensionFilter("Comma-Separated Values","*.csv"));
+		
+		File selectedFile = zoneChooser.showOpenDialog(null);
+		if (selectedFile != null) {
+			zoneSourceURI.setText(currentProject.getDirectory().toUri().relativize(selectedFile.toURI()).getPath());
+			zoneSourceURI.getOnAction().handle(e);
+		}
+	}
+	
+	@FXML
+	private void changeZoneSourceURI(ActionEvent e) {
+		if (!zoneSourceURI.getText().equals(
+				currentProject.getZoneFile()
+				)) {
+			if (reloadZones(currentProject.getDirectory().resolve(zoneSourceURI.getText()))) {
+				currentProject.setZoneFile(zoneSourceURI.getText());
+				zoneBox.setDisable(false);
+				markChanged();
+			}
 		}
 	}
 	

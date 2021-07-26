@@ -417,4 +417,14 @@ public class Project implements Runnable {
 	public void setSkimFunction(String curSkimID, String functionID) {
 		props.setProperty("skims."+curSkimID+".function", functionID);
 	}
+
+	public String getZoneFile() {
+		// TODO Auto-generated method stub
+		return props.getProperty("network.zones");
+	}
+
+	public void setZoneFile(String zoneFile) {
+		// TODO Auto-generated method stub
+		props.setProperty("network.zones", zoneFile);
+	}
 }

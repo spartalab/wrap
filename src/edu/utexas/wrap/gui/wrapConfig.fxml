@@ -74,23 +74,9 @@
                   <MenuItem fx:id="exit" mnemonicParsing="false" onAction="#exit" text="Exit" />
                 </items>
               </Menu>
-              <Menu mnemonicParsing="false" text="Edit">
-                <items>
-                  <MenuItem mnemonicParsing="false" text="Undo" />
-                  <MenuItem mnemonicParsing="false" text="Redo" />
-                  <SeparatorMenuItem mnemonicParsing="false" />
-                  <MenuItem mnemonicParsing="false" text="Cut" />
-                  <MenuItem mnemonicParsing="false" text="Copy" />
-                  <MenuItem mnemonicParsing="false" text="Paste" />
-                  <MenuItem mnemonicParsing="false" text="Delete" />
-                  <SeparatorMenuItem mnemonicParsing="false" />
-                  <MenuItem mnemonicParsing="false" text="Select All" />
-                  <MenuItem mnemonicParsing="false" text="Unselect All" />
-                </items>
-              </Menu>
               <Menu mnemonicParsing="false" text="Help">
                 <items>
-                  <MenuItem mnemonicParsing="false" text="About wrap" />
+                  <MenuItem fx:id="about" mnemonicParsing="false" text="About wrap" />
                 </items>
               </Menu>
             </menus>
@@ -114,37 +100,57 @@
                         <content>
                               <AnchorPane>
                                  <children>
-                                    <HBox spacing="5.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
+                                    <VBox layoutX="5.0" layoutY="5.0" AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
                                        <children>
-                                          <VBox maxWidth="-Infinity" minWidth="-Infinity" prefWidth="200.0" spacing="5.0" HBox.hgrow="ALWAYS">
+                                          <HBox prefWidth="200.0" VBox.vgrow="NEVER">
                                              <children>
-                                                <TableView id="zoneTable" fx:id="zoneList" prefWidth="200.0" VBox.vgrow="ALWAYS">
-                                                  <columns>
-                                                    <TableColumn id="zoneIDList" prefWidth="75.0" resizable="false" text="Zone ID" />
-                                                    <TableColumn id="zoneAreaClassList" prefWidth="100.0" resizable="false" text="Area Class" />
-                                                  </columns>
-                                                   <VBox.margin>
-                                                      <Insets />
-                                                   </VBox.margin>
-                                                </TableView>
-                                                <HBox spacing="5.0" VBox.vgrow="NEVER">
-                                                   <children>
-                                                    <Button id="addZone" fx:id="zoneAdd" alignment="CENTER" mnemonicParsing="false" text="+" HBox.hgrow="NEVER" />
-                                                      <Button id="removeZone" fx:id="zoneRemove" alignment="CENTER" disable="true" mnemonicParsing="false" text="-" HBox.hgrow="NEVER" />
-                                                      <Button id="editZone" fx:id="zoneEdit" alignment="CENTER" disable="true" mnemonicParsing="false" text="Edit..." HBox.hgrow="NEVER" />
-                                                   </children>
-                                                   <VBox.margin>
-                                                      <Insets />
-                                                   </VBox.margin>
-                                                </HBox>
+                                                <TextField fx:id="zoneSourceURI" editable="false" onAction="#changeZoneSourceURI" promptText="Zone file" HBox.hgrow="ALWAYS" />
+                                                <Button fx:id="zoneBrowse" mnemonicParsing="false" onAction="#browseZones" text="Browse...">
+                                                   <HBox.margin>
+                                                      <Insets left="5.0" />
+                                                   </HBox.margin>
+                                                </Button>
                                              </children>
-                                             <HBox.margin>
-                                                <Insets />
-                                             </HBox.margin>
-                                          </VBox>
-                                          <TilePane id="zoneViewer" prefHeight="394.0" prefWidth="425.0" HBox.hgrow="ALWAYS" />
+                                             <VBox.margin>
+                                                <Insets bottom="5.0" />
+                                             </VBox.margin>
+                                          </HBox>
+                                          <HBox fx:id="zoneBox" spacing="5.0" VBox.vgrow="ALWAYS">
+                                             <children>
+                                                <VBox maxWidth="-Infinity" minWidth="-Infinity" prefWidth="200.0" spacing="5.0" HBox.hgrow="ALWAYS">
+                                                   <children>
+                                                      <TableView id="zoneTable" fx:id="zoneList" prefWidth="200.0" VBox.vgrow="ALWAYS">
+                                                        <columns>
+                                                          <TableColumn id="zoneIDList" fx:id="zoneIDList" editable="false" prefWidth="75.0" resizable="false" text="Zone ID" />
+                                                          <TableColumn id="zoneAreaClassList" fx:id="zoneClassList" editable="false" prefWidth="100.0" resizable="false" text="Area Class" />
+                                                        </columns>
+                                                         <VBox.margin>
+                                                            <Insets />
+                                                         </VBox.margin>
+                                                         <columnResizePolicy>
+                                                            <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
+                                                         </columnResizePolicy>
+                                                      </TableView>
+                                                      <HBox spacing="5.0" VBox.vgrow="NEVER">
+                                                         <children>
+                                                          <Button id="addZone" fx:id="zoneAdd" alignment="CENTER" mnemonicParsing="false" text="+" HBox.hgrow="NEVER" />
+                                                            <Button id="removeZone" fx:id="zoneRemove" alignment="CENTER" disable="true" mnemonicParsing="false" text="-" HBox.hgrow="NEVER" />
+                                                            <Button id="editZone" fx:id="zoneEdit" alignment="CENTER" disable="true" mnemonicParsing="false" text="Edit..." HBox.hgrow="NEVER" />
+                                                         </children>
+                                                         <VBox.margin>
+                                                            <Insets />
+                                                         </VBox.margin>
+                                                      </HBox>
+                                                   </children>
+                                                   <HBox.margin>
+                                                      <Insets />
+                                                   </HBox.margin>
+                                                </VBox>
+                                                <TilePane id="zoneViewer" prefHeight="394.0" prefWidth="425.0" HBox.hgrow="ALWAYS" />
+                                             </children>
+                                          </HBox>
                                        </children>
-                                    </HBox>
+                                    </VBox>
                                  </children>
                               </AnchorPane>
                         </content>
@@ -327,13 +333,13 @@
                </children>
             </AnchorPane>
             <Separator prefWidth="200.0" VBox.vgrow="NEVER" />
-          <HBox id="HBox" alignment="CENTER_LEFT" spacing="5.0" VBox.vgrow="NEVER">
+          <HBox id="HBox" alignment="CENTER_LEFT" spacing="5.0" VBox.vgrow="ALWAYS">
             <children>
               <Label disable="true" maxHeight="-Infinity" maxWidth="-1.0" minWidth="50.0" prefHeight="25.0" text="Scenario:" HBox.hgrow="NEVER" />
-                  <Label id="projectName" fx:id="modelName" maxHeight="-Infinity" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="250.0" HBox.hgrow="NEVER" />
+                  <Label id="projectName" fx:id="modelName" maxHeight="-Infinity" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="200.0" HBox.hgrow="NEVER" />
                   <Separator maxHeight="-Infinity" orientation="VERTICAL" prefHeight="25.0" HBox.hgrow="NEVER" />
               <Label disable="true" maxHeight="-Infinity" maxWidth="-1.0" minWidth="55.0" prefHeight="25.0" text="Directory: " HBox.hgrow="NEVER" />
-                  <Label id="projectDirectory" fx:id="modelDirectory" layoutX="55.0" layoutY="15.0" maxHeight="-Infinity" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="250.0" HBox.hgrow="NEVER" />
+                  <Label id="projectDirectory" fx:id="modelDirectory" layoutX="55.0" layoutY="15.0" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="250.0" HBox.hgrow="ALWAYS" />
             </children>
                <padding>
                   <Insets bottom="3.0" left="3.0" right="3.0" />
