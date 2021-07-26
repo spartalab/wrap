@@ -133,7 +133,7 @@
                                                       </TableView>
                                                       <HBox spacing="5.0" VBox.vgrow="NEVER">
                                                          <children>
-                                                          <Button id="addZone" fx:id="zoneAdd" alignment="CENTER" mnemonicParsing="false" text="+" HBox.hgrow="NEVER" />
+                                                          <Button id="addZone" fx:id="zoneAdd" alignment="CENTER" disable="true" mnemonicParsing="false" text="+" HBox.hgrow="NEVER" />
                                                             <Button id="removeZone" fx:id="zoneRemove" alignment="CENTER" disable="true" mnemonicParsing="false" text="-" HBox.hgrow="NEVER" />
                                                             <Button id="editZone" fx:id="zoneEdit" alignment="CENTER" disable="true" mnemonicParsing="false" text="Edit..." HBox.hgrow="NEVER" />
                                                          </children>
@@ -227,13 +227,13 @@
                                        <children>
                                           <VBox>
                                              <children>
-                                                <Label text="Purposes" />
-                                                <ListView id="purposeList" fx:id="purposeList" prefHeight="340.0" prefWidth="150.0" />
+                                                <Label text="Market ID" />
+                                                <ListView id="purposeList" fx:id="marketList" prefHeight="340.0" prefWidth="150.0" />
                                                 <HBox spacing="5.0">
                                                    <children>
-                                                      <Button id="addPurpose" fx:id="purposeAdd" alignment="CENTER" mnemonicParsing="false" text="+" />
-                                                      <Button id="removePurpose" fx:id="purposeRemove" alignment="CENTER" disable="true" mnemonicParsing="false" text="-" />
-                                                      <Button id="editPurpose" fx:id="purposeEdit" alignment="CENTER" disable="true" layoutX="35.0" layoutY="10.0" mnemonicParsing="false" text="Edit..." />
+                                                      <Button id="addPurpose" fx:id="marketAdd" alignment="CENTER" mnemonicParsing="false" text="+" />
+                                                      <Button id="removePurpose" fx:id="marketRemove" alignment="CENTER" disable="true" mnemonicParsing="false" text="-" />
+                                                      <Button id="editPurpose" fx:id="marketEdit" alignment="CENTER" disable="true" layoutX="35.0" layoutY="10.0" mnemonicParsing="false" text="Edit..." />
                                                    </children>
                                                    <padding>
                                                       <Insets top="5.0" />
@@ -241,38 +241,7 @@
                                                 </HBox>
                                              </children>
                                           </VBox>
-                                          <VBox>
-                                             <children>
-                                                <Label text="Demographics" />
-                                                <ListView id="demographicList" fx:id="demographicList" prefHeight="340.0" prefWidth="150.0" />
-                                                <HBox spacing="5.0">
-                                                   <children>
-                                                      <Button id="addDemographic" fx:id="demographicAdd" alignment="CENTER" mnemonicParsing="false" text="+" />
-                                                      <Button id="removeDemographic" fx:id="demographicRemove" alignment="CENTER" disable="true" mnemonicParsing="false" text="-" />
-                                                      <Button id="editDemographic" fx:id="demographicEdit" alignment="CENTER" disable="true" layoutX="35.0" layoutY="10.0" mnemonicParsing="false" text="Edit..." />
-                                                   </children>
-                                                   <padding>
-                                                      <Insets top="5.0" />
-                                                   </padding>
-                                                </HBox>
-                                             </children>
-                                          </VBox>
-                                          <VBox>
-                                             <children>
-                                                <Label text="Friction Function" />
-                                                <ListView id="frictionFunctionList" fx:id="frictionFunctionList" prefHeight="340.0" prefWidth="150.0" />
-                                                <HBox spacing="5.0">
-                                                   <children>
-                                                      <Button id="addFrictionFunction" fx:id="frictionFunctionAdd" alignment="CENTER" mnemonicParsing="false" text="+" />
-                                                      <Button id="removeFrictionFunction" fx:id="frictionFunctionRemove" alignment="CENTER" disable="true" mnemonicParsing="false" text="-" />
-                                                      <Button id="editFrictionFunction" fx:id="frictionFunctionEdit" alignment="CENTER" disable="true" layoutX="35.0" layoutY="10.0" mnemonicParsing="false" text="Edit..." />
-                                                   </children>
-                                                   <padding>
-                                                      <Insets top="5.0" />
-                                                   </padding>
-                                                </HBox>
-                                             </children>
-                                          </VBox>
+                                          <VBox />
                                        </children>
                                     </HBox>
                                  </children>

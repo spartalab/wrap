@@ -16,10 +16,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import edu.utexas.wrap.Project;
-import edu.utexas.wrap.distribution.FrictionFactorMap;
-import edu.utexas.wrap.marketsegmentation.Purpose;
+import edu.utexas.wrap.marketsegmentation.Market;
 import edu.utexas.wrap.net.AreaClass;
-import edu.utexas.wrap.net.Demographic;
 import edu.utexas.wrap.net.TravelSurveyZone;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ChangeListener;
@@ -104,6 +102,7 @@ public class ConfigController {
 	
 	
 	
+	
 	@FXML
 	private Tab zoneTab;
 
@@ -133,6 +132,7 @@ public class ConfigController {
 	
 	@FXML
 	private TableColumn<TravelSurveyZone,String> zoneClassList;
+	
 	
 	
 	
@@ -169,48 +169,22 @@ public class ConfigController {
 	
 	
 	
+	
 	@FXML
 	private Tab marketTab;
 	
 	@FXML
-	private ListView<Purpose> purposeList;
+	private ListView<Market> marketList;
 
 	@FXML
-	private Button purposeAdd;
+	private Button marketAdd;
 
 	@FXML
-	private Button purposeRemove;
+	private Button marketRemove;
 
 	@FXML
-	private Button purposeEdit;
+	private Button marketEdit;
 	
-	
-	
-	@FXML
-	private ListView<Demographic> demographicList;
-
-	@FXML
-	private Button demographicAdd;
-
-	@FXML
-	private Button demographicRemove;
-
-	@FXML
-	private Button demographicEdit;
-	
-	
-	
-	@FXML
-	private ListView<FrictionFactorMap> frictionFunctionList;
-
-	@FXML
-	private Button frictionFunctionAdd;
-
-	@FXML
-	private Button frictionFunctionRemove;
-
-	@FXML
-	private Button frictionFunctionEdit;
 	
 	
 	
@@ -239,7 +213,6 @@ public class ConfigController {
 
 	@FXML
 	private Button assignerConfigurationEdit;
-	
 	
 	
 	
