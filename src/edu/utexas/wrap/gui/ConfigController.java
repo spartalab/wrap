@@ -7,6 +7,7 @@ package edu.utexas.wrap.gui;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Optional;
 
 import edu.utexas.wrap.Project;
 import edu.utexas.wrap.distribution.FrictionFactorMap;
@@ -38,6 +39,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
@@ -186,6 +188,7 @@ public class ConfigController {
 	private ToolBar toolBar;
 
 	private Project currentProject;
+	
 	private Boolean unsavedChanges;
 	
 	String getDisplayString(String keyword) {
@@ -200,12 +203,37 @@ public class ConfigController {
 			return null;
 		}
 	}
+	
+	String getFunctionID(String displayString) {
+		if (displayString == null) return null;
+		switch (displayString) {
+		case "Travel time (exclude HOV)":
+			return "travelTimeSingleOcc";
+		case "Travel time":
+			return "travelTime";
+		default:
+			return null;
+		}
+	}
+	
 
 	@FXML // This method is called by the FXMLLoader when initialization is complete
 	void initialize() {
 		currentProject = null;
 		unsavedChanges = false;
 		modelFeedbackSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,Integer.MAX_VALUE));
+		modelFeedbackSpinner.getEditor().setDisable(true);
+		modelFeedbackSpinner.valueProperty().addListener(new ChangeListener<Integer>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Integer> arg0, Integer oldValue, Integer newValue) {
+				// TODO Auto-generated method stub
+				if (currentProject != null && newValue != currentProject.getMaxIterations()) {
+					markChanged();
+				}
+			}
+			
+		});
 
 		skimFunctionChooser.getItems().addAll("Travel time","Travel time (exclude HOV)");
 
@@ -217,7 +245,7 @@ public class ConfigController {
 
 					@Override
 					public void changed(ObservableValue<? extends String> arg0, String oldValue, String newValue) {
-						// TODO Auto-generated method stub
+
 						if (newValue != null) {
 
 							skimBox.setDisable(false);
@@ -239,12 +267,36 @@ public class ConfigController {
 	}
 	
 	@FXML
-	public void newModel(ActionEvent e) {
+	private boolean newModel(Event event) {
+		
+		FileChooser modelChooser = new FileChooser();
+		modelChooser.setTitle("New Model");
+		modelChooser.getExtensionFilters().add(new ExtensionFilter("wrap Project Files","*.wrp"));
+		
+		File projFile = modelChooser.showSaveDialog(null);
+		if (projFile == null) {
+			return false;
+		}
+
+		
+		try {
+			currentProject = new Project(projFile.toPath());
+			
+			loadModel(event);
+			markChanged();
+			return true;
+			
+		} catch (Exception exception) {
+			Alert alert = new Alert(AlertType.ERROR,exception.getLocalizedMessage());
+			alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
+			alert.show();
+			return false;
+		}
 		
 	}
 
 	@FXML
-	public void openModel(ActionEvent e) {
+	private void openModel(ActionEvent e) {
 		FileChooser modelChooser = new FileChooser();
 		modelChooser.setTitle("Open Model");
 		modelChooser.getExtensionFilters().add(new ExtensionFilter("wrap Project Files","*.wrp"));
@@ -254,19 +306,9 @@ public class ConfigController {
 		if (selectedFile != null) try {
 
 			currentProject = new Project(selectedFile.toPath());
+			currentProject.loadPropsFromFile();
 
-			modelName.setText(currentProject.toString());
-			modelDirectory.setText(currentProject.getDirectory().toString());
-			modelFeedbackSpinner.getValueFactory().setValue(currentProject.getMaxIterations());
-
-
-			skimAssignerChooser.getItems().addAll(currentProject.getAssignerIDs());
-
-			
-			tabPane.getSelectionModel().getSelectedItem().getOnSelectionChanged().handle(e);
-			tabPane.setDisable(false);
-			toolBar.setDisable(false);
-			
+			loadModel(e);
 
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
@@ -274,22 +316,107 @@ public class ConfigController {
 		} 
 	}
 
-	
-	
-	
-	@FXML
-	public void updateZones(Event e) {
-		if (zoneTab.isSelected()) {
-			System.out.println("Updating zones");
-		}
+	private void loadModel(Event e) {
+		modelName.setText(currentProject.toString());
+		modelDirectory.setText(currentProject.getDirectory().toString());
+		modelFeedbackSpinner.getValueFactory().setValue(currentProject.getMaxIterations());
+
+		
+		tabPane.getSelectionModel().getSelectedItem().getOnSelectionChanged().handle(e);
+		tabPane.setDisable(false);
+		toolBar.setDisable(false);
+		modelClose.setDisable(false);
+		modelSaveAs.setDisable(false);
 	}
 
+	private void markChanged() {
+		unsavedChanges = true;
+		modelSave.setDisable(false);
+		if (!modelName.getText().endsWith("*")) {
+			modelName.setText(modelName.getText()+"*");
+		}
+	}
+	
+	@FXML
+	private void saveModel(Event e) {
+		if (unsavedChanges) {
+			//TODO write project to file
+			markUnchanged();
+		}
+	}
+	
+	@FXML
+	private void saveModelAs(Event event) {
+		// create new project
+		if (newModel(event))
+		
+		// write project to file
+		saveModel(event);
+	}
+
+	private void markUnchanged() {
+		unsavedChanges = false;
+		modelSave.setDisable(true);
+		if (modelName.getText().endsWith("*")) {
+			modelName.setText(modelName.getText().replace('*', '\0'));
+		}
+	}
+	
+	@FXML
+	private boolean closeModel(Event e) {
+		if (unsavedChanges) {
+			 if (!promptToSaveChanges(e)) return false;
+		}
+		currentProject = null;
+		markUnchanged();
+		tabPane.getSelectionModel().getSelectedItem().getOnSelectionChanged().handle(e);
+		tabPane.setDisable(true);
+		toolBar.setDisable(true);
+		modelFeedbackSpinner.getValueFactory().setValue(1);
+		modelClose.setDisable(true);
+		modelSave.setDisable(true);
+		modelSaveAs.setDisable(true);
+		return true;
+	}
+	
+	@FXML 
+	private boolean promptToSaveChanges(Event e) {
+		//TODO prompt if changes should be saved
+		Alert alert = new Alert(AlertType.CONFIRMATION, "Save model before closing?",ButtonType.YES,ButtonType.NO,ButtonType.CANCEL);
+		alert.setTitle("Current model has unsaved changes");
+		
+		Optional<ButtonType> choice = alert.showAndWait();
+		if (choice.isPresent()) {
+			
+			ButtonType type = choice.get();
+			if (type == ButtonType.YES) saveModel(e); 
+			else if (type == ButtonType.CANCEL) return false;
+		}
+		return true;
+
+	}
+	
+	@FXML
+	public void exit(Event arg0) {
+		if (closeModel(arg0)) System.exit(0);
+	}
 	
 	
 	
 	
 	@FXML
-	public void updateSkims(Event e) {
+	private void updateZones(Event e) {
+		if (zoneTab.isSelected()) {
+			//TODO (re)populate zone list
+			System.out.println("Update zones");
+		}
+	}
+	
+	
+	
+	
+	@FXML
+	private void updateSkims(Event e) {
 
 		if (skimTab.isSelected()) {
 
@@ -303,19 +430,26 @@ public class ConfigController {
 			}
 			
 			if (currentProject != null) {
+				skimAssignerChooser.getItems().addAll(currentProject.getAssignerIDs());
 				skimList.setItems(FXCollections.observableArrayList(currentProject.getSkimIDs()));
 				skimBox.setDisable(true);
+			} else {
+				skimList.getItems().clear();
+				
+				
 			}
 		}
 
 	}
 
 	@FXML
-	public void changeSkimSourceURI(ActionEvent e) {
+	private void changeSkimSourceURI(ActionEvent e) {
+		String curSkimID = skimList.getSelectionModel().getSelectedItem();
 		if (!skimSourceURI.getText()
 				.equals(
 						currentProject.getSkimFile(
-								skimList.getSelectionModel().getSelectedItem()))) {
+								curSkimID))) {
+			currentProject.setSkimFile(curSkimID,skimSourceURI.getText());
 			markChanged();
 		}
 		
@@ -323,33 +457,36 @@ public class ConfigController {
 	}
 	
 	@FXML
-	public void changeSkimAssigner(ActionEvent e) {
+	private void changeSkimAssigner(ActionEvent e) {
+		String curSkimID = skimList.getSelectionModel().getSelectedItem();
 		if ( !skimAssignerChooser.getSelectionModel().isEmpty() &&
 				
 				!skimAssignerChooser.getSelectionModel().getSelectedItem()
 				.equals(
 						currentProject.getSkimAssigner(
-								skimList.getSelectionModel().getSelectedItem())))
-		{
+								curSkimID))) {
+			currentProject.setSkimAssigner(curSkimID, skimAssignerChooser.getSelectionModel().getSelectedItem());
 			markChanged();
 			}
 	}
 	
 	@FXML
-	public void changeSkimFunction(ActionEvent e) {
+	private void changeSkimFunction(ActionEvent e) {
+		String curSkimID = skimList.getSelectionModel().getSelectedItem();
+
 		if ( !skimFunctionChooser.getSelectionModel().isEmpty() && 
 				!skimFunctionChooser.getSelectionModel().getSelectedItem()
 				.equals(
 						getDisplayString(
 								currentProject.getSkimFunction(
-										skimList.getSelectionModel().getSelectedItem())))) {
-
+										curSkimID)))) {
+			currentProject.setSkimFunction(curSkimID, getFunctionID(skimFunctionChooser.getSelectionModel().getSelectedItem()));
 			markChanged();
 			}
 	}
 	
 	@FXML
-	public void browseSkim(Event e) {
+	private void browseSkim(Event e) {
 		FileChooser skimChooser = new FileChooser();
 		skimChooser.setTitle("Open Skim");
 		skimChooser.setInitialDirectory(currentProject.getDirectory().toFile());
@@ -362,7 +499,8 @@ public class ConfigController {
 		}
 	}
 	
-	public void addSkim(Event e) {
+	@FXML
+	private void addSkim(Event e) {
 		System.out.println("Add skim");
 		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
 		try {
@@ -400,7 +538,8 @@ public class ConfigController {
 
 	}
 	
-	public void removeSkim(Event e) {
+	@FXML
+	private void removeSkim(Event e) {
 
 		String skimName = skimList.getSelectionModel().getSelectedItem();
 		if (skimName != null) {
@@ -419,35 +558,28 @@ public class ConfigController {
 	
 	
 	@FXML
-	public void updateMarkets(Event e) {
-		if (marketTab.isSelected()) System.out.println("Updating markets");
-
-	}
-
-	public void updateAssigners(Event e) {
-		if (assignerTab.isSelected()) System.out.println("Updating assigners");
-
-	}
-
-	private void markChanged() {
-		unsavedChanges = true;
-		if (!modelName.getText().endsWith("*")) {
-			modelName.setText(modelName.getText()+"*");
+	private void updateMarkets(Event e) {
+		if (marketTab.isSelected()) {
+			
+			//TODO populate market list
+			//TODO populate demographic list
+			//TODO populate frinction factor function list
+			System.out.println("Updating markets");
 		}
+
 	}
 	
+	
+	
+	
 	@FXML
-	private void saveModel() {
-		if (unsavedChanges) {
-			//TODO write project to file
-			markUnchanged();
+	private void updateAssigners(Event e) {
+		if (assignerTab.isSelected()) {
+			
+			//TODO populate assigner list
+			System.out.println("Updating assigners");
 		}
-	}
 
-	private void markUnchanged() {
-		unsavedChanges = false;
-		if (modelName.getText().endsWith("*")) {
-			modelName.setText(modelName.getText().replace('*', '\0'));
-		}
 	}
+	
 }
