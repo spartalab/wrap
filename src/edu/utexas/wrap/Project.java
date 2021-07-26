@@ -368,7 +368,7 @@ public class Project implements Runnable {
 	public List<String> getSkimIDs() {
 		// TODO Auto-generated method stub
 		String prop = props.getProperty("skims.ids");
-		if (prop == null) return Collections.emptyList();
+		if (prop == null) return new ArrayList<String>();
 		String[] ids = prop.split(",");
 		return new ArrayList<String>(List.of(ids));
 	}

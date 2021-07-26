@@ -187,6 +187,19 @@ public class ConfigController {
 
 	private Project currentProject;
 	private Boolean unsavedChanges;
+	
+	String getDisplayString(String keyword) {
+		if (keyword == null) return null;
+		switch (keyword) {
+		case "travelTimeSingleOcc":
+			return "Travel time (exclude HOV)";
+			
+		case "travelTime":
+			return "Travel time";
+		default:
+			return null;
+		}
+	}
 
 	@FXML // This method is called by the FXMLLoader when initialization is complete
 	void initialize() {
@@ -198,36 +211,31 @@ public class ConfigController {
 
 
 
-		skimList.getSelectionModel().selectedItemProperty().addListener( new ChangeListener<String>() {
+		skimList.getSelectionModel().selectedItemProperty().addListener( 
 
-			@Override
-			public void changed(ObservableValue<? extends String> arg0, String oldValue, String newValue) {
-				// TODO Auto-generated method stub
-				if (newValue != null) {
-					
-					skimBox.setDisable(false);
-					skimRemove.setDisable(false);
-					skimSourceURI.setText(currentProject.getSkimFile(newValue));
-					skimAssignerChooser.getSelectionModel().select(currentProject.getSkimAssigner(newValue));
-					String value = "";
-					switch (currentProject.getSkimFunction(newValue)) {
-					case "travelTimeSingleOcc":
-						value = "Travel time (exclude HOV)";
-						break;
-					case "travelTime":
-						value = "Travel time";
+				new ChangeListener<String>() {
+
+					@Override
+					public void changed(ObservableValue<? extends String> arg0, String oldValue, String newValue) {
+						// TODO Auto-generated method stub
+						if (newValue != null) {
+
+							skimBox.setDisable(false);
+							skimRemove.setDisable(false);
+							skimSourceURI.setText(currentProject.getSkimFile(newValue));
+							skimAssignerChooser.getSelectionModel().select(currentProject.getSkimAssigner(newValue));
+							skimFunctionChooser.getSelectionModel().select(getDisplayString(currentProject.getSkimFunction(newValue)));
+						}
+						else {
+							skimSourceURI.clear();
+							skimAssignerChooser.getSelectionModel().clearSelection();
+							skimFunctionChooser.getSelectionModel().clearSelection();
+							skimRemove.setDisable(true);
+							skimBox.setDisable(true);
+						}
 					}
-					skimFunctionChooser.getSelectionModel().select(value);
-				} else {
-					skimSourceURI.clear();
-					skimAssignerChooser.getSelectionModel().clearSelection();
-					skimFunctionChooser.getSelectionModel().clearSelection();
-					skimRemove.setDisable(true);
-					skimBox.setDisable(true);
-				}
-			}
 
-		});
+				});
 	}
 	
 	@FXML
@@ -302,16 +310,42 @@ public class ConfigController {
 
 	}
 
+	@FXML
 	public void changeSkimSourceURI(ActionEvent e) {
-		markChanged();
+		if (!skimSourceURI.getText()
+				.equals(
+						currentProject.getSkimFile(
+								skimList.getSelectionModel().getSelectedItem()))) {
+			markChanged();
+		}
+		
+			
 	}
 	
-	public void changeSkimAssigner(Event e) {
-		markChanged();
+	@FXML
+	public void changeSkimAssigner(ActionEvent e) {
+		if ( !skimAssignerChooser.getSelectionModel().isEmpty() &&
+				
+				!skimAssignerChooser.getSelectionModel().getSelectedItem()
+				.equals(
+						currentProject.getSkimAssigner(
+								skimList.getSelectionModel().getSelectedItem())))
+		{
+			markChanged();
+			}
 	}
 	
-	public void changeSkimFunction(Event e) {
-		markChanged();
+	@FXML
+	public void changeSkimFunction(ActionEvent e) {
+		if ( !skimFunctionChooser.getSelectionModel().isEmpty() && 
+				!skimFunctionChooser.getSelectionModel().getSelectedItem()
+				.equals(
+						getDisplayString(
+								currentProject.getSkimFunction(
+										skimList.getSelectionModel().getSelectedItem())))) {
+
+			markChanged();
+			}
 	}
 	
 	@FXML
@@ -397,13 +431,23 @@ public class ConfigController {
 
 	private void markChanged() {
 		unsavedChanges = true;
+		if (!modelName.getText().endsWith("*")) {
+			modelName.setText(modelName.getText()+"*");
+		}
 	}
 	
 	@FXML
 	private void saveModel() {
 		if (unsavedChanges) {
 			//TODO write project to file
-			unsavedChanges = false;
+			markUnchanged();
+		}
+	}
+
+	private void markUnchanged() {
+		unsavedChanges = false;
+		if (modelName.getText().endsWith("*")) {
+			modelName.setText(modelName.getText().replace('*', '\0'));
 		}
 	}
 }
