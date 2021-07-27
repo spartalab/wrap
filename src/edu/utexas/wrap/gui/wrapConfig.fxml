@@ -270,8 +270,9 @@
                                                 <ListView id="assignerList" fx:id="assignerList" prefHeight="340.0" prefWidth="150.0" VBox.vgrow="ALWAYS" />
                                                 <HBox spacing="5.0">
                                                    <children>
-                                                      <Button id="addAssigner" fx:id="assignerAdd" alignment="CENTER" mnemonicParsing="false" text="+" />
-                                                      <Button id="removeAssigner" fx:id="assignerRemove" alignment="CENTER" disable="true" mnemonicParsing="false" text="-" />
+                                                      <Button fx:id="assignerCreate" mnemonicParsing="false" onAction="#createAssigner" text="Create..." />
+                                                      <Button id="addAssigner" fx:id="assignerAttach" alignment="CENTER" mnemonicParsing="false" onAction="#attachAssigner" text="+" />
+                                                      <Button id="removeAssigner" fx:id="assignerRemove" alignment="CENTER" disable="true" mnemonicParsing="false" onAction="#removeAssigner" text="-" />
                                                    </children>
                                                    <padding>
                                                       <Insets top="5.0" />

@@ -39,7 +39,7 @@ public class NewMarketController {
 		if (selectedFile != null) {
 			marketSourceURI.setText(currentProject.getDirectory().toUri().relativize(selectedFile.toURI()).getPath());
 			marketSourceURI.getOnAction().handle(event);
-			//TODO open dialog to customize new market
+			//TODO create market file
 		}
 	}
 	

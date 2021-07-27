@@ -209,7 +209,7 @@ public class ConfigController {
 	private VBox assignerBox;
 	
 	@FXML
-	private Button assignerAdd;
+	private Button assignerAttach;
 
 	@FXML
 	private Button assignerRemove;
@@ -226,7 +226,8 @@ public class ConfigController {
 	@FXML
 	private Button assignerEdit;
 	
-	
+	@FXML
+	private Button assignerCreate;
 	
 	
 	
@@ -243,7 +244,7 @@ public class ConfigController {
 		case "travelTime":
 			return "Travel time";
 			
-		case "bush":
+		case "builtin":
 			return "Built-in Assigner";
 		case "file":
 			return "File Output";
@@ -262,7 +263,7 @@ public class ConfigController {
 		case "Travel time":
 			return "travelTime";
 		case "Built-in Assigner":
-			return "bush";
+			return "builtin";
 		case "File Output":
 			return "file";
 		case "External Assigner":
@@ -633,6 +634,7 @@ public class ConfigController {
 			}
 			
 			if (currentProject != null) {
+				skimAssignerChooser.getItems().clear();
 				skimAssignerChooser.getItems().addAll(currentProject.getAssignerIDs());
 				skimList.setItems(FXCollections.observableArrayList(currentProject.getSkimIDs()));
 				skimBox.setDisable(true);
@@ -745,7 +747,7 @@ public class ConfigController {
 
 		String skimName = skimList.getSelectionModel().getSelectedItem();
 		if (skimName != null) {
-			Alert alert = new Alert(AlertType.CONFIRMATION,"Delete skim "+skimName+"?",ButtonType.YES,ButtonType.NO);
+			Alert alert = new Alert(AlertType.CONFIRMATION,"Remove skim "+skimName+" from model?",ButtonType.YES,ButtonType.NO);
 			alert.showAndWait();
 			
 			if (alert.getResult() == ButtonType.YES) {
@@ -813,19 +815,21 @@ public class ConfigController {
 			pane.setContent(vbox);
 			pane.getButtonTypes().add(ButtonType.CANCEL);
 			pane.getButtonTypes().add(ButtonType.OK);
-			
-			((Button) pane.lookupButton(ButtonType.OK)).setText("Create...");
-			
+						
 			dialog.setDialogPane(pane);
 			dialog.setTitle("New Market");
 			Button ok = (Button) pane.lookupButton(ButtonType.OK);
+			ok.setText("Create...");
 			ok.disableProperty().bind(controller.notReady());
 			dialog.showAndWait();
 			
 			if (dialog.getResult() == ButtonType.OK) {
 				currentProject.addMarket(controller.getMarketID(),controller.getMarketSourceURI());
 				marketList.getItems().add(controller.getMarketID());
+				
+				//TODO open dialog to edit newly created market
 				markChanged();
+				
 			}
 		} catch (IOException exception) {
 			//TODO
@@ -866,7 +870,7 @@ public class ConfigController {
 	private void removeMarket(ActionEvent e) {
 		String marketName = marketList.getSelectionModel().getSelectedItem();
 		if (marketName != null) {
-			Alert alert = new Alert(AlertType.CONFIRMATION,"Delete market "+marketName+"?",ButtonType.YES,ButtonType.NO);
+			Alert alert = new Alert(AlertType.CONFIRMATION,"Remove market "+marketName+" from model?",ButtonType.YES,ButtonType.NO);
 			alert.showAndWait();
 			
 			if (alert.getResult() == ButtonType.YES) {
@@ -915,22 +919,72 @@ public class ConfigController {
 	
 	@FXML
 	private void changeAssignerClass(ActionEvent e) {
-		//TODO
+		String curAssignerID = assignerList.getSelectionModel().getSelectedItem();
+		
+		if (!assignerClass.getSelectionModel().isEmpty() && 
+				!assignerClass.getSelectionModel().getSelectedItem()
+				.equals(
+						getDisplayString(currentProject.getAssignerClass(curAssignerID))
+						)) {
+			currentProject.setAssignerClass(curAssignerID,getOptionID(assignerClass.getSelectionModel().getSelectedItem()));
+			markChanged();
+		}
 	}
 	
 	@FXML
 	private void changeAssignerSourceURI(ActionEvent e) {
-		//TODO
+		String curAssignerID = assignerList.getSelectionModel().getSelectedItem();
+		
+		if (!assignerSourceURI.getText().equals(
+				currentProject.getAssignerFile(curAssignerID)
+				)) {
+			currentProject.setAssignerFile(curAssignerID,assignerSourceURI.getText());
+			markChanged();
+		}
 	}
 	
 	@FXML
 	private void browseAssigner(ActionEvent e) {
-		//TODO
+		FileChooser assignerChooser = new FileChooser();
+		assignerChooser.setTitle("Open Assigner");
+		assignerChooser.setInitialDirectory(currentProject.getDirectory().toFile());
+		assignerChooser.getExtensionFilters().add(new ExtensionFilter("wrap Assigner file","*.wrapr"));
+		
+		File selectedFile = assignerChooser.showOpenDialog(scene.getWindow());
+		if (selectedFile != null) {
+			assignerSourceURI.setText(currentProject.getDirectory().toUri().relativize(selectedFile.toURI()).getPath());
+			assignerSourceURI.getOnAction().handle(e);
+		}
 	}
 	
 	@FXML
-	private void addAssigner(ActionEvent e) {
-		//TODO
+	private void attachAssigner(ActionEvent e) {
+		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+		try {
+			FXMLLoader loader = new FXMLLoader();
+			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/attachAssignerDialog.fxml").openStream());
+			AttachAssignerController controller = loader.getController();
+			controller.setProject(currentProject);
+			DialogPane pane = new DialogPane();
+			
+			pane.setContent(vbox);
+			pane.getButtonTypes().add(ButtonType.OK);
+			pane.getButtonTypes().add(ButtonType.CANCEL);
+			
+			dialog.setDialogPane(pane);
+			dialog.setTitle("Attach Assigner");
+			Button ok = (Button) pane.lookupButton(ButtonType.OK);
+			ok.disableProperty().bind(controller.notReady());
+			dialog.showAndWait();
+			
+			if (dialog.getResult() == ButtonType.OK) {
+				currentProject.addAssigner(controller.getAssignerID(),getOptionID(controller.getAssignerClass()),controller.getAssignerSourceURI());
+				assignerList.getItems().add(controller.getAssignerID());
+				markChanged();
+			}
+		} catch (IOException exception) {
+			//TODO
+		}
 	}
 	
 	@FXML
@@ -938,4 +992,50 @@ public class ConfigController {
 		//TODO
 	}
 	
+	@FXML
+	private void createAssigner(ActionEvent e) {
+		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+		try {
+			FXMLLoader loader = new FXMLLoader();
+			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/newAssignerDialog.fxml").openStream());
+			NewAssignerController controller = loader.getController();
+			controller.setProject(currentProject);
+			DialogPane pane = new DialogPane();
+			
+			pane.setContent(vbox);
+			pane.getButtonTypes().add(ButtonType.OK);
+			pane.getButtonTypes().add(ButtonType.CANCEL);
+			
+			dialog.setDialogPane(pane);
+			dialog.setTitle("New Assigner");
+			Button ok = (Button) pane.lookupButton(ButtonType.OK);
+			ok.setText("Create...");
+			ok.disableProperty().bind(controller.notReady());
+			dialog.showAndWait();
+			//TODO open dialog to configure assigner
+			
+			if (dialog.getResult() == ButtonType.OK) {
+				currentProject.addAssigner(controller.getAssignerID(),getOptionID(controller.getAssignerClass()),controller.getAssignerSourceURI());
+				assignerList.getItems().add(controller.getAssignerID());
+				markChanged();
+			}
+		} catch (IOException exception) {
+			//TODO
+		}
+	}
+
+	@FXML
+	private void removeAssigner(ActionEvent e) {
+		String assignerName = assignerList.getSelectionModel().getSelectedItem();
+		if (assignerName != null) {
+			Alert alert = new Alert(AlertType.CONFIRMATION,"Remove assigner "+assignerName+" from model?",ButtonType.YES,ButtonType.NO);
+			alert.showAndWait();
+			
+			if (alert.getResult() == ButtonType.YES) {
+				assignerList.getItems().remove(assignerName);
+				currentProject.removeAssigner(assignerName);
+				markChanged();
+			}
+		}
+	}
 }

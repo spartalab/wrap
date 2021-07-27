@@ -15,7 +15,7 @@
             <TextField id="skimSourcePath" fx:id="marketID" minWidth="-Infinity" prefHeight="25.0" prefWidth="250.0" HBox.hgrow="ALWAYS" />
          </children>
       </HBox>
-      <Label text="Data Source:" />
+      <Label text="Configuration file:" />
       <HBox spacing="10.0">
          <children>
             <TextField id="skimSourcePath" fx:id="marketSourceURI" disable="true" editable="false" minWidth="-Infinity" onAction="#changeMarketSourceURI" prefHeight="25.0" prefWidth="250.0" HBox.hgrow="ALWAYS" />

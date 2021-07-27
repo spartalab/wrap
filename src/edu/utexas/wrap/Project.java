@@ -248,7 +248,7 @@ public class Project implements Runnable {
 						);
 
 
-			case "bush":
+			case "builtin":
 				return BasicStaticAssigner.fromPropsFile(
 						projDir.resolve(props.getProperty("assigners."+id+".file")),
 						zones
@@ -472,5 +472,34 @@ public class Project implements Runnable {
 		return props.getProperty("assigners."+assignerID+".class");
 	}
 
+	public void setAssignerClass(String assignerID, String text) {
+		props.setProperty("assigners."+assignerID+".class", text);
+	}
 	
+	public void setAssignerFile(String assignerID, String text) {
+		props.setProperty("assigners."+assignerID+".file", text);
+	}
+
+	public void addAssigner(String assignerID, String assignerClass, String assignerSourceURI) {
+		List<String> ids = getAssignerIDs();
+		ids.add(assignerID);
+		props.setProperty("assigners.ids", String.join(",",ids));
+		
+		props.setProperty("assigners."+assignerID+".class", assignerClass);
+		props.setProperty("assigners."+assignerID+".file", assignerSourceURI);
+	}
+
+	public void removeAssigner(String assignerID) {
+		// TODO Auto-generated method stub
+		List<String> ids = getAssignerIDs();
+		ids.remove(assignerID);
+		if (!ids.isEmpty()) props.setProperty("assigners.ids", String.join(",", ids));
+		else props.remove("assigners.ids");
+		
+		Set<String> keys = props.stringPropertyNames();
+		for (String key : keys) {
+			if (key.startsWith("assigners."+assignerID)) props.remove(key);
+		}
+	}
+
 }
