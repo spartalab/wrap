@@ -234,26 +234,39 @@ public class ConfigController {
 	
 	private Boolean unsavedChanges;
 	
-	String getDisplayString(String functionID) {
-		if (functionID == null) return null;
-		switch (functionID) {
+	private String getDisplayString(String optionID) {
+		if (optionID == null) return null;
+		switch (optionID) {
 		case "travelTimeSingleOcc":
 			return "Travel time (exclude HOV)";
 			
 		case "travelTime":
 			return "Travel time";
+			
+		case "bush":
+			return "Built-in Assigner";
+		case "file":
+			return "File Output";
+		case "stream":
+			return "External Assigner";
 		default:
 			return null;
 		}
 	}
 	
-	String getFunctionID(String displayString) {
+	private String getOptionID(String displayString) {
 		if (displayString == null) return null;
 		switch (displayString) {
 		case "Travel time (exclude HOV)":
 			return "travelTimeSingleOcc";
 		case "Travel time":
 			return "travelTime";
+		case "Built-in Assigner":
+			return "bush";
+		case "File Output":
+			return "file";
+		case "External Assigner":
+			return "stream";
 		default:
 			return null;
 		}
@@ -297,7 +310,7 @@ public class ConfigController {
 		
 		skimFunctionChooser.getItems().addAll("Travel time","Travel time (exclude HOV)");
 
-
+		assignerClass.getItems().addAll("Built-in Assigner","External Assigner","File Output");
 
 		skimList.getSelectionModel().selectedItemProperty().addListener( 
 
@@ -336,8 +349,7 @@ public class ConfigController {
 							marketBox.setDisable(false);
 							marketRemove.setDisable(false);
 							Path newURI = currentProject.getDirectory().resolve(currentProject.getMarketFile(newValue));
-							marketSourceURI.setText(currentProject.getDirectory().toUri().relativize(newURI.toUri()).getPath())
-							;
+							marketSourceURI.setText(currentProject.getDirectory().toUri().relativize(newURI.toUri()).getPath());
 						} else {
 							marketSourceURI.clear();
 							marketRemove.setDisable(true);
@@ -352,11 +364,17 @@ public class ConfigController {
 
 					@Override
 					public void changed(ObservableValue<? extends String> arg0, String oldValue, String newValue) {
-						// TODO Auto-generated method stub
 						if (newValue != null) {
-							
+							assignerBox.setDisable(false);
+							assignerRemove.setDisable(false);
+							Path newURI = currentProject.getDirectory().resolve(currentProject.getAssignerFile(newValue));
+							assignerSourceURI.setText(currentProject.getDirectory().toUri().relativize(newURI.toUri()).getPath());
+							assignerClass.getSelectionModel().select(getDisplayString(currentProject.getAssignerClass(newValue)));
 						} else {
-							
+							assignerSourceURI.clear();
+							assignerClass.getSelectionModel().clearSelection();
+							assignerRemove.setDisable(true);
+							assignerBox.setDisable(true);
 						}
 					}
 					
@@ -665,7 +683,7 @@ public class ConfigController {
 						getDisplayString(
 								currentProject.getSkimFunction(
 										curSkimID)))) {
-			currentProject.setSkimFunction(curSkimID, getFunctionID(skimFunctionChooser.getSelectionModel().getSelectedItem()));
+			currentProject.setSkimFunction(curSkimID, getOptionID(skimFunctionChooser.getSelectionModel().getSelectedItem()));
 			markChanged();
 			}
 	}
@@ -796,6 +814,8 @@ public class ConfigController {
 			pane.getButtonTypes().add(ButtonType.CANCEL);
 			pane.getButtonTypes().add(ButtonType.OK);
 			
+			((Button) pane.lookupButton(ButtonType.OK)).setText("Create...");
+			
 			dialog.setDialogPane(pane);
 			dialog.setTitle("New Market");
 			Button ok = (Button) pane.lookupButton(ButtonType.OK);
@@ -876,8 +896,19 @@ public class ConfigController {
 	private void updateAssigners(Event e) {
 		if (assignerTab.isSelected()) {
 			
-			//TODO populate assigner list
-			System.out.println("Updating assigners");
+			// populate assigner list
+			if (!assignerList.getSelectionModel().isEmpty()) {
+				assignerList.getSelectionModel().clearSelection();
+				assignerSourceURI.clear();
+				assignerRemove.setDisable(true);
+			}
+			
+			if (currentProject != null) {
+				assignerList.setItems(FXCollections.observableArrayList(currentProject.getAssignerIDs()));
+				assignerBox.setDisable(true);
+			} else {
+				assignerList.getItems().clear();
+			}
 		}
 
 	}

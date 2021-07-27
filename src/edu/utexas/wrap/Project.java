@@ -394,6 +394,10 @@ public class Project implements Runnable {
 		return props.getProperty("markets."+marketID+".file");
 	}
 	
+	public String getAssignerFile(String assignerID) {
+		return props.getProperty("assigners."+assignerID+".file");
+	}
+	
 	public void removeSkim(String skimID) {
 		List<String> ids = getSkimIDs();
 		ids.remove(skimID);
@@ -462,6 +466,10 @@ public class Project implements Runnable {
 	public void setMarketFile(String curMarketID, String text) {
 		// TODO Auto-generated method stub
 		props.setProperty("markets."+curMarketID+".file", text);
+	}
+	
+	public String getAssignerClass(String assignerID) {
+		return props.getProperty("assigners."+assignerID+".class");
 	}
 
 	
