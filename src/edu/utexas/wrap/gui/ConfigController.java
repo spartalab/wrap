@@ -530,6 +530,9 @@ public class ConfigController {
 	private void updateZones(Event e) {
 		if (zoneTab.isSelected()) {
 			// (re)populate zone list
+			zoneList.getItems().clear();
+			zoneSourceURI.clear();
+			zoneBox.setDisable(true);
 			
 			if (currentProject != null) {
 				String zoneFile = currentProject.getZoneFile();
@@ -544,16 +547,8 @@ public class ConfigController {
 						zoneSourceURI.setText(relativePath.toString());
 						zoneBox.setDisable(false);
 					}
-				} else {
-					zoneSourceURI.clear();
-					zoneBox.setDisable(true);
-					
-				}
-			} else {
-				zoneSourceURI.clear();
-				zoneList.getItems().clear();
-				
-			}
+				} 
+			} 
 		}
 	}
 	
