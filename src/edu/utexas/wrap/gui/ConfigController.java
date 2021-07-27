@@ -16,7 +16,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import edu.utexas.wrap.Project;
-import edu.utexas.wrap.marketsegmentation.Market;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.TravelSurveyZone;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -44,6 +43,7 @@ import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.HBox;
@@ -54,6 +54,9 @@ import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.util.Callback;
 
 public class ConfigController {
+	
+	@FXML
+	private Scene scene;
 
 	@FXML
 	private MenuItem modelNew;
@@ -113,12 +116,6 @@ public class ConfigController {
 	private TableView<TravelSurveyZone> zoneList;
 
 	@FXML
-	private Button zoneAdd;
-
-	@FXML
-	private Button zoneRemove;
-
-	@FXML
 	private Button zoneEdit;
 	
 	@FXML
@@ -174,16 +171,28 @@ public class ConfigController {
 	private Tab marketTab;
 	
 	@FXML
-	private ListView<Market> marketList;
+	private ListView<String> marketList;
 
 	@FXML
-	private Button marketAdd;
+	private VBox marketBox;
+
+	@FXML
+	private Button marketAttach;
+	
+	@FXML
+	private Button marketCreate;
 
 	@FXML
 	private Button marketRemove;
 
 	@FXML
 	private Button marketEdit;
+
+	@FXML
+	private Button marketBrowse;
+
+	@FXML
+	private TextField marketSourceURI;
 	
 	
 	
@@ -197,6 +206,9 @@ public class ConfigController {
 	private ListView<String> assignerList;
 
 	@FXML
+	private VBox assignerBox;
+	
+	@FXML
 	private Button assignerAdd;
 
 	@FXML
@@ -206,26 +218,25 @@ public class ConfigController {
 	private ComboBox<String> assignerClass;
 
 	@FXML
-	private TextField assignerConfigurationSource;
+	private TextField assignerSourceURI;
 
 	@FXML
-	private Button assignerConfigurationBrowse;
+	private Button assignerBrowse;
 
 	@FXML
-	private Button assignerConfigurationEdit;
+	private Button assignerEdit;
 	
 	
 	
 	
 	
-
 	private Project currentProject;
 	
 	private Boolean unsavedChanges;
 	
-	String getDisplayString(String keyword) {
-		if (keyword == null) return null;
-		switch (keyword) {
+	String getDisplayString(String functionID) {
+		if (functionID == null) return null;
+		switch (functionID) {
 		case "travelTimeSingleOcc":
 			return "Travel time (exclude HOV)";
 			
@@ -248,7 +259,6 @@ public class ConfigController {
 		}
 	}
 	
-
 	@FXML // This method is called by the FXMLLoader when initialization is complete
 	void initialize() {
 		currentProject = null;
@@ -259,8 +269,8 @@ public class ConfigController {
 
 			@Override
 			public void changed(ObservableValue<? extends Integer> arg0, Integer oldValue, Integer newValue) {
-				// TODO Auto-generated method stub
 				if (currentProject != null && newValue != currentProject.getMaxIterations()) {
+					//TODO modify project to reflect new maxIteration value
 					markChanged();
 				}
 			}
@@ -271,7 +281,6 @@ public class ConfigController {
 
 			@Override
 			public ObservableValue<Integer> call(CellDataFeatures<TravelSurveyZone, Integer> arg0) {
-				// TODO Auto-generated method stub
 				return new ReadOnlyObjectWrapper<Integer>(arg0.getValue().getID());
 			}
 			
@@ -281,7 +290,6 @@ public class ConfigController {
 
 			@Override
 			public ObservableValue<String> call(CellDataFeatures<TravelSurveyZone, String> arg0) {
-				// TODO Auto-generated method stub
 				return new ReadOnlyObjectWrapper<String>(arg0.getValue().getAreaClass().name());
 			}
 			
@@ -317,6 +325,44 @@ public class ConfigController {
 					}
 
 				});
+		
+		marketList.getSelectionModel().selectedItemProperty().addListener(
+				new ChangeListener<String>() {
+
+					@Override
+					public void changed(ObservableValue<? extends String> arg0, String oldValue, String newValue) {
+
+						if (newValue != null) {
+							marketBox.setDisable(false);
+							marketRemove.setDisable(false);
+							Path newURI = currentProject.getDirectory().resolve(currentProject.getMarketFile(newValue));
+							marketSourceURI.setText(currentProject.getDirectory().toUri().relativize(newURI.toUri()).getPath())
+							;
+						} else {
+							marketSourceURI.clear();
+							marketRemove.setDisable(true);
+							marketBox.setDisable(true);
+						}
+					}
+				}
+				);
+		
+		assignerList.getSelectionModel().selectedItemProperty().addListener(
+				new ChangeListener<String>() {
+
+					@Override
+					public void changed(ObservableValue<? extends String> arg0, String oldValue, String newValue) {
+						// TODO Auto-generated method stub
+						if (newValue != null) {
+							
+						} else {
+							
+						}
+					}
+					
+				}
+				);
+		
 	}
 	
 	@FXML
@@ -328,7 +374,7 @@ public class ConfigController {
 		modelChooser.setTitle("New Model");
 		modelChooser.getExtensionFilters().add(new ExtensionFilter("wrap Project Files","*.wrp"));
 		
-		File projFile = modelChooser.showSaveDialog(null);
+		File projFile = modelChooser.showSaveDialog(scene.getWindow());
 		if (projFile == null) {
 			return false;
 		}
@@ -356,7 +402,7 @@ public class ConfigController {
 		modelChooser.setTitle("Open Model");
 		modelChooser.getExtensionFilters().add(new ExtensionFilter("wrap Project Files","*.wrp"));
 
-		File selectedFile = modelChooser.showOpenDialog(null);
+		File selectedFile = modelChooser.showOpenDialog(scene.getWindow());
 
 		if (selectedFile != null) try {
 
@@ -423,6 +469,8 @@ public class ConfigController {
 			 if (!promptToSaveChanges(e)) return false;
 		}
 		currentProject = null;
+		modelName.setText("");
+		modelDirectory.setText("");
 		markUnchanged();
 		tabPane.getSelectionModel().getSelectedItem().getOnSelectionChanged().handle(e);
 		tabPane.setDisable(true);
@@ -436,7 +484,7 @@ public class ConfigController {
 	
 	@FXML 
 	private boolean promptToSaveChanges(Event e) {
-		//TODO prompt if changes should be saved
+		// prompt if changes should be saved
 		Alert alert = new Alert(AlertType.CONFIRMATION, "Save model before closing?",ButtonType.YES,ButtonType.NO,ButtonType.CANCEL);
 		alert.setTitle("Current model has unsaved changes");
 		
@@ -462,7 +510,7 @@ public class ConfigController {
 	@FXML
 	private void updateZones(Event e) {
 		if (zoneTab.isSelected()) {
-			//TODO (re)populate zone list
+			// (re)populate zone list
 			
 			if (currentProject != null) {
 				String zoneFile = currentProject.getZoneFile();
@@ -492,7 +540,6 @@ public class ConfigController {
 	
 	private boolean reloadZones(Path path) {
 		try {
-			System.out.println("Reload zones");
 			BufferedReader reader = Files.newBufferedReader(path);
 			reader.readLine();
 			AtomicInteger idx = new AtomicInteger(0);
@@ -523,7 +570,7 @@ public class ConfigController {
 		zoneChooser.setInitialDirectory(currentProject.getDirectory().toFile());
 		zoneChooser.getExtensionFilters().add(new ExtensionFilter("Comma-Separated Values","*.csv"));
 		
-		File selectedFile = zoneChooser.showOpenDialog(null);
+		File selectedFile = zoneChooser.showOpenDialog(scene.getWindow());
 		if (selectedFile != null) {
 			zoneSourceURI.setText(currentProject.getDirectory().toUri().relativize(selectedFile.toURI()).getPath());
 			zoneSourceURI.getOnAction().handle(e);
@@ -542,6 +589,13 @@ public class ConfigController {
 			}
 		}
 	}
+	
+	@FXML
+	private void editZones(ActionEvent e) {
+		//TODO open external zone editing stage
+	}
+	
+	
 	
 	
 	
@@ -623,7 +677,7 @@ public class ConfigController {
 		skimChooser.setInitialDirectory(currentProject.getDirectory().toFile());
 		skimChooser.getExtensionFilters().add(new ExtensionFilter("Comma-Separated Values","*.csv"));
 		
-		File selectedFile = skimChooser.showOpenDialog(null);
+		File selectedFile = skimChooser.showOpenDialog(scene.getWindow());
 		if (selectedFile != null) {
 			skimSourceURI.setText(currentProject.getDirectory().toUri().relativize(selectedFile.toURI()).getPath());
 			skimSourceURI.getOnAction().handle(new ActionEvent());
@@ -632,7 +686,6 @@ public class ConfigController {
 	
 	@FXML
 	private void addSkim(Event e) {
-		System.out.println("Add skim");
 		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
 		try {
 			FXMLLoader loader = new FXMLLoader();
@@ -647,7 +700,7 @@ public class ConfigController {
 
 			
 			dialog.setDialogPane(pane);
-			dialog.setTitle("New skim");
+			dialog.setTitle("New Skim");
 			Button ok = (Button) pane.lookupButton(ButtonType.OK);
 			ok.disableProperty().bind(controller.notReady());	
 			dialog.showAndWait();
@@ -692,14 +745,130 @@ public class ConfigController {
 	private void updateMarkets(Event e) {
 		if (marketTab.isSelected()) {
 			
-			//TODO populate market list
-			//TODO populate demographic list
-			//TODO populate frinction factor function list
-			System.out.println("Updating markets");
+			// populate market list
+			if (!marketList.getSelectionModel().isEmpty()) {
+				marketList.getSelectionModel().clearSelection();
+				marketSourceURI.clear();
+				marketRemove.setDisable(true);
+			}
+			
+			if (currentProject != null) {
+				marketList.setItems(FXCollections.observableArrayList(currentProject.getMarketIDs()));
+				marketBox.setDisable(true);
+			} else {
+				marketList.getItems().clear();
+			}
+			
 		}
 
 	}
 	
+	@FXML
+	private void browseMarket(ActionEvent e) {
+		FileChooser marketChooser = new FileChooser();
+		marketChooser.setTitle("Open Market");
+		marketChooser.setInitialDirectory(currentProject.getDirectory().toFile());
+		marketChooser.getExtensionFilters().add(new ExtensionFilter("wrap Market file","*.wrm"));
+		
+		File selectedFile = marketChooser.showOpenDialog(scene.getWindow());
+		if (selectedFile != null) {
+			marketSourceURI.setText(currentProject.getDirectory().toUri().relativize(selectedFile.toURI()).getPath());
+			marketSourceURI.getOnAction().handle(e);
+		}
+	}
+	
+	@FXML
+	private void editMarket(ActionEvent e) {
+		//TODO
+	}
+	
+	@FXML
+	private void createMarket(ActionEvent e) {
+		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+		try {
+			FXMLLoader loader = new FXMLLoader();
+			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/newMarketDialog.fxml").openStream());
+			NewMarketController controller = loader.getController();
+			controller.setProject(currentProject);
+			DialogPane pane = new DialogPane();
+			
+			pane.setContent(vbox);
+			pane.getButtonTypes().add(ButtonType.CANCEL);
+			pane.getButtonTypes().add(ButtonType.OK);
+			
+			dialog.setDialogPane(pane);
+			dialog.setTitle("New Market");
+			Button ok = (Button) pane.lookupButton(ButtonType.OK);
+			ok.disableProperty().bind(controller.notReady());
+			dialog.showAndWait();
+			
+			if (dialog.getResult() == ButtonType.OK) {
+				currentProject.addMarket(controller.getMarketID(),controller.getMarketSourceURI());
+				marketList.getItems().add(controller.getMarketID());
+				markChanged();
+			}
+		} catch (IOException exception) {
+			//TODO
+		}
+	}
+	
+	@FXML
+	private void attachMarket(ActionEvent e) {
+		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+		try {
+			FXMLLoader loader = new FXMLLoader();
+			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/attachMarketDialog.fxml").openStream());
+			AttachMarketController controller = loader.getController();
+			controller.setProject(currentProject);
+			DialogPane pane = new DialogPane();
+			
+			pane.setContent(vbox);
+			pane.getButtonTypes().add(ButtonType.CANCEL);
+			pane.getButtonTypes().add(ButtonType.OK);
+			
+			dialog.setDialogPane(pane);
+			dialog.setTitle("Attach Market");
+			Button ok = (Button) pane.lookupButton(ButtonType.OK);
+			ok.disableProperty().bind(controller.notReady());
+			dialog.showAndWait();
+			
+			if (dialog.getResult() == ButtonType.OK) {
+				currentProject.addMarket(controller.getMarketID(),controller.getMarketSourceURI());
+				marketList.getItems().add(controller.getMarketID());
+				markChanged();
+			}
+		} catch (IOException exception) {
+			//TODO
+		}
+	}
+	
+	@FXML
+	private void removeMarket(ActionEvent e) {
+		String marketName = marketList.getSelectionModel().getSelectedItem();
+		if (marketName != null) {
+			Alert alert = new Alert(AlertType.CONFIRMATION,"Delete market "+marketName+"?",ButtonType.YES,ButtonType.NO);
+			alert.showAndWait();
+			
+			if (alert.getResult() == ButtonType.YES) {
+				marketList.getItems().remove(marketName);
+				currentProject.removeMarket(marketName);
+				markChanged();
+			}
+		}
+	}
+	
+	@FXML
+	private void changeMarketSourceURI(ActionEvent e) {
+		
+		String curMarketID = marketList.getSelectionModel().getSelectedItem();
+		if (!marketSourceURI.getText()
+				.equals(
+						currentProject.getMarketFile(curMarketID)
+						)) {
+			currentProject.setMarketFile(curMarketID,marketSourceURI.getText());
+			markChanged();
+		}
+	}
 	
 	
 	
@@ -711,6 +880,31 @@ public class ConfigController {
 			System.out.println("Updating assigners");
 		}
 
+	}
+	
+	@FXML
+	private void changeAssignerClass(ActionEvent e) {
+		//TODO
+	}
+	
+	@FXML
+	private void changeAssignerSourceURI(ActionEvent e) {
+		//TODO
+	}
+	
+	@FXML
+	private void browseAssigner(ActionEvent e) {
+		//TODO
+	}
+	
+	@FXML
+	private void addAssigner(ActionEvent e) {
+		//TODO
+	}
+	
+	@FXML
+	private void editAssigner(ActionEvent e) {
+		//TODO
 	}
 	
 }

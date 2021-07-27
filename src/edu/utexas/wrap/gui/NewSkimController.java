@@ -12,6 +12,7 @@ import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.stage.Window;
 
 public class NewSkimController {
 
@@ -31,6 +32,8 @@ public class NewSkimController {
 	private ComboBox<String> skimFunctionChooser;
 	
 	private Project currentProject;
+	
+	private Window parent;
 		
 
 	@FXML
@@ -48,7 +51,7 @@ public class NewSkimController {
 		skimChooser.setInitialDirectory(currentProject.getDirectory().toFile());
 		skimChooser.getExtensionFilters().add(new ExtensionFilter("Comma-Separated Values","*.csv"));
 		
-		File selectedFile = skimChooser.showOpenDialog(null);
+		File selectedFile = skimChooser.showOpenDialog(parent);
 		if (selectedFile != null) {
 			skimSourceURI.setText(currentProject.getDirectory().toUri().relativize(selectedFile.toURI()).getPath());
 			skimSourceURI.getOnAction().handle(new ActionEvent());
@@ -79,6 +82,10 @@ public class NewSkimController {
 		currentProject = project;
 		skimAssignerChooser.getItems().addAll(currentProject.getAssignerIDs());
 
+	}
+	
+	protected void setWindow(Window parent) {
+		this.parent = parent;
 	}
 
 	protected String getSkimSourceURI() {

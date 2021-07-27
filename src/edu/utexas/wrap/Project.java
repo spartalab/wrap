@@ -358,7 +358,7 @@ public class Project implements Runnable {
 	public List<String> getSkimIDs() {
 		// TODO Auto-generated method stub
 		String prop = props.getProperty("skims.ids");
-		if (prop == null) return new ArrayList<String>();
+		if (prop == null || prop.replaceAll(",", "").isBlank()) return new ArrayList<String>();
 		String[] ids = prop.split(",");
 		return new ArrayList<String>(List.of(ids));
 	}
@@ -366,8 +366,16 @@ public class Project implements Runnable {
 	public List<String> getAssignerIDs() {
 		// TODO Auto-generated method stub
 		String params = props.getProperty("assigners.ids");
-		if (params == null || params.isBlank()) return new ArrayList<String>();
+		if (params == null || params.replaceAll(",", "").isBlank()) return new ArrayList<String>();
 		return new ArrayList<String>(List.of(params.split(",")));
+	}
+	
+	public List<String> getMarketIDs() {
+		// TODO Auto-generated method stub
+		String params = props.getProperty("markets.ids");
+		if (params == null || params.replaceAll(",", "").isBlank()) return new ArrayList<String>();
+		String[] ids = params.split(",");
+		return new ArrayList<String>(List.of(ids));
 	}
 
 	public String getSkimFile(String skimID) {
@@ -382,6 +390,10 @@ public class Project implements Runnable {
 		return props.getProperty("skims."+skimID+".function");
 	}
 	
+	public String getMarketFile(String marketID) {
+		return props.getProperty("markets."+marketID+".file");
+	}
+	
 	public void removeSkim(String skimID) {
 		List<String> ids = getSkimIDs();
 		ids.remove(skimID);
@@ -391,6 +403,18 @@ public class Project implements Runnable {
 		Set<String> keys = props.stringPropertyNames();
 		for (String key : keys) {
 			if (key.startsWith("skims."+skimID)) props.remove(key);
+		}
+	}
+	
+	public void removeMarket(String marketID) {
+		List<String> ids = getMarketIDs();
+		ids.remove(marketID);
+		if (!ids.isEmpty()) props.setProperty("markets.ids", String.join(",", ids));
+		else props.remove("markets.ids");
+		
+		Set<String> keys = props.stringPropertyNames();
+		for (String key : keys) {
+			if (key.startsWith("markets."+marketID)) props.remove(key);
 		}
 	}
 
@@ -405,6 +429,13 @@ public class Project implements Runnable {
 		
 	}
 
+	public void addMarket(String marketID, String marketSourceURI) {
+		List<String> ids = getMarketIDs();
+		ids.add(marketID);
+		props.setProperty("markets.ids", String.join(",", ids));
+		
+		props.setProperty("markets."+marketID+".file", marketSourceURI);
+	}
 	
 	public void setSkimFile(String curSkimID, String text) {
 		props.setProperty("skims."+curSkimID+".file", text);
@@ -427,4 +458,11 @@ public class Project implements Runnable {
 		// TODO Auto-generated method stub
 		props.setProperty("network.zones", zoneFile);
 	}
+
+	public void setMarketFile(String curMarketID, String text) {
+		// TODO Auto-generated method stub
+		props.setProperty("markets."+curMarketID+".file", text);
+	}
+
+	
 }
