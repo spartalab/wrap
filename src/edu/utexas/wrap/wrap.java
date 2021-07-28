@@ -23,6 +23,7 @@ import java.net.URL;
 import edu.utexas.wrap.gui.ConfigController;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.application.Application;
@@ -33,6 +34,7 @@ public class wrap extends Application{
 	public static void main(String[] args) {
 		
 		launch(args);
+		
 	}
 
 	@Override
@@ -41,6 +43,7 @@ public class wrap extends Application{
 		
 		// TODO Auto-generated method stub
 		primaryStage.setTitle("wrap");
+		primaryStage.getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
 		URL url = getClass().getResource("/edu/utexas/wrap/gui/wrapConfig.fxml");
 	
 		FXMLLoader loader = new FXMLLoader();
@@ -48,6 +51,7 @@ public class wrap extends Application{
 		Scene scene  = loader.load();
 		
 		ConfigController controller = loader.getController();
+		controller.setHostServices(getHostServices());
 		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 
 			@Override

@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 import edu.utexas.wrap.Project;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.TravelSurveyZone;
+import javafx.application.HostServices;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -230,6 +231,7 @@ public class ConfigController {
 	private Button assignerCreate;
 	
 	
+	private HostServices svcs;
 	
 	private Project currentProject;
 	
@@ -523,6 +525,28 @@ public class ConfigController {
 		if (closeModel(arg0)) System.exit(0);
 	}
 	
+	@FXML
+	public void about(ActionEvent arg0) {
+		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+		try {
+			FXMLLoader loader = new FXMLLoader();
+			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/aboutDialog.fxml").openStream());
+			AboutDialog controller = loader.getController();
+			
+			controller.setHostServices(svcs);
+			DialogPane pane = new DialogPane();
+			
+			pane.setContent(vbox);
+			dialog.setTitle("About wrap");
+			pane.getButtonTypes().add(ButtonType.OK);
+			dialog.setDialogPane(pane);
+			dialog.showAndWait();
+			
+		} catch (IOException e) {
+			//TODO
+			e.printStackTrace();
+		}
+	}
 	
 	
 	
@@ -1032,5 +1056,10 @@ public class ConfigController {
 				markChanged();
 			}
 		}
+	}
+
+	public void setHostServices(HostServices hostServices) {
+		// TODO Auto-generated method stub
+		svcs = hostServices;
 	}
 }

@@ -76,7 +76,7 @@
               </Menu>
               <Menu mnemonicParsing="false" text="Help">
                 <items>
-                  <MenuItem fx:id="about" mnemonicParsing="false" text="About wrap" />
+                  <MenuItem fx:id="about" mnemonicParsing="false" onAction="#about" text="About wrap" />
                 </items>
               </Menu>
             </menus>
