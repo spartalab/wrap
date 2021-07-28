@@ -41,6 +41,7 @@ import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableColumn.CellDataFeatures;
+import javafx.scene.image.Image;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
 import javafx.scene.control.ToolBar;
@@ -52,6 +53,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.stage.Stage;
 import javafx.util.Callback;
 
 public class ConfigController {
@@ -410,6 +412,8 @@ public class ConfigController {
 			
 		} catch (Exception exception) {
 			Alert alert = new Alert(AlertType.ERROR,exception.getLocalizedMessage());
+			((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
+
 			alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 			alert.show();
 			return false;
@@ -508,7 +512,7 @@ public class ConfigController {
 		// prompt if changes should be saved
 		Alert alert = new Alert(AlertType.CONFIRMATION, "Save model before closing?",ButtonType.YES,ButtonType.NO,ButtonType.CANCEL);
 		alert.setTitle("Current model has unsaved changes");
-		
+		((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
 		Optional<ButtonType> choice = alert.showAndWait();
 		if (choice.isPresent()) {
 			
@@ -535,11 +539,12 @@ public class ConfigController {
 			
 			controller.setHostServices(svcs);
 			DialogPane pane = new DialogPane();
-			
+
 			pane.setContent(vbox);
 			dialog.setTitle("About wrap");
 			pane.getButtonTypes().add(ButtonType.OK);
 			dialog.setDialogPane(pane);
+			((Stage) pane.getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
 			dialog.showAndWait();
 			
 		} catch (IOException e) {
@@ -594,6 +599,8 @@ public class ConfigController {
 		} catch (Exception e) {
 			zoneSourceURI.clear();
 			Alert alert = new Alert(AlertType.ERROR,"Error encountered while loading zone file. It may be corrupted.\n\nFile: "+path.toString()+"\n\nDetails: "+e.getLocalizedMessage());
+			((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
+
 			alert.getDialogPane().setMinWidth(Region.USE_PREF_SIZE);
 			alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 			alert.show();
@@ -742,6 +749,8 @@ public class ConfigController {
 			dialog.setTitle("New Skim");
 			Button ok = (Button) pane.lookupButton(ButtonType.OK);
 			ok.disableProperty().bind(controller.notReady());	
+			((Stage) pane.getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
+
 			dialog.showAndWait();
 		
 			if (dialog.getResult() == ButtonType.OK) {
@@ -767,6 +776,7 @@ public class ConfigController {
 		String skimName = skimList.getSelectionModel().getSelectedItem();
 		if (skimName != null) {
 			Alert alert = new Alert(AlertType.CONFIRMATION,"Remove skim "+skimName+" from model?",ButtonType.YES,ButtonType.NO);
+			((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
 			alert.showAndWait();
 			
 			if (alert.getResult() == ButtonType.YES) {
@@ -831,6 +841,7 @@ public class ConfigController {
 			controller.setProject(currentProject);
 			DialogPane pane = new DialogPane();
 			
+
 			pane.setContent(vbox);
 			pane.getButtonTypes().add(ButtonType.CANCEL);
 			pane.getButtonTypes().add(ButtonType.OK);
@@ -840,6 +851,7 @@ public class ConfigController {
 			Button ok = (Button) pane.lookupButton(ButtonType.OK);
 			ok.setText("Create...");
 			ok.disableProperty().bind(controller.notReady());
+			((Stage) pane.getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
 			dialog.showAndWait();
 			
 			if (dialog.getResult() == ButtonType.OK) {
@@ -865,6 +877,8 @@ public class ConfigController {
 			controller.setProject(currentProject);
 			DialogPane pane = new DialogPane();
 			
+
+			
 			pane.setContent(vbox);
 			pane.getButtonTypes().add(ButtonType.CANCEL);
 			pane.getButtonTypes().add(ButtonType.OK);
@@ -873,6 +887,7 @@ public class ConfigController {
 			dialog.setTitle("Attach Market");
 			Button ok = (Button) pane.lookupButton(ButtonType.OK);
 			ok.disableProperty().bind(controller.notReady());
+			((Stage) pane.getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
 			dialog.showAndWait();
 			
 			if (dialog.getResult() == ButtonType.OK) {
@@ -890,6 +905,8 @@ public class ConfigController {
 		String marketName = marketList.getSelectionModel().getSelectedItem();
 		if (marketName != null) {
 			Alert alert = new Alert(AlertType.CONFIRMATION,"Remove market "+marketName+" from model?",ButtonType.YES,ButtonType.NO);
+			((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
+
 			alert.showAndWait();
 			
 			if (alert.getResult() == ButtonType.YES) {
@@ -986,6 +1003,7 @@ public class ConfigController {
 			controller.setProject(currentProject);
 			DialogPane pane = new DialogPane();
 			
+
 			pane.setContent(vbox);
 			pane.getButtonTypes().add(ButtonType.OK);
 			pane.getButtonTypes().add(ButtonType.CANCEL);
@@ -994,6 +1012,7 @@ public class ConfigController {
 			dialog.setTitle("Attach Assigner");
 			Button ok = (Button) pane.lookupButton(ButtonType.OK);
 			ok.disableProperty().bind(controller.notReady());
+			((Stage) pane.getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
 			dialog.showAndWait();
 			
 			if (dialog.getResult() == ButtonType.OK) {
@@ -1020,7 +1039,7 @@ public class ConfigController {
 			NewAssignerController controller = loader.getController();
 			controller.setProject(currentProject);
 			DialogPane pane = new DialogPane();
-			
+
 			pane.setContent(vbox);
 			pane.getButtonTypes().add(ButtonType.OK);
 			pane.getButtonTypes().add(ButtonType.CANCEL);
@@ -1030,6 +1049,7 @@ public class ConfigController {
 			Button ok = (Button) pane.lookupButton(ButtonType.OK);
 			ok.setText("Create...");
 			ok.disableProperty().bind(controller.notReady());
+			((Stage) pane.getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
 			dialog.showAndWait();
 			//TODO open dialog to configure assigner
 			
@@ -1048,6 +1068,8 @@ public class ConfigController {
 		String assignerName = assignerList.getSelectionModel().getSelectedItem();
 		if (assignerName != null) {
 			Alert alert = new Alert(AlertType.CONFIRMATION,"Remove assigner "+assignerName+" from model?",ButtonType.YES,ButtonType.NO);
+			((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
+
 			alert.showAndWait();
 			
 			if (alert.getResult() == ButtonType.YES) {
