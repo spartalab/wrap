@@ -34,7 +34,7 @@ public class NewAssignerController {
 	
 	@FXML
 	private void initialize() {
-		assignerClassChooser.getItems().addAll("Built-in Assigner","External Assigner","File Output");
+		assignerClassChooser.getItems().addAll("Built-in Static Assigner","External Static Assigner","File Output");
 	}
 	
 	@FXML

@@ -249,11 +249,11 @@ public class ConfigController {
 			return "Travel time";
 			
 		case "builtin":
-			return "Built-in Assigner";
+			return "Built-in Static Assigner";
 		case "file":
 			return "File Output";
 		case "stream":
-			return "External Assigner";
+			return "External Static Assigner";
 		default:
 			return null;
 		}
@@ -266,11 +266,11 @@ public class ConfigController {
 			return "travelTimeSingleOcc";
 		case "Travel time":
 			return "travelTime";
-		case "Built-in Assigner":
+		case "Built-in Static Assigner":
 			return "builtin";
 		case "File Output":
 			return "file";
-		case "External Assigner":
+		case "External Static Assigner":
 			return "stream";
 		default:
 			return null;

@@ -18,6 +18,7 @@
 package edu.utexas.wrap.assignment;
 
 import java.io.IOException;
+import java.util.concurrent.atomic.DoubleAdder;
 import java.util.stream.Stream;
 
 import edu.utexas.wrap.net.Graph;
@@ -27,7 +28,8 @@ public class GapEvaluator<T extends AssignmentContainer> implements AssignmentEv
 	private Graph network;
 	private AssignmentProvider<T> provider;
 	private AssignmentConsumer<T> consumer;
-	private Double systemIncurredCost, cheapestPossibleCost; //total system general cost, total cheapest path general cost
+//	private Double systemIncurredCost, cheapestPossibleCost; //total system general cost, total cheapest path general cost
+	private DoubleAdder incurredCost, cheapestCost;
 	
 	public GapEvaluator(Graph network,
 			AssignmentProvider<T> provider,
@@ -40,12 +42,12 @@ public class GapEvaluator<T extends AssignmentContainer> implements AssignmentEv
 
 	@Override
 	public double getValue(Stream<T> containerStream) {
-		systemIncurredCost = 0d;
-		cheapestPossibleCost = 0d;
+//		systemIncurredCost = 0d;
+//		cheapestPossibleCost = 0d;
 		
 		containerStream.forEach(this::process);
 		
-		return (systemIncurredCost - cheapestPossibleCost)/cheapestPossibleCost;
+		return (incurredCost.sum() - cheapestCost.sum())/cheapestCost.sum();
 	}
 
 	private void process(T container) {
@@ -61,13 +63,15 @@ public class GapEvaluator<T extends AssignmentContainer> implements AssignmentEv
 		double cheapestContainerCost = network.cheapestCostPossible(container);
 		 
 		
-		synchronized (systemIncurredCost) {
-			systemIncurredCost += incurredCost;
-		}
-		synchronized (cheapestPossibleCost) {
-			cheapestPossibleCost += cheapestContainerCost;
+//		synchronized (this.incurredCost) {
+			this.incurredCost.add(incurredCost);
+//			systemIncurredCost += incurredCost;
+//		}
+//		synchronized (this.cheapestCost) {
+			this.cheapestCost.add(cheapestContainerCost);
+//			cheapestPossibleCost += cheapestContainerCost;
 			
-		}
+//		}
 		
 		try {
 			consumer.consumeStructure(container);
