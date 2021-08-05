@@ -105,12 +105,12 @@
                                           <HBox prefWidth="200.0" spacing="5.0" VBox.vgrow="NEVER">
                                              <children>
                                                 <TextField fx:id="zoneSourceURI" editable="false" onAction="#changeZoneSourceURI" promptText="Zone file" HBox.hgrow="ALWAYS" />
-                                                <Button fx:id="zoneBrowse" mnemonicParsing="false" onAction="#browseZones" prefWidth="70.0" text="Browse...">
+                                                <Button fx:id="zoneBrowse" mnemonicParsing="false" onAction="#browseZones" text="Browse...">
                                                    <HBox.margin>
                                                       <Insets />
                                                    </HBox.margin>
                                                 </Button>
-                                                <Button id="editZone" fx:id="zoneEdit" alignment="CENTER" disable="true" mnemonicParsing="false" onAction="#editZones" prefWidth="70.0" text="Edit..." HBox.hgrow="NEVER" />
+                                                <Button id="editZone" fx:id="zoneEdit" alignment="CENTER" disable="true" mnemonicParsing="false" onAction="#editZones" text="Edit..." HBox.hgrow="NEVER" />
                                              </children>
                                              <VBox.margin>
                                                 <Insets bottom="5.0" />
@@ -173,7 +173,7 @@
                                                 <HBox spacing="5.0" VBox.vgrow="NEVER">
                                                    <children>
                                                       <TextField id="skimSourcePath" fx:id="skimSourceURI" editable="false" minWidth="-Infinity" onAction="#changeSkimSourceURI" prefHeight="25.0" prefWidth="250.0" HBox.hgrow="ALWAYS" />
-                                                      <Button id="skimSourceBrowse" fx:id="skimSourceBrowse" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#browseSkim" prefWidth="70.0" text="Browse..." />
+                                                      <Button id="skimSourceBrowse" fx:id="skimSourceBrowse" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#browseSkim" text="Browse..." />
                                                    </children>
                                                 </HBox>
                                                 <Label layoutX="10.0" layoutY="10.0" text="Assigner:">
@@ -242,12 +242,12 @@
                                                             <Insets />
                                                          </HBox.margin>
                                                       </TextField>
-                                                      <Button fx:id="marketBrowse" mnemonicParsing="false" onAction="#browseMarket" prefWidth="70.0" text="Browse...">
+                                                      <Button fx:id="marketBrowse" mnemonicParsing="false" onAction="#browseMarket" text="Browse...">
                                                          <HBox.margin>
                                                             <Insets />
                                                          </HBox.margin>
                                                       </Button>
-                                                      <Button fx:id="marketEdit" disable="true" mnemonicParsing="false" onAction="#editMarket" prefWidth="70.0" text="Edit..." />
+                                                      <Button fx:id="marketEdit" disable="true" mnemonicParsing="false" onAction="#editMarket" text="Edit..." />
                                                    </children>
                                                 </HBox>
                                              </children>
@@ -296,13 +296,63 @@
                                                 <HBox spacing="5.0">
                                                    <children>
                                                       <TextField id="assignerConfigurationPath" fx:id="assignerSourceURI" editable="false" minWidth="-Infinity" onAction="#changeAssignerSourceURI" prefHeight="25.0" prefWidth="250.0" HBox.hgrow="ALWAYS" />
-                                                      <Button id="assignerConfigurationBrowse" fx:id="assignerBrowse" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#browseAssigner" prefWidth="70.0" text="Browse..." />
-                                                      <Button id="assignerConfigurationEdit" fx:id="assignerEdit" disable="true" layoutX="332.0" layoutY="10.0" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#editAssigner" prefWidth="70.0" text="Edit..." />
+                                                      <Button id="assignerConfigurationBrowse" fx:id="assignerBrowse" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#browseAssigner" text="Browse..." />
+                                                      <Button id="assignerConfigurationEdit" fx:id="assignerEdit" disable="true" layoutX="332.0" layoutY="10.0" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#editAssigner" text="Edit..." />
                                                    </children>
                                                 </HBox>
                                              </children>
                                           </VBox>
                                        </children>
+                                    </HBox>
+                                 </children>
+                              </AnchorPane>
+                          </content>
+                        </Tab>
+                        <Tab fx:id="surrogateTab" closable="false" disable="true" text="Surrogate Demand Data">
+                          <content>
+                            <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                                 <children>
+                                    <HBox prefHeight="366.2857142857143" prefWidth="640.0" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                       <children>
+                                          <VBox>
+                                             <children>
+                                                <Label text="Surrogate ID" />
+                                                <ListView id="purposeList" fx:id="surrogateList" prefHeight="340.0" prefWidth="150.0" VBox.vgrow="ALWAYS" />
+                                                <HBox spacing="5.0" VBox.vgrow="NEVER">
+                                                   <children>
+                                                      <Button id="addPurpose" fx:id="surrogateAttach" alignment="CENTER" mnemonicParsing="false" text="+" />
+                                                      <Button id="removePurpose" fx:id="surrogateRemove" alignment="CENTER" disable="true" mnemonicParsing="false" text="-" />
+                                                   </children>
+                                                   <padding>
+                                                      <Insets top="5.0" />
+                                                   </padding>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                          <VBox fx:id="surrogateBox" disable="true" HBox.hgrow="ALWAYS">
+                                             <children>
+                                                <Label text="Configuration file:" />
+                                                <HBox prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                                                   <children>
+                                                      <TextField fx:id="surrogateSourceURI" editable="false" HBox.hgrow="ALWAYS">
+                                                         <HBox.margin>
+                                                            <Insets />
+                                                         </HBox.margin>
+                                                      </TextField>
+                                                      <Button fx:id="surrogateBrowse" mnemonicParsing="false" text="Browse...">
+                                                         <HBox.margin>
+                                                            <Insets />
+                                                         </HBox.margin>
+                                                      </Button>
+                                                      <Button fx:id="surrogateEdit" disable="true" mnemonicParsing="false" text="Edit..." />
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                       <padding>
+                                          <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                                       </padding>
                                     </HBox>
                                  </children>
                               </AnchorPane>

@@ -32,6 +32,7 @@ import java.util.NavigableMap;
 public class CostBasedFrictionFactorMap implements FrictionFactorMap {
 
 	private NavigableMap<Integer, Float> costFactors;
+	private String name;
 
 
 	/**
@@ -39,7 +40,8 @@ public class CostBasedFrictionFactorMap implements FrictionFactorMap {
 	 * through interpolation of costs between the provided values, or the values
 	 * themselves if the cost is an integer for which a value is defined
 	 */
-	public CostBasedFrictionFactorMap(NavigableMap<Integer, Float> factors) {
+	public CostBasedFrictionFactorMap(String name, NavigableMap<Integer, Float> factors) {
+		this.name = name;
 		costFactors = factors;
 	}
 	
@@ -76,6 +78,11 @@ public class CostBasedFrictionFactorMap implements FrictionFactorMap {
 		Float pct = (skimCost - lowerBd.getKey())/(upperBd.getKey() - lowerBd.getKey());
 		
 		return pct*upperBd.getValue() + (1-pct)*lowerBd.getValue();
+	}
+	
+	@Override
+	public String toString() {
+		return name;
 	}
 
 }

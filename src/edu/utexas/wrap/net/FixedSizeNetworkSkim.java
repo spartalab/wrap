@@ -17,6 +17,12 @@
  */
 package edu.utexas.wrap.net;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
+
 /**A NetworkSkim implementation which stores the full matrix in memory vectors
  * 
  * This implementation provides a re-writable matrix which stores cost data as
@@ -28,13 +34,18 @@ package edu.utexas.wrap.net;
 public class FixedSizeNetworkSkim implements NetworkSkim {
 	
 	float[][] skimData;
-
+	private Path initSource;
+	private String id;
+	private Map<Integer,TravelSurveyZone> zones;
+	
 	/**Construct a fixed skim from pre-existing matrix
 	 * 
 	 * @param skim
 	 */
-	public FixedSizeNetworkSkim(float[][] skim) {
-		skimData = skim;
+	public FixedSizeNetworkSkim(String name, Path source,Map<Integer,TravelSurveyZone> zones) {
+		initSource = source;
+		id = name;
+		this.zones = zones;
 	}
 	
 	/**Create an empty matrix of a given n*n size
@@ -57,4 +68,41 @@ public class FixedSizeNetworkSkim implements NetworkSkim {
 		skimData[orig.getOrder()][dest.getOrder()] = cost;
 	}
 
+	@Override
+	public String toString() {
+		return id;
+	}
+	
+	public void loadFromFile(Boolean header) throws IOException {
+		skimData = new float[zones.size()][zones.size()];
+//		Map<TravelSurveyZone,Map<TravelSurveyZone,Float>> ret = new ConcurrentSkipListMap<TravelSurveyZone, Map<TravelSurveyZone,Float>>(new ZoneComparator());
+		BufferedReader in = null;
+		
+		try {
+			in = Files.newBufferedReader(initSource);
+			if (header) in.readLine();
+			in.lines()//.parallel()
+			.forEach(line -> processLine(line));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		finally {
+			if (in != null)
+				try {
+					in.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+		}
+	}
+	
+	private void processLine(String line) {
+		String[] args = line.split(",");
+		TravelSurveyZone orig = zones.get(Integer.parseInt(args[0]));
+		TravelSurveyZone dest = zones.get(Integer.parseInt(args[1]));
+		Float cost = Float.parseFloat(args[2]);
+//		ret.putIfAbsent(orig, new ConcurrentSkipListMap<TravelSurveyZone, Float>(new ZoneComparator()));
+		skimData[orig.getOrder()][dest.getOrder()] = cost;
+//		ret.get(orig).put(dest, cost);
+	}
 }

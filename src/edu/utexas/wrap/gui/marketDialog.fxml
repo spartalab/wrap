@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+
+<VBox prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.utexas.wrap.gui.EditMarketController">
+   <children>
+      <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+        <tabs>
+          <Tab closable="false" text="Demographics">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <HBox prefHeight="370.2857142857143" prefWidth="600.0" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <padding>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </padding>
+                           <children>
+                              <VBox spacing="5.0">
+                                 <children>
+                                    <Label text="Demographic ID" />
+                                    <ListView fx:id="demographicList" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                                    <HBox prefWidth="200.0" spacing="5.0" VBox.vgrow="NEVER">
+                                       <children>
+                                          <Button fx:id="demographicAdd" mnemonicParsing="false" text="+" />
+                                          <Button fx:id="demographicRemove" disable="true" mnemonicParsing="false" text="-" />
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </VBox>
+                              <VBox fx:id="demographicBox" disable="true" prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label text="Data source:" />
+                                    <HBox prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                                       <children>
+                                          <TextField fx:id="demographicSourceURI" HBox.hgrow="ALWAYS" />
+                                          <Button fx:id="demographicBrowse" mnemonicParsing="false" text="Browse..." />
+                                          <Button fx:id="demographicEdit" disable="true" mnemonicParsing="false" text="Edit..." />
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets />
+                                       </VBox.margin>
+                                    </HBox>
+                                 </children>
+                                 <padding>
+                                    <Insets top="10.0" />
+                                 </padding>
+                              </VBox>
+                           </children>
+                        </HBox>
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+          <Tab closable="false" text="Friction Functions">
+            <content>
+              <AnchorPane minHeight="0.0" minWidth="0.0">
+                     <children>
+                        <HBox prefHeight="347.42857142857144" prefWidth="600.0" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <padding>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </padding>
+                           <children>
+                              <VBox spacing="5.0">
+                                 <children>
+                                    <Label text="Friction Function ID" />
+                                    <ListView fx:id="frictionFunctionList" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                                    <HBox prefWidth="200.0" spacing="5.0" VBox.vgrow="NEVER">
+                                       <children>
+                                          <Button fx:id="frictionFunctionAdd" mnemonicParsing="false" text="+" />
+                                          <Button fx:id="frictionFunctionRemove" disable="true" mnemonicParsing="false" text="-" />
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </VBox>
+                              <VBox fx:id="frictionFunctionBox" disable="true" prefHeight="200.0" prefWidth="100.0" spacing="10.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <HBox prefWidth="200.0" spacing="25.0" VBox.vgrow="NEVER">
+                                       <children>
+                                          <RadioButton fx:id="frictionFunctionDiscretized" mnemonicParsing="false" selected="true" text="Discretized" />
+                                          <RadioButton fx:id="frictionFunctionGamma" disable="true" mnemonicParsing="false" text="Gamma" />
+                                       </children>
+                                    </HBox>
+                                    <VBox>
+                                       <children>
+                                          <Label text="Data source:" />
+                                          <HBox prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                                             <children>
+                                                <TextField fx:id="frictionFunctionSourceURI" HBox.hgrow="ALWAYS" />
+                                                <Button fx:id="frictionFunctionBrowse" mnemonicParsing="false" text="Browse..." />
+                                                <Button fx:id="frictionFunctionEdit" disable="true" mnemonicParsing="false" text="Edit..." />
+                                             </children>
+                                          </HBox>
+                                       </children>
+                                    </VBox>
+                                 </children>
+                                 <padding>
+                                    <Insets top="10.0" />
+                                 </padding>
+                              </VBox>
+                           </children>
+                        </HBox>
+                     </children>
+                  </AnchorPane>
+            </content>
+          </Tab>
+            <Tab closable="false" text="Trip Purposes">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <HBox prefHeight="347.42857142857144" prefWidth="600.0" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <padding>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </padding>
+                           <children>
+                              <VBox spacing="5.0">
+                                 <children>
+                                    <Label text="Trip Purpose ID" />
+                                    <ListView fx:id="purposeList" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                                    <HBox prefWidth="200.0" spacing="5.0" VBox.vgrow="NEVER">
+                                       <children>
+                                          <Button fx:id="purposeAdd" mnemonicParsing="false" text="+" />
+                                          <Button fx:id="purposeRemove" disable="true" mnemonicParsing="false" text="-" />
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </VBox>
+                              <VBox fx:id="purposeBox" disable="true" prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label text="Data source:" />
+                                    <HBox prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                                       <children>
+                                          <TextField fx:id="purposeSourceURI" editable="false" HBox.hgrow="ALWAYS" />
+                                          <Button fx:id="purposeBrowse" mnemonicParsing="false" text="Browse..." />
+                                          <Button fx:id="purposeEdit" disable="true" mnemonicParsing="false" text="Edit..." />
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets />
+                                       </VBox.margin>
+                                    </HBox>
+                                 </children>
+                                 <padding>
+                                    <Insets top="10.0" />
+                                 </padding>
+                              </VBox>
+                           </children>
+                        </HBox>
+                     </children>
+                  </AnchorPane>
+              </content>
+            </Tab>
+            <Tab closable="false" disable="true" text="Surrogate Demand Data">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <HBox prefHeight="347.42857142857144" prefWidth="600.0" spacing="10.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <padding>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </padding>
+                           <children>
+                              <VBox spacing="5.0">
+                                 <children>
+                                    <Label text="Surrogate ID" />
+                                    <ListView fx:id="surrogateList" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                                    <HBox prefWidth="200.0" spacing="5.0" VBox.vgrow="NEVER">
+                                       <children>
+                                          <Button fx:id="surrogateAdd" mnemonicParsing="false" text="+" />
+                                          <Button fx:id="surrogateRemove" disable="true" mnemonicParsing="false" text="-" />
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </VBox>
+                              <VBox fx:id="surrogateBox" disable="true" prefHeight="200.0" prefWidth="100.0" HBox.hgrow="ALWAYS">
+                                 <children>
+                                    <Label text="Data source:" />
+                                    <HBox prefHeight="100.0" prefWidth="200.0" spacing="5.0">
+                                       <children>
+                                          <TextField fx:id="surrogateSourceURI" HBox.hgrow="ALWAYS" />
+                                          <Button fx:id="surrogateBrowse" mnemonicParsing="false" text="Browse..." />
+                                          <Button fx:id="surrogateEdit" disable="true" mnemonicParsing="false" text="Edit..." />
+                                       </children>
+                                       <VBox.margin>
+                                          <Insets />
+                                       </VBox.margin>
+                                    </HBox>
+                                 </children>
+                                 <padding>
+                                    <Insets top="10.0" />
+                                 </padding>
+                              </VBox>
+                           </children>
+                        </HBox>
+                     </children>
+                  </AnchorPane>
+              </content>
+            </Tab>
+        </tabs>
+      </TabPane>
+      <ButtonBar prefHeight="40.0" prefWidth="200.0">
+        <buttons>
+          <Button fx:id="marketOK" mnemonicParsing="false" text="OK" />
+            <Button fx:id="marketCancel" mnemonicParsing="false" text="Cancel" />
+        </buttons>
+         <VBox.margin>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </VBox.margin>
+      </ButtonBar>
+      <Separator prefWidth="200.0" />
+      <HBox id="HBox" alignment="CENTER_LEFT" maxHeight="-Infinity" prefHeight="20.0" spacing="5.0" VBox.vgrow="NEVER">
+         <children>
+            <Label disable="true" maxHeight="-Infinity" maxWidth="-1.0" minWidth="50.0" prefHeight="25.0" text="Market:" HBox.hgrow="NEVER" />
+            <Label id="projectName" fx:id="marketName" maxHeight="-Infinity" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="200.0" HBox.hgrow="NEVER" />
+            <Separator maxHeight="-Infinity" orientation="VERTICAL" prefHeight="25.0" HBox.hgrow="NEVER" />
+            <Label disable="true" maxHeight="-Infinity" maxWidth="-1.0" minWidth="55.0" prefHeight="25.0" text="Directory: " HBox.hgrow="NEVER" />
+            <Label id="projectDirectory" fx:id="marketDirectory" layoutX="55.0" layoutY="15.0" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="250.0" HBox.hgrow="ALWAYS" />
+         </children>
+         <padding>
+            <Insets bottom="3.0" left="3.0" right="3.0" />
+         </padding>
+      </HBox>
+   </children>
+</VBox>

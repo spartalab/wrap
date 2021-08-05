@@ -10,13 +10,16 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import edu.utexas.wrap.Project;
+import edu.utexas.wrap.marketsegmentation.Market;
 import edu.utexas.wrap.net.AreaClass;
+import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
 import javafx.application.HostServices;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -53,6 +56,7 @@ import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.util.Callback;
 
@@ -60,6 +64,8 @@ public class ConfigController {
 	
 	@FXML
 	private Scene scene;
+
+	private Image wrapIcon;
 
 	@FXML
 	private MenuItem modelNew;
@@ -145,7 +151,7 @@ public class ConfigController {
 	private VBox skimBox;
 
 	@FXML
-	private ListView<String> skimList;
+	private ListView<NetworkSkim> skimList;
 
 	@FXML
 	private Button skimAdd;
@@ -174,7 +180,7 @@ public class ConfigController {
 	private Tab marketTab;
 	
 	@FXML
-	private ListView<String> marketList;
+	private ListView<Market> marketList;
 
 	@FXML
 	private VBox marketBox;
@@ -283,6 +289,7 @@ public class ConfigController {
 		unsavedChanges = false;
 		modelFeedbackSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,Integer.MAX_VALUE));
 		modelFeedbackSpinner.getEditor().setDisable(true);
+		wrapIcon = new Image("/edu/utexas/wrap/gui/wrap.png");
 		modelFeedbackSpinner.valueProperty().addListener(new ChangeListener<Integer>() {
 
 			@Override
@@ -315,23 +322,23 @@ public class ConfigController {
 		
 		skimFunctionChooser.getItems().addAll("Travel time","Travel time (exclude HOV)");
 
-		assignerClass.getItems().addAll("Built-in Assigner","External Assigner","File Output");
+		assignerClass.getItems().addAll("Built-in Static Assigner","External Static Assigner","File Output");
 
 		skimList.getSelectionModel().selectedItemProperty().addListener( 
 
-				new ChangeListener<String>() {
+				new ChangeListener<NetworkSkim>() {
 
 					@Override
-					public void changed(ObservableValue<? extends String> arg0, String oldValue, String newValue) {
+					public void changed(ObservableValue<? extends NetworkSkim> arg0, NetworkSkim oldValue, NetworkSkim newValue) {
 
 						if (newValue != null) {
 
 							skimBox.setDisable(false);
 							skimRemove.setDisable(false);
-							Path newURI = currentProject.getDirectory().resolve(currentProject.getSkimFile(newValue));
+							Path newURI = currentProject.getDirectory().resolve(currentProject.getSkimFile(newValue.toString()));
 							skimSourceURI.setText(currentProject.getDirectory().toUri().relativize(newURI.toUri()).getPath());
-							skimAssignerChooser.getSelectionModel().select(currentProject.getSkimAssigner(newValue));
-							skimFunctionChooser.getSelectionModel().select(getDisplayString(currentProject.getSkimFunction(newValue)));
+							skimAssignerChooser.getSelectionModel().select(currentProject.getSkimAssigner(newValue.toString()));
+							skimFunctionChooser.getSelectionModel().select(getDisplayString(currentProject.getSkimFunction(newValue.toString())));
 						}
 						else {
 							skimSourceURI.clear();
@@ -345,19 +352,22 @@ public class ConfigController {
 				});
 		
 		marketList.getSelectionModel().selectedItemProperty().addListener(
-				new ChangeListener<String>() {
+				new ChangeListener<Market>() {
 
 					@Override
-					public void changed(ObservableValue<? extends String> arg0, String oldValue, String newValue) {
+					public void changed(ObservableValue<? extends Market> arg0, Market oldValue, Market newValue) {
 
 						if (newValue != null) {
 							marketBox.setDisable(false);
 							marketRemove.setDisable(false);
-							Path newURI = currentProject.getDirectory().resolve(currentProject.getMarketFile(newValue));
+							marketEdit.setDisable(false);
+							Path newURI = currentProject.getDirectory().resolve(currentProject.getMarketFile(newValue.toString()));
 							marketSourceURI.setText(currentProject.getDirectory().toUri().relativize(newURI.toUri()).getPath());
+							
 						} else {
 							marketSourceURI.clear();
 							marketRemove.setDisable(true);
+							marketEdit.setDisable(true);
 							marketBox.setDisable(true);
 						}
 					}
@@ -398,12 +408,11 @@ public class ConfigController {
 		modelChooser.getExtensionFilters().add(new ExtensionFilter("wrap Project Files","*.wrp"));
 		
 		File projFile = modelChooser.showSaveDialog(scene.getWindow());
-		if (projFile == null) {
-			return false;
-		}
+		if (projFile == null) return false;
 
 		
 		try {
+
 			currentProject = new Project(projFile.toPath());
 			
 			loadModel(event);
@@ -411,8 +420,9 @@ public class ConfigController {
 			return true;
 			
 		} catch (Exception exception) {
+			exception.printStackTrace();
 			Alert alert = new Alert(AlertType.ERROR,exception.getLocalizedMessage());
-			((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
+			((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(wrapIcon);
 
 			alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
 			alert.show();
@@ -432,7 +442,7 @@ public class ConfigController {
 		if (selectedFile != null) try {
 
 			currentProject = new Project(selectedFile.toPath());
-			currentProject.loadPropsFromFile();
+//			currentProject.loadPropsFromFile();
 
 			loadModel(e);
 
@@ -512,7 +522,7 @@ public class ConfigController {
 		// prompt if changes should be saved
 		Alert alert = new Alert(AlertType.CONFIRMATION, "Save model before closing?",ButtonType.YES,ButtonType.NO,ButtonType.CANCEL);
 		alert.setTitle("Current model has unsaved changes");
-		((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
+		((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(wrapIcon);
 		Optional<ButtonType> choice = alert.showAndWait();
 		if (choice.isPresent()) {
 			
@@ -544,7 +554,7 @@ public class ConfigController {
 			dialog.setTitle("About wrap");
 			pane.getButtonTypes().add(ButtonType.OK);
 			dialog.setDialogPane(pane);
-			((Stage) pane.getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
+			((Stage) pane.getScene().getWindow()).getIcons().add(wrapIcon);
 			dialog.showAndWait();
 			
 		} catch (IOException e) {
@@ -562,6 +572,7 @@ public class ConfigController {
 			zoneList.getItems().clear();
 			zoneSourceURI.clear();
 			zoneBox.setDisable(true);
+			zoneEdit.setDisable(true);
 			
 			if (currentProject != null) {
 				String zoneFile = currentProject.getZoneFile();
@@ -574,6 +585,7 @@ public class ConfigController {
 					
 					if (reloadZones(currentProject.getDirectory().resolve(currentProject.getZoneFile()))) {
 						zoneSourceURI.setText(relativePath.toString());
+						zoneEdit.setDisable(false);
 						zoneBox.setDisable(false);
 					}
 				} 
@@ -599,7 +611,7 @@ public class ConfigController {
 		} catch (Exception e) {
 			zoneSourceURI.clear();
 			Alert alert = new Alert(AlertType.ERROR,"Error encountered while loading zone file. It may be corrupted.\n\nFile: "+path.toString()+"\n\nDetails: "+e.getLocalizedMessage());
-			((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
+			((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(wrapIcon);
 
 			alert.getDialogPane().setMinWidth(Region.USE_PREF_SIZE);
 			alert.getDialogPane().setMinHeight(Region.USE_PREF_SIZE);
@@ -638,6 +650,7 @@ public class ConfigController {
 	@FXML
 	private void editZones(ActionEvent e) {
 		//TODO open external zone editing stage
+		svcs.showDocument(currentProject.getDirectory().resolve(zoneSourceURI.getText()).toString());
 	}
 	
 	
@@ -662,7 +675,15 @@ public class ConfigController {
 			if (currentProject != null) {
 				skimAssignerChooser.getItems().clear();
 				skimAssignerChooser.getItems().addAll(currentProject.getAssignerIDs());
-				skimList.setItems(FXCollections.observableArrayList(currentProject.getSkimIDs()));
+				skimList.setItems(FXCollections.observableArrayList(currentProject.getSkims()));
+				skimList.getItems().sort(new Comparator<NetworkSkim>() {
+
+					@Override
+					public int compare(NetworkSkim o1, NetworkSkim o2) {
+						return o1.toString().compareTo(o2.toString());
+					}
+					
+				});
 				skimBox.setDisable(true);
 			} else {
 				skimList.getItems().clear();
@@ -675,12 +696,12 @@ public class ConfigController {
 
 	@FXML
 	private void changeSkimSourceURI(ActionEvent e) {
-		String curSkimID = skimList.getSelectionModel().getSelectedItem();
+		NetworkSkim curSkim = skimList.getSelectionModel().getSelectedItem();
 		if (!skimSourceURI.getText()
 				.equals(
 						currentProject.getSkimFile(
-								curSkimID))) {
-			currentProject.setSkimFile(curSkimID,skimSourceURI.getText());
+								curSkim.toString()))) {
+			currentProject.setSkimFile(curSkim.toString(),skimSourceURI.getText());
 			markChanged();
 		}
 		
@@ -689,29 +710,29 @@ public class ConfigController {
 	
 	@FXML
 	private void changeSkimAssigner(ActionEvent e) {
-		String curSkimID = skimList.getSelectionModel().getSelectedItem();
+		NetworkSkim curSkim = skimList.getSelectionModel().getSelectedItem();
 		if ( !skimAssignerChooser.getSelectionModel().isEmpty() &&
 				
 				!skimAssignerChooser.getSelectionModel().getSelectedItem()
 				.equals(
 						currentProject.getSkimAssigner(
-								curSkimID))) {
-			currentProject.setSkimAssigner(curSkimID, skimAssignerChooser.getSelectionModel().getSelectedItem());
+								curSkim.toString()))) {
+			currentProject.setSkimAssigner(curSkim.toString(), skimAssignerChooser.getSelectionModel().getSelectedItem());
 			markChanged();
 			}
 	}
 	
 	@FXML
 	private void changeSkimFunction(ActionEvent e) {
-		String curSkimID = skimList.getSelectionModel().getSelectedItem();
+		NetworkSkim curSkim = skimList.getSelectionModel().getSelectedItem();
 
 		if ( !skimFunctionChooser.getSelectionModel().isEmpty() && 
 				!skimFunctionChooser.getSelectionModel().getSelectedItem()
 				.equals(
 						getDisplayString(
 								currentProject.getSkimFunction(
-										curSkimID)))) {
-			currentProject.setSkimFunction(curSkimID, getOptionID(skimFunctionChooser.getSelectionModel().getSelectedItem()));
+										curSkim.toString())))) {
+			currentProject.setSkimFunction(curSkim.toString(), getOptionID(skimFunctionChooser.getSelectionModel().getSelectedItem()));
 			markChanged();
 			}
 	}
@@ -749,7 +770,7 @@ public class ConfigController {
 			dialog.setTitle("New Skim");
 			Button ok = (Button) pane.lookupButton(ButtonType.OK);
 			ok.disableProperty().bind(controller.notReady());	
-			((Stage) pane.getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
+			((Stage) pane.getScene().getWindow()).getIcons().add(wrapIcon);
 
 			dialog.showAndWait();
 		
@@ -758,7 +779,15 @@ public class ConfigController {
 						controller.getSkimAssigner(), 
 						controller.getSkimFunction(), 
 						controller.getSkimSourceURI());
-				skimList.getItems().add(controller.getSkimID());
+				skimList.getItems().setAll(currentProject.getSkims());
+				skimList.getItems().sort(new Comparator<NetworkSkim>() {
+
+					@Override
+					public int compare(NetworkSkim o1, NetworkSkim o2) {
+						return o1.toString().compareTo(o2.toString());
+					}
+					
+				});
 				markChanged();
 			}
 
@@ -773,15 +802,15 @@ public class ConfigController {
 	@FXML
 	private void removeSkim(Event e) {
 
-		String skimName = skimList.getSelectionModel().getSelectedItem();
-		if (skimName != null) {
-			Alert alert = new Alert(AlertType.CONFIRMATION,"Remove skim "+skimName+" from model?",ButtonType.YES,ButtonType.NO);
-			((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
+		NetworkSkim curSkim = skimList.getSelectionModel().getSelectedItem();
+		if (curSkim != null) {
+			Alert alert = new Alert(AlertType.CONFIRMATION,"Remove skim "+curSkim+" from model?",ButtonType.YES,ButtonType.NO);
+			((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(wrapIcon);
 			alert.showAndWait();
 			
 			if (alert.getResult() == ButtonType.YES) {
-				skimList.getItems().remove(skimName);
-				currentProject.removeSkim(skimName);
+				skimList.getItems().remove(curSkim);
+				currentProject.removeSkim(curSkim);
 				markChanged();
 			}
 		}
@@ -802,7 +831,16 @@ public class ConfigController {
 			}
 			
 			if (currentProject != null) {
-				marketList.setItems(FXCollections.observableArrayList(currentProject.getMarketIDs()));
+				marketList.setItems(FXCollections.observableArrayList(currentProject.getMarkets()));
+				marketList.getItems().sort(new Comparator<Market>() {
+
+					@Override
+					public int compare(Market o1, Market o2) {
+						// TODO Auto-generated method stub
+						return o1.toString().compareTo(o2.toString());
+					}
+					
+				});
 				marketBox.setDisable(true);
 			} else {
 				marketList.getItems().clear();
@@ -829,6 +867,28 @@ public class ConfigController {
 	@FXML
 	private void editMarket(ActionEvent e) {
 		//TODO
+		Market selected = marketList.getSelectionModel().getSelectedItem();
+		try {
+			FXMLLoader loader = new FXMLLoader();
+			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/marketDialog.fxml").openStream());
+			
+			EditMarketController controller = loader.getController();
+			controller.setMarket(selected);
+			
+			Scene pane = new Scene(vbox);
+
+
+			Stage stage = new Stage();
+			stage.initModality(Modality.APPLICATION_MODAL);
+			stage.setScene(pane);
+			stage.setTitle("Edit Market");
+			stage.getIcons().add(wrapIcon);
+			
+			stage.showAndWait();
+		} catch (IOException except) {
+			//TODO
+			except.printStackTrace();
+		}
 	}
 	
 	@FXML
@@ -851,13 +911,22 @@ public class ConfigController {
 			Button ok = (Button) pane.lookupButton(ButtonType.OK);
 			ok.setText("Create...");
 			ok.disableProperty().bind(controller.notReady());
-			((Stage) pane.getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
+			((Stage) pane.getScene().getWindow()).getIcons().add(wrapIcon);
 			dialog.showAndWait();
 			
 			if (dialog.getResult() == ButtonType.OK) {
-				currentProject.addMarket(controller.getMarketID(),controller.getMarketSourceURI());
-				marketList.getItems().add(controller.getMarketID());
-				
+				String id = controller.getMarketID();
+				currentProject.addMarket(id,controller.getMarketSourceURI());
+				marketList.getItems().setAll(currentProject.getMarkets());
+				marketList.getItems().sort(new Comparator<Market>() {
+
+					@Override
+					public int compare(Market o1, Market o2) {
+						// TODO Auto-generated method stub
+						return o1.toString().compareTo(o2.toString());
+					}
+					
+				});
 				//TODO open dialog to edit newly created market
 				markChanged();
 				
@@ -887,12 +956,21 @@ public class ConfigController {
 			dialog.setTitle("Attach Market");
 			Button ok = (Button) pane.lookupButton(ButtonType.OK);
 			ok.disableProperty().bind(controller.notReady());
-			((Stage) pane.getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
+			((Stage) pane.getScene().getWindow()).getIcons().add(wrapIcon);
 			dialog.showAndWait();
 			
 			if (dialog.getResult() == ButtonType.OK) {
 				currentProject.addMarket(controller.getMarketID(),controller.getMarketSourceURI());
-				marketList.getItems().add(controller.getMarketID());
+				marketList.getItems().setAll(currentProject.getMarkets());
+				marketList.getItems().sort(new Comparator<Market>() {
+
+					@Override
+					public int compare(Market o1, Market o2) {
+						// TODO Auto-generated method stub
+						return o1.toString().compareTo(o2.toString());
+					}
+					
+				});
 				markChanged();
 			}
 		} catch (IOException exception) {
@@ -902,16 +980,16 @@ public class ConfigController {
 	
 	@FXML
 	private void removeMarket(ActionEvent e) {
-		String marketName = marketList.getSelectionModel().getSelectedItem();
-		if (marketName != null) {
-			Alert alert = new Alert(AlertType.CONFIRMATION,"Remove market "+marketName+" from model?",ButtonType.YES,ButtonType.NO);
-			((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
+		Market market = marketList.getSelectionModel().getSelectedItem();
+		if (market != null) {
+			Alert alert = new Alert(AlertType.CONFIRMATION,"Remove market "+market+" from model?",ButtonType.YES,ButtonType.NO);
+			((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(wrapIcon);
 
 			alert.showAndWait();
 			
 			if (alert.getResult() == ButtonType.YES) {
-				marketList.getItems().remove(marketName);
-				currentProject.removeMarket(marketName);
+				marketList.getItems().remove(market);
+				currentProject.removeMarket(market);
 				markChanged();
 			}
 		}
@@ -920,12 +998,12 @@ public class ConfigController {
 	@FXML
 	private void changeMarketSourceURI(ActionEvent e) {
 		
-		String curMarketID = marketList.getSelectionModel().getSelectedItem();
+		Market curMarket = marketList.getSelectionModel().getSelectedItem();
 		if (!marketSourceURI.getText()
 				.equals(
-						currentProject.getMarketFile(curMarketID)
+						currentProject.getMarketFile(curMarket.toString())
 						)) {
-			currentProject.setMarketFile(curMarketID,marketSourceURI.getText());
+			currentProject.setMarketFile(curMarket.toString(),marketSourceURI.getText());
 			markChanged();
 		}
 	}
@@ -1012,7 +1090,7 @@ public class ConfigController {
 			dialog.setTitle("Attach Assigner");
 			Button ok = (Button) pane.lookupButton(ButtonType.OK);
 			ok.disableProperty().bind(controller.notReady());
-			((Stage) pane.getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
+			((Stage) pane.getScene().getWindow()).getIcons().add(wrapIcon);
 			dialog.showAndWait();
 			
 			if (dialog.getResult() == ButtonType.OK) {
@@ -1049,7 +1127,7 @@ public class ConfigController {
 			Button ok = (Button) pane.lookupButton(ButtonType.OK);
 			ok.setText("Create...");
 			ok.disableProperty().bind(controller.notReady());
-			((Stage) pane.getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
+			((Stage) pane.getScene().getWindow()).getIcons().add(wrapIcon);
 			dialog.showAndWait();
 			//TODO open dialog to configure assigner
 			
@@ -1068,7 +1146,7 @@ public class ConfigController {
 		String assignerName = assignerList.getSelectionModel().getSelectedItem();
 		if (assignerName != null) {
 			Alert alert = new Alert(AlertType.CONFIRMATION,"Remove assigner "+assignerName+" from model?",ButtonType.YES,ButtonType.NO);
-			((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
+			((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(wrapIcon);
 
 			alert.showAndWait();
 			

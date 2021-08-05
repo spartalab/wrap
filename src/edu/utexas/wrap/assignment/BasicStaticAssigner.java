@@ -66,8 +66,9 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	private final int maxIterations;
 	private final Graph network;
 	private final TimePeriod tp;
+	private final String name;
 	
-	private BasicStaticAssigner(
+	private BasicStaticAssigner(String name,
 			AssignmentEvaluator<C> evaluator,
 			AssignmentOptimizer<C> optimizer,
 			AssignmentInitializer<C> initializer,
@@ -76,6 +77,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 			Graph network,
 			TimePeriod tp
 			){
+		this.name = name;
 		this.evaluator = evaluator;
 		this.optimizer = optimizer;
 		this.initializer = initializer;
@@ -88,7 +90,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	}
 
 
-	public static BasicStaticAssigner<?> fromPropsFile(Path path, Map<Integer,TravelSurveyZone> zones) throws IOException {
+	public static BasicStaticAssigner<?> fromPropsFile(String name, Path path, Map<Integer,TravelSurveyZone> zones) throws IOException {
 		// TODO Auto-generated constructor stub
 
 		Properties props = new Properties();
@@ -105,7 +107,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		switch (props.getProperty("containerType")) {
 
 		case "bush":
-			return bushAssignerFromProps(props, network, tp, threshold, maxIterations);
+			return bushAssignerFromProps(name, props, network, tp, threshold, maxIterations);
 
 		case "path":
 			
@@ -118,7 +120,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	}
 
 
-	private static BasicStaticAssigner<Bush> bushAssignerFromProps(Properties props, Graph network, TimePeriod tp,
+	private static BasicStaticAssigner<Bush> bushAssignerFromProps(String name, Properties props, Graph network, TimePeriod tp,
 			Double threshold, Integer maxIterations) throws IOException {
 		AssignmentProvider<Bush> provider;
 		AssignmentConsumer<Bush> writer, forgetter;
@@ -198,7 +200,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 
 
 
-		return new BasicStaticAssigner<Bush>(evaluator, optimizer, initializer, threshold, maxIterations, network, tp);
+		return new BasicStaticAssigner<Bush>(name, evaluator, optimizer, initializer, threshold, maxIterations, network, tp);
 	}
 
 
@@ -383,4 +385,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		}
 	}
 
+	public String toString() {
+		return name;
+	}
 }

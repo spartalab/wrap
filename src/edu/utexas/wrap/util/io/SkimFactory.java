@@ -17,7 +17,6 @@
  */
 package edu.utexas.wrap.util.io;
 
-import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -25,7 +24,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.Comparator;
-import java.util.Map;
 import java.util.function.ToDoubleFunction;
 
 import edu.utexas.wrap.net.FixedSizeNetworkSkim;
@@ -41,49 +39,7 @@ import edu.utexas.wrap.util.FibonacciLeaf;
  * This class provides static methods to read information about Skim rates
  */
 public class SkimFactory {
-	/**
-	 * This method reads a skim file and produces a 2d array mapping between two zones and the skim factor
-	 * It expects a csv file with information in the following order:
-	 * |origin zone id, destination zone id, ..,..,..,.., skim  factor| //!notice the skim factor is the 6th column!!!
-	 * @param file File with skim rates
-	 * @param header boolean indicating if the file has a header row
-	 * @param graph Graph representation of the network
-	 * @return 2d array of floats that can be indexed by the pair of zones storing the skim rates between the zones
-	 * @throws IOException
-	 */
-	public static NetworkSkim readSkimFile(Path file, boolean header, Map<Integer,TravelSurveyZone> zones) {
-		float[][] ret = new float[zones.size()][zones.size()];
-//		Map<TravelSurveyZone,Map<TravelSurveyZone,Float>> ret = new ConcurrentSkipListMap<TravelSurveyZone, Map<TravelSurveyZone,Float>>(new ZoneComparator());
-		BufferedReader in = null;
-		
-		try {
-			in = new BufferedReader(Files.newBufferedReader(file));
-			if (header) in.readLine();
-			in.lines()//.parallel()
-			.forEach(line -> processLine(zones,ret,line));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		finally {
-			if (in != null)
-				try {
-					in.close();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-		}
-		return new FixedSizeNetworkSkim(ret);
-	}
 
-	private static void processLine(Map<Integer,TravelSurveyZone> zones, float[][] ret, String line) {
-		String[] args = line.split(",");
-		TravelSurveyZone orig = zones.get(Integer.parseInt(args[0]));
-		TravelSurveyZone dest = zones.get(Integer.parseInt(args[1]));
-		Float cost = Float.parseFloat(args[2]);
-//		ret.putIfAbsent(orig, new ConcurrentSkipListMap<TravelSurveyZone, Float>(new ZoneComparator()));
-		ret[orig.getOrder()][dest.getOrder()] = cost;
-//		ret.get(orig).put(dest, cost);
-	}
 
 	/**
 	 * This metord returns a comparator between two zones based on their order value

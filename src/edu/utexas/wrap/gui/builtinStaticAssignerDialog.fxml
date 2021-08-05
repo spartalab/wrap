@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+
+<VBox maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="275.0" prefWidth="850.0" spacing="10.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <HBox spacing="10.0" VBox.vgrow="ALWAYS">
+         <children>
+            <VBox spacing="5.0" HBox.hgrow="NEVER">
+               <children>
+                  <HBox minHeight="-Infinity" spacing="10.0" VBox.vgrow="NEVER">
+                     <children>
+                        <VBox HBox.hgrow="NEVER">
+                           <children>
+                              <Label text="Link performance function:" VBox.vgrow="NEVER" />
+                              <ComboBox fx:id="performanceFuncChooser" prefWidth="200.0" VBox.vgrow="NEVER" />
+                           </children>
+                           <HBox.margin>
+                              <Insets />
+                           </HBox.margin>
+                        </VBox>
+                        <VBox HBox.hgrow="NEVER">
+                           <children>
+                              <Label text="Time period:" VBox.vgrow="NEVER" />
+                              <ComboBox fx:id="timePeriodChooser" prefWidth="200.0" VBox.vgrow="NEVER" />
+                           </children>
+                        </VBox>
+                        <VBox prefWidth="200.0" HBox.hgrow="NEVER">
+                           <children>
+                              <Label text="Maximum iterations:" VBox.vgrow="NEVER" />
+                              <Spinner fx:id="iterationSpinner" VBox.vgrow="NEVER" />
+                           </children>
+                        </VBox>
+                     </children>
+                     <VBox.margin>
+                        <Insets />
+                     </VBox.margin>
+                  </HBox>
+                  <VBox>
+                     <children>
+                        <Label text="Link source:" />
+                        <HBox spacing="5.0">
+                           <children>
+                              <TextField fx:id="linkSourceURI" editable="false" HBox.hgrow="ALWAYS" />
+                              <Button fx:id="linkSourceBrowse" mnemonicParsing="false" text="Browse..." />
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+               </children>
+            </VBox>
+            <VBox spacing="5.0" HBox.hgrow="NEVER">
+               <children>
+                  <VBox>
+                     <children>
+                        <Label text="Network equilibrium evaluator:" />
+                        <ComboBox fx:id="netEvaluatorChooser" prefWidth="200.0" />
+                     </children>
+                  </VBox>
+                  <VBox>
+                     <children>
+                        <Label text="Network equilibrium threshold:" />
+                        <TextField fx:id="netEvaluatorThreshold" prefWidth="200.0" />
+                     </children>
+                  </VBox>
+               </children>
+            </VBox>
+         </children>
+      </HBox>
+      <Separator prefWidth="200.0" />
+      <VBox spacing="5.0">
+         <children>
+            <HBox spacing="10.0">
+               <children>
+                  <VBox>
+                     <children>
+                        <Label text="Container class:" />
+                        <ComboBox fx:id="containerClassChooser" prefWidth="200.0" />
+                     </children>
+                  </VBox>
+                  <HBox fx:id="containerBox1" disable="true" spacing="10.0">
+                     <children>
+                        <VBox fx:id="containerOptimizerBox" prefWidth="200.0">
+                           <children>
+                              <Label text="Container modification method:" />
+                              <ComboBox fx:id="containerOptimizerChooser" prefWidth="200.0" />
+                           </children>
+                        </VBox>
+                        <VBox prefWidth="200.0" />
+                        <VBox fx:id="containerEvaluatorBox">
+                           <children>
+                              <Label text="Container equilibrium evaluator:" />
+                              <ComboBox fx:id="containerEvaluatorChooser" prefWidth="200.0" />
+                           </children>
+                        </VBox>
+                     </children>
+                  </HBox>
+               </children>
+            </HBox>
+            <HBox fx:id="containerBox2" disable="true" spacing="10.0">
+               <children>
+                  <VBox fx:id="providerBox" HBox.hgrow="NEVER">
+                     <children>
+                        <Label text="Container storage type:" />
+                        <ComboBox fx:id="providerChooser" prefWidth="200.0" />
+                     </children>
+                  </VBox>
+                  <VBox fx:id="initializerBox" HBox.hgrow="NEVER">
+                     <children>
+                        <Label text="Container loader:" />
+                        <ComboBox fx:id="initializerChooser" prefWidth="200.0" />
+                     </children>
+                  </VBox>
+                  <VBox fx:id="builderBox" HBox.hgrow="NEVER">
+                     <children>
+                        <Label text="Container creator:" />
+                        <ComboBox fx:id="builderChooser" prefWidth="200.0" />
+                     </children>
+                  </VBox>
+                  <VBox>
+                     <children>
+                        <Label text="Container equilibrium threshold:" />
+                        <TextField fx:id="containerEvaluatorThreshold" prefWidth="200.0" />
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+      <VBox fx:id="containerBox3" disable="true">
+         <children>
+            <Label text="Container storage source:" />
+            <HBox spacing="5.0">
+               <children>
+                  <TextField fx:id="providerSourceURI" disable="true" editable="false" HBox.hgrow="ALWAYS" />
+                  <Button fx:id="providerSourceBrowse" mnemonicParsing="false" text="Browse..." />
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </children>
+   <padding>
+      <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+   </padding>
+</VBox>

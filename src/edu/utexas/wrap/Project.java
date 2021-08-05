@@ -20,10 +20,13 @@ package edu.utexas.wrap;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -41,6 +44,7 @@ import edu.utexas.wrap.marketsegmentation.DummyPurpose;
 import edu.utexas.wrap.marketsegmentation.Market;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.AreaClass;
+import edu.utexas.wrap.net.FixedSizeNetworkSkim;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
@@ -63,8 +67,10 @@ import edu.utexas.wrap.util.io.output.FilePassthroughDummyAssigner;
 public class Project implements Runnable {
 	private final Properties props;
 	private Map<Integer, TravelSurveyZone> zones;
+	private Map<String,NetworkSkim> currentSkims;
 	private final Path projDir;
 	private String name;
+	private Collection<Market> markets;
 	
 	/**Project constructor from a Properties file (*.wrp)
 	 * @param projFile the location of a Project Properties (*.wrp) file
@@ -74,13 +80,23 @@ public class Project implements Runnable {
 		props = new Properties();
 		name = projFile.getFileName().toString();
 		projDir = projFile.getParent();
+		try{ 
+			loadPropsFromFile();
+			loadZones();
+			loadInitialSkims();
+			markets = loadMarkets();
+		} catch (NoSuchFileException e) {
+			if (currentSkims == null) currentSkims = new HashMap<String,NetworkSkim>();
+		}
+
 	}
 
-	public void loadPropsFromFile() throws IOException {
+	private void loadPropsFromFile() throws IOException, NoSuchFileException {
 		props.load(Files.newInputStream(projDir.resolve(name)));
 	}
 
-	public void loadZones() throws IOException {
+	public void loadZones() {
+		try {
 		BufferedReader reader = Files.newBufferedReader(projDir.resolve(props.getProperty("network.zones")));
 		reader.readLine();
 		AtomicInteger idx = new AtomicInteger(0);
@@ -90,6 +106,9 @@ public class Project implements Runnable {
 				.collect(Collectors.toMap(
 						args -> Integer.parseInt(args[0]), 
 						args -> new TravelSurveyZone(Integer.parseInt(args[0]),idx.getAndIncrement(),AreaClass.values()[Integer.parseInt(args[1])-1])));
+		} catch (IOException | NullPointerException  e) {
+			zones = Collections.emptyMap();
+		}
 	}
 
 	/**Read a list of Market ids from the Project Properties, then load the
@@ -104,18 +123,17 @@ public class Project implements Runnable {
 	 * @return a Collection of initialized Markets read from files
 	 */
 	private Collection<Market> loadMarkets(){
-		System.out.println("Reading Market configurations");
 
 		String projNames = props.getProperty("markets.ids");
 		
 		if (projNames == null) 
-			throw new RuntimeException("No markets specified in project properties. Define at least one market");
+			return Collections.emptySet();
 		
 		else return 
 				Stream.of(projNames.split(","))
 				.map(name -> {
 					try {
-						return new Market(projDir.resolve(props.getProperty("markets."+name+".file")), zones);
+						return new Market(name,projDir.resolve(props.getProperty("markets."+name+".file")), zones);
 					} catch (IOException e) {
 						System.err.println("Could not load trip purposes for "+name);
 						e.printStackTrace();
@@ -125,6 +143,14 @@ public class Project implements Runnable {
 				.collect(Collectors.toSet());
 	}
 	
+	public Collection<NetworkSkim> getSkims(){
+		return currentSkims.values();
+	}
+	
+	public Collection<Market> getMarkets(){
+		if (markets == null) markets = loadMarkets();
+		return markets;
+	}
 	/**
 	 * @return a Collection of DummyPurposes which are not affiliated with any particular Market
 	 */
@@ -179,17 +205,15 @@ public class Project implements Runnable {
 	 * 
 	 * @return a Map from a NetworkSkim's id to its newly-generated instance
 	 */
-	private Map<String,NetworkSkim> loadInitialSkims(){
-		System.out.println("Reading initial NetworkSkims");
+	private void loadInitialSkims(){
 		
-		return getSkimIDs().stream()
+		currentSkims = getSkimIDs().stream()
 				.parallel()
 				.collect(
 						Collectors.toMap(
 								Function.identity(), 
-								id -> SkimFactory.readSkimFile(
+								id -> new FixedSizeNetworkSkim(id,
 										projDir.resolve(props.getProperty("skims."+id+".file")), 
-										false, 
 										zones
 										)
 								)
@@ -210,10 +234,9 @@ public class Project implements Runnable {
 	 * @param assigners a Map from Assigner ids to their current instance
 	 * @return a Map from NetworkSkim ids to their updated instance
 	 */
-	private Map<String,NetworkSkim> updateFeedbackSkims(Map<String,Assigner> assigners){
-		System.out.println("Updating NetworkSkims");
+	private void updateFeedbackSkims(Map<String,Assigner> assigners){
 
-		return getSkimIDs().stream()
+		currentSkims = getSkimIDs().stream()
 		.parallel()
 		.collect(
 				Collectors.toMap(
@@ -249,7 +272,7 @@ public class Project implements Runnable {
 
 
 			case "builtin":
-				return BasicStaticAssigner.fromPropsFile(
+				return BasicStaticAssigner.fromPropsFile(id,
 						projDir.resolve(props.getProperty("assigners."+id+".file")),
 						zones
 						);
@@ -271,13 +294,13 @@ public class Project implements Runnable {
 	 */
 	private void output(Map<String,Assigner> assigners) {
 		// TODO Auto-generated method stub
-		Map<String,NetworkSkim> finalSkims = updateFeedbackSkims(assigners);
+		updateFeedbackSkims(assigners);
 		System.out.println("Printing final skims");
-		finalSkims.entrySet().stream()
+		currentSkims.entrySet().stream()
 		.filter(entry -> Boolean.parseBoolean(props.getProperty("skims."+entry.getKey()+".overwrite")))
 		.forEach(
 				entry -> SkimFactory.outputCSV(
-						finalSkims.get(entry.getKey()),
+						currentSkims.get(entry.getKey()),
 						projDir.resolve(props.getProperty("skims."+entry.getKey()+".file")),
 						zones.values()
 						)
@@ -304,7 +327,7 @@ public class Project implements Runnable {
 	
 	@Override
 	public void run() {
-		Collection<Market> markets = loadMarkets();
+		if (markets == null) markets = loadMarkets();
 		Collection<DummyPurpose> dummies = getDummyPurposes();
 		
 
@@ -315,9 +338,9 @@ public class Project implements Runnable {
 			assigners = loadAssigners();
 			
 			//Update skims and redistribute
-			Map<String,NetworkSkim> skims = i == 0? loadInitialSkims() : updateFeedbackSkims(assigners);
+			if (i > 0) updateFeedbackSkims(assigners);
 			//TODO project should have skims
-			markets.parallelStream().forEach(market -> market.updateSkims(skims));
+			markets.parallelStream().forEach(market -> market.updateSkims(currentSkims));
 			
 			
 			Collection<Assigner> ac = assigners.values();
@@ -398,28 +421,32 @@ public class Project implements Runnable {
 		return props.getProperty("assigners."+assignerID+".file");
 	}
 	
-	public void removeSkim(String skimID) {
+	public void removeSkim(NetworkSkim skim) {
 		List<String> ids = getSkimIDs();
-		ids.remove(skimID);
+		ids.remove(skim.toString());
 		if (!ids.isEmpty()) props.setProperty("skims.ids", String.join(",", ids));
 		else props.remove("skims.ids");
 		
 		Set<String> keys = props.stringPropertyNames();
 		for (String key : keys) {
-			if (key.startsWith("skims."+skimID)) props.remove(key);
+			if (key.startsWith("skims."+skim.toString())) props.remove(key);
 		}
+		
+		currentSkims.remove(skim.toString());
 	}
 	
-	public void removeMarket(String marketID) {
+	public void removeMarket(Market market) {
 		List<String> ids = getMarketIDs();
-		ids.remove(marketID);
+		ids.remove(market.toString());
 		if (!ids.isEmpty()) props.setProperty("markets.ids", String.join(",", ids));
 		else props.remove("markets.ids");
 		
 		Set<String> keys = props.stringPropertyNames();
 		for (String key : keys) {
-			if (key.startsWith("markets."+marketID)) props.remove(key);
+			if (key.startsWith("markets."+market.toString())) props.remove(key);
 		}
+		
+		markets.remove(market);
 	}
 
 	public void addSkim(String skimID, String assignerID, String skimFunction, String skimSourceURI) {
@@ -431,14 +458,18 @@ public class Project implements Runnable {
 		props.setProperty("skims."+skimID+".assigner", assignerID);
 		props.setProperty("skims."+skimID+".function", skimFunction);
 		
+		currentSkims.put(skimID,new FixedSizeNetworkSkim(skimID,Paths.get(skimSourceURI),zones));
+		
 	}
 
-	public void addMarket(String marketID, String marketSourceURI) {
+	public void addMarket(String marketID, String marketSourceURI) throws IOException {
 		List<String> ids = getMarketIDs();
 		ids.add(marketID);
 		props.setProperty("markets.ids", String.join(",", ids));
 		
 		props.setProperty("markets."+marketID+".file", marketSourceURI);
+		
+		markets.add(new Market(marketID,Paths.get(marketSourceURI),zones));
 	}
 	
 	public void setSkimFile(String curSkimID, String text) {

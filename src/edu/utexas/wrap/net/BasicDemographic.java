@@ -32,7 +32,7 @@ import java.util.stream.IntStream;
  */
 public class BasicDemographic implements Demographic {
 	Map<TravelSurveyZone,Float[]> zoneData;
-
+	private String name;
 	/**Read a CSV file containing a table of Demographics
 	 * 
 	 * A Path to a given CSV demographic table is provided. This file is read
@@ -45,7 +45,8 @@ public class BasicDemographic implements Demographic {
 	 * @param zoneIDs a mapping from Integer TSZ ids to the corresponding object
 	 * @throws IOException if the file is corrupted, missing, or another IO error occurs
 	 */
-	public BasicDemographic(Path demographicFile, Map<Integer,TravelSurveyZone> zoneIDs) throws IOException {
+	public BasicDemographic(String name, Path demographicFile, Map<Integer,TravelSurveyZone> zoneIDs) throws IOException {
+		this.name = name;
 		zoneData = new HashMap<TravelSurveyZone,Float[]>();
 		BufferedReader reader = Files.newBufferedReader(demographicFile);
 		
@@ -70,6 +71,11 @@ public class BasicDemographic implements Demographic {
 	@Override
 	public Float[] valueFor(TravelSurveyZone zone) {
 		return zoneData.get(zone);
+	}
+	
+	@Override
+	public String toString() {
+		return name;
 	}
 
 }

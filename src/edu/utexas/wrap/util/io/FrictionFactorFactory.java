@@ -41,7 +41,7 @@ public class FrictionFactorFactory {
 	 * @return A FrictionFactorMap
 	 * @throws IOException
 	 */
-	public static FrictionFactorMap readFactorFile(Path file) {
+	public static FrictionFactorMap readFactorFile(String id, Path file) {
 		NavigableMap<Integer, Float> tree = new ConcurrentSkipListMap<Integer, Float>();
 		BufferedReader in = null;
 
@@ -68,6 +68,6 @@ public class FrictionFactorFactory {
 					System.exit(-4);
 				}
 		}
-		return new CostBasedFrictionFactorMap(tree);
+		return new CostBasedFrictionFactorMap(id,tree);
 	}
 }
