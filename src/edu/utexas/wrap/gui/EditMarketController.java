@@ -23,6 +23,8 @@ import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
 import javafx.scene.control.Alert;
@@ -33,6 +35,18 @@ import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
 
 public class EditMarketController {
+	
+	@FXML
+	private Tab demographicTab;
+	
+	@FXML
+	private Tab frictFuncTab;
+	
+	@FXML
+	private Tab purposeTab;
+	
+	@FXML
+	private Tab surrogateTab;
 	
 	@FXML
 	private ListView<Demographic> demographicList;
@@ -134,7 +148,7 @@ public class EditMarketController {
 	private Button marketOK;
 	
 	@FXML
-	private Button marketBrowse;
+	private Button marketCancel;
 	
 	private Market market;
 	
@@ -145,6 +159,9 @@ public class EditMarketController {
 	private Scene scene;
 	
 	private Image wrapIcon;
+	
+	@FXML
+	private TabPane tabBox;
 
 	@FXML
 	private void initialize() {
@@ -162,47 +179,63 @@ public class EditMarketController {
 				} else {
 					demographicBox.setDisable(true);
 					demographicRemove.setDisable(true);
+					demographicSourceURI.clear();
 				}
 			}
 			
 		});
+		
+		frictionFunctionList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<FrictionFactorMap>() {
+
+			@Override
+			public void changed(ObservableValue<? extends FrictionFactorMap> arg0, FrictionFactorMap oldValue,
+					FrictionFactorMap newValue) {
+				// TODO Auto-generated method stub
+				if (newValue != null) {
+					frictionFunctionBox.setDisable(false);
+					frictionFunctionRemove.setDisable(false);
+					Path newURI = market.getDirectory().resolve(market.getFrictionFunctionSource(newValue.toString()));
+					frictionFunctionSourceURI.setText(market.getDirectory().toUri().relativize(newURI.toUri()).getPath());
+					
+				} else {
+					frictionFunctionBox.setDisable(true);
+					frictionFunctionSourceURI.clear();
+					frictionFunctionRemove.setDisable(true);
+				}
+			}
+			
+		});
+		
+		purposeList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<BasicPurpose>() {
+
+			@Override
+			public void changed(ObservableValue<? extends BasicPurpose> arg0, BasicPurpose oldValue, BasicPurpose newValue) {
+				// TODO Auto-generated method stub
+				if (newValue != null) {
+					purposeBox.setDisable(false);
+					purposeRemove.setDisable(false);
+					Path newURI = market.getDirectory().resolve(market.getPurposeSource(newValue.toString()));
+					purposeSourceURI.setText(market.getDirectory().toUri().relativize(newURI.toUri()).getPath());
+				} else {
+					purposeBox.setDisable(true);
+					purposeRemove.setDisable(true);
+					purposeSourceURI.clear();
+				}
+			}
+			
+		});
+
 	}
 	
 	public void setMarket(Market selected) {
 		// TODO Auto-generated method stub
 		market = selected;
-		demographicList.getItems().setAll(market.getDemographics());
-		frictionFunctionList.getItems().setAll(market.getFrictionFunctions());
-		purposeList.getItems().setAll(market.getBasicPurposes());
-		
-		demographicList.getItems().sort(new Comparator<Demographic>() {
-
-			@Override
-			public int compare(Demographic o1, Demographic o2) {
-				return o1.toString().compareTo(o2.toString());
-			}
-			
-		});
-		frictionFunctionList.getItems().sort(new Comparator<FrictionFactorMap>() {
-
-			@Override
-			public int compare(FrictionFactorMap o1, FrictionFactorMap o2) {
-				return o1.toString().compareTo(o2.toString());
-			}
-			
-		});
-		purposeList.getItems().sort(new Comparator<BasicPurpose>() {
-
-			@Override
-			public int compare(BasicPurpose o1, BasicPurpose o2) {
-				// TODO Auto-generated method stub
-				return o1.toString().compareTo(o2.toString());
-			}
-			
-		});
+	
 		
 		marketName.setText(market.toString());
 		marketPath.setText(market.getDirectory().toString());
+		tabBox.getSelectionModel().getSelectedItem().getOnSelectionChanged().handle(new ActionEvent());
+
 	}
 	
 	private void markChanged() {
@@ -257,6 +290,39 @@ public class EditMarketController {
 		this.svcs = svcs;
 	}
 	
+	protected void setScene(Scene scene) {
+		this.scene = scene;
+	}
+	
+	@FXML
+	private void closeWindow(Event e) {
+		scene.getWindow().hide();
+	}
+	
+	protected void exit(Event arg0) {
+
+		try {
+			if (!promptToSaveChanges(arg0)) {
+				arg0.consume();
+				return;
+			}
+			market.reloadProperties();
+			closeWindow(arg0);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
+	protected void setIcon(Image wrapIcon) {
+		this.wrapIcon = wrapIcon;
+		
+	}
+	
+	
+	
 	
 	
 	@FXML
@@ -290,34 +356,151 @@ public class EditMarketController {
 		}
 	}
 	
-	protected void setScene(Scene scene) {
-		this.scene = scene;
+	@FXML
+	private void updateDemographics(Event event) {
+
+		if (demographicTab.isSelected()) {
+			demographicList.getItems().clear();
+			demographicSourceURI.clear();
+			demographicBox.setDisable(true);
+			if (market != null) {
+				demographicList.getItems().setAll(market.getDemographics());
+
+				demographicList.getItems().sort(new Comparator<Demographic>() {
+
+					@Override
+					public int compare(Demographic o1, Demographic o2) {
+						return o1.toString().compareTo(o2.toString());
+					}
+
+				});
+			}
+		}
+
 	}
 	
 	@FXML
-	private void closeWindow(Event e) {
-		scene.getWindow().hide();
+	private void addDemographic(ActionEvent event) {
+		//TODO
 	}
 	
-	protected void exit(Event arg0) {
+	@FXML
+	private void removeDemographic(ActionEvent event) {
+		//TODO
+	}
+	
+	
+	
+	
+		
+	@FXML
+	private void updateFrictionFunctions(Event event) {
+		
+		if (frictFuncTab.isSelected()) {
+			frictionFunctionList.getItems().clear();
+			frictionFunctionSourceURI.clear();
+			frictionFunctionBox.setDisable(true);
+			if (market != null){
+				frictionFunctionList.getItems().setAll(market.getFrictionFunctions());
+				frictionFunctionList.getItems().sort(new Comparator<FrictionFactorMap>() {
 
-		try {
-			if (!promptToSaveChanges(arg0)) {
-				arg0.consume();
-				return;
+					@Override
+					public int compare(FrictionFactorMap o1, FrictionFactorMap o2) {
+						return o1.toString().compareTo(o2.toString());
+					}
+
+				});
 			}
-			market.reloadProperties();
-			closeWindow(arg0);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-		
+	}
+	
+	@FXML
+	private void browseFrictionFunction(ActionEvent event) {
+		//TODO
+	}
+	
+	@FXML
+	private void editFrictionFunction(ActionEvent event) {
+		//TODO
+	}
+	
+	@FXML
+	private void changeFrictionFunctionSourceURI(ActionEvent event) {
+		//TODO
+	}
+	
+	@FXML
+	private void addFrictionFunction(ActionEvent event) {
+		//TODO
+	}
+	
+	@FXML
+	private void removeFrictionFunction(ActionEvent event) {
+		//TODO
+	}	
+	
+	
+	
+	
+	
+	@FXML
+	private void updatePurposes(Event event) {
+		//TODO
+		if (purposeTab.isSelected()) {
+			purposeList.getItems().clear();
+			purposeSourceURI.clear();
+			purposeBox.setDisable(true);
+			
+			if (market != null) {
+				purposeList.getItems().setAll(market.getBasicPurposes());
+				
+
+
+				purposeList.getItems().sort(new Comparator<BasicPurpose>() {
+
+					@Override
+					public int compare(BasicPurpose o1, BasicPurpose o2) {
+						// TODO Auto-generated method stub
+						return o1.toString().compareTo(o2.toString());
+					}
+					
+				});
+			}
+		}
+	}
+	
+	@FXML
+	private void browsePurpose(ActionEvent event) {
 		
 	}
 	
-	protected void setIcon(Image wrapIcon) {
-		this.wrapIcon = wrapIcon;
+	@FXML
+	private void editPurpose(ActionEvent event) {
 		
 	}
+	
+	@FXML
+	private void changePurposeSourceURI(ActionEvent event) {
+		
+	}
+	
+	@FXML
+	private void addPurpose(ActionEvent event) {
+		
+	}
+	
+	@FXML
+	private void removePurpose(ActionEvent event) {
+		
+	}
+	
+	
+	
+	
+	
+	@FXML
+	private void updateSurrogates(Event event) {
+		//TODO
+	}
+	
 }

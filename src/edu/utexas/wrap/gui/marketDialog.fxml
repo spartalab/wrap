@@ -16,9 +16,9 @@
 
 <VBox prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.utexas.wrap.gui.EditMarketController">
    <children>
-      <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
+      <TabPane fx:id="tabBox" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
         <tabs>
-          <Tab closable="false" text="Demographics">
+          <Tab fx:id="demographicTab" closable="false" onSelectionChanged="#updateDemographics" text="Demographics">
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
@@ -33,8 +33,8 @@
                                     <ListView fx:id="demographicList" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
                                     <HBox prefWidth="200.0" spacing="5.0" VBox.vgrow="NEVER">
                                        <children>
-                                          <Button fx:id="demographicAdd" mnemonicParsing="false" text="+" />
-                                          <Button fx:id="demographicRemove" disable="true" mnemonicParsing="false" text="-" />
+                                          <Button fx:id="demographicAdd" mnemonicParsing="false" onAction="#addDemographic" text="+" />
+                                          <Button fx:id="demographicRemove" disable="true" mnemonicParsing="false" onAction="#removeDemographic" text="-" />
                                        </children>
                                     </HBox>
                                  </children>
@@ -63,7 +63,7 @@
                   </AnchorPane>
             </content>
           </Tab>
-          <Tab closable="false" text="Friction Functions">
+          <Tab fx:id="frictFuncTab" closable="false" onSelectionChanged="#updateFrictionFunctions" text="Friction Functions">
             <content>
               <AnchorPane minHeight="0.0" minWidth="0.0">
                      <children>
@@ -78,18 +78,18 @@
                                     <ListView fx:id="frictionFunctionList" prefWidth="200.0" VBox.vgrow="ALWAYS" />
                                     <HBox prefWidth="200.0" spacing="5.0" VBox.vgrow="NEVER">
                                        <children>
-                                          <Button fx:id="frictionFunctionAdd" mnemonicParsing="false" text="+" />
-                                          <Button fx:id="frictionFunctionRemove" disable="true" mnemonicParsing="false" text="-" />
+                                          <Button fx:id="frictionFunctionAdd" mnemonicParsing="false" onAction="#addFrictionFunction" text="+" />
+                                          <Button fx:id="frictionFunctionRemove" disable="true" mnemonicParsing="false" onAction="#removeFrictionFunction" text="-" />
                                        </children>
                                     </HBox>
                                  </children>
                               </VBox>
                               <VBox fx:id="frictionFunctionBox" disable="true" prefHeight="200.0" prefWidth="100.0" spacing="10.0" HBox.hgrow="ALWAYS">
                                  <children>
-                                    <HBox prefWidth="200.0" spacing="25.0" VBox.vgrow="NEVER">
+                                    <HBox disable="true" prefWidth="200.0" spacing="25.0" VBox.vgrow="NEVER">
                                        <children>
                                           <RadioButton fx:id="frictionFunctionDiscretized" mnemonicParsing="false" selected="true" text="Discretized" />
-                                          <RadioButton fx:id="frictionFunctionGamma" disable="true" mnemonicParsing="false" text="Gamma" />
+                                          <RadioButton fx:id="frictionFunctionGamma" mnemonicParsing="false" text="Gamma" />
                                        </children>
                                     </HBox>
                                     <VBox>
@@ -97,9 +97,9 @@
                                           <Label text="Data source:" />
                                           <HBox prefHeight="100.0" prefWidth="200.0" spacing="5.0">
                                              <children>
-                                                <TextField fx:id="frictionFunctionSourceURI" HBox.hgrow="ALWAYS" />
-                                                <Button fx:id="frictionFunctionBrowse" mnemonicParsing="false" text="Browse..." />
-                                                <Button fx:id="frictionFunctionEdit" disable="true" mnemonicParsing="false" text="Edit..." />
+                                                <TextField fx:id="frictionFunctionSourceURI" onAction="#changeFrictionFunctionSourceURI" HBox.hgrow="ALWAYS" />
+                                                <Button fx:id="frictionFunctionBrowse" mnemonicParsing="false" onAction="#browseFrictionFunction" text="Browse..." />
+                                                <Button fx:id="frictionFunctionEdit" mnemonicParsing="false" onAction="#editFrictionFunction" text="Edit..." />
                                              </children>
                                           </HBox>
                                        </children>
@@ -115,7 +115,7 @@
                   </AnchorPane>
             </content>
           </Tab>
-            <Tab closable="false" text="Trip Purposes">
+            <Tab fx:id="purposeTab" closable="false" onSelectionChanged="#updatePurposes" text="Trip Purposes">
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
@@ -130,8 +130,8 @@
                                     <ListView fx:id="purposeList" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
                                     <HBox prefWidth="200.0" spacing="5.0" VBox.vgrow="NEVER">
                                        <children>
-                                          <Button fx:id="purposeAdd" mnemonicParsing="false" text="+" />
-                                          <Button fx:id="purposeRemove" disable="true" mnemonicParsing="false" text="-" />
+                                          <Button fx:id="purposeAdd" mnemonicParsing="false" onAction="#addPurpose" text="+" />
+                                          <Button fx:id="purposeRemove" disable="true" mnemonicParsing="false" onAction="#removePurpose" text="-" />
                                        </children>
                                     </HBox>
                                  </children>
@@ -141,9 +141,9 @@
                                     <Label text="Data source:" />
                                     <HBox prefHeight="100.0" prefWidth="200.0" spacing="5.0">
                                        <children>
-                                          <TextField fx:id="purposeSourceURI" editable="false" HBox.hgrow="ALWAYS" />
-                                          <Button fx:id="purposeBrowse" mnemonicParsing="false" text="Browse..." />
-                                          <Button fx:id="purposeEdit" disable="true" mnemonicParsing="false" text="Edit..." />
+                                          <TextField fx:id="purposeSourceURI" editable="false" onAction="#changePurposeSourceURI" HBox.hgrow="ALWAYS" />
+                                          <Button fx:id="purposeBrowse" mnemonicParsing="false" onAction="#browsePurpose" text="Browse..." />
+                                          <Button fx:id="purposeEdit" mnemonicParsing="false" onAction="#editPurpose" text="Edit..." />
                                        </children>
                                        <VBox.margin>
                                           <Insets />
@@ -160,7 +160,7 @@
                   </AnchorPane>
               </content>
             </Tab>
-            <Tab closable="false" disable="true" text="Surrogate Demand Data">
+            <Tab fx:id="surrogateTab" closable="false" disable="true" onSelectionChanged="#updateSurrogates" text="Surrogate Demand Data">
               <content>
                 <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>

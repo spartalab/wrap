@@ -237,4 +237,14 @@ public class Market implements ODProfileProvider {
 		// TODO Auto-generated method stub
 		props.setProperty("demographics."+demographicName+".file", demographicFile);
 	}
+
+	public String getFrictionFunctionSource(String frictFuncID) {
+		// TODO Auto-generated method stub
+		return props.getProperty("frictFacts."+frictFuncID+".file");
+	}
+
+	public String getPurposeSource(String purposeID) {
+		// TODO Auto-generated method stub
+		return props.getProperty("purposes."+purposeID+".file");
+	}
 }
