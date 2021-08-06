@@ -416,17 +416,32 @@ public class EditMarketController {
 	
 	@FXML
 	private void browseFrictionFunction(ActionEvent event) {
-		//TODO
+		FileChooser fricFuncChooser = new FileChooser();
+		fricFuncChooser.setTitle("Open Friction Function");
+		fricFuncChooser.setInitialDirectory(market.getDirectory().toFile());
+		fricFuncChooser.getExtensionFilters().add(new ExtensionFilter("Comma-Separated Values","*.csv"));
+		
+		File selectedFile = fricFuncChooser.showOpenDialog(scene.getWindow());
+		if (selectedFile != null) {
+			frictionFunctionSourceURI.setText(market.getDirectory().toUri().relativize(selectedFile.toURI()).getPath());
+			frictionFunctionSourceURI.getOnAction().handle(event);
+		}
+	
 	}
 	
 	@FXML
 	private void editFrictionFunction(ActionEvent event) {
-		//TODO
+		svcs.showDocument(market.getDirectory().resolve(frictionFunctionSourceURI.getText()).toString());
 	}
 	
 	@FXML
 	private void changeFrictionFunctionSourceURI(ActionEvent event) {
-		//TODO
+		FrictionFactorMap ffunc = frictionFunctionList.getSelectionModel().getSelectedItem();
+		
+		if (!frictionFunctionSourceURI.getText().equals(market.getFrictionFunctionSource(ffunc.toString()))) {
+			market.setFrictionFunctionSource(ffunc.toString(),frictionFunctionSourceURI.getText());
+			markChanged();
+		}
 	}
 	
 	@FXML
@@ -445,7 +460,6 @@ public class EditMarketController {
 	
 	@FXML
 	private void updatePurposes(Event event) {
-		//TODO
 		if (purposeTab.isSelected()) {
 			purposeList.getItems().clear();
 			purposeSourceURI.clear();
@@ -454,13 +468,10 @@ public class EditMarketController {
 			if (market != null) {
 				purposeList.getItems().setAll(market.getBasicPurposes());
 				
-
-
 				purposeList.getItems().sort(new Comparator<BasicPurpose>() {
 
 					@Override
 					public int compare(BasicPurpose o1, BasicPurpose o2) {
-						// TODO Auto-generated method stub
 						return o1.toString().compareTo(o2.toString());
 					}
 					
@@ -471,27 +482,42 @@ public class EditMarketController {
 	
 	@FXML
 	private void browsePurpose(ActionEvent event) {
+		FileChooser purposeChooser = new FileChooser();
+		purposeChooser.setTitle("Open Purpose");
+		purposeChooser.setInitialDirectory(market.getDirectory().toFile());
+		purposeChooser.getExtensionFilters().add(new ExtensionFilter("wrap Purpose Files","*.wrppr"));
 		
+		
+		File selectedFile = purposeChooser.showOpenDialog(scene.getWindow());
+		if (selectedFile != null) {
+			purposeSourceURI.setText(market.getDirectory().toUri().relativize(selectedFile.toURI()).getPath());
+			purposeSourceURI.getOnAction().handle(event);
+		}
 	}
 	
 	@FXML
 	private void editPurpose(ActionEvent event) {
-		
+		//TODO
 	}
 	
 	@FXML
 	private void changePurposeSourceURI(ActionEvent event) {
+		BasicPurpose purpose = purposeList.getSelectionModel().getSelectedItem();
 		
+		if (!purposeSourceURI.getText().equals(market.getPurposeSource(purpose.toString()))) {
+			market.setPurposeSource(purpose.toString(),purposeSourceURI.getText());
+			markChanged();
+		}
 	}
 	
 	@FXML
 	private void addPurpose(ActionEvent event) {
-		
+		//TODO
 	}
 	
 	@FXML
 	private void removePurpose(ActionEvent event) {
-		
+		//TODO
 	}
 	
 	
