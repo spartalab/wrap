@@ -28,6 +28,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.control.Button;
@@ -58,6 +59,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 import javafx.util.Callback;
 
 public class ConfigController {
@@ -874,6 +876,7 @@ public class ConfigController {
 			
 			EditMarketController controller = loader.getController();
 			controller.setMarket(selected);
+			controller.setServices(svcs);
 			
 			Scene pane = new Scene(vbox);
 
@@ -883,6 +886,18 @@ public class ConfigController {
 			stage.setScene(pane);
 			stage.setTitle("Edit Market");
 			stage.getIcons().add(wrapIcon);
+			controller.setIcon(wrapIcon);
+			controller.setScene(stage.getScene());
+			
+			stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+
+				@Override
+				public void handle(WindowEvent arg0) {
+					// TODO Auto-generated method stub
+					controller.exit(arg0);
+				}
+				
+			});
 			
 			stage.showAndWait();
 		} catch (IOException except) {

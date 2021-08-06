@@ -14,7 +14,6 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-
 <VBox prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.utexas.wrap.gui.EditMarketController">
    <children>
       <TabPane tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
@@ -45,9 +44,9 @@
                                     <Label text="Data source:" />
                                     <HBox prefHeight="100.0" prefWidth="200.0" spacing="5.0">
                                        <children>
-                                          <TextField fx:id="demographicSourceURI" HBox.hgrow="ALWAYS" />
-                                          <Button fx:id="demographicBrowse" mnemonicParsing="false" text="Browse..." />
-                                          <Button fx:id="demographicEdit" disable="true" mnemonicParsing="false" text="Edit..." />
+                                          <TextField fx:id="demographicSourceURI" onAction="#changeDemographicSourceURI" HBox.hgrow="ALWAYS" />
+                                          <Button fx:id="demographicBrowse" mnemonicParsing="false" onAction="#browseDemographic" text="Browse..." />
+                                          <Button fx:id="demographicEdit" mnemonicParsing="false" onAction="#editDemographic" text="Edit..." />
                                        </children>
                                        <VBox.margin>
                                           <Insets />
@@ -210,8 +209,8 @@
       </TabPane>
       <ButtonBar prefHeight="40.0" prefWidth="200.0">
         <buttons>
-          <Button fx:id="marketOK" mnemonicParsing="false" text="OK" />
-            <Button fx:id="marketCancel" mnemonicParsing="false" text="Cancel" />
+          <Button fx:id="marketOK" disable="true" mnemonicParsing="false" text="OK" />
+            <Button fx:id="marketCancel" mnemonicParsing="false" onAction="#closeWindow" text="Cancel" />
         </buttons>
          <VBox.margin>
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -223,8 +222,8 @@
             <Label disable="true" maxHeight="-Infinity" maxWidth="-1.0" minWidth="50.0" prefHeight="25.0" text="Market:" HBox.hgrow="NEVER" />
             <Label id="projectName" fx:id="marketName" maxHeight="-Infinity" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="200.0" HBox.hgrow="NEVER" />
             <Separator maxHeight="-Infinity" orientation="VERTICAL" prefHeight="25.0" HBox.hgrow="NEVER" />
-            <Label disable="true" maxHeight="-Infinity" maxWidth="-1.0" minWidth="55.0" prefHeight="25.0" text="Directory: " HBox.hgrow="NEVER" />
-            <Label id="projectDirectory" fx:id="marketDirectory" layoutX="55.0" layoutY="15.0" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="250.0" HBox.hgrow="ALWAYS" />
+            <Label disable="true" maxHeight="-Infinity" maxWidth="-1.0" minWidth="55.0" prefHeight="25.0" text="Path:" HBox.hgrow="NEVER" />
+            <Label id="projectDirectory" fx:id="marketPath" layoutX="55.0" layoutY="15.0" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="250.0" HBox.hgrow="ALWAYS" />
          </children>
          <padding>
             <Insets bottom="3.0" left="3.0" right="3.0" />

@@ -53,24 +53,29 @@ public class Market implements ODProfileProvider {
 	private final Collection<TravelSurveyZone> zones;
 	private final Map<String,Demographic> basicDemos;
 	private final Map<String,FrictionFactorMap> frictionFactors;
-	public String name;
+	private String name;
+	private Path source;
 
 	public Market(String name, Path marketFile, Map<Integer,TravelSurveyZone> zoneIDs) throws IOException {
 		props = new Properties();
-		props.load(Files.newInputStream(marketFile));
 		this.name = name;
 
-		Path directory = marketFile.getParent().resolve(props.getProperty("dir"));
+		source = marketFile;
+		reloadProperties();
 
 		this.zones = zoneIDs.values();
-		this.basicDemos = loadDemographics(directory,zoneIDs);
-		this.frictionFactors = getFrictionFactors(directory);
-		basicPurposes = loadBasicPurposes(directory,zoneIDs);
-		dummyPurposes = getDummyPurposes(directory,zoneIDs);
+		this.basicDemos = loadDemographics(zoneIDs);
+		this.frictionFactors = getFrictionFactors();
+		basicPurposes = loadBasicPurposes(zoneIDs);
+		dummyPurposes = getDummyPurposes(zoneIDs);
 
 	}
 
-	private Collection<DummyPurpose> getDummyPurposes(Path directory,Map<Integer,TravelSurveyZone> zoneIDs) {
+	public void reloadProperties() throws IOException {
+		props.load(Files.newInputStream(source));
+	}
+
+	private Collection<DummyPurpose> getDummyPurposes(Map<Integer,TravelSurveyZone> zoneIDs) {
 		// TODO Auto-generated method stub
 		String names = props.getProperty("purposes.dummies.ids");
 		
@@ -78,7 +83,7 @@ public class Market implements ODProfileProvider {
 		return Stream.of(names.split(","))
 		.map(id -> {
 			try {
-				return new DummyPurpose(directory.resolve(props.getProperty("purposes."+id+".file")),zoneIDs);
+				return new DummyPurpose(getDirectory().resolve(props.getProperty("purposes."+id+".file")),zoneIDs);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -106,7 +111,6 @@ public class Market implements ODProfileProvider {
 	}
 
 	private Map<String,BasicPurpose> loadBasicPurposes(
-			Path directory, 
 			Map<Integer,TravelSurveyZone> zones
 			) throws IOException {
 
@@ -119,7 +123,7 @@ public class Market implements ODProfileProvider {
 								id -> {
 									try {
 										return new BasicPurpose(id,
-												directory.resolve(props.getProperty("purposes."+id+".file")),
+												getDirectory().resolve(props.getProperty("purposes."+id+".file")),
 												this,
 												zones);
 									} catch (IOException e1) {
@@ -132,7 +136,7 @@ public class Market implements ODProfileProvider {
 						);
 	}
 
-	private Map<String,Demographic> loadDemographics(Path directory, Map<Integer, TravelSurveyZone> zones) {
+	private Map<String,Demographic> loadDemographics(Map<Integer, TravelSurveyZone> zones) {
 		//TODO improve error handling here
 		String ids = props.getProperty("demographics.ids");
 		if (ids == null || ids.isBlank()) return Collections.emptyMap();
@@ -141,7 +145,7 @@ public class Market implements ODProfileProvider {
 						Collectors.toMap(
 								Function.identity(), 
 								name -> {
-									Path path = directory.resolve(props.getProperty("demographics."+name+".file"));
+									Path path = getDirectory().resolve(props.getProperty("demographics."+name+".file"));
 									try {
 										return new BasicDemographic(name,path, zones);
 									} catch (IOException e) {
@@ -156,7 +160,7 @@ public class Market implements ODProfileProvider {
 		return basicDemos.values();
 	}
 
-	private Map<String,FrictionFactorMap> getFrictionFactors(Path directory) {
+	private Map<String,FrictionFactorMap> getFrictionFactors() {
 		String ids = props.getProperty("frictFacts.ids");
 		if (ids == null || ids.isBlank()) return Collections.emptyMap();
 		return Stream.of(ids.split(","))
@@ -165,7 +169,7 @@ public class Market implements ODProfileProvider {
 								Function.identity(), 
 								id -> 
 								FrictionFactorFactory.readFactorFile(id,
-										directory.resolve(
+										getDirectory().resolve(
 												props.getProperty("frictFacts."+id+".file")
 												)
 										)
@@ -218,5 +222,19 @@ public class Market implements ODProfileProvider {
 	
 	public Collection<BasicPurpose> getBasicPurposes(){
 		return basicPurposes.values();
+	}
+	
+	public Path getDirectory() {
+		return source.getParent();
+	}
+
+	public String getDemographicFile(String demographicID) {
+		// TODO Auto-generated method stub
+		return props.getProperty("demographics."+demographicID+".file");
+	}
+
+	public void setDemographicFile(String demographicName, String demographicFile) {
+		// TODO Auto-generated method stub
+		props.setProperty("demographics."+demographicName+".file", demographicFile);
 	}
 }
