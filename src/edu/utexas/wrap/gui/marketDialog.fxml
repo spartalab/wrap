@@ -209,7 +209,7 @@
       </TabPane>
       <ButtonBar prefHeight="40.0" prefWidth="200.0">
         <buttons>
-          <Button fx:id="marketOK" disable="true" mnemonicParsing="false" text="OK" />
+          <Button fx:id="marketOK" disable="true" mnemonicParsing="false" onAction="#saveAndExit" text="OK" />
             <Button fx:id="marketCancel" mnemonicParsing="false" onAction="#closeWindow" text="Cancel" />
         </buttons>
          <VBox.margin>

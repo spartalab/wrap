@@ -476,11 +476,12 @@ public class ConfigController {
 	}
 	
 	@FXML
-	private void saveModel(Event e) {
+	private boolean saveModel(Event e) {
 		if (unsavedChanges) {
 			//TODO write project to file
 			markUnchanged();
 		}
+		return true;
 	}
 	
 	@FXML
@@ -529,7 +530,9 @@ public class ConfigController {
 		if (choice.isPresent()) {
 			
 			ButtonType type = choice.get();
-			if (type == ButtonType.YES) saveModel(e); 
+			if (type == ButtonType.YES) {
+				if (!saveModel(e)) return false; 
+			}
 			else if (type == ButtonType.CANCEL) return false;
 		}
 		return true;

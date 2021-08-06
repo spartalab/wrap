@@ -223,22 +223,41 @@ public class EditMarketController {
 			Optional<ButtonType> choice = alert.showAndWait();
 			if (choice.isPresent()) {
 				ButtonType type = choice.get();
-				if (type == ButtonType.YES) saveMarket(event);
+				if (type == ButtonType.YES) {
+					if (!saveMarket(event)) return false;
+				}
 				else if (type == ButtonType.CANCEL) return false;
 			}
 		}
 		return true;
 	}
 	
-	private void saveMarket(Event e) {
+	private boolean saveMarket(Event e) {
 		if (unsavedChanges) {
-			//TODO;
+			//TODO
+			return true;
+		}
+		return true;
+	}
+
+	@FXML
+	private void saveAndExit(ActionEvent e) {
+		try{ 
+			if (saveMarket(e)) {
+				market.reloadProperties();
+				closeWindow(e);
+			}
+		} catch (IOException except) {
+			//TODO
+			except.printStackTrace();
 		}
 	}
 	
 	protected void setServices(HostServices svcs) {
 		this.svcs = svcs;
 	}
+	
+	
 	
 	@FXML
 	private void editDemographic(ActionEvent event) {
