@@ -17,9 +17,12 @@ import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.RadioButton;
@@ -170,7 +173,6 @@ public class EditMarketController {
 
 			@Override
 			public void changed(ObservableValue<? extends Demographic> arg0, Demographic oldValue, Demographic newValue) {
-				// TODO Auto-generated method stub
 				if (newValue != null) {
 					demographicBox.setDisable(false);
 					demographicRemove.setDisable(false);
@@ -190,7 +192,6 @@ public class EditMarketController {
 			@Override
 			public void changed(ObservableValue<? extends FrictionFactorMap> arg0, FrictionFactorMap oldValue,
 					FrictionFactorMap newValue) {
-				// TODO Auto-generated method stub
 				if (newValue != null) {
 					frictionFunctionBox.setDisable(false);
 					frictionFunctionRemove.setDisable(false);
@@ -210,7 +211,6 @@ public class EditMarketController {
 
 			@Override
 			public void changed(ObservableValue<? extends BasicPurpose> arg0, BasicPurpose oldValue, BasicPurpose newValue) {
-				// TODO Auto-generated method stub
 				if (newValue != null) {
 					purposeBox.setDisable(false);
 					purposeRemove.setDisable(false);
@@ -228,7 +228,6 @@ public class EditMarketController {
 	}
 	
 	public void setMarket(Market selected) {
-		// TODO Auto-generated method stub
 		market = selected;
 	
 		
@@ -446,12 +445,62 @@ public class EditMarketController {
 	
 	@FXML
 	private void addFrictionFunction(ActionEvent event) {
-		//TODO
+		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+		try {
+			FXMLLoader loader = new FXMLLoader();
+			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/newFrictionFunctionDialog.fxml").openStream());
+			NewFrictionFunctionController controller = loader.getController();
+			DialogPane pane = new DialogPane();
+			
+			pane.setContent(vbox);
+			pane.getButtonTypes().add(ButtonType.CANCEL);
+			pane.getButtonTypes().add(ButtonType.OK);
+			
+			dialog.setDialogPane(pane);
+			dialog.setTitle("New Friction Function");
+			Button ok = (Button) pane.lookupButton(ButtonType.OK);
+			ok.disableProperty().bind(controller.notReady());
+			((Stage) pane.getScene().getWindow()).getIcons().add(wrapIcon);
+			
+			controller.setScene(pane.getScene());
+			controller.setMarket(market);
+			
+			dialog.showAndWait();
+			if (dialog.getResult() == ButtonType.OK) {
+				market.addFrictionFunction(controller.getFunctionID(), controller.getFunctionSourceURI());
+				frictionFunctionList.getItems().setAll(market.getFrictionFunctions());
+				frictionFunctionList.getItems().sort(new Comparator<FrictionFactorMap>() {
+
+					@Override
+					public int compare(FrictionFactorMap o1, FrictionFactorMap o2) {
+						return o1.toString().compareTo(o2.toString());
+					}
+					
+				});
+				markChanged();
+			}
+		} catch (IOException e) {
+			
+		}
 	}
 	
 	@FXML
 	private void removeFrictionFunction(ActionEvent event) {
-		//TODO
+	
+		FrictionFactorMap selected = frictionFunctionList.getSelectionModel().getSelectedItem();
+		
+		if (selected != null) {
+			Alert alert = new Alert(AlertType.CONFIRMATION,"Remove friction function "+selected+" from market?", ButtonType.YES,ButtonType.NO);
+			((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(wrapIcon);
+			
+			alert.showAndWait();
+			
+			if (alert.getResult() == ButtonType.YES) {
+				frictionFunctionList.getItems().remove(selected);
+				market.removeFrictionFunction(selected);
+				markChanged();
+			}
+		}
 	}	
 	
 	

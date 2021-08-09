@@ -2,6 +2,7 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ButtonBar?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
@@ -18,147 +19,214 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1000.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1">
-  <tabs>
-    <Tab text="Value of Time">
-         <content>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0">
-               <children>
-                  <VBox fillWidth="false" layoutX="10.0" layoutY="10.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+
+<VBox xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1000.0" tabClosingPolicy="UNAVAILABLE">
+        <tabs>
+          <Tab closable="false" text="Value of Time">
+               <content>
+                  <AnchorPane prefHeight="200.0" prefWidth="200.0">
                      <children>
-                        <TableView editable="true" prefHeight="361.0" prefWidth="197.0" VBox.vgrow="ALWAYS">
-                          <columns>
-                            <TableColumn fx:id="timePeriodColumn" editable="false" prefWidth="100.0" text="Time Period" />
-                            <TableColumn fx:id="votColumn" prefWidth="75.0" text="VOT" />
-                          </columns>
-                        </TableView>
-                     </children>
-                  </VBox>
-               </children>
-               <padding>
-                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-               </padding></AnchorPane>
-         </content></Tab>
-    <Tab text="Generation">
-         <content>
-            <AnchorPane prefHeight="200.0" prefWidth="200.0">
-               <children>
-                  <VBox spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                     <children>
-                        <VBox maxHeight="-Infinity" prefHeight="30.0" prefWidth="100.0" VBox.vgrow="NEVER">
+                        <VBox fillWidth="false" layoutX="10.0" layoutY="10.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                            <children>
-                              <Label text="Balancing method:" />
-                              <HBox alignment="TOP_CENTER" prefHeight="100.0" prefWidth="200.0" spacing="10.0" VBox.vgrow="NEVER">
+                              <TableView editable="true" prefHeight="361.0" prefWidth="197.0" VBox.vgrow="ALWAYS">
+                                <columns>
+                                  <TableColumn fx:id="timePeriodColumn" editable="false" prefWidth="100.0" text="Time Period" />
+                                  <TableColumn fx:id="votColumn" prefWidth="75.0" text="VOT" />
+                                </columns>
+                              </TableView>
+                           </children>
+                        </VBox>
+                     </children>
+                     <padding>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                     </padding>
+                  </AnchorPane>
+               </content>
+            </Tab>
+          <Tab closable="false" text="Generation">
+               <content>
+                  <AnchorPane prefHeight="200.0" prefWidth="200.0">
+                     <children>
+                        <VBox spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <children>
+                              <VBox maxHeight="-Infinity" prefHeight="30.0" prefWidth="100.0" VBox.vgrow="NEVER">
                                  <children>
-                                    <RadioButton mnemonicParsing="false" nodeOrientation="RIGHT_TO_LEFT" text="Scale productions to match attractions" />
+                                    <Label text="Balancing method:" />
+                                    <HBox alignment="TOP_CENTER" prefHeight="100.0" prefWidth="200.0" spacing="10.0" VBox.vgrow="NEVER">
+                                       <children>
+                                          <RadioButton mnemonicParsing="false" nodeOrientation="RIGHT_TO_LEFT" text="Scale productions to match attractions" />
+                                          <Separator orientation="VERTICAL" prefHeight="200.0" />
+                                          <RadioButton mnemonicParsing="false" text="Scale attractions to match productions" />
+                                       </children>
+                                    </HBox>
+                                 </children>
+                              </VBox>
+                              <Separator prefWidth="200.0" />
+                              <HBox spacing="5.0" VBox.vgrow="ALWAYS">
+                                 <children>
+                                    <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <VBox VBox.vgrow="NEVER">
+                                             <children>
+                                                <Label text="Production demographic type:" />
+                                                <HBox prefWidth="300.0" spacing="10.0">
+                                                   <children>
+                                                      <RadioButton mnemonicParsing="false" text="Basic" />
+                                                      <RadioButton mnemonicParsing="false" text="Production-proportional" />
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                          <VBox VBox.vgrow="NEVER">
+                                             <children>
+                                                <Label text="Production demographic source:" />
+                                                <ComboBox prefWidth="150.0" />
+                                             </children>
+                                          </VBox>
+                                          <VBox prefWidth="100.0" VBox.vgrow="NEVER">
+                                             <children>
+                                                <Label text="Production rate type:" />
+                                                <HBox prefWidth="200.0" spacing="5.0">
+                                                   <children>
+                                                      <RadioButton mnemonicParsing="false" text="Generic" />
+                                                      <RadioButton mnemonicParsing="false" text="Zone type-specific" />
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                          <VBox VBox.vgrow="ALWAYS">
+                                             <children>
+                                                <Label text="Production rates:" />
+                                                <ScrollPane VBox.vgrow="ALWAYS">
+                                                   <content>
+                                                      <TableView editable="true">
+                                                        <columns>
+                                                          <TableColumn editable="false" prefWidth="90.0" text="Demographic" />
+                                                            <TableColumn prefWidth="75.0" />
+                                                            <TableColumn prefWidth="75.0" />
+                                                            <TableColumn prefWidth="75.0" />
+                                                            <TableColumn prefWidth="75.0" />
+                                                            <TableColumn prefWidth="75.0" />
+                                                        </columns>
+                                                      </TableView>
+                                                   </content>
+                                                </ScrollPane>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                    </VBox>
                                     <Separator orientation="VERTICAL" prefHeight="200.0" />
-                                    <RadioButton mnemonicParsing="false" text="Scale attractions to match productions" />
+                                    <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+                                       <children>
+                                          <VBox VBox.vgrow="NEVER">
+                                             <children>
+                                                <Label text="Attraction demographic type:" />
+                                                <HBox prefWidth="300.0" spacing="10.0">
+                                                   <children>
+                                                      <RadioButton mnemonicParsing="false" text="Basic" />
+                                                      <RadioButton mnemonicParsing="false" text="Attraction-proportional" />
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                          <VBox VBox.vgrow="NEVER">
+                                             <children>
+                                                <Label text="Attraction demographic source:" />
+                                                <ComboBox prefWidth="150.0" />
+                                             </children>
+                                          </VBox>
+                                          <VBox prefWidth="100.0" VBox.vgrow="NEVER">
+                                             <children>
+                                                <Label text="Attraction rate type:" />
+                                                <HBox prefWidth="200.0" spacing="5.0">
+                                                   <children>
+                                                      <RadioButton mnemonicParsing="false" text="Generic" />
+                                                      <RadioButton mnemonicParsing="false" text="Zone type-specific" />
+                                                   </children>
+                                                </HBox>
+                                             </children>
+                                          </VBox>
+                                          <VBox VBox.vgrow="ALWAYS">
+                                             <children>
+                                                <Label text="Attraction rates:" />
+                                                <ScrollPane VBox.vgrow="ALWAYS">
+                                                   <content>
+                                                      <TableView editable="true">
+                                                        <columns>
+                                                          <TableColumn editable="false" prefWidth="90.0" text="Demographic" />
+                                                            <TableColumn prefWidth="75.0" />
+                                                            <TableColumn prefWidth="75.0" />
+                                                            <TableColumn prefWidth="75.0" />
+                                                            <TableColumn prefWidth="75.0" />
+                                                          <TableColumn prefWidth="75.0" />
+                                                        </columns>
+                                                      </TableView>
+                                                   </content>
+                                                </ScrollPane>
+                                             </children>
+                                          </VBox>
+                                       </children>
+                                    </VBox>
                                  </children>
                               </HBox>
                            </children>
+                           <padding>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </padding>
                         </VBox>
-                        <Separator prefWidth="200.0" />
-                        <HBox spacing="5.0" VBox.vgrow="ALWAYS">
+                     </children>
+                  </AnchorPane>
+               </content>
+            </Tab>
+            <Tab closable="false" text="Geographic Distribution">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
+                     <children>
+                        <HBox layoutX="140.0" layoutY="107.0" prefHeight="570.8571428571429" prefWidth="1000.0" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                           <padding>
+                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                           </padding>
                            <children>
-                              <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+                              <VBox>
                                  <children>
-                                    <VBox VBox.vgrow="NEVER">
+                                    <Label text="Distributor IDs" />
+                                    <ListView prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                                    <HBox prefWidth="200.0" spacing="5.0">
                                        <children>
-                                          <Label text="Production demographic type:" />
-                                          <HBox prefWidth="300.0" spacing="10.0">
-                                             <children>
-                                                <RadioButton mnemonicParsing="false" text="Basic" />
-                                                <RadioButton mnemonicParsing="false" text="Production-proportional" />
-                                             </children>
-                                          </HBox>
+                                          <Button mnemonicParsing="false" text="+" />
+                                          <Button disable="true" mnemonicParsing="false" text="-" />
                                        </children>
-                                    </VBox>
-                                    <VBox VBox.vgrow="NEVER">
-                                       <children>
-                                          <Label text="Production demographic source:" />
-                                          <ComboBox prefWidth="150.0" />
-                                       </children>
-                                    </VBox>
-                                    <VBox prefWidth="100.0" VBox.vgrow="NEVER">
-                                       <children>
-                                          <Label text="Production rate type:" />
-                                          <HBox prefWidth="200.0" spacing="5.0">
-                                             <children>
-                                                <RadioButton mnemonicParsing="false" text="Generic" />
-                                                <RadioButton mnemonicParsing="false" text="Zone type-specific" />
-                                             </children>
-                                          </HBox>
-                                       </children>
-                                    </VBox>
-                                    <VBox VBox.vgrow="ALWAYS">
-                                       <children>
-                                          <Label text="Production rates:" />
-                                          <ScrollPane VBox.vgrow="ALWAYS">
-                                             <content>
-                                                <TableView editable="true">
-                                                  <columns>
-                                                    <TableColumn editable="false" prefWidth="90.0" text="Demographic" />
-                                                      <TableColumn prefWidth="75.0" />
-                                                      <TableColumn prefWidth="75.0" />
-                                                      <TableColumn prefWidth="75.0" />
-                                                      <TableColumn prefWidth="75.0" />
-                                                      <TableColumn prefWidth="75.0" />
-                                                  </columns>
-                                                </TableView>
-                                             </content>
-                                          </ScrollPane>
-                                       </children>
-                                    </VBox>
+                                       <padding>
+                                          <Insets top="5.0" />
+                                       </padding>
+                                    </HBox>
                                  </children>
                               </VBox>
-                              <Separator orientation="VERTICAL" prefHeight="200.0" />
-                              <VBox spacing="10.0" HBox.hgrow="ALWAYS">
+                              <VBox fx:id="distributionBox" disable="true" prefHeight="200.0" spacing="10.0" HBox.hgrow="ALWAYS">
                                  <children>
-                                    <VBox VBox.vgrow="NEVER">
+                                    <VBox>
                                        <children>
-                                          <Label text="Attraction demographic type:" />
-                                          <HBox prefWidth="300.0" spacing="10.0">
-                                             <children>
-                                                <RadioButton mnemonicParsing="false" text="Basic" />
-                                                <RadioButton mnemonicParsing="false" text="Attraction-proportional" />
-                                             </children>
-                                          </HBox>
+                                          <Label text="Scaling factor:" />
+                                          <Spinner />
                                        </children>
                                     </VBox>
-                                    <VBox VBox.vgrow="NEVER">
+                                    <VBox>
                                        <children>
-                                          <Label text="Attraction demographic source:" />
-                                          <ComboBox prefWidth="150.0" />
+                                          <Label text="Friction function:" />
+                                          <ComboBox prefWidth="200.0" />
                                        </children>
                                     </VBox>
-                                    <VBox prefWidth="100.0" VBox.vgrow="NEVER">
+                                    <VBox prefHeight="200.0" prefWidth="100.0">
                                        <children>
-                                          <Label text="Attraction rate type:" />
+                                          <Label text="Zone weight source:" />
                                           <HBox prefWidth="200.0" spacing="5.0">
                                              <children>
-                                                <RadioButton mnemonicParsing="false" text="Generic" />
-                                                <RadioButton mnemonicParsing="false" text="Zone type-specific" />
+                                                <TextField editable="false" HBox.hgrow="ALWAYS" />
+                                                <Button mnemonicParsing="false" text="Browse..." />
                                              </children>
                                           </HBox>
-                                       </children>
-                                    </VBox>
-                                    <VBox VBox.vgrow="ALWAYS">
-                                       <children>
-                                          <Label text="Attraction rates:" />
-                                          <ScrollPane VBox.vgrow="ALWAYS">
-                                             <content>
-                                                <TableView editable="true">
-                                                  <columns>
-                                                    <TableColumn editable="false" prefWidth="90.0" text="Demographic" />
-                                                      <TableColumn prefWidth="75.0" />
-                                                      <TableColumn prefWidth="75.0" />
-                                                      <TableColumn prefWidth="75.0" />
-                                                      <TableColumn prefWidth="75.0" />
-                                                    <TableColumn prefWidth="75.0" />
-                                                  </columns>
-                                                </TableView>
-                                             </content>
-                                          </ScrollPane>
                                        </children>
                                     </VBox>
                                  </children>
@@ -166,97 +234,57 @@
                            </children>
                         </HBox>
                      </children>
-                     <padding>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                     </padding>
-                  </VBox>
-               </children></AnchorPane>
-         </content></Tab>
-      <Tab text="Geographic Distribution">
-        <content>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-               <children>
-                  <HBox layoutX="140.0" layoutY="107.0" prefHeight="570.8571428571429" prefWidth="1000.0" spacing="5.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                     <padding>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                     </padding>
+                  </AnchorPane>
+              </content>
+            </Tab>
+            <Tab closable="false" text="Mode Choice">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+              </content>
+            </Tab>
+            <Tab closable="false" text="Time Distribution">
+              <content>
+                <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                      <children>
-                        <VBox>
+                        <HBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                            <children>
-                              <Label text="Distributor IDs" />
-                              <ListView prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
-                              <HBox prefWidth="200.0" spacing="5.0">
+                              <VBox fillWidth="false" prefHeight="570.8571428571429" prefWidth="1000.0">
                                  <children>
-                                    <Button mnemonicParsing="false" text="+" />
-                                    <Button disable="true" mnemonicParsing="false" text="-" />
+                                    <TableView editable="true" prefHeight="361.0" prefWidth="300.0" VBox.vgrow="ALWAYS">
+                                       <columns>
+                                          <TableColumn fx:id="timePeriodColumn1" editable="false" prefWidth="100.0" text="Time Period" />
+                                          <TableColumn fx:id="votColumn1" prefWidth="100.0" text="Departure Rate" />
+                                          <TableColumn fx:id="votColumn11" prefWidth="100.0" text="Arrival Rate" />
+                                       </columns>
+                                    </TableView>
                                  </children>
                                  <padding>
-                                    <Insets top="5.0" />
+                                    <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                                  </padding>
-                              </HBox>
-                           </children>
-                        </VBox>
-                        <VBox fx:id="distributionBox" disable="true" prefHeight="200.0" spacing="10.0" HBox.hgrow="ALWAYS">
-                           <children>
-                              <VBox>
-                                 <children>
-                                    <Label text="Scaling factor:" />
-                                    <Spinner />
-                                 </children>
-                              </VBox>
-                              <VBox>
-                                 <children>
-                                    <Label text="Friction function:" />
-                                    <ComboBox prefWidth="200.0" />
-                                 </children>
-                              </VBox>
-                              <VBox prefHeight="200.0" prefWidth="100.0">
-                                 <children>
-                                    <Label text="Zone weight source:" />
-                                    <HBox prefWidth="200.0" spacing="5.0">
-                                       <children>
-                                          <TextField editable="false" HBox.hgrow="ALWAYS" />
-                                          <Button mnemonicParsing="false" text="Browse..." />
-                                       </children>
-                                    </HBox>
-                                 </children>
                               </VBox>
                            </children>
-                        </VBox>
+                        </HBox>
                      </children>
-                  </HBox>
-               </children></AnchorPane>
-        </content>
-      </Tab>
-      <Tab text="Mode Choice">
-        <content>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
-        </content>
-      </Tab>
-      <Tab text="Time Distribution">
-        <content>
-          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
-               <children>
-                  <HBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
-                     <children>
-                        <VBox fillWidth="false" prefHeight="570.8571428571429" prefWidth="1000.0">
-                           <children>
-                              <TableView editable="true" prefHeight="361.0" prefWidth="300.0" VBox.vgrow="ALWAYS">
-                                 <columns>
-                                    <TableColumn fx:id="timePeriodColumn1" editable="false" prefWidth="100.0" text="Time Period" />
-                                    <TableColumn fx:id="votColumn1" prefWidth="100.0" text="Departure Rate" />
-                                    <TableColumn fx:id="votColumn11" prefWidth="100.0" text="Arrival Rate" />
-                                 </columns>
-                              </TableView>
-                           </children>
-                           <padding>
-                              <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                           </padding>
-                        </VBox>
-                     </children>
-                  </HBox>
-               </children></AnchorPane>
-        </content>
-      </Tab>
-  </tabs>
-</TabPane>
+                  </AnchorPane>
+              </content>
+            </Tab>
+        </tabs>
+      </TabPane>
+      <ButtonBar prefHeight="40.0" prefWidth="200.0">
+        <buttons>
+          <Button mnemonicParsing="false" text="Button" />
+            <Button mnemonicParsing="false" text="Button" />
+        </buttons>
+      </ButtonBar>
+      <Separator prefWidth="200.0" />
+      <HBox prefHeight="100.0" prefWidth="200.0">
+         <children>
+            <Label text="Label" />
+            <Label text="Label" />
+            <Separator orientation="VERTICAL" prefHeight="200.0" />
+            <Label text="Label" />
+            <Label text="Label" />
+         </children>
+      </HBox>
+   </children>
+</VBox>

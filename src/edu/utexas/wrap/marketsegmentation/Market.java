@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -256,5 +257,24 @@ public class Market implements ODProfileProvider {
 	public void setPurposeSource(String purposeID, String source) {
 		// TODO Auto-generated method stub
 		props.setProperty("purposes."+purposeID+".file", source);
+	}
+
+	public void addFrictionFunction(String functionID, String functionSourceURI) {
+		FrictionFactorMap newMap = FrictionFactorFactory.readFactorFile(functionID, getDirectory().resolve(functionSourceURI));
+		frictionFactors.put(functionID, newMap);
+		props.setProperty("frictFacts.ids", String.join(",", frictionFactors.keySet()));
+		
+		props.setProperty("frictFacts."+functionID+".file", functionSourceURI);
+	}
+
+	public void removeFrictionFunction(FrictionFactorMap selected) {
+		frictionFactors.remove(selected.toString());
+		if (!frictionFactors.isEmpty()) props.setProperty("frictFacts.ids", String.join(",", frictionFactors.keySet()));
+		else props.remove("frictFacts.ids");
+		
+		Set<String> keys = props.stringPropertyNames();
+		for (String key : keys) {
+			if (key.startsWith("frictFacts."+selected.toString())) props.remove(key);
+		}
 	}
 }
