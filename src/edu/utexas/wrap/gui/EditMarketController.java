@@ -380,12 +380,61 @@ public class EditMarketController {
 	
 	@FXML
 	private void addDemographic(ActionEvent event) {
-		//TODO
+		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+		try {
+			FXMLLoader loader = new FXMLLoader();
+			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/newDemographicDialog.fxml").openStream());
+			NewDemographicController controller = loader.getController();
+			DialogPane pane = new DialogPane();
+			
+			pane.setContent(vbox);
+			pane.getButtonTypes().add(ButtonType.CANCEL);
+			pane.getButtonTypes().add(ButtonType.OK);
+			
+			dialog.setDialogPane(pane);
+			dialog.setTitle("New Demographic");
+			Button ok = (Button) pane.lookupButton(ButtonType.OK);
+			ok.disableProperty().bind(controller.notReady());
+			((Stage) pane.getScene().getWindow()).getIcons().add(wrapIcon);
+			
+			controller.setScene(pane.getScene());
+			controller.setMarket(market);
+			
+			dialog.showAndWait();
+			if (dialog.getResult() == ButtonType.OK) {
+				market.addDemographic(controller.getDemographicID(),controller.getDemographicSourceURI());
+				demographicList.getItems().setAll(market.getDemographics());
+				demographicList.getItems().sort(new Comparator<Demographic>() {
+					@Override
+					public int compare(Demographic o1, Demographic o2) {
+						return o1.toString().compareTo(o2.toString());
+					}
+					
+				});
+				markChanged();
+			}
+		} catch (IOException e) {
+			//TODO
+		}
+	
 	}
 	
 	@FXML
 	private void removeDemographic(ActionEvent event) {
 		//TODO
+		Demographic selected = demographicList.getSelectionModel().getSelectedItem();
+		
+		if (selected != null) {
+			Alert alert = new Alert(AlertType.CONFIRMATION,"Remove demographic "+selected+" from market?",ButtonType.YES,ButtonType.NO);
+			((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(wrapIcon);
+			
+			alert.showAndWait();
+			if (alert.getResult() == ButtonType.YES) {
+				demographicList.getItems().remove(selected);
+				market.removeDemographic(selected);
+				markChanged();
+			}
+		}
 	}
 	
 	
@@ -480,7 +529,7 @@ public class EditMarketController {
 				markChanged();
 			}
 		} catch (IOException e) {
-			
+			//TODO
 		}
 	}
 	

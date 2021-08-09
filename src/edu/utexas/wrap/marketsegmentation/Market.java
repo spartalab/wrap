@@ -277,4 +277,32 @@ public class Market implements ODProfileProvider {
 			if (key.startsWith("frictFacts."+selected.toString())) props.remove(key);
 		}
 	}
+	
+
+	public void addDemographic(String demographicID, String demographicSourceURI) {
+		// TODO Auto-generated method stub
+		try {
+			Demographic newDemo = new BasicDemographic(demographicID,getDirectory().resolve(demographicSourceURI),zones.stream().collect(Collectors.toMap(zone -> zone.getID(), Function.identity())));
+			basicDemos.put(demographicID, newDemo);
+			props.setProperty("demographics.ids", String.join(",", basicDemos.keySet()));
+			
+			props.setProperty("demographics."+demographicID+".file", demographicSourceURI);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} 
+	}
+
+	public void removeDemographic(Demographic selected) {
+		// TODO Auto-generated method stub
+		basicDemos.remove(selected.toString());
+		if (!basicDemos.isEmpty()) props.setProperty("demographics.ids", String.join(",", basicDemos.keySet()));
+		else props.remove("demographics.ids");
+		
+		Set<String> keys = props.stringPropertyNames();
+		for (String key : keys) {
+			if (key.startsWith("demographics."+selected.toString())) props.remove(key);
+				
+		}
+	}
 }
