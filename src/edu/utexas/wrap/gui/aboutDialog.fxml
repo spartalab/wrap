@@ -37,6 +37,12 @@
                         <Font size="14.0" />
                      </font>
                   </Label>
+                  <HBox>
+                     <children>
+                        <Label text="Version: " />
+                        <Label fx:id="versionLabel" />
+                     </children>
+                  </HBox>
                </children>
             </VBox>
          </children>
