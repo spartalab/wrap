@@ -62,6 +62,7 @@ public class wrap extends Application{
 			}
 			
 		});
+		if (!getParameters().getRaw().isEmpty()) controller.setParameters(getParameters());
 
 		
 //		Scene scene = new Scene(pane);

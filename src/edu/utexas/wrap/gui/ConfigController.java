@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.Optional;
 import java.util.Set;
@@ -21,6 +22,7 @@ import edu.utexas.wrap.marketsegmentation.Market;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
+import javafx.application.Application.Parameters;
 import javafx.application.HostServices;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ChangeListener;
@@ -1179,5 +1181,18 @@ public class ConfigController {
 	public void setHostServices(HostServices hostServices) {
 		// TODO Auto-generated method stub
 		svcs = hostServices;
+	}
+
+	public void setParameters(Parameters parameters) {
+		// TODO Auto-generated method stub
+		try {
+			currentProject = new Project(Paths.get(parameters.getRaw().get(0)));
+		} catch (NullPointerException | IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+//		currentProject.loadPropsFromFile();
+
+		loadModel(null);
 	}
 }
