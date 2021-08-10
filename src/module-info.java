@@ -24,6 +24,8 @@ module wrap {
 	exports edu.utexas.wrap;
 	exports edu.utexas.wrap.gui;
 	exports edu.utexas.wrap.marketsegmentation;
+	exports edu.utexas.wrap.assignment;
+	exports edu.utexas.wrap.modechoice;
 	exports edu.utexas.wrap.net;
 	exports edu.utexas.wrap.demand;
 	exports edu.utexas.wrap.distribution;

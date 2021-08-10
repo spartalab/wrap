@@ -52,8 +52,8 @@ public class Market implements ODProfileProvider {
 	private Map<String,BasicPurpose> basicPurposes;
 	private Collection<DummyPurpose> dummyPurposes;
 	private final Collection<TravelSurveyZone> zones;
-	private final Map<String,Demographic> basicDemos;
-	private final Map<String,FrictionFactorMap> frictionFactors;
+	private Map<String,Demographic> basicDemos;
+	private Map<String,FrictionFactorMap> frictionFactors;
 	private String name;
 	private Path source;
 
@@ -62,18 +62,24 @@ public class Market implements ODProfileProvider {
 		this.name = name;
 
 		source = marketFile;
-		reloadProperties();
 
 		this.zones = zoneIDs.values();
-		this.basicDemos = loadDemographics(zoneIDs);
-		this.frictionFactors = getFrictionFactors();
-		basicPurposes = loadBasicPurposes(zoneIDs);
-		dummyPurposes = getDummyPurposes(zoneIDs);
+		reloadProperties();
 
 	}
 
+	private void loadData(Collection<TravelSurveyZone> zones) throws IOException {
+		Map<Integer,TravelSurveyZone> zoneIDs = zones.stream().collect(Collectors.toMap(zone -> zone.getID(), Function.identity()));
+		basicDemos = loadDemographics(zoneIDs);
+		frictionFactors = getFrictionFactors();
+		basicPurposes = loadBasicPurposes(zoneIDs);
+		dummyPurposes = getDummyPurposes(zoneIDs);
+	}
+
 	public void reloadProperties() throws IOException {
+		props.clear();
 		props.load(Files.newInputStream(source));
+		loadData(zones);
 	}
 
 	private Collection<DummyPurpose> getDummyPurposes(Map<Integer,TravelSurveyZone> zoneIDs) {
@@ -230,32 +236,26 @@ public class Market implements ODProfileProvider {
 	}
 
 	public String getDemographicFile(String demographicID) {
-		// TODO Auto-generated method stub
 		return props.getProperty("demographics."+demographicID+".file");
 	}
 
 	public void setDemographicFile(String demographicName, String demographicFile) {
-		// TODO Auto-generated method stub
 		props.setProperty("demographics."+demographicName+".file", demographicFile);
 	}
 
 	public String getFrictionFunctionSource(String frictFuncID) {
-		// TODO Auto-generated method stub
 		return props.getProperty("frictFacts."+frictFuncID+".file");
 	}
 
 	public String getPurposeSource(String purposeID) {
-		// TODO Auto-generated method stub
 		return props.getProperty("purposes."+purposeID+".file");
 	}
 
 	public void setFrictionFunctionSource(String functionID, String functionFile) {
-		// TODO Auto-generated method stub
 		props.setProperty("frictFacts."+functionID+".file", functionFile);
 	}
 
 	public void setPurposeSource(String purposeID, String source) {
-		// TODO Auto-generated method stub
 		props.setProperty("purposes."+purposeID+".file", source);
 	}
 
@@ -280,7 +280,6 @@ public class Market implements ODProfileProvider {
 	
 
 	public void addDemographic(String demographicID, String demographicSourceURI) {
-		// TODO Auto-generated method stub
 		try {
 			Demographic newDemo = new BasicDemographic(demographicID,getDirectory().resolve(demographicSourceURI),zones.stream().collect(Collectors.toMap(zone -> zone.getID(), Function.identity())));
 			basicDemos.put(demographicID, newDemo);
@@ -294,7 +293,6 @@ public class Market implements ODProfileProvider {
 	}
 
 	public void removeDemographic(Demographic selected) {
-		// TODO Auto-generated method stub
 		basicDemos.remove(selected.toString());
 		if (!basicDemos.isEmpty()) props.setProperty("demographics.ids", String.join(",", basicDemos.keySet()));
 		else props.remove("demographics.ids");
@@ -303,6 +301,32 @@ public class Market implements ODProfileProvider {
 		for (String key : keys) {
 			if (key.startsWith("demographics."+selected.toString())) props.remove(key);
 				
+		}
+	}
+
+	public void removePurpose(BasicPurpose selected) {
+		basicPurposes.remove(selected.toString());
+		if (!basicPurposes.isEmpty()) props.setProperty("purposes.ids", String.join(",", basicPurposes.keySet()));
+		else props.remove("purposes.ids");
+		
+		Set<String> keys = props.stringPropertyNames();
+		for (String key : keys) {
+			if (key.startsWith("purposes."+selected.toString())) props.remove(key);
+		}
+	}
+	
+
+	public void addPurpose(String purposeID, String purposeSourceURI){
+		try {
+		Map<Integer,TravelSurveyZone> map = zones.stream().collect(Collectors.toMap(TravelSurveyZone::getID, Function.identity()));
+		BasicPurpose newPurpose = new BasicPurpose(purposeID,getDirectory().resolve(purposeSourceURI), this,map);
+		basicPurposes.put(purposeID,newPurpose);
+		props.setProperty("purposes.ids", String.join(",", basicPurposes.keySet()));
+		
+		props.setProperty("purposes."+purposeID+".file", purposeSourceURI);
+		} catch (IOException e) {
+			//TODO
+			e.printStackTrace();
 		}
 	}
 }

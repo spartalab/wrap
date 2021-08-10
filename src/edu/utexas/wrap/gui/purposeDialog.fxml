@@ -19,10 +19,9 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-
-<VBox xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1">
+<VBox xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.utexas.wrap.gui.EditPurposeController">
    <children>
-      <TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1000.0" tabClosingPolicy="UNAVAILABLE">
+      <TabPane minHeight="-Infinity" minWidth="-Infinity" prefHeight="600.0" prefWidth="1000.0" tabClosingPolicy="UNAVAILABLE" VBox.vgrow="ALWAYS">
         <tabs>
           <Tab closable="false" text="Value of Time">
                <content>
@@ -30,7 +29,7 @@
                      <children>
                         <VBox fillWidth="false" layoutX="10.0" layoutY="10.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                            <children>
-                              <TableView editable="true" prefHeight="361.0" prefWidth="197.0" VBox.vgrow="ALWAYS">
+                              <TableView fx:id="votTable" editable="true" prefHeight="361.0" prefWidth="197.0" VBox.vgrow="ALWAYS">
                                 <columns>
                                   <TableColumn fx:id="timePeriodColumn" editable="false" prefWidth="100.0" text="Time Period" />
                                   <TableColumn fx:id="votColumn" prefWidth="75.0" text="VOT" />
@@ -56,9 +55,9 @@
                                     <Label text="Balancing method:" />
                                     <HBox alignment="TOP_CENTER" prefHeight="100.0" prefWidth="200.0" spacing="10.0" VBox.vgrow="NEVER">
                                        <children>
-                                          <RadioButton mnemonicParsing="false" nodeOrientation="RIGHT_TO_LEFT" text="Scale productions to match attractions" />
+                                          <RadioButton fx:id="prodToAttrButton" mnemonicParsing="false" nodeOrientation="RIGHT_TO_LEFT" text="Scale productions to match attractions" />
                                           <Separator orientation="VERTICAL" prefHeight="200.0" />
-                                          <RadioButton mnemonicParsing="false" text="Scale attractions to match productions" />
+                                          <RadioButton fx:id="attrToProdButton" mnemonicParsing="false" text="Scale attractions to match productions" />
                                        </children>
                                     </HBox>
                                  </children>
@@ -73,8 +72,8 @@
                                                 <Label text="Production demographic type:" />
                                                 <HBox prefWidth="300.0" spacing="10.0">
                                                    <children>
-                                                      <RadioButton mnemonicParsing="false" text="Basic" />
-                                                      <RadioButton mnemonicParsing="false" text="Production-proportional" />
+                                                      <RadioButton fx:id="prodBasicDemo" mnemonicParsing="false" text="Basic" />
+                                                      <RadioButton fx:id="prodProportionalDemo" mnemonicParsing="false" text="Production-proportional" />
                                                    </children>
                                                 </HBox>
                                              </children>
@@ -82,7 +81,7 @@
                                           <VBox VBox.vgrow="NEVER">
                                              <children>
                                                 <Label text="Production demographic source:" />
-                                                <ComboBox prefWidth="150.0" />
+                                                <ComboBox fx:id="prodSourceDemo" prefWidth="150.0" />
                                              </children>
                                           </VBox>
                                           <VBox prefWidth="100.0" VBox.vgrow="NEVER">
@@ -90,8 +89,8 @@
                                                 <Label text="Production rate type:" />
                                                 <HBox prefWidth="200.0" spacing="5.0">
                                                    <children>
-                                                      <RadioButton mnemonicParsing="false" text="Generic" />
-                                                      <RadioButton mnemonicParsing="false" text="Zone type-specific" />
+                                                      <RadioButton fx:id="prodGenericRate" mnemonicParsing="false" text="Generic" />
+                                                      <RadioButton fx:id="prodTypeRate" mnemonicParsing="false" text="Zone type-specific" />
                                                    </children>
                                                 </HBox>
                                              </children>
@@ -101,14 +100,9 @@
                                                 <Label text="Production rates:" />
                                                 <ScrollPane VBox.vgrow="ALWAYS">
                                                    <content>
-                                                      <TableView editable="true">
+                                                      <TableView fx:id="prodRateTable" editable="true" prefWidth="467.0">
                                                         <columns>
-                                                          <TableColumn editable="false" prefWidth="90.0" text="Demographic" />
-                                                            <TableColumn prefWidth="75.0" />
-                                                            <TableColumn prefWidth="75.0" />
-                                                            <TableColumn prefWidth="75.0" />
-                                                            <TableColumn prefWidth="75.0" />
-                                                            <TableColumn prefWidth="75.0" />
+                                                          <TableColumn fx:id="prodDemoCol" editable="false" prefWidth="90.0" text="Demographic" />
                                                         </columns>
                                                       </TableView>
                                                    </content>
@@ -125,8 +119,8 @@
                                                 <Label text="Attraction demographic type:" />
                                                 <HBox prefWidth="300.0" spacing="10.0">
                                                    <children>
-                                                      <RadioButton mnemonicParsing="false" text="Basic" />
-                                                      <RadioButton mnemonicParsing="false" text="Attraction-proportional" />
+                                                      <RadioButton fx:id="attrBasicDemo" mnemonicParsing="false" text="Basic" />
+                                                      <RadioButton fx:id="attrProportionalDemo" mnemonicParsing="false" text="Attraction-proportional" />
                                                    </children>
                                                 </HBox>
                                              </children>
@@ -134,7 +128,7 @@
                                           <VBox VBox.vgrow="NEVER">
                                              <children>
                                                 <Label text="Attraction demographic source:" />
-                                                <ComboBox prefWidth="150.0" />
+                                                <ComboBox fx:id="attrSourceDemo" prefWidth="150.0" />
                                              </children>
                                           </VBox>
                                           <VBox prefWidth="100.0" VBox.vgrow="NEVER">
@@ -142,8 +136,8 @@
                                                 <Label text="Attraction rate type:" />
                                                 <HBox prefWidth="200.0" spacing="5.0">
                                                    <children>
-                                                      <RadioButton mnemonicParsing="false" text="Generic" />
-                                                      <RadioButton mnemonicParsing="false" text="Zone type-specific" />
+                                                      <RadioButton fx:id="attrGenericRate" mnemonicParsing="false" text="Generic" />
+                                                      <RadioButton fx:id="attrTypeRate" mnemonicParsing="false" text="Zone type-specific" />
                                                    </children>
                                                 </HBox>
                                              </children>
@@ -153,14 +147,9 @@
                                                 <Label text="Attraction rates:" />
                                                 <ScrollPane VBox.vgrow="ALWAYS">
                                                    <content>
-                                                      <TableView editable="true">
+                                                      <TableView fx:id="attrRateTable" editable="true" prefWidth="467.0">
                                                         <columns>
-                                                          <TableColumn editable="false" prefWidth="90.0" text="Demographic" />
-                                                            <TableColumn prefWidth="75.0" />
-                                                            <TableColumn prefWidth="75.0" />
-                                                            <TableColumn prefWidth="75.0" />
-                                                            <TableColumn prefWidth="75.0" />
-                                                          <TableColumn prefWidth="75.0" />
+                                                          <TableColumn fx:id="attrDemoCol" editable="false" prefWidth="90.0" text="Demographic" />
                                                         </columns>
                                                       </TableView>
                                                    </content>
@@ -192,11 +181,11 @@
                               <VBox>
                                  <children>
                                     <Label text="Distributor IDs" />
-                                    <ListView prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
+                                    <ListView fx:id="distributorList" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
                                     <HBox prefWidth="200.0" spacing="5.0">
                                        <children>
-                                          <Button mnemonicParsing="false" text="+" />
-                                          <Button disable="true" mnemonicParsing="false" text="-" />
+                                          <Button fx:id="addDistributor" mnemonicParsing="false" text="+" />
+                                          <Button fx:id="removeDistributor" disable="true" mnemonicParsing="false" text="-" />
                                        </children>
                                        <padding>
                                           <Insets top="5.0" />
@@ -209,13 +198,13 @@
                                     <VBox>
                                        <children>
                                           <Label text="Scaling factor:" />
-                                          <Spinner />
+                                          <Spinner fx:id="scalingFactorChooser" />
                                        </children>
                                     </VBox>
                                     <VBox>
                                        <children>
                                           <Label text="Friction function:" />
-                                          <ComboBox prefWidth="200.0" />
+                                          <ComboBox fx:id="frictionFunction" prefWidth="200.0" />
                                        </children>
                                     </VBox>
                                     <VBox prefHeight="200.0" prefWidth="100.0">
@@ -223,8 +212,8 @@
                                           <Label text="Zone weight source:" />
                                           <HBox prefWidth="200.0" spacing="5.0">
                                              <children>
-                                                <TextField editable="false" HBox.hgrow="ALWAYS" />
-                                                <Button mnemonicParsing="false" text="Browse..." />
+                                                <TextField fx:id="zoneSourceURI" editable="false" HBox.hgrow="ALWAYS" />
+                                                <Button fx:id="zoneSourceBrowse" mnemonicParsing="false" text="Browse..." />
                                              </children>
                                           </HBox>
                                        </children>
@@ -250,11 +239,11 @@
                            <children>
                               <VBox fillWidth="false" prefHeight="570.8571428571429" prefWidth="1000.0">
                                  <children>
-                                    <TableView editable="true" prefHeight="361.0" prefWidth="300.0" VBox.vgrow="ALWAYS">
+                                    <TableView fx:id="timeDistTable" editable="true" prefHeight="361.0" prefWidth="300.0" VBox.vgrow="ALWAYS">
                                        <columns>
-                                          <TableColumn fx:id="timePeriodColumn1" editable="false" prefWidth="100.0" text="Time Period" />
-                                          <TableColumn fx:id="votColumn1" prefWidth="100.0" text="Departure Rate" />
-                                          <TableColumn fx:id="votColumn11" prefWidth="100.0" text="Arrival Rate" />
+                                          <TableColumn fx:id="timePeriodDistCol" editable="false" prefWidth="100.0" text="Time Period" />
+                                          <TableColumn fx:id="depRateCol" prefWidth="100.0" text="Departure Rate" />
+                                          <TableColumn fx:id="arrRateCol" prefWidth="100.0" text="Arrival Rate" />
                                        </columns>
                                     </TableView>
                                  </children>
@@ -270,21 +259,28 @@
             </Tab>
         </tabs>
       </TabPane>
-      <ButtonBar prefHeight="40.0" prefWidth="200.0">
+      <ButtonBar prefHeight="40.0" prefWidth="200.0" VBox.vgrow="NEVER">
         <buttons>
-          <Button mnemonicParsing="false" text="Button" />
-            <Button mnemonicParsing="false" text="Button" />
+          <Button fx:id="okButton" disable="true" mnemonicParsing="false" text="OK" />
+            <Button fx:id="cancelButton" mnemonicParsing="false" text="Cancel" />
+            <Button fx:id="applyButton" disable="true" mnemonicParsing="false" text="Apply" />
         </buttons>
+         <padding>
+            <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+         </padding>
       </ButtonBar>
-      <Separator prefWidth="200.0" />
-      <HBox prefHeight="100.0" prefWidth="200.0">
+      <Separator prefWidth="200.0" VBox.vgrow="NEVER" />
+      <HBox prefHeight="20.0" prefWidth="200.0" VBox.vgrow="NEVER">
          <children>
-            <Label text="Label" />
-            <Label text="Label" />
+            <Label text="Purpose: " />
+            <Label fx:id="purposeID" prefWidth="200.0" />
             <Separator orientation="VERTICAL" prefHeight="200.0" />
-            <Label text="Label" />
-            <Label text="Label" />
+            <Label text="Source: " />
+            <Label fx:id="purposeSource" />
          </children>
+         <padding>
+            <Insets left="5.0" right="5.0" />
+         </padding>
       </HBox>
    </children>
 </VBox>

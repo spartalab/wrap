@@ -25,7 +25,7 @@
             <HBox spacing="10.0">
                <children>
                   <TextField id="skimSourcePath" fx:id="demographicSourceURI" disable="true" editable="false" minWidth="-Infinity" prefHeight="25.0" prefWidth="250.0" HBox.hgrow="ALWAYS" />
-                  <Button id="skimSourceBrowse" fx:id="marketSourceBrowse" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#browseMarket" prefWidth="70.0" text="Browse..." />
+                  <Button id="skimSourceBrowse" fx:id="demographicBrowse" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#browseDemographic" prefWidth="70.0" text="Browse..." />
                </children>
             </HBox>
          </children>

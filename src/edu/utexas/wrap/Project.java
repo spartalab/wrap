@@ -485,17 +485,14 @@ public class Project implements Runnable {
 	}
 
 	public String getZoneFile() {
-		// TODO Auto-generated method stub
 		return props.getProperty("network.zones");
 	}
 
 	public void setZoneFile(String zoneFile) {
-		// TODO Auto-generated method stub
 		props.setProperty("network.zones", zoneFile);
 	}
 
 	public void setMarketFile(String curMarketID, String text) {
-		// TODO Auto-generated method stub
 		props.setProperty("markets."+curMarketID+".file", text);
 	}
 	

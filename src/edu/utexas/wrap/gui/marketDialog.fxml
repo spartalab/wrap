@@ -130,7 +130,8 @@
                                     <ListView fx:id="purposeList" prefHeight="200.0" prefWidth="200.0" VBox.vgrow="ALWAYS" />
                                     <HBox prefWidth="200.0" spacing="5.0" VBox.vgrow="NEVER">
                                        <children>
-                                          <Button fx:id="purposeAdd" mnemonicParsing="false" onAction="#addPurpose" text="+" />
+                                          <Button fx:id="purposeCreate" mnemonicParsing="false" onAction="#createPurpose" text="Create..." />
+                                          <Button fx:id="purposeAttach" mnemonicParsing="false" onAction="#attachPurpose" text="+" />
                                           <Button fx:id="purposeRemove" disable="true" mnemonicParsing="false" onAction="#removePurpose" text="-" />
                                        </children>
                                     </HBox>
@@ -143,7 +144,7 @@
                                        <children>
                                           <TextField fx:id="purposeSourceURI" editable="false" onAction="#changePurposeSourceURI" HBox.hgrow="ALWAYS" />
                                           <Button fx:id="purposeBrowse" mnemonicParsing="false" onAction="#browsePurpose" text="Browse..." />
-                                          <Button fx:id="purposeEdit" disable="true" mnemonicParsing="false" onAction="#editPurpose" text="Edit..." />
+                                          <Button fx:id="purposeEdit" mnemonicParsing="false" onAction="#editPurpose" text="Edit..." />
                                        </children>
                                        <VBox.margin>
                                           <Insets />
@@ -211,6 +212,7 @@
         <buttons>
           <Button fx:id="marketOK" disable="true" mnemonicParsing="false" onAction="#saveAndExit" text="OK" />
             <Button fx:id="marketCancel" mnemonicParsing="false" onAction="#closeWindow" text="Cancel" />
+            <Button fx:id="marketApply" disable="true" mnemonicParsing="false" onAction="#applyMarket" text="Apply" />
         </buttons>
          <VBox.margin>
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

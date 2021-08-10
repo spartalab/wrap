@@ -16,6 +16,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -34,8 +35,10 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 public class EditMarketController {
 	
@@ -103,7 +106,10 @@ public class EditMarketController {
 	private ListView<BasicPurpose> purposeList;
 	
 	@FXML
-	private Button purposeAdd;
+	private Button purposeAttach;
+	
+	@FXML
+	private Button purposeCreate;
 	
 	@FXML
 	private Button purposeRemove;
@@ -152,6 +158,9 @@ public class EditMarketController {
 	
 	@FXML
 	private Button marketCancel;
+	
+	@FXML
+	private Button marketApply;
 	
 	private Market market;
 	
@@ -240,6 +249,7 @@ public class EditMarketController {
 	private void markChanged() {
 		unsavedChanges = true;
 		marketOK.setDisable(false);
+		marketApply.setDisable(false);
 		if (!marketName.getText().endsWith("*")) {
 			marketName.setText(marketName.getText()+"*");
 		}
@@ -318,6 +328,11 @@ public class EditMarketController {
 	protected void setIcon(Image wrapIcon) {
 		this.wrapIcon = wrapIcon;
 		
+	}
+	
+	@FXML
+	protected void applyMarket(ActionEvent event) {
+		//TODO
 	}
 	
 	
@@ -421,7 +436,6 @@ public class EditMarketController {
 	
 	@FXML
 	private void removeDemographic(ActionEvent event) {
-		//TODO
 		Demographic selected = demographicList.getSelectionModel().getSelectedItem();
 		
 		if (selected != null) {
@@ -596,6 +610,42 @@ public class EditMarketController {
 	@FXML
 	private void editPurpose(ActionEvent event) {
 		//TODO
+		BasicPurpose selected = purposeList.getSelectionModel().getSelectedItem();
+		try {
+			FXMLLoader loader = new FXMLLoader();
+			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/purposeDialog.fxml").openStream());
+			
+			EditPurposeController controller = loader.getController();
+			controller.setPurpose(selected);
+			controller.setServices(svcs);
+			
+			Scene pane = new Scene(vbox);
+			
+			Stage stage = new Stage();
+			stage.initModality(Modality.APPLICATION_MODAL);
+			stage.setScene(pane);
+			stage.setTitle("Edit Purpose");
+			stage.getIcons().add(wrapIcon);
+			controller.setIcon(wrapIcon);
+			controller.setScene(stage.getScene());
+			
+			stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+
+				@Override
+				public void handle(WindowEvent arg0) {
+					// TODO Auto-generated method stub
+					controller.exit(arg0);
+				}
+				
+			});
+			
+			stage.showAndWait();
+//			selected.reloadProperties();
+			
+		} catch (IOException except) {
+			//TODO
+			except.printStackTrace();
+		}
 	}
 	
 	@FXML
@@ -609,13 +659,117 @@ public class EditMarketController {
 	}
 	
 	@FXML
-	private void addPurpose(ActionEvent event) {
-		//TODO
+	private void attachPurpose(ActionEvent event) {
+		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+		try {
+			FXMLLoader loader = new FXMLLoader();
+			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/attachPurposeDialog.fxml").openStream());
+			AttachPurposeController controller = loader.getController();
+			controller.setMarket(market);
+			DialogPane pane = new DialogPane();
+			
+			pane.setContent(vbox);
+			pane.getButtonTypes().add(ButtonType.CANCEL);
+			pane.getButtonTypes().add(ButtonType.OK);
+			
+			dialog.setDialogPane(pane);
+			dialog.setTitle("Attach Purpose");
+			Button ok = (Button) pane.lookupButton(ButtonType.OK);
+			ok.disableProperty().bind(controller.notReady());
+			((Stage) pane.getScene().getWindow()).getIcons().add(wrapIcon);
+			controller.setScene(pane.getScene());
+			dialog.showAndWait();
+			
+			if (dialog.getResult() == ButtonType.OK) {
+				market.addPurpose(controller.getPurposeID(),controller.getPurposeSourceURI());
+				purposeList.getItems().setAll(market.getBasicPurposes());
+				purposeList.getItems().sort(new Comparator<BasicPurpose>() {
+
+					@Override
+					public int compare(BasicPurpose o1, BasicPurpose o2) {
+						return o1.toString().compareTo(o2.toString());
+					}
+					
+				});
+			}
+			
+		} catch (IOException e) {
+			//TODO
+			e.printStackTrace();
+		}
 	}
 	
 	@FXML
 	private void removePurpose(ActionEvent event) {
 		//TODO
+		BasicPurpose selected = purposeList.getSelectionModel().getSelectedItem();
+		
+		if (selected != null) {
+			Alert alert = new Alert(AlertType.CONFIRMATION,"Remove purpose "+selected+" from market?",ButtonType.YES,ButtonType.NO);
+			((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(wrapIcon);
+			
+			alert.showAndWait();
+			
+			if (alert.getResult() == ButtonType.YES) {
+				purposeList.getItems().remove(selected);
+				market.removePurpose(selected);
+				markChanged();
+			}
+		}
+	}
+	
+	/**
+	 * @param event
+	 */
+	@FXML
+	private void createPurpose(ActionEvent event) {
+		//TODO
+		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
+		try {
+			FXMLLoader loader = new FXMLLoader();
+			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/newPurposeDialog.fxml").openStream());
+			NewPurposeController controller = loader.getController();
+			controller.setMarket(market);
+			DialogPane pane = new DialogPane();
+			
+			pane.setContent(vbox);
+			pane.getButtonTypes().add(ButtonType.CANCEL);
+			pane.getButtonTypes().add(ButtonType.OK);
+			
+			dialog.setDialogPane(pane);
+			dialog.setTitle("Create Purpose");
+			Button ok = (Button) pane.lookupButton(ButtonType.OK);
+			ok.disableProperty().bind(controller.notReady());
+			((Stage) pane.getScene().getWindow()).getIcons().add(wrapIcon);
+			controller.setScene(pane.getScene());
+			dialog.showAndWait();
+			
+			if (dialog.getResult() == ButtonType.OK) {
+				//TODO create file and 
+				
+				
+				//TODO open dialog
+				
+				
+				
+				
+				market.addPurpose(controller.getPurposeID(),controller.getPurposeSourceURI());
+				purposeList.getItems().setAll(market.getBasicPurposes());
+				purposeList.getItems().sort(new Comparator<BasicPurpose>() {
+
+					@Override
+					public int compare(BasicPurpose o1, BasicPurpose o2) {
+						// TODO Auto-generated method stub
+						return o1.toString().compareTo(o2.toString());
+					}
+					
+				});
+			}
+			
+		} catch (IOException e) {
+			//TODO
+			e.printStackTrace();
+		}
 	}
 	
 	
