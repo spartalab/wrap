@@ -55,9 +55,9 @@
                                     <Label text="Balancing method:" />
                                     <HBox alignment="TOP_CENTER" prefHeight="100.0" prefWidth="200.0" spacing="10.0" VBox.vgrow="NEVER">
                                        <children>
-                                          <RadioButton fx:id="prodToAttrButton" mnemonicParsing="false" nodeOrientation="RIGHT_TO_LEFT" text="Scale productions to match attractions" />
+                                          <RadioButton fx:id="prodToAttrButton" mnemonicParsing="false" nodeOrientation="RIGHT_TO_LEFT" onAction="#scaleProdsToAttrs" text="Scale productions to match attractions" />
                                           <Separator orientation="VERTICAL" prefHeight="200.0" />
-                                          <RadioButton fx:id="attrToProdButton" mnemonicParsing="false" text="Scale attractions to match productions" />
+                                          <RadioButton fx:id="attrToProdButton" mnemonicParsing="false" onAction="#scaleAttrsToProds" text="Scale attractions to match productions" />
                                        </children>
                                     </HBox>
                                  </children>
@@ -72,8 +72,8 @@
                                                 <Label text="Production demographic type:" />
                                                 <HBox prefWidth="300.0" spacing="10.0">
                                                    <children>
-                                                      <RadioButton fx:id="prodBasicDemo" mnemonicParsing="false" text="Basic" />
-                                                      <RadioButton fx:id="prodProportionalDemo" mnemonicParsing="false" text="Production-proportional" />
+                                                      <RadioButton fx:id="prodBasicDemo" mnemonicParsing="false" onAction="#setBasicProdDemo" text="Basic" />
+                                                      <RadioButton fx:id="prodProportionalDemo" mnemonicParsing="false" onAction="#setProportionalProdDemo" text="Production-proportional" />
                                                    </children>
                                                 </HBox>
                                              </children>
@@ -81,7 +81,7 @@
                                           <VBox VBox.vgrow="NEVER">
                                              <children>
                                                 <Label text="Production demographic source:" />
-                                                <ComboBox fx:id="prodSourceDemo" prefWidth="150.0" />
+                                                <ComboBox fx:id="prodSourceDemo" disable="true" prefWidth="150.0" />
                                              </children>
                                           </VBox>
                                           <VBox prefWidth="100.0" VBox.vgrow="NEVER">
@@ -89,8 +89,8 @@
                                                 <Label text="Production rate type:" />
                                                 <HBox prefWidth="200.0" spacing="5.0">
                                                    <children>
-                                                      <RadioButton fx:id="prodGenericRate" mnemonicParsing="false" text="Generic" />
-                                                      <RadioButton fx:id="prodTypeRate" mnemonicParsing="false" text="Zone type-specific" />
+                                                      <RadioButton fx:id="prodGenericRate" mnemonicParsing="false" onAction="#setGenericProdRate" text="Generic" />
+                                                      <RadioButton fx:id="prodTypeRate" mnemonicParsing="false" onAction="#setSpecificProdRate" text="Zone type-specific" />
                                                    </children>
                                                 </HBox>
                                              </children>
@@ -119,8 +119,8 @@
                                                 <Label text="Attraction demographic type:" />
                                                 <HBox prefWidth="300.0" spacing="10.0">
                                                    <children>
-                                                      <RadioButton fx:id="attrBasicDemo" mnemonicParsing="false" text="Basic" />
-                                                      <RadioButton fx:id="attrProportionalDemo" mnemonicParsing="false" text="Attraction-proportional" />
+                                                      <RadioButton fx:id="attrBasicDemo" mnemonicParsing="false" onAction="#setBasicAttrDemo" text="Basic" />
+                                                      <RadioButton fx:id="attrProportionalDemo" mnemonicParsing="false" onAction="#setProportionalAttrDemo" text="Attraction-proportional" />
                                                    </children>
                                                 </HBox>
                                              </children>
@@ -128,7 +128,7 @@
                                           <VBox VBox.vgrow="NEVER">
                                              <children>
                                                 <Label text="Attraction demographic source:" />
-                                                <ComboBox fx:id="attrSourceDemo" prefWidth="150.0" />
+                                                <ComboBox fx:id="attrSourceDemo" disable="true" prefWidth="150.0" />
                                              </children>
                                           </VBox>
                                           <VBox prefWidth="100.0" VBox.vgrow="NEVER">
@@ -136,8 +136,8 @@
                                                 <Label text="Attraction rate type:" />
                                                 <HBox prefWidth="200.0" spacing="5.0">
                                                    <children>
-                                                      <RadioButton fx:id="attrGenericRate" mnemonicParsing="false" text="Generic" />
-                                                      <RadioButton fx:id="attrTypeRate" mnemonicParsing="false" text="Zone type-specific" />
+                                                      <RadioButton fx:id="attrGenericRate" mnemonicParsing="false" onAction="#setGenericAttrRate" text="Generic" />
+                                                      <RadioButton fx:id="attrTypeRate" mnemonicParsing="false" onAction="#setSpecificAttrRate" text="Zone type-specific" />
                                                    </children>
                                                 </HBox>
                                              </children>
@@ -262,7 +262,7 @@
       <ButtonBar prefHeight="40.0" prefWidth="200.0" VBox.vgrow="NEVER">
         <buttons>
           <Button fx:id="okButton" disable="true" mnemonicParsing="false" text="OK" />
-            <Button fx:id="cancelButton" mnemonicParsing="false" text="Cancel" />
+            <Button fx:id="cancelButton" mnemonicParsing="false" onAction="#closeWindow" text="Cancel" />
             <Button fx:id="applyButton" disable="true" mnemonicParsing="false" text="Apply" />
         </buttons>
          <padding>
@@ -272,10 +272,10 @@
       <Separator prefWidth="200.0" VBox.vgrow="NEVER" />
       <HBox prefHeight="20.0" prefWidth="200.0" VBox.vgrow="NEVER">
          <children>
-            <Label text="Purpose: " />
+            <Label disable="true" text="Purpose: " />
             <Label fx:id="purposeID" prefWidth="200.0" />
             <Separator orientation="VERTICAL" prefHeight="200.0" />
-            <Label text="Source: " />
+            <Label disable="true" text="Directory:" />
             <Label fx:id="purposeSource" />
          </children>
          <padding>

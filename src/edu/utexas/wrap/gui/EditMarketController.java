@@ -258,7 +258,6 @@ public class EditMarketController {
 	@FXML
 	private boolean promptToSaveChanges(Event event) {
 		if (unsavedChanges) {
-			//TODO
 			Alert alert = new Alert(AlertType.CONFIRMATION,"Save market changes?",ButtonType.YES,ButtonType.NO,ButtonType.CANCEL);
 			alert.setTitle("Current market has unsaved changes");
 			((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(wrapIcon);

@@ -224,7 +224,7 @@
             <Label disable="true" maxHeight="-Infinity" maxWidth="-1.0" minWidth="50.0" prefHeight="25.0" text="Market:" HBox.hgrow="NEVER" />
             <Label id="projectName" fx:id="marketName" maxHeight="-Infinity" maxWidth="-Infinity" minWidth="-Infinity" prefHeight="25.0" prefWidth="200.0" HBox.hgrow="NEVER" />
             <Separator maxHeight="-Infinity" orientation="VERTICAL" prefHeight="25.0" HBox.hgrow="NEVER" />
-            <Label disable="true" maxHeight="-Infinity" maxWidth="-1.0" minWidth="55.0" prefHeight="25.0" text="Path:" HBox.hgrow="NEVER" />
+            <Label disable="true" maxHeight="-Infinity" maxWidth="-1.0" minWidth="55.0" prefHeight="25.0" text="Directory:" HBox.hgrow="NEVER" />
             <Label id="projectDirectory" fx:id="marketPath" layoutX="55.0" layoutY="15.0" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" prefHeight="25.0" prefWidth="250.0" HBox.hgrow="ALWAYS" />
          </children>
          <padding>

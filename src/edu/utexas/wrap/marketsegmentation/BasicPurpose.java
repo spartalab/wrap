@@ -49,11 +49,11 @@ import edu.utexas.wrap.util.TimeOfDaySplitter;
  *
  */
 public class BasicPurpose implements Purpose {
-	
+
 	private final Properties properties;
-	
+
 	private final Market parent;
-	private final Path directory;
+	private final Path source;
 	private Map<String,NetworkSkim> skims;
 	private Demographic ubProds, ubAttrs;
 	private String name;
@@ -65,48 +65,54 @@ public class BasicPurpose implements Purpose {
 			Map<Integer,TravelSurveyZone> zones
 			) throws IOException {
 
-//		this.network = network;
 		this.parent = parent;
-		this.directory = purposeFile.getParent();
+		this.source = purposeFile;
 		this.zones = zones;
 		properties = new Properties();
-		properties.load(Files.newInputStream(purposeFile));
+		reloadProperties();
 		this.name = name;
-		
+
 	}
 
-	
-	
+
+
+	public void reloadProperties() throws IOException {
+		properties.clear();
+		properties.load(Files.newInputStream(source));
+	}
+
+
+
 	private Demographic unbalancedProductions() {
 		if (ubProds == null) getPAMap();
 		return ubProds;
 
 	}
-	
+
 	private GenerationRate[] productionRates() {
 		switch (properties.getProperty("prodType")) {
-		
+
 		case "basic":
 			return Stream.of(properties.getProperty("prodRate").split(","))
-			.map(arg -> Float.parseFloat(arg))
-			.map(flt -> new GeneralGenerationRate(flt))
-			.toArray(GenerationRate[]::new);
-			
+					.map(arg -> Float.parseFloat(arg))
+					.map(flt -> new GeneralGenerationRate(flt))
+					.toArray(GenerationRate[]::new);
+
 		case "area":
 			return Stream.of(IndustryClass.values())
-			.map(ic ->
-				Stream.of(properties.getProperty("prodRate."+ic.toString()).split(","))
-				.mapToDouble(Double::parseDouble)
-				.toArray()
-			)
-			.map(AreaClassGenerationRate::new)
-			.toArray(GenerationRate[]::new);
-			
+					.map(ic ->
+					Stream.of(properties.getProperty("prodRate."+ic.toString()).split(","))
+					.mapToDouble(Double::parseDouble)
+					.toArray()
+							)
+					.map(AreaClassGenerationRate::new)
+					.toArray(GenerationRate[]::new);
+
 		default:
 			throw new RuntimeException("Not yet implemented"); 
 		}
 	}
-	
+
 	private Demographic productionDemographic() {
 		switch (properties.getProperty("prodDemographic.type")) {
 		case "basic":
@@ -124,31 +130,31 @@ public class BasicPurpose implements Purpose {
 		if (ubAttrs == null) getPAMap();
 		return ubAttrs;
 	}
-	
+
 	private GenerationRate[] attractionRates() {
 		switch (properties.getProperty("attrType")) {
-		
+
 		case "basic":
 			return Stream.of(properties.getProperty("attrRate").split(","))
-			.map(arg -> Float.parseFloat(arg))
-			.map(flt -> new GeneralGenerationRate(flt))
-			.toArray(GenerationRate[]::new);
-			
+					.map(arg -> Float.parseFloat(arg))
+					.map(flt -> new GeneralGenerationRate(flt))
+					.toArray(GenerationRate[]::new);
+
 		case "area":
 			return Stream.of(IndustryClass.values())
-			.map(ic ->
-				Stream.of(properties.getProperty("attrRate."+ic.toString()).split(","))
-				.mapToDouble(Double::parseDouble)
-				.toArray()
-			)
-			.map(AreaClassGenerationRate::new)
-			.toArray(GenerationRate[]::new);
-			
+					.map(ic ->
+					Stream.of(properties.getProperty("attrRate."+ic.toString()).split(","))
+					.mapToDouble(Double::parseDouble)
+					.toArray()
+							)
+					.map(AreaClassGenerationRate::new)
+					.toArray(GenerationRate[]::new);
+
 		default:
 			throw new RuntimeException("Not yet implemented"); 
 		}
 	}
-	
+
 	private Demographic attractionDemographic() {
 		switch (properties.getProperty("attrDemographic.type")) {
 		case "basic":
@@ -161,42 +167,42 @@ public class BasicPurpose implements Purpose {
 			throw new RuntimeException("Not yet implemented");
 		}
 	}
-	
+
 	private TripBalancer balancer() {
 		switch (properties.getProperty("balancer.class")) {
-		
+
 		case "prodProportional":
 			return new Prod2AttrProportionalBalancer(null);
-		
+
 		case "attrProportional":
 			return new Attr2ProdProportionalBalancer();
-		
+
 		default:
 			throw new RuntimeException("Not yet implemented");
 		}
-		
+
 	}
-	
-	
-	
+
+
+
 	private FrictionFactorMap frictionFactors(String skimID) {
 		return parent.getFrictionFactor(skimID);
 	}
-	
+
 	private Map<String,Float> distributionShares(){
 		return Stream.of(properties.getProperty("distrib.ids").split(","))
-		.collect(
-				Collectors.toMap(
-						Function.identity(), 
-						id -> Float.parseFloat(properties.getProperty("distrib."+id+".split"))
-						)
-				);
+				.collect(
+						Collectors.toMap(
+								Function.identity(), 
+								id -> Float.parseFloat(properties.getProperty("distrib."+id+".split"))
+								)
+						);
 	}
-	
+
 	private DistributionWeights distributionWeights(String source) {
-		return new BasicDistributionWeights(zones,source == null? null : directory.resolve(source));
+		return new BasicDistributionWeights(zones,source == null? null : getDirectory().resolve(source));
 	}
-	
+
 	private TripDistributor distributor(String skimID) {
 		return new GravityDistributor(
 				zones.values(), 
@@ -204,33 +210,33 @@ public class BasicPurpose implements Purpose {
 				frictionFactors(properties.getProperty("distrib."+skimID+".frictFacts")),
 				distributionWeights(properties.getProperty("distrib."+skimID+".weights")));
 	}
-	
-	
-	
+
+
+
 	private Map<Mode,Float> modeShares(){
 		return Stream.of(Mode.values())
-		.filter(mode -> properties.containsKey("modeChoice.proportion."+mode.toString()))
-		.collect(
-				Collectors.toMap(
-						Function.identity(),
-						mode -> Float.parseFloat(properties.getProperty("modeChoice.proportion."+mode.toString()))
-						)
-				);
+				.filter(mode -> properties.containsKey("modeChoice.proportion."+mode.toString()))
+				.collect(
+						Collectors.toMap(
+								Function.identity(),
+								mode -> Float.parseFloat(properties.getProperty("modeChoice.proportion."+mode.toString()))
+								)
+						);
 	}
-	
+
 	private TripInterchangeSplitter modeSplitter() {
-		
+
 		return new FixedProportionSplitter(modeShares());
 	}
-	
-	
-	
+
+
+
 	private PassengerVehicleTripConverter vehicleConverter() {
 		return new PassengerVehicleTripConverter();
 	}
-	
-	
-	
+
+
+
 	private Map<TimePeriod,Float> departureRates(){
 		return Stream.of(TimePeriod.values())
 				.filter(tp -> properties.containsKey("depRate."+tp.toString()))
@@ -240,7 +246,7 @@ public class BasicPurpose implements Purpose {
 								tp -> Float.parseFloat(properties.getProperty("depRate."+tp.toString()))
 								)
 						);
-//		return ret;
+		//		return ret;
 	}
 
 	private Map<TimePeriod,Float> arrivalRates(){
@@ -258,10 +264,10 @@ public class BasicPurpose implements Purpose {
 		return new TimeOfDaySplitter(departureRates(), arrivalRates(),getVOTs());
 	}
 
-	
-	
-	
-	
+
+
+
+
 	/**Instantiate a vehicle converter and convert ModalPAMatrices
 	 * 
 	 * This method creates a PassengerVehicleConverter according to the
@@ -338,11 +344,11 @@ public class BasicPurpose implements Purpose {
 	 */
 	@Override
 	public PAMap getPAMap() {
-		
+
 		Demographic 
 		productionDemographic = productionDemographic(), 
 		attractionDemographic = attractionDemographic();
-		
+
 		ComponentTripGenerator
 		producer = new ComponentTripGenerator(zones.values(),productionRates()),
 		attractor = new ComponentTripGenerator(zones.values(),attractionRates());
@@ -350,10 +356,10 @@ public class BasicPurpose implements Purpose {
 		DemandMap 
 		unbalancedProds = producer.generate(productionDemographic),
 		unbalancedAttrs = attractor.generate(attractionDemographic);
-		
+
 		ubProds = new SecondaryDemographic(producer.getComponents());
 		ubAttrs = new SecondaryDemographic(attractor.getComponents());
-		
+
 		return balancer().balance(new PAPassthroughMap(unbalancedProds,unbalancedAttrs));
 	}
 
@@ -377,24 +383,93 @@ public class BasicPurpose implements Purpose {
 	public void updateSkims(Map<String,NetworkSkim> skims) {
 		this.skims = skims;
 	}
-	
+
 	private Map<TimePeriod,Float> getVOTs() {
 		Map<TimePeriod,Float> ret =  Stream.of(TimePeriod.values())
 				.filter(tp -> properties.getProperty("vot."+tp.toString()) != null)
-		.collect(
-				Collectors.toMap(
-						Function.identity(), 
-						tp->  Float.parseFloat(properties.getProperty("vot."+tp.toString()))
-						)
-				);
+				.collect(
+						Collectors.toMap(
+								Function.identity(), 
+								tp->  Float.parseFloat(properties.getProperty("vot."+tp.toString()))
+								)
+						);
 		return ret;
+	}
+
+	public Float getVOT(TimePeriod tp) {
+		try{
+			return Float.parseFloat(properties.getProperty("vot."+tp.toString()));
+		} catch (NullPointerException e) {
+			return 0f;
+		}
 	}
 
 	public double personTrips() {
 		return getPAMap().getAttractionMap().totalDemand();
 	}
-	
+
 	public String toString() {
 		return name;
+	}
+
+
+
+	public void setVOT(TimePeriod row, Float newValue) {
+		// TODO Auto-generated method stub
+		properties.setProperty("vot."+row.toString(),newValue.toString());
+	}
+
+
+
+	public Path getDirectory() {
+		// TODO Auto-generated method stub
+		return source.getParent();
+	}
+
+
+
+	public void setBalancingMethod(String balancerID) {
+		// TODO Auto-generated method stub
+		properties.setProperty("balancer.class", balancerID);
+	}
+
+
+
+
+	public void setAttractorDemographicType(String demographicType) {
+		// TODO Auto-generated method stub
+		properties.setProperty("attrDemographic.type", demographicType);
+	}
+
+
+
+	public void setProducerDemographicType(String demographicType) {
+		// TODO Auto-generated method stub
+		properties.setProperty("prodDemographic.type", demographicType);
+
+	}
+
+	public Market getMarket() {
+		return parent;
+	}
+	
+	public String getBalancingMethod() {
+		return properties.getProperty("balancer.class");
+	}
+	
+	public String getProducerDemographicType(){
+		return properties.getProperty("prodDemographic.type");
+	}
+	
+	public String getAttractorDemographicType() {
+		return properties.getProperty("attrDemographic.type");
+	}
+	
+	public String getProductionDemographicSource() {
+		return properties.getProperty("prodDemographic.id");
+	}
+	
+	public String getAttractionDemographicSource() {
+		return properties.getProperty("attrDemographic.id");
 	}
 }
