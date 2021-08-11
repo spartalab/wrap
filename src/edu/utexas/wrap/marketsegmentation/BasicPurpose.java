@@ -56,6 +56,7 @@ public class BasicPurpose implements Purpose {
 	private final Path source;
 	private Map<String,NetworkSkim> skims;
 	private Demographic ubProds, ubAttrs;
+	private GenerationRate[] prodRates, attrRates;
 	private String name;
 	private final Map<Integer,TravelSurveyZone> zones;
 
@@ -79,6 +80,8 @@ public class BasicPurpose implements Purpose {
 	public void reloadProperties() throws IOException {
 		properties.clear();
 		properties.load(Files.newInputStream(source));
+		loadProductionRates();
+		loadAttractionRates();
 	}
 
 
@@ -89,17 +92,22 @@ public class BasicPurpose implements Purpose {
 
 	}
 
-	private GenerationRate[] productionRates() {
+	public GenerationRate[] productionRates() {
+		return prodRates;
+	}
+	
+	private void loadProductionRates() {
 		switch (properties.getProperty("prodType")) {
 
 		case "basic":
-			return Stream.of(properties.getProperty("prodRate").split(","))
-					.map(arg -> Float.parseFloat(arg))
+			prodRates = Stream.of(properties.getProperty("prodRate").split(","))
+					.map(Double::parseDouble)
 					.map(flt -> new GeneralGenerationRate(flt))
 					.toArray(GenerationRate[]::new);
+			break;
 
 		case "area":
-			return Stream.of(IndustryClass.values())
+			prodRates = Stream.of(IndustryClass.values())
 					.map(ic ->
 					Stream.of(properties.getProperty("prodRate."+ic.toString()).split(","))
 					.mapToDouble(Double::parseDouble)
@@ -107,6 +115,7 @@ public class BasicPurpose implements Purpose {
 							)
 					.map(AreaClassGenerationRate::new)
 					.toArray(GenerationRate[]::new);
+			break;
 
 		default:
 			throw new RuntimeException("Not yet implemented"); 
@@ -131,17 +140,22 @@ public class BasicPurpose implements Purpose {
 		return ubAttrs;
 	}
 
-	private GenerationRate[] attractionRates() {
+	public GenerationRate[] attractionRates() {
+		return attrRates;
+	}
+
+	private void loadAttractionRates() {
 		switch (properties.getProperty("attrType")) {
 
 		case "basic":
-			return Stream.of(properties.getProperty("attrRate").split(","))
-					.map(arg -> Float.parseFloat(arg))
+			attrRates = Stream.of(properties.getProperty("attrRate").split(","))
+					.map(Double::parseDouble)
 					.map(flt -> new GeneralGenerationRate(flt))
 					.toArray(GenerationRate[]::new);
+			break;
 
 		case "area":
-			return Stream.of(IndustryClass.values())
+			attrRates = Stream.of(IndustryClass.values())
 					.map(ic ->
 					Stream.of(properties.getProperty("attrRate."+ic.toString()).split(","))
 					.mapToDouble(Double::parseDouble)
@@ -149,12 +163,13 @@ public class BasicPurpose implements Purpose {
 							)
 					.map(AreaClassGenerationRate::new)
 					.toArray(GenerationRate[]::new);
+			break;
 
 		default:
 			throw new RuntimeException("Not yet implemented"); 
-		}
+			}
 	}
-
+	
 	private Demographic attractionDemographic() {
 		switch (properties.getProperty("attrDemographic.type")) {
 		case "basic":
@@ -472,4 +487,15 @@ public class BasicPurpose implements Purpose {
 	public String getAttractionDemographicSource() {
 		return properties.getProperty("attrDemographic.id");
 	}
+
+
+
+	public String getProducerRateType() {
+		return properties.getProperty("prodType");
+	}
+	
+	public String getAttractorRateType() {
+		return properties.getProperty("attrType");
+	}
+	
 }

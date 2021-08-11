@@ -7,7 +7,6 @@
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.RadioButton?>
-<?import javafx.scene.control.ScrollPane?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.Spinner?>
 <?import javafx.scene.control.Tab?>
@@ -98,15 +97,11 @@
                                           <VBox VBox.vgrow="ALWAYS">
                                              <children>
                                                 <Label text="Production rates:" />
-                                                <ScrollPane VBox.vgrow="ALWAYS">
-                                                   <content>
-                                                      <TableView fx:id="prodRateTable" editable="true" prefWidth="467.0">
-                                                        <columns>
-                                                          <TableColumn fx:id="prodDemoCol" editable="false" prefWidth="90.0" text="Demographic" />
-                                                        </columns>
-                                                      </TableView>
-                                                   </content>
-                                                </ScrollPane>
+                                                <TableView fx:id="prodRateTable" editable="true" prefWidth="467.0" VBox.vgrow="ALWAYS">
+                                                  <columns>
+                                                    <TableColumn fx:id="prodDemoCol" editable="false" prefWidth="90.0" text="Demographic" />
+                                                  </columns>
+                                                </TableView>
                                              </children>
                                           </VBox>
                                        </children>
@@ -145,15 +140,11 @@
                                           <VBox VBox.vgrow="ALWAYS">
                                              <children>
                                                 <Label text="Attraction rates:" />
-                                                <ScrollPane VBox.vgrow="ALWAYS">
-                                                   <content>
-                                                      <TableView fx:id="attrRateTable" editable="true" prefWidth="467.0">
-                                                        <columns>
-                                                          <TableColumn fx:id="attrDemoCol" editable="false" prefWidth="90.0" text="Demographic" />
-                                                        </columns>
-                                                      </TableView>
-                                                   </content>
-                                                </ScrollPane>
+                                                <TableView fx:id="attrRateTable" editable="true" prefWidth="467.0" VBox.vgrow="ALWAYS">
+                                                  <columns>
+                                                    <TableColumn fx:id="attrDemoCol" editable="false" prefWidth="90.0" text="Demographic" />
+                                                  </columns>
+                                                </TableView>
                                              </children>
                                           </VBox>
                                        </children>

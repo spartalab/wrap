@@ -5,11 +5,15 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import edu.utexas.wrap.TimePeriod;
+import edu.utexas.wrap.generation.GenerationRate;
 import edu.utexas.wrap.marketsegmentation.BasicPurpose;
+import edu.utexas.wrap.marketsegmentation.IndustryClass;
+import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Demographic;
 
 import javafx.application.HostServices;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleFloatProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
@@ -38,6 +42,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import javafx.stage.WindowEvent;
 import javafx.util.Callback;
+import javafx.util.converter.DoubleStringConverter;
 import javafx.util.converter.FloatStringConverter;
 
 public class EditPurposeController {
@@ -73,10 +78,10 @@ public class EditPurposeController {
 	private RadioButton prodTypeRate;
 
 	@FXML
-	private TableView<?> prodRateTable;
+	private TableView<GenerationRate> prodRateTable;
 
 	@FXML
-	private TableColumn<?, ?> prodDemoCol;
+	private TableColumn<GenerationRate, String> prodDemoCol;
 
 	@FXML
 	private RadioButton attrBasicDemo;
@@ -94,10 +99,10 @@ public class EditPurposeController {
 	private RadioButton attrTypeRate;
 
 	@FXML
-	private TableView<?> attrRateTable;
+	private TableView<GenerationRate> attrRateTable;
 
 	@FXML
-	private TableColumn<?, ?> attrDemoCol;
+	private TableColumn<GenerationRate, String> attrDemoCol;
 
 	@FXML
 	private ListView<?> distributorList;
@@ -210,7 +215,116 @@ public class EditPurposeController {
 
 			break;
 		}
+		
+		switch (purpose.getProducerRateType()) {
+		case "basic":
+			prodGenericRate.setSelected(true);
+			loadProductionRates();
+			break;
+		case "area":
+			prodTypeRate.setSelected(true);
+			loadProductionRates();
+			break;
+		}
+		
+		switch (purpose.getAttractorRateType()) {
+		case "basic":
+			attrGenericRate.setSelected(true);
+			loadAttractionRates();
+			break;
+		case "area":
+			attrTypeRate.setSelected(true);
+			loadAttractionRates();
+			break;
+		}
 	}
+
+	private void loadProductionRates() {
+		GenerationRate[] prodRates = purpose.productionRates();
+		
+		prodRateTable.getItems().setAll(prodRates);
+		
+		int dimension = prodRates[0].getDimension();
+		
+		prodDemoCol.setCellValueFactory(new Callback<CellDataFeatures<GenerationRate,String>,ObservableValue<String>>(){
+
+			@Override
+			public ObservableValue<String> call(CellDataFeatures<GenerationRate, String> arg0) {
+				int index = prodRateTable.getItems().indexOf(arg0.getValue());
+				if (dimension == 1) return new ReadOnlyObjectWrapper<String>(Integer.toString(index+1));
+				else return new ReadOnlyObjectWrapper<String>(IndustryClass.values()[index].toString());			}
+			
+		});
+		for (int i = 0; i < dimension;i++) {
+			TableColumn<GenerationRate,Double> newColumn = new TableColumn<GenerationRate,Double>(dimension > 1? AreaClass.values()[i].toString() : "Rate");
+			newColumn.setCellFactory(TextFieldTableCell.<GenerationRate,Double>forTableColumn(new DoubleStringConverter()));
+			newColumn.setCellValueFactory(new Callback<CellDataFeatures<GenerationRate,Double>,ObservableValue<Double>>(){
+
+				@Override
+				public ObservableValue<Double> call(CellDataFeatures<GenerationRate, Double> arg0) {
+					return new SimpleDoubleProperty(arg0.getValue().getRate(AreaClass.values()[prodRateTable.getColumns().indexOf(newColumn)-1])).asObject();
+				}
+				
+			});
+			newColumn.setOnEditCommit(new EventHandler<CellEditEvent<GenerationRate,Double>>(){
+
+				@Override
+				public void handle(CellEditEvent<GenerationRate, Double> arg0) {
+					// TODO Auto-generated method stub
+				}
+				
+			});
+			prodRateTable.getColumns().add(newColumn);
+		}
+		
+		
+	}
+	
+	private void loadAttractionRates() {
+		GenerationRate[] attrRates = purpose.attractionRates();
+		
+		attrRateTable.getItems().setAll(attrRates);
+		
+		int dimension = attrRates[0].getDimension();
+		
+		attrDemoCol.setCellValueFactory(new Callback<CellDataFeatures<GenerationRate,String>,ObservableValue<String>>(){
+
+			@Override
+			public ObservableValue<String> call(CellDataFeatures<GenerationRate, String> arg0) {
+				int index = attrRateTable.getItems().indexOf(arg0.getValue());
+				if (dimension == 1) return new ReadOnlyObjectWrapper<String>(Integer.toString(index+1));
+				else return new ReadOnlyObjectWrapper<String>(IndustryClass.values()[index].toString());
+				
+			}
+			
+		});
+		
+		
+		for (int i = 0; i < dimension;i++) {
+			TableColumn<GenerationRate,Double> newColumn = new TableColumn<GenerationRate,Double>(dimension > 1? AreaClass.values()[i].toString() : "Rate");
+			newColumn.setCellFactory(TextFieldTableCell.<GenerationRate,Double>forTableColumn(new DoubleStringConverter()));
+			newColumn.setCellValueFactory(new Callback<CellDataFeatures<GenerationRate,Double>,ObservableValue<Double>>(){
+
+				@Override
+				public ObservableValue<Double> call(CellDataFeatures<GenerationRate, Double> arg0) {
+					return new SimpleDoubleProperty(arg0.getValue().getRate(AreaClass.values()[attrRateTable.getColumns().indexOf(newColumn)-1])).asObject();
+				}
+				
+			});
+			newColumn.setOnEditCommit(new EventHandler<CellEditEvent<GenerationRate,Double>>(){
+
+				@Override
+				public void handle(CellEditEvent<GenerationRate, Double> arg0) {
+					// TODO Auto-generated method stub
+					System.out.println("Edited rate: "+arg0.getNewValue());
+				}
+				
+			});
+			
+			attrRateTable.getColumns().add(newColumn);
+		}
+	}
+
 
 	public void setServices(HostServices svcs) {
 		this.svcs = svcs;
@@ -250,6 +364,7 @@ public class EditPurposeController {
 		}
 		return true;
 	}
+
 
 
 	@FXML
@@ -315,6 +430,7 @@ public class EditPurposeController {
 		
 
 		
+
 
 
 	}

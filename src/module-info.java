@@ -23,6 +23,7 @@ module wrap {
 	requires transitive javafx.base;
 	exports edu.utexas.wrap;
 	exports edu.utexas.wrap.gui;
+	exports edu.utexas.wrap.generation;
 	exports edu.utexas.wrap.marketsegmentation;
 	exports edu.utexas.wrap.assignment;
 	exports edu.utexas.wrap.modechoice;

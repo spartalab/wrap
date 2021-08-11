@@ -17,6 +17,7 @@
  */
 package edu.utexas.wrap.generation;
 
+import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**A GenerationRate where each TravelSurveyZone's rate is
@@ -40,5 +41,18 @@ public class AreaClassGenerationRate implements GenerationRate {
 	public double getRate(TravelSurveyZone zone) {
 		return rate[zone.getAreaClass().ordinal()];
 	}
+
+	@Override
+	public int getDimension() {
+		return rate.length;
+	}
+
+	@Override
+	public double getRate(AreaClass klass) {
+		// TODO Auto-generated method stub
+		return rate[klass.ordinal()];
+	}
+	
+	
 	
 }

@@ -17,6 +17,7 @@
  */
 package edu.utexas.wrap.generation;
 
+import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**A GenerationRate implementation in which every TravelSurveyZone
@@ -27,7 +28,7 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  */
 public class GeneralGenerationRate implements GenerationRate {
 
-	private final double rate;
+	private double rate;
 	
 	public GeneralGenerationRate(double rate) {
 		this.rate = rate;
@@ -37,8 +38,18 @@ public class GeneralGenerationRate implements GenerationRate {
 	public double getRate(TravelSurveyZone segment) {
 		return rate;
 	}
+	
+	@Override
+	public double getRate(AreaClass klass) {
+		return rate;
+	}
 
 	public String toString() {
 		return Double.toString(rate);
+	}
+
+	@Override
+	public int getDimension() {
+		return 1;
 	}
 }

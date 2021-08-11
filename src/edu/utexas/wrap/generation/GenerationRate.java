@@ -17,6 +17,7 @@
  */
 package edu.utexas.wrap.generation;
 
+import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**This interface defines a rate at which trips
@@ -31,4 +32,8 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 public interface GenerationRate {
 
 	public double getRate(TravelSurveyZone segment);
+	
+	public double getRate(AreaClass klass);
+	
+	public int getDimension();
 }
