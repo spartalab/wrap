@@ -133,7 +133,7 @@ public class Project implements Runnable {
 				Stream.of(projNames.split(","))
 				.map(name -> {
 					try {
-						return new Market(name,projDir.resolve(props.getProperty("markets."+name+".file")), zones);
+						return new Market(name,projDir.resolve(props.getProperty("markets."+name+".file")), this);
 					} catch (IOException e) {
 						System.err.println("Could not load trip purposes for "+name);
 						e.printStackTrace();
@@ -339,8 +339,6 @@ public class Project implements Runnable {
 			
 			//Update skims and redistribute
 			if (i > 0) updateFeedbackSkims(assigners);
-			//TODO project should have skims
-			markets.parallelStream().forEach(market -> market.updateSkims(currentSkims));
 			
 			
 			Collection<Assigner> ac = assigners.values();
@@ -469,7 +467,7 @@ public class Project implements Runnable {
 		
 		props.setProperty("markets."+marketID+".file", marketSourceURI);
 		
-		markets.add(new Market(marketID,Paths.get(marketSourceURI),zones));
+		markets.add(new Market(marketID,Paths.get(marketSourceURI),this));
 	}
 	
 	public void setSkimFile(String curSkimID, String text) {
@@ -530,4 +528,12 @@ public class Project implements Runnable {
 		}
 	}
 
+	public Map<Integer,TravelSurveyZone> getZones(){
+		return zones;
+	}
+
+	public NetworkSkim getNetworkSkim(String skimID) {
+		// TODO Auto-generated method stub
+		return currentSkims.get(skimID);
+	}
 }

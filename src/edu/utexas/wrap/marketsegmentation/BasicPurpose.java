@@ -5,6 +5,7 @@ package edu.utexas.wrap.marketsegmentation;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
@@ -21,7 +22,6 @@ import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.demand.PAMap;
-import edu.utexas.wrap.demand.containers.FixedMultiplierPassthroughAggregateMatrix;
 import edu.utexas.wrap.demand.containers.PAPassthroughMap;
 import edu.utexas.wrap.distribution.BasicDistributionWeights;
 import edu.utexas.wrap.distribution.DistributionWeights;
@@ -51,10 +51,11 @@ import edu.utexas.wrap.util.TimeOfDaySplitter;
 public class BasicPurpose implements Purpose {
 
 	private final Properties properties;
-
 	private final Market parent;
 	private final Path source;
-	private Map<String,NetworkSkim> skims;
+	
+	
+	private Collection<TripDistributor> distributors;
 	private Demographic ubProds, ubAttrs;
 	private GenerationRate[] prodRates, attrRates;
 	private String name;
@@ -70,32 +71,21 @@ public class BasicPurpose implements Purpose {
 		this.source = purposeFile;
 		this.zones = zones;
 		properties = new Properties();
-		reloadProperties();
+		loadProperties();
 		this.name = name;
 
 	}
 
 
 
-	public void reloadProperties() throws IOException {
+	public void loadProperties() throws IOException {
 		properties.clear();
 		properties.load(Files.newInputStream(source));
 		loadProductionRates();
 		loadAttractionRates();
+		loadDistributors();
 	}
 
-
-
-	private Demographic unbalancedProductions() {
-		if (ubProds == null) getPAMap();
-		return ubProds;
-
-	}
-
-	public GenerationRate[] productionRates() {
-		return prodRates;
-	}
-	
 	private void loadProductionRates() {
 		switch (properties.getProperty("prodType")) {
 
@@ -120,28 +110,6 @@ public class BasicPurpose implements Purpose {
 		default:
 			throw new RuntimeException("Not yet implemented"); 
 		}
-	}
-
-	private Demographic productionDemographic() {
-		switch (properties.getProperty("prodDemographic.type")) {
-		case "basic":
-			return parent.getBasicDemographic(properties.getProperty("prodDemographic.id"));
-		case "prodProportional":
-			return parent.getBasicPurpose(properties.getProperty("prodDemographic.id")).unbalancedProductions();
-		case "attrProportional":
-			return parent.getBasicPurpose(properties.getProperty("prodDemographic.id")).unbalancedAttractions();
-		default:
-			throw new RuntimeException("Not yet implemented");
-		}
-	}
-
-	private Demographic unbalancedAttractions() {
-		if (ubAttrs == null) getPAMap();
-		return ubAttrs;
-	}
-
-	public GenerationRate[] attractionRates() {
-		return attrRates;
 	}
 
 	private void loadAttractionRates() {
@@ -170,6 +138,54 @@ public class BasicPurpose implements Purpose {
 			}
 	}
 	
+	private void loadDistributors() {
+		distributors = Stream.of(properties.getProperty("distrib.ids").split(","))
+		.map(id -> new GravityDistributor(id,this,getDistributionScalingFactor(id),
+				getFrictionFunction(id),
+				getDistributionWeights(getZoneWeightSource(id))))
+		.collect(Collectors.toSet());
+	}
+	
+
+	private NetworkSkim getNetworkSkim(String distributorID) {
+		// TODO Auto-generated method stub
+		return parent.getNetworkSkim(properties.getProperty("distrib."+distributorID+".skim"));
+	}
+
+
+
+	private Demographic unbalancedProductions() {
+		if (ubProds == null) getPAMap();
+		return ubProds;
+
+	}
+
+	public GenerationRate[] productionRates() {
+		return prodRates;
+	}
+	
+	private Demographic productionDemographic() {
+		switch (properties.getProperty("prodDemographic.type")) {
+		case "basic":
+			return parent.getBasicDemographic(properties.getProperty("prodDemographic.id"));
+		case "prodProportional":
+			return parent.getBasicPurpose(properties.getProperty("prodDemographic.id")).unbalancedProductions();
+		case "attrProportional":
+			return parent.getBasicPurpose(properties.getProperty("prodDemographic.id")).unbalancedAttractions();
+		default:
+			throw new RuntimeException("Not yet implemented");
+		}
+	}
+
+	private Demographic unbalancedAttractions() {
+		if (ubAttrs == null) getPAMap();
+		return ubAttrs;
+	}
+
+	public GenerationRate[] attractionRates() {
+		return attrRates;
+	}
+
 	private Demographic attractionDemographic() {
 		switch (properties.getProperty("attrDemographic.type")) {
 		case "basic":
@@ -200,30 +216,21 @@ public class BasicPurpose implements Purpose {
 
 
 
-	private FrictionFactorMap frictionFactors(String skimID) {
-		return parent.getFrictionFactor(skimID);
+	public FrictionFactorMap getFrictionFunction(String distributorID) {
+		return parent.getFrictionFactor(properties.getProperty("distrib."+distributorID+".frictFacts"));
 	}
 
-	private Map<String,Float> distributionShares(){
-		return Stream.of(properties.getProperty("distrib.ids").split(","))
-				.collect(
-						Collectors.toMap(
-								Function.identity(), 
-								id -> Float.parseFloat(properties.getProperty("distrib."+id+".split"))
-								)
-						);
+
+	private DistributionWeights getDistributionWeights(String skimID) {
+		String source = properties.getProperty("distrib."+skimID+".weights");
+		return new BasicDistributionWeights(zones,
+				source == null? null : getDirectory().resolve(source));
 	}
 
-	private DistributionWeights distributionWeights(String source) {
-		return new BasicDistributionWeights(zones,source == null? null : getDirectory().resolve(source));
-	}
 
-	private TripDistributor distributor(String skimID) {
-		return new GravityDistributor(
-				zones.values(), 
-				skims.get(skimID), 
-				frictionFactors(properties.getProperty("distrib."+skimID+".frictFacts")),
-				distributionWeights(properties.getProperty("distrib."+skimID+".weights")));
+
+	public String getZoneWeightSource(String distributorID) {
+		return properties.getProperty("distrib."+distributorID+".weights");
 	}
 
 
@@ -323,12 +330,12 @@ public class BasicPurpose implements Purpose {
 	 */
 	@Override
 	public AggregatePAMatrix getAggregatePAMatrix() {
-		return distributionShares().entrySet().parallelStream()
-				.map(
-						entry -> new FixedMultiplierPassthroughAggregateMatrix(
-								distributor(entry.getKey()).distribute(getPAMap()),
-								entry.getValue())
-						)
+		
+		return distributors.stream()
+				.map(distributor -> distributor.distribute(
+						getPAMap(), 
+						getNetworkSkim(distributor.toString())))
+		
 				.collect(new AggregatePAMatrixCollector());
 
 	}
@@ -393,10 +400,6 @@ public class BasicPurpose implements Purpose {
 	@Override
 	public Stream<ODProfile> getODProfiles() {
 		return timeOfDaySplitter().split(getDailyODMatrices());
-	}
-
-	public void updateSkims(Map<String,NetworkSkim> skims) {
-		this.skims = skims;
 	}
 
 	private Map<TimePeriod,Float> getVOTs() {
@@ -488,7 +491,9 @@ public class BasicPurpose implements Purpose {
 		return properties.getProperty("attrDemographic.id");
 	}
 
-
+	public Double getDistributionScalingFactor(String distributorID) {
+		return Double.parseDouble(properties.getProperty("distrib."+distributorID+".split"));
+	}
 
 	public String getProducerRateType() {
 		return properties.getProperty("prodType");
@@ -496,6 +501,12 @@ public class BasicPurpose implements Purpose {
 	
 	public String getAttractorRateType() {
 		return properties.getProperty("attrType");
+	}
+
+
+
+	public Collection<TripDistributor> getDistributors() {
+		return distributors;
 	}
 	
 }

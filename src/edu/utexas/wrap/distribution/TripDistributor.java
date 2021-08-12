@@ -19,6 +19,7 @@ package edu.utexas.wrap.distribution;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.PAMap;
+import edu.utexas.wrap.net.NetworkSkim;
 
 /**The second step in the Urban Transportation Modeling System
  * a.k.a. the four-step model, trip distributors use some means to
@@ -32,6 +33,6 @@ import edu.utexas.wrap.demand.PAMap;
  */
 public abstract class TripDistributor {
 
-	public abstract AggregatePAMatrix distribute(PAMap pa);
+	public abstract AggregatePAMatrix distribute(PAMap pa,NetworkSkim skim);
 	
 }

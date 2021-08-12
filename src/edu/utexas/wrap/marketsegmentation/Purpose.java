@@ -43,5 +43,7 @@ public interface Purpose extends
 							PAMapProvider {
 	
 	public double personTrips();
+
+	public Market getMarket();
 };
 

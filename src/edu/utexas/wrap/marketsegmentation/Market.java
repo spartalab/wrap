@@ -29,6 +29,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import edu.utexas.wrap.Project;
 import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.demand.ODProfileProvider;
 import edu.utexas.wrap.distribution.FrictionFactorMap;
@@ -51,25 +52,23 @@ public class Market implements ODProfileProvider {
 	private Properties props;
 	private Map<String,BasicPurpose> basicPurposes;
 	private Collection<DummyPurpose> dummyPurposes;
-	private final Collection<TravelSurveyZone> zones;
 	private Map<String,Demographic> basicDemos;
 	private Map<String,FrictionFactorMap> frictionFactors;
 	private String name;
+	private Project parent;
 	private Path source;
 
-	public Market(String name, Path marketFile, Map<Integer,TravelSurveyZone> zoneIDs) throws IOException {
-		props = new Properties();
+	public Market(String name, Path marketFile, Project parent) throws IOException {
 		this.name = name;
-
 		source = marketFile;
-
-		this.zones = zoneIDs.values();
+		this.parent = parent;
+		props = new Properties();
 		reloadProperties();
 
 	}
 
-	private void loadData(Collection<TravelSurveyZone> zones) throws IOException {
-		Map<Integer,TravelSurveyZone> zoneIDs = zones.stream().collect(Collectors.toMap(zone -> zone.getID(), Function.identity()));
+	private void loadData() throws IOException {
+		Map<Integer,TravelSurveyZone> zoneIDs = parent.getZones();
 		basicDemos = loadDemographics(zoneIDs);
 		frictionFactors = getFrictionFactors();
 		basicPurposes = loadBasicPurposes(zoneIDs);
@@ -79,7 +78,7 @@ public class Market implements ODProfileProvider {
 	public void reloadProperties() throws IOException {
 		props.clear();
 		props.load(Files.newInputStream(source));
-		loadData(zones);
+		loadData();
 	}
 
 	private Collection<DummyPurpose> getDummyPurposes(Map<Integer,TravelSurveyZone> zoneIDs) {
@@ -97,14 +96,6 @@ public class Market implements ODProfileProvider {
 				return null;
 			}
 		}).collect(Collectors.toSet());
-	}
-
-	/**Update each of the Market's BasicPurposes with new network cost skims
-	 * 
-	 * @param skims a Map from a skim ID to the most up-to-date NetworkSkim associated with the ID
-	 */
-	public void updateSkims(Map<String,NetworkSkim> skims) {
-		basicPurposes.values().stream().forEach(purpose -> purpose.updateSkims(skims));
 	}
 
 	/**Generate a Stream of ODProfiles for each Purpose associated with this Market
@@ -206,8 +197,8 @@ public class Market implements ODProfileProvider {
 	/**
 	 * @return the TravelSurveyZones associated with this Market
 	 */
-	public Collection<TravelSurveyZone> getZones() {
-		return zones;
+	public Map<Integer,TravelSurveyZone> getZones() {
+		return parent.getZones();
 	}
 
 	/**Get the BasicPurpose associated with a given id string
@@ -281,7 +272,7 @@ public class Market implements ODProfileProvider {
 
 	public void addDemographic(String demographicID, String demographicSourceURI) {
 		try {
-			Demographic newDemo = new BasicDemographic(demographicID,getDirectory().resolve(demographicSourceURI),zones.stream().collect(Collectors.toMap(zone -> zone.getID(), Function.identity())));
+			Demographic newDemo = new BasicDemographic(demographicID,getDirectory().resolve(demographicSourceURI),parent.getZones());
 			basicDemos.put(demographicID, newDemo);
 			props.setProperty("demographics.ids", String.join(",", basicDemos.keySet()));
 			
@@ -318,7 +309,7 @@ public class Market implements ODProfileProvider {
 
 	public void addPurpose(String purposeID, String purposeSourceURI){
 		try {
-		Map<Integer,TravelSurveyZone> map = zones.stream().collect(Collectors.toMap(TravelSurveyZone::getID, Function.identity()));
+		Map<Integer,TravelSurveyZone> map = parent.getZones();
 		BasicPurpose newPurpose = new BasicPurpose(purposeID,getDirectory().resolve(purposeSourceURI), this,map);
 		basicPurposes.put(purposeID,newPurpose);
 		props.setProperty("purposes.ids", String.join(",", basicPurposes.keySet()));
@@ -328,5 +319,10 @@ public class Market implements ODProfileProvider {
 			//TODO
 			e.printStackTrace();
 		}
+	}
+
+	public NetworkSkim getNetworkSkim(String skimID) {
+		// TODO Auto-generated method stub
+		return parent.getNetworkSkim(skimID);
 	}
 }

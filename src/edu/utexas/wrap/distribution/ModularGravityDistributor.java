@@ -23,6 +23,7 @@ import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.containers.FixedSizeAggregatePAMatrix;
 import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
+import edu.utexas.wrap.marketsegmentation.Purpose;
 import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
@@ -36,21 +37,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *
  */
 public class ModularGravityDistributor extends GravityDistributor {
-	private final NetworkSkim skim;
 	private final FrictionFactorMap friction;
-	private final Collection<TravelSurveyZone> zones;
 
 	private final PAMap pa;
 	private final AtomicBoolean converged;
 	private final Double margin;
 
-	public ModularGravityDistributor(Collection<TravelSurveyZone> zones, NetworkSkim skim, FrictionFactorMap fm, DistributionWeights weights,
+	public ModularGravityDistributor(String name, Purpose parent, Double scalingFactor, FrictionFactorMap fm, DistributionWeights weights,
 									 PAMap pa, Double margin) {
-		super(zones, skim, fm, weights);
+		super(name, parent, scalingFactor, fm, weights);
 
-		this.zones = zones;
 		friction = fm;
-		this.skim = skim;
 
 		this.pa = pa;
 		converged = new AtomicBoolean(false);
@@ -61,11 +58,11 @@ public class ModularGravityDistributor extends GravityDistributor {
 		return Math.abs(a-b) < margin;
 	}
 
-	public void iterateProductions() {
+	public void iterateProductions(NetworkSkim skim) {
 		//For each producer
 
 		converged.set(true);
-
+		Collection<TravelSurveyZone> zones = purpose.getMarket().getZones().values();
 		zones.parallelStream().forEach(i -> {
 			//Calculate a new denominator as sum_attractors(attractions*impedance*b)
 			Double denom = zones.stream()
@@ -88,9 +85,10 @@ public class ModularGravityDistributor extends GravityDistributor {
 		});
 	}
 
-	public void iterateAttractions() {
+	public void iterateAttractions(NetworkSkim skim) {
 
 		converged.set(true);
+		Collection<TravelSurveyZone> zones = purpose.getMarket().getZones().values();
 
 		//For each attractor
 		zones.parallelStream().forEach(j->{
@@ -117,8 +115,10 @@ public class ModularGravityDistributor extends GravityDistributor {
 
 	}
 	
-	public AggregatePAMatrix getMatrix() {
+	public AggregatePAMatrix getMatrix(NetworkSkim skim) {
 		
+		Collection<TravelSurveyZone> zones = purpose.getMarket().getZones().values();
+
 		weights.updateWeights(producerWeights,attractorWeights);
 		
 		//Now begin constructing the matrix

@@ -5,6 +5,8 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import edu.utexas.wrap.TimePeriod;
+import edu.utexas.wrap.distribution.FrictionFactorMap;
+import edu.utexas.wrap.distribution.TripDistributor;
 import edu.utexas.wrap.generation.GenerationRate;
 import edu.utexas.wrap.marketsegmentation.BasicPurpose;
 import edu.utexas.wrap.marketsegmentation.IndustryClass;
@@ -15,6 +17,7 @@ import javafx.application.HostServices;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleFloatProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.event.ActionEvent;
 import javafx.event.Event;
@@ -105,7 +108,7 @@ public class EditPurposeController {
 	private TableColumn<GenerationRate, String> attrDemoCol;
 
 	@FXML
-	private ListView<?> distributorList;
+	private ListView<TripDistributor> distributorList;
 
 	@FXML
 	private Button addDistributor;
@@ -117,10 +120,10 @@ public class EditPurposeController {
 	private VBox distributionBox;
 
 	@FXML
-	private Spinner<?> scalingFactorChooser;
+	private Spinner<Float> scalingFactorChooser;
 
 	@FXML
-	private ComboBox<?> frictionFunction;
+	private ComboBox<FrictionFactorMap> frictionFunction;
 
 	@FXML
 	private TextField zoneSourceURI;
@@ -180,7 +183,12 @@ public class EditPurposeController {
 		purposeID.setText(purpose.toString());
 		purposeSource.setText(purpose.getDirectory().toString());
 		
+		frictionFunction.getItems().setAll(purpose.getMarket().getFrictionFunctions());
+		
+		distributorList.getItems().setAll(purpose.getDistributors());
+
 		ActionEvent event = new ActionEvent();
+
 		
 		switch(purpose.getBalancingMethod()) {
 		case "prodProportional":
@@ -428,8 +436,29 @@ public class EditPurposeController {
 		attrGenericRate.setToggleGroup(attrRateType);
 		attrTypeRate.setToggleGroup(attrRateType);
 		
-
 		
+
+		distributorList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TripDistributor>() {
+
+			@Override
+			public void changed(ObservableValue<? extends TripDistributor> arg0, TripDistributor oldValue,
+					TripDistributor newValue) {
+				// TODO Auto-generated method stub
+				if (newValue == null) {
+					distributionBox.setDisable(true);
+					scalingFactorChooser.getEditor().clear();
+					frictionFunction.getSelectionModel().clearSelection();
+					zoneSourceURI.clear();
+				} else {
+					distributionBox.setDisable(false);
+					scalingFactorChooser.getEditor().setText(purpose.getDistributionScalingFactor(newValue.toString()).toString());
+					frictionFunction.getSelectionModel().select(purpose.getFrictionFunction(newValue.toString()));
+					zoneSourceURI.setText(purpose.getZoneWeightSource(newValue.toString()));
+					
+				}
+			}
+			
+		});
 
 
 
@@ -440,7 +469,7 @@ public class EditPurposeController {
 		if (scene != null) scene.getWindow().hide();
 		if (purpose != null)
 			try {
-				purpose.reloadProperties();
+				purpose.loadProperties();
 			} catch (IOException e1) {
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
@@ -483,6 +512,7 @@ public class EditPurposeController {
 		attrSourceDemo.setDisable(false);
 		attrSourceDemo.getItems().clear();
 		attrSourceDemo.getItems().setAll(purpose.getMarket().getDemographics().stream().map(Demographic::toString).collect(Collectors.toSet()));
+		attrSourceDemo.getItems().sort(String::compareTo);
 		attrSourceDemo.getSelectionModel().select(purpose.getAttractionDemographicSource());
 
 	}
@@ -494,6 +524,7 @@ public class EditPurposeController {
 		prodSourceDemo.setDisable(false);
 		prodSourceDemo.getItems().clear();
 		prodSourceDemo.getItems().setAll(purpose.getMarket().getDemographics().stream().map(Demographic::toString).collect(Collectors.toSet()));
+		prodSourceDemo.getItems().sort(String::compareTo);
 		prodSourceDemo.getSelectionModel().select(purpose.getProductionDemographicSource());
 
 	}
@@ -515,6 +546,7 @@ public class EditPurposeController {
 		attrSourceDemo.setDisable(false);
 		attrSourceDemo.getItems().clear();
 		attrSourceDemo.getItems().setAll(purpose.getMarket().getBasicPurposes().stream().map(BasicPurpose::toString).collect(Collectors.toSet()));
+		attrSourceDemo.getItems().sort(String::compareTo);
 		attrSourceDemo.getSelectionModel().select(purpose.getAttractionDemographicSource());
 
 		//	TODO prevent cyclic references
@@ -527,6 +559,7 @@ public class EditPurposeController {
 		prodSourceDemo.setDisable(false);
 		prodSourceDemo.getItems().clear();
 		prodSourceDemo.getItems().setAll(purpose.getMarket().getBasicPurposes().stream().map(BasicPurpose::toString).collect(Collectors.toSet()));
+		prodSourceDemo.getItems().sort(String::compareTo);
 		prodSourceDemo.getSelectionModel().select(purpose.getProductionDemographicSource());
 
 		// TODO prevent cyclic references

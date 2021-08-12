@@ -26,6 +26,7 @@ import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.containers.FixedSizeAggregatePAMatrix;
 import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
+import edu.utexas.wrap.marketsegmentation.Purpose;
 import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
@@ -41,18 +42,20 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  *
  */
 public class GravityDistributor extends TripDistributor {
-	private final NetworkSkim skim;
+	private final String id;
+	protected final Purpose purpose;
 	private final FrictionFactorMap friction;
-	private final Collection<TravelSurveyZone> zones;
 	private final Double margin = 0.001;
+	private Double scalingFactor;
 	protected Double[] producerWeights, attractorWeights;
 	protected DistributionWeights weights;
 //	private final Graph g;
 
-	public GravityDistributor(Collection<TravelSurveyZone> zones, NetworkSkim skim, FrictionFactorMap fm, DistributionWeights weights) {
-		this.zones = zones;
+	public GravityDistributor(String name, Purpose parent, Double scalingFactor, FrictionFactorMap fm, DistributionWeights weights) {
+		id = name;
+		this.purpose = parent;
+		this.scalingFactor = scalingFactor;
 		friction = fm;
-		this.skim = skim;
 		this.weights = weights;
 		producerWeights = weights.getProductionWeights();
 		attractorWeights = weights.getAttractionWeights();
@@ -69,9 +72,9 @@ public class GravityDistributor extends TripDistributor {
 	 * between the two zones.
 	 *
 	 */
-	public AggregatePAMatrix distribute(PAMap pa) {
+	public AggregatePAMatrix distribute(PAMap pa,NetworkSkim skim) {
 		//Begin by iteratively calculating each zone's A and B values
-
+		Collection<TravelSurveyZone> zones = purpose.getMarket().getZones().values();
 		
 		Float[][] ff = new Float[zones.size()][zones.size()];
 		
@@ -149,7 +152,8 @@ public class GravityDistributor extends TripDistributor {
 			for (TravelSurveyZone attractor : zones) {
 				//Calculate the number of trips between these two as a*productions*b*attractions*impedance
 				Double Tij = 
-						producerWeights[producer.getOrder()]
+						scalingFactor
+						*producerWeights[producer.getOrder()]
 						*pa.getProductions(producer)
 						*attractorWeights[attractor.getOrder()]
 						*pa.getAttractions(attractor)
@@ -170,5 +174,10 @@ public class GravityDistributor extends TripDistributor {
 
 	private Boolean converged(Double a, Double b) {
 		return Math.abs(a-b) < margin;
+	}
+	
+	@Override
+	public String toString() {
+		return id;
 	}
 }
