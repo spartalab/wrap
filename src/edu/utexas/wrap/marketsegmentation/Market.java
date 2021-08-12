@@ -89,7 +89,7 @@ public class Market implements ODProfileProvider {
 		return Stream.of(names.split(","))
 		.map(id -> {
 			try {
-				return new DummyPurpose(getDirectory().resolve(props.getProperty("purposes."+id+".file")),zoneIDs);
+				return new DummyPurpose(this,getDirectory().resolve(props.getProperty("purposes."+id+".file")),zoneIDs);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

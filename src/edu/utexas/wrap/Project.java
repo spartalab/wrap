@@ -162,7 +162,7 @@ public class Project implements Runnable {
 		else return Stream.of(dummyNames.split(","))
 				.map(name ->{
 					try {
-						return new DummyPurpose(projDir.resolve(props.getProperty("dummies."+name+".file")), zones);
+						return new DummyPurpose(null,projDir.resolve(props.getProperty("dummies."+name+".file")), zones);
 					} catch (IOException e) {
 						System.out.println("Could not load dummy trip purpose "+name);
 						e.printStackTrace();

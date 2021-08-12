@@ -49,7 +49,6 @@ public class GravityDistributor extends TripDistributor {
 	private Double scalingFactor;
 	protected Double[] producerWeights, attractorWeights;
 	protected DistributionWeights weights;
-//	private final Graph g;
 
 	public GravityDistributor(String name, Purpose parent, Double scalingFactor, FrictionFactorMap fm, DistributionWeights weights) {
 		id = name;

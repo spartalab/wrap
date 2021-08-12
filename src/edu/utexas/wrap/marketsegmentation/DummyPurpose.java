@@ -62,8 +62,10 @@ public class DummyPurpose implements Purpose {
 	private Map<Integer, TravelSurveyZone> zones;
 	private Path dir;
 	private String name;
+	private Market parent;
 	
-	public DummyPurpose(Path propsPath, Map<Integer, TravelSurveyZone> zones) throws IOException {
+	public DummyPurpose(Market parent, Path propsPath, Map<Integer, TravelSurveyZone> zones) throws IOException {
+		this.parent = parent;
 		props = new Properties();
 		props.load(Files.newInputStream(propsPath));
 		this.zones = zones;
@@ -316,5 +318,11 @@ public class DummyPurpose implements Purpose {
 	
 	public String toString() {
 		return name;
+	}
+
+	@Override
+	public Market getMarket() {
+		// TODO Auto-generated method stub
+		return parent;
 	}
 }

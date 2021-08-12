@@ -135,13 +135,13 @@ public class EditPurposeController {
 	private TableView<TimePeriod> timeDistTable;
 
 	@FXML
-	private TableColumn<?, ?> timePeriodDistCol;
+	private TableColumn<TimePeriod, String> timePeriodDistCol;
 
 	@FXML
-	private TableColumn<?, ?> depRateCol;
+	private TableColumn<TimePeriod, Float> depRateCol;
 
 	@FXML
-	private TableColumn<?, ?> arrRateCol;
+	private TableColumn<TimePeriod, Float> arrRateCol;
 
 	@FXML
 	private Button okButton;
@@ -187,6 +187,8 @@ public class EditPurposeController {
 		
 		distributorList.getItems().setAll(purpose.getDistributors());
 
+		timeDistTable.getItems().setAll(TimePeriod.values());
+		
 		ActionEvent event = new ActionEvent();
 
 		
@@ -409,7 +411,6 @@ public class EditPurposeController {
 				TimePeriod row = arg0.getRowValue();
 				Float newValue = arg0.getNewValue();
 				purpose.setVOT(row,newValue);
-				System.out.println("Edited "+row+"\t"+newValue);
 
 			}
 
@@ -460,7 +461,54 @@ public class EditPurposeController {
 			
 		});
 
+		timePeriodDistCol.setCellValueFactory(new Callback<CellDataFeatures<TimePeriod,String>,ObservableValue<String>>(){
 
+			@Override
+			public ObservableValue<String> call(CellDataFeatures<TimePeriod, String> arg0) {
+				// TODO Auto-generated method stub
+				return new ReadOnlyObjectWrapper<String>(arg0.getValue().toString());
+			}
+			
+		});
+		depRateCol.setCellFactory(TextFieldTableCell.<TimePeriod,Float>forTableColumn(new FloatStringConverter()));
+		depRateCol.setCellValueFactory(new Callback<CellDataFeatures<TimePeriod,Float>,ObservableValue<Float>>(){
+
+			@Override
+			public ObservableValue<Float> call(CellDataFeatures<TimePeriod, Float> arg0) {
+				// TODO Auto-generated method stub
+				return new SimpleFloatProperty(purpose.getDepartureRate(arg0.getValue())).asObject();
+			}
+			
+		});
+		depRateCol.setOnEditCommit(new EventHandler<CellEditEvent<TimePeriod,Float>>(){
+
+			@Override
+			public void handle(CellEditEvent<TimePeriod, Float> arg0) {
+				// TODO Auto-generated method stub
+				purpose.setDepartureRate(arg0.getRowValue(),arg0.getNewValue());
+			}
+			
+		});
+		
+		arrRateCol.setCellFactory(TextFieldTableCell.<TimePeriod,Float>forTableColumn(new FloatStringConverter()));
+		arrRateCol.setCellValueFactory(new Callback<CellDataFeatures<TimePeriod,Float>,ObservableValue<Float>>(){
+
+			@Override
+			public ObservableValue<Float> call(CellDataFeatures<TimePeriod, Float> arg0) {
+				// TODO Auto-generated method stub
+				return new SimpleFloatProperty(purpose.getArrivalRate(arg0.getValue())).asObject();
+			}
+			
+		});
+		arrRateCol.setOnEditCommit(new EventHandler<CellEditEvent<TimePeriod,Float>>(){
+
+			@Override
+			public void handle(CellEditEvent<TimePeriod, Float> arg0) {
+				// TODO Auto-generated method stub
+				purpose.setArrivalRate(arg0.getRowValue(),arg0.getNewValue());
+			}
+			
+		});
 
 	}
 
@@ -531,12 +579,12 @@ public class EditPurposeController {
 
 	@FXML
 	void setGenericAttrRate(ActionEvent event) {
-
+		//TODO
 	}
 
 	@FXML
 	void setGenericProdRate(ActionEvent event) {
-		
+		//TODO
 	}
 
 	@FXML
@@ -568,11 +616,11 @@ public class EditPurposeController {
 
 	@FXML
 	void setSpecificAttrRate(ActionEvent event) {
-
+		//TODO
 	}
 
 	@FXML
 	void setSpecificProdRate(ActionEvent event) {
-
+		//TODO
 	}
 }

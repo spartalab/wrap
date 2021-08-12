@@ -47,8 +47,7 @@ import edu.utexas.wrap.util.TimeOfDaySplitter;
  * 
  * @author William
  *
- */
-public class BasicPurpose implements Purpose {
+ */public class BasicPurpose implements Purpose {
 
 	private final Properties properties;
 	private final Market parent;
@@ -60,6 +59,7 @@ public class BasicPurpose implements Purpose {
 	private GenerationRate[] prodRates, attrRates;
 	private String name;
 	private final Map<Integer,TravelSurveyZone> zones;
+	private Map<TimePeriod,Float> departureRates, arrivalRates;
 
 	public BasicPurpose(String name,
 			Path purposeFile, 
@@ -81,9 +81,12 @@ public class BasicPurpose implements Purpose {
 	public void loadProperties() throws IOException {
 		properties.clear();
 		properties.load(Files.newInputStream(source));
+		
 		loadProductionRates();
 		loadAttractionRates();
 		loadDistributors();
+		loadDepartureRates();
+		loadArrivalRates();
 	}
 
 	private void loadProductionRates() {
@@ -147,8 +150,8 @@ public class BasicPurpose implements Purpose {
 	}
 	
 
+	
 	private NetworkSkim getNetworkSkim(String distributorID) {
-		// TODO Auto-generated method stub
 		return parent.getNetworkSkim(properties.getProperty("distrib."+distributorID+".skim"));
 	}
 
@@ -259,8 +262,8 @@ public class BasicPurpose implements Purpose {
 
 
 
-	private Map<TimePeriod,Float> departureRates(){
-		return Stream.of(TimePeriod.values())
+	private void loadDepartureRates(){
+		departureRates = Stream.of(TimePeriod.values())
 				.filter(tp -> properties.containsKey("depRate."+tp.toString()))
 				.collect(
 						Collectors.toMap(
@@ -271,8 +274,8 @@ public class BasicPurpose implements Purpose {
 		//		return ret;
 	}
 
-	private Map<TimePeriod,Float> arrivalRates(){
-		return Stream.of(TimePeriod.values())
+	private void loadArrivalRates(){
+		arrivalRates = Stream.of(TimePeriod.values())
 				.filter(tp -> properties.containsKey("arrRate."+tp.toString()))
 				.collect(
 						Collectors.toMap(
@@ -283,7 +286,7 @@ public class BasicPurpose implements Purpose {
 	}
 
 	private TimeOfDaySplitter timeOfDaySplitter(){
-		return new TimeOfDaySplitter(departureRates(), arrivalRates(),getVOTs());
+		return new TimeOfDaySplitter(departureRates, arrivalRates, getVOTs());
 	}
 
 
@@ -433,21 +436,18 @@ public class BasicPurpose implements Purpose {
 
 
 	public void setVOT(TimePeriod row, Float newValue) {
-		// TODO Auto-generated method stub
 		properties.setProperty("vot."+row.toString(),newValue.toString());
 	}
 
 
 
 	public Path getDirectory() {
-		// TODO Auto-generated method stub
 		return source.getParent();
 	}
 
 
 
 	public void setBalancingMethod(String balancerID) {
-		// TODO Auto-generated method stub
 		properties.setProperty("balancer.class", balancerID);
 	}
 
@@ -455,14 +455,12 @@ public class BasicPurpose implements Purpose {
 
 
 	public void setAttractorDemographicType(String demographicType) {
-		// TODO Auto-generated method stub
 		properties.setProperty("attrDemographic.type", demographicType);
 	}
 
 
 
 	public void setProducerDemographicType(String demographicType) {
-		// TODO Auto-generated method stub
 		properties.setProperty("prodDemographic.type", demographicType);
 
 	}
@@ -503,8 +501,24 @@ public class BasicPurpose implements Purpose {
 		return properties.getProperty("attrType");
 	}
 
+	public Float getDepartureRate(TimePeriod period) {
+		return departureRates.getOrDefault(period,0f);
+	}
+	
+	public Float getArrivalRate(TimePeriod period) {
+		return arrivalRates.getOrDefault(period,0f);
+	}
 
-
+	public void setDepartureRate(TimePeriod period, Float rate) {
+		departureRates.put(period, rate);
+		properties.setProperty("depRate."+period.toString(), rate.toString());
+	}
+	
+	public void setArrivalRate(TimePeriod period, Float rate) {
+		departureRates.put(period, rate);
+		properties.setProperty("arrRate."+period.toString(), rate.toString());
+	}
+	
 	public Collection<TripDistributor> getDistributors() {
 		return distributors;
 	}
