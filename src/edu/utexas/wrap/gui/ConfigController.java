@@ -1231,4 +1231,31 @@ public class ConfigController {
 
 		loadModel(null);
 	}
+	
+	public void runModel() {
+		Stage stage = new Stage();
+		stage.initModality(Modality.APPLICATION_MODAL);
+		stage.getIcons().add(wrapIcon);
+		try {
+			FXMLLoader loader = new FXMLLoader();
+			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/wrapRunner.fxml").openStream());
+			RunnerController controller = loader.getController();
+			controller.setProject(currentProject);
+			
+			stage.setTitle("Running Scenario");
+			
+			
+			stage.setScene(new Scene(vbox));
+			
+			stage.show();
+			Thread thread = new Thread(controller);
+			
+			thread.start();
+
+			
+		} catch (IOException e) {
+			//TODO
+			e.printStackTrace();
+		}
+	}
 }

@@ -10,106 +10,100 @@
 <?import javafx.scene.control.ToolBar?>
 <?import javafx.scene.control.TreeTableColumn?>
 <?import javafx.scene.control.TreeTableView?>
-<?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-
- <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="640.0" prefWidth="640.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="RunnerController">
+<VBox maxHeight="-Infinity" minHeight="-Infinity" prefHeight="800.0" prefWidth="640.0" spacing="3.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.utexas.wrap.gui.RunnerController">
    <children>
-      <VBox maxHeight="-Infinity" minHeight="-Infinity" prefHeight="800.0" prefWidth="640.0" spacing="3.0">
+      <ToolBar minHeight="-Infinity" nodeOrientation="RIGHT_TO_LEFT" prefHeight="30.0" prefWidth="200.0" VBox.vgrow="NEVER">
+        <items>
+          <Button mnemonicParsing="false" text="Stop" />
+        </items>
+      </ToolBar>
+      <VBox maxHeight="-Infinity" minHeight="-Infinity" prefHeight="600.0">
          <children>
-            <ToolBar minHeight="-Infinity" nodeOrientation="RIGHT_TO_LEFT" prefHeight="30.0" prefWidth="200.0" VBox.vgrow="NEVER">
-              <items>
-                <Button mnemonicParsing="false" text="Stop" />
-              </items>
-            </ToolBar>
-            <VBox maxHeight="-Infinity" minHeight="-Infinity" prefHeight="600.0">
+            <HBox>
                <children>
-                  <HBox>
-                     <children>
-                        <Label text="Model Progress:  Iteration ">
-                           <HBox.margin>
-                              <Insets left="5.0" />
-                           </HBox.margin>
-                        </Label>
-                        <Label fx:id="iterationNumber" text="0" />
-                        <Label text=" of " />
-                        <Label fx:id="iterationLimit" text="0" />
-                     </children>
-                  </HBox>
-                  <ProgressBar fx:id="modelProgress" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" nodeOrientation="LEFT_TO_RIGHT" prefHeight="20.0" progress="0.0">
-                     <VBox.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                     </VBox.margin>
-                  </ProgressBar>
-                  <Separator layoutX="10.0" layoutY="57.0" prefWidth="200.0" />
-                  <Label layoutX="15.0" layoutY="60.0" text="Assigners">
-                     <padding>
-                        <Insets left="5.0" right="5.0" />
-                     </padding>
+                  <Label text="Model Progress:  Iteration ">
+                     <HBox.margin>
+                        <Insets left="5.0" />
+                     </HBox.margin>
                   </Label>
-                  <ProgressBar fx:id="assignerProgress" layoutX="15.0" layoutY="82.0" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" nodeOrientation="LEFT_TO_RIGHT" prefHeight="15.0" progress="0.0" VBox.vgrow="SOMETIMES">
-                     <VBox.margin>
-                        <Insets left="5.0" right="5.0" />
-                     </VBox.margin>
-                  </ProgressBar>
-                  <TableView fx:id="assignerTable" minHeight="-Infinity" prefHeight="100.0" prefWidth="200.0" VBox.vgrow="NEVER">
-                    <columns>
-                      <TableColumn fx:id="assignerIDColumn" editable="false" minWidth="100.0" prefWidth="100.0" resizable="false" text="Assigner ID" />
-                      <TableColumn fx:id="assignerStageColumn" editable="false" maxWidth="-Infinity" minWidth="100.0" prefWidth="100.0" resizable="false" text="Stage" />
-                        <TableColumn fx:id="assignerProgressColumn" editable="false" maxWidth="-Infinity" minWidth="400.0" prefWidth="400.0" resizable="false" text="Progress" />
-                    </columns>
-                     <VBox.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                     </VBox.margin>
-                  </TableView>
-                  <Separator layoutX="10.0" layoutY="57.0" prefWidth="200.0" />
-                  <Label layoutX="10.0" layoutY="60.0" text="Skims">
-                     <padding>
-                        <Insets left="5.0" right="5.0" />
-                     </padding>
-                  </Label>
-                  <ProgressBar fx:id="skimProgress" layoutX="15.0" layoutY="77.0" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" nodeOrientation="LEFT_TO_RIGHT" prefHeight="15.0" progress="0.0" VBox.vgrow="NEVER">
-                     <VBox.margin>
-                        <Insets left="5.0" right="5.0" />
-                     </VBox.margin>
-                  </ProgressBar>
-                  <TableView fx:id="skimTable" layoutX="15.0" layoutY="97.0" minHeight="-Infinity" prefHeight="100.0" prefWidth="200.0" VBox.vgrow="NEVER">
-                     <columns>
-                        <TableColumn fx:id="skimIDColumn" editable="false" minWidth="100.0" prefWidth="100.0" resizable="false" text="Skim ID" />
-                        <TableColumn fx:id="skimProgressColumn" editable="false" maxWidth="-Infinity" minWidth="500.0" prefWidth="500.0" resizable="false" text="Progress" />
-                     </columns>
-                     <VBox.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                     </VBox.margin>
-                  </TableView>
-                  <Separator prefWidth="200.0" />
-                  <Label layoutX="10.0" layoutY="205.0" text="Markets">
-                     <padding>
-                        <Insets left="5.0" right="5.0" />
-                     </padding>
-                  </Label>
-                  <ProgressBar fx:id="marketProgress" layoutX="15.0" layoutY="222.0" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" nodeOrientation="LEFT_TO_RIGHT" prefHeight="15.0" progress="0.0">
-                     <VBox.margin>
-                        <Insets left="5.0" right="5.0" />
-                     </VBox.margin>
-                  </ProgressBar>
-                  <TreeTableView fx:id="marketTable" prefHeight="200.0" prefWidth="200.0" sortMode="ONLY_FIRST_LEVEL">
-                    <columns>
-                      <TreeTableColumn fx:id="IDColumn" editable="false" minWidth="100.0" prefWidth="100.0" resizable="false" text="Market ID" />
-                      <TreeTableColumn fx:id="marketProgressColumn" editable="false" minWidth="500.0" prefWidth="500.0" resizable="false" text="Progress" />
-                    </columns>
-                     <VBox.margin>
-                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
-                     </VBox.margin>
-                  </TreeTableView>
+                  <Label fx:id="iterationNumber" text="0" />
+                  <Label text=" of " />
+                  <Label fx:id="iterationLimit" text="0" />
                </children>
+            </HBox>
+            <ProgressBar fx:id="modelProgress" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" nodeOrientation="LEFT_TO_RIGHT" prefHeight="20.0" progress="0.0">
                <VBox.margin>
-                  <Insets />
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
                </VBox.margin>
-            </VBox>
+            </ProgressBar>
+            <Separator prefWidth="200.0" />
+            <Label layoutX="10.0" layoutY="205.0" text="Markets">
+               <padding>
+                  <Insets left="5.0" right="5.0" />
+               </padding>
+            </Label>
+            <ProgressBar fx:id="marketProgress" layoutX="15.0" layoutY="222.0" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" nodeOrientation="LEFT_TO_RIGHT" prefHeight="15.0" progress="0.0">
+               <VBox.margin>
+                  <Insets left="5.0" right="5.0" />
+               </VBox.margin>
+            </ProgressBar>
+            <TreeTableView fx:id="marketTable" prefHeight="200.0" prefWidth="200.0" sortMode="ONLY_FIRST_LEVEL">
+              <columns>
+                <TreeTableColumn fx:id="IDColumn" editable="false" minWidth="100.0" prefWidth="100.0" text="Market ID" />
+                <TreeTableColumn fx:id="marketProgressColumn" editable="false" minWidth="500.0" prefWidth="500.0" resizable="false" text="Progress" />
+              </columns>
+               <VBox.margin>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </VBox.margin>
+            </TreeTableView>
+            <Separator layoutX="10.0" layoutY="57.0" prefWidth="200.0" />
+            <Label layoutX="15.0" layoutY="60.0" text="Assigners">
+               <padding>
+                  <Insets left="5.0" right="5.0" />
+               </padding>
+            </Label>
+            <ProgressBar fx:id="assignerProgress" layoutX="15.0" layoutY="82.0" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" nodeOrientation="LEFT_TO_RIGHT" prefHeight="15.0" progress="0.0" VBox.vgrow="SOMETIMES">
+               <VBox.margin>
+                  <Insets left="5.0" right="5.0" />
+               </VBox.margin>
+            </ProgressBar>
+            <TableView fx:id="assignerTable" minHeight="-Infinity" prefHeight="100.0" prefWidth="200.0" VBox.vgrow="NEVER">
+              <columns>
+                <TableColumn fx:id="assignerIDColumn" editable="false" minWidth="100.0" prefWidth="100.0" resizable="false" text="Assigner ID" />
+                <TableColumn fx:id="assignerStageColumn" editable="false" maxWidth="-Infinity" minWidth="100.0" prefWidth="100.0" resizable="false" text="Stage" />
+                  <TableColumn fx:id="assignerProgressColumn" editable="false" maxWidth="-Infinity" minWidth="400.0" prefWidth="400.0" resizable="false" text="Progress" />
+              </columns>
+               <VBox.margin>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </VBox.margin>
+            </TableView>
+            <Separator layoutX="10.0" layoutY="57.0" prefWidth="200.0" />
+            <Label layoutX="10.0" layoutY="60.0" text="Skims">
+               <padding>
+                  <Insets left="5.0" right="5.0" />
+               </padding>
+            </Label>
+            <ProgressBar fx:id="skimProgress" layoutX="15.0" layoutY="77.0" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" nodeOrientation="LEFT_TO_RIGHT" prefHeight="15.0" progress="0.0" VBox.vgrow="NEVER">
+               <VBox.margin>
+                  <Insets left="5.0" right="5.0" />
+               </VBox.margin>
+            </ProgressBar>
+            <TableView fx:id="skimTable" layoutX="15.0" layoutY="97.0" minHeight="-Infinity" prefHeight="100.0" prefWidth="200.0" VBox.vgrow="NEVER">
+               <columns>
+                  <TableColumn fx:id="skimIDColumn" editable="false" minWidth="100.0" prefWidth="100.0" resizable="false" text="Skim ID" />
+                  <TableColumn fx:id="skimProgressColumn" editable="false" maxWidth="-Infinity" minWidth="500.0" prefWidth="500.0" resizable="false" text="Progress" />
+               </columns>
+               <VBox.margin>
+                  <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+               </VBox.margin>
+            </TableView>
          </children>
+         <VBox.margin>
+            <Insets />
+         </VBox.margin>
       </VBox>
    </children>
-</AnchorPane>
+</VBox>

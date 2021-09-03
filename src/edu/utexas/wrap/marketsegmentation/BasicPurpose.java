@@ -59,7 +59,10 @@ import edu.utexas.wrap.util.TimeOfDaySplitter;
 	private GenerationRate[] prodRates, attrRates;
 	private String name;
 	private final Map<Integer,TravelSurveyZone> zones;
+	private TripInterchangeSplitter modeSplitter;
 	private Map<TimePeriod,Float> departureRates, arrivalRates;
+	private TimeOfDaySplitter todSplitter;
+	private TripBalancer balancer;
 
 	public BasicPurpose(String name,
 			Path purposeFile, 
@@ -87,6 +90,9 @@ import edu.utexas.wrap.util.TimeOfDaySplitter;
 		loadDistributors();
 		loadDepartureRates();
 		loadArrivalRates();
+		loadModeSplitter();
+		loadTimeOfDaySplitter();
+		loadBalancer();
 	}
 
 	private void loadProductionRates() {
@@ -168,13 +174,13 @@ import edu.utexas.wrap.util.TimeOfDaySplitter;
 	}
 	
 	private Demographic productionDemographic() {
-		switch (properties.getProperty("prodDemographic.type")) {
+		switch (getProducerDemographicType()) {
 		case "basic":
-			return parent.getBasicDemographic(properties.getProperty("prodDemographic.id"));
+			return parent.getBasicDemographic(getProductionDemographicSource());
 		case "prodProportional":
-			return parent.getBasicPurpose(properties.getProperty("prodDemographic.id")).unbalancedProductions();
+			return parent.getBasicPurpose(getProductionDemographicSource()).unbalancedProductions();
 		case "attrProportional":
-			return parent.getBasicPurpose(properties.getProperty("prodDemographic.id")).unbalancedAttractions();
+			return parent.getBasicPurpose(getProductionDemographicSource()).unbalancedAttractions();
 		default:
 			throw new RuntimeException("Not yet implemented");
 		}
@@ -190,27 +196,27 @@ import edu.utexas.wrap.util.TimeOfDaySplitter;
 	}
 
 	private Demographic attractionDemographic() {
-		switch (properties.getProperty("attrDemographic.type")) {
+		switch (getAttractorDemographicType()) {
 		case "basic":
-			return parent.getBasicDemographic(properties.getProperty("attrDemographic.id"));
+			return parent.getBasicDemographic(getAttractionDemographicSource());
 		case "prodProportional":
-			return parent.getBasicPurpose(properties.getProperty("attrDemographic.id")).unbalancedProductions();
+			return parent.getBasicPurpose(getAttractionDemographicSource()).unbalancedProductions();
 		case "attrProportional":
-			return parent.getBasicPurpose(properties.getProperty("attrDemographic.id")).unbalancedAttractions();
+			return parent.getBasicPurpose(getAttractionDemographicSource()).unbalancedAttractions();
 		default:
 			throw new RuntimeException("Not yet implemented");
 		}
 	}
 
-	private TripBalancer balancer() {
-		switch (properties.getProperty("balancer.class")) {
+	private void loadBalancer() {
+		switch (getBalancingMethod()) {
 
 		case "prodProportional":
-			return new Prod2AttrProportionalBalancer(null);
-
+			balancer = new Prod2AttrProportionalBalancer(null);
+			break;
 		case "attrProportional":
-			return new Attr2ProdProportionalBalancer();
-
+			balancer = new Attr2ProdProportionalBalancer();
+			break;
 		default:
 			throw new RuntimeException("Not yet implemented");
 		}
@@ -238,7 +244,7 @@ import edu.utexas.wrap.util.TimeOfDaySplitter;
 
 
 
-	private Map<Mode,Float> modeShares(){
+	private Map<Mode,Float> loadModeShares(){
 		return Stream.of(Mode.values())
 				.filter(mode -> properties.containsKey("modeChoice.proportion."+mode.toString()))
 				.collect(
@@ -249,9 +255,9 @@ import edu.utexas.wrap.util.TimeOfDaySplitter;
 						);
 	}
 
-	private TripInterchangeSplitter modeSplitter() {
+	private void loadModeSplitter() {
 
-		return new FixedProportionSplitter(modeShares());
+		modeSplitter = new FixedProportionSplitter(loadModeShares());
 	}
 
 
@@ -285,8 +291,8 @@ import edu.utexas.wrap.util.TimeOfDaySplitter;
 						);
 	}
 
-	private TimeOfDaySplitter timeOfDaySplitter(){
-		return new TimeOfDaySplitter(departureRates, arrivalRates, getVOTs());
+	private void loadTimeOfDaySplitter(){
+		todSplitter = new TimeOfDaySplitter(departureRates, arrivalRates, loadVOTs());
 	}
 
 
@@ -317,7 +323,7 @@ import edu.utexas.wrap.util.TimeOfDaySplitter;
 	 */
 	@Override
 	public Stream<ModalPAMatrix> getModalPAMatrices() {
-		return modeSplitter().split(getAggregatePAMatrix());
+		return modeSplitter.split(getAggregatePAMatrix());
 	}
 
 	/**Instantiate distribution modules and distribute the model's PAMap, then combine together
@@ -385,7 +391,7 @@ import edu.utexas.wrap.util.TimeOfDaySplitter;
 		ubProds = new SecondaryDemographic(producer.getComponents());
 		ubAttrs = new SecondaryDemographic(attractor.getComponents());
 
-		return balancer().balance(new PAPassthroughMap(unbalancedProds,unbalancedAttrs));
+		return balancer.balance(new PAPassthroughMap(unbalancedProds,unbalancedAttrs));
 	}
 
 	/**Split the daily ODMatrix according to various time-of-day shares
@@ -402,10 +408,10 @@ import edu.utexas.wrap.util.TimeOfDaySplitter;
 	 */
 	@Override
 	public Stream<ODProfile> getODProfiles() {
-		return timeOfDaySplitter().split(getDailyODMatrices());
+		return todSplitter.split(getDailyODMatrices());
 	}
 
-	private Map<TimePeriod,Float> getVOTs() {
+	private Map<TimePeriod,Float> loadVOTs() {
 		Map<TimePeriod,Float> ret =  Stream.of(TimePeriod.values())
 				.filter(tp -> properties.getProperty("vot."+tp.toString()) != null)
 				.collect(

@@ -34,7 +34,7 @@ import edu.utexas.wrap.demand.ModalPAMatrix;
  */
 public class FixedProportionSplitter implements TripInterchangeSplitter {
 
-	private Map<Mode, Float> map;
+	private final Map<Mode, Float> map;
 
 	public FixedProportionSplitter(Map<Mode, Float> map) {
 		this.map = map;

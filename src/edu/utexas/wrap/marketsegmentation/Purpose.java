@@ -40,7 +40,8 @@ public interface Purpose extends
 							DailyODMatrixProvider, 
 							ModalPAMatrixProvider, 
 							AggregatePAMatrixProvider, 
-							PAMapProvider {
+							PAMapProvider
+							 {
 	
 	public double personTrips();
 

@@ -84,7 +84,7 @@
           </MenuBar>
             <ToolBar fx:id="toolBar" disable="true" maxHeight="-Infinity" minWidth="350.0" nodeOrientation="RIGHT_TO_LEFT" prefHeight="35.0" prefWidth="650.0" VBox.vgrow="NEVER">
               <items>
-                <Button fx:id="modelRun" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" text="Run" textAlignment="CENTER" />
+                <Button fx:id="modelRun" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#runModel" text="Run" textAlignment="CENTER" />
                   <Spinner id="feedbackCountSpinner" fx:id="modelFeedbackSpinner" editable="true" minWidth="-Infinity" nodeOrientation="LEFT_TO_RIGHT" prefWidth="75.0" />
                   <Label alignment="CENTER" nodeOrientation="LEFT_TO_RIGHT" text="Feedback Iterations:">
                      <rotationAxis>
