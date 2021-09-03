@@ -5,10 +5,9 @@ import java.util.HashSet;
 
 import edu.utexas.wrap.Project;
 import edu.utexas.wrap.marketsegmentation.MarketRunner;
+import edu.utexas.wrap.marketsegmentation.PurposeRunner;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
-import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
@@ -22,7 +21,6 @@ import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableColumn.CellDataFeatures;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.control.cell.ProgressBarTreeTableCell;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TreeItemPropertyValueFactory;
 import javafx.util.Callback;
 
@@ -145,12 +143,12 @@ public class RunnerController extends Task<Integer> {
 				
 				
 				marketRoot.getChildren().add(marketItem);
-//				market.getBasicPurposes().forEach(purpose -> {
-//					PurposeRunner purposeRunner = new PurposeRunner(purpose);
-//					marketRunner.attach(purposeRunner);
-//					TreeItem<Task<Double>> purposeItem = new TreeItem<Task<Double>>(purposeRunner);
-//					marketItem.getChildren().add(purposeItem);
-//				});
+				market.getBasicPurposes().forEach(purpose -> {
+					PurposeRunner purposeRunner = new PurposeRunner(purpose, marketRunner);
+					marketRunner.attach(purposeRunner);
+					TreeItem<Task<Double>> purposeItem = new TreeItem<Task<Double>>(purposeRunner);
+					marketItem.getChildren().add(purposeItem);
+				});
 			});
 			
 			//TODO run the subthreads
