@@ -33,8 +33,4 @@ public interface NetworkSkim {
 
 	public float getCost(TravelSurveyZone producer, TravelSurveyZone attractor);
 	
-	public boolean isUpdatable();
-	
-	public Path source();
-
 }

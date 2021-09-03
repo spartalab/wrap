@@ -216,8 +216,7 @@ public class Project implements Runnable {
 								Function.identity(), 
 								id -> new FixedSizeNetworkSkim(id,
 										projDir.resolve(props.getProperty("skims."+id+".file")), 
-										zones,
-										Boolean.parseBoolean(props.getProperty("skims."+id+".overwrite"))
+										zones
 										)
 								)
 						)
@@ -300,11 +299,11 @@ public class Project implements Runnable {
 		updateFeedbackSkims(assigners);
 		System.out.println("Printing final skims");
 		currentSkims.entrySet().stream()
-		.filter(entry -> entry.getValue().isUpdatable())
+		.filter(entry -> getSkimUpdatable(entry.getKey()))
 		.forEach(
 				entry -> SkimFactory.outputCSV(
 						currentSkims.get(entry.getKey()),
-						entry.getValue().source(),
+						Paths.get(getSkimFile(entry.getKey())),
 						zones.values()
 						)
 				);
@@ -463,7 +462,7 @@ public class Project implements Runnable {
 		props.setProperty("skims."+skimID+".function", skimFunction);
 		props.setProperty("skims."+skimID+".overwrite", updatable.toString());
 		
-		currentSkims.put(skimID,new FixedSizeNetworkSkim(skimID,Paths.get(skimSourceURI),zones,updatable));
+		currentSkims.put(skimID,new FixedSizeNetworkSkim(skimID,Paths.get(skimSourceURI),zones));
 		
 	}
 
