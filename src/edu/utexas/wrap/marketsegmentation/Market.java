@@ -51,7 +51,7 @@ import edu.utexas.wrap.util.io.FrictionFactorFactory;
 public class Market implements ODProfileProvider {
 	private Properties props;
 	private Map<String,BasicPurpose> basicPurposes;
-	private Collection<DummyPurpose> dummyPurposes;
+	private Collection<SurrogatePurpose> dummyPurposes;
 	private Map<String,Demographic> basicDemos;
 	private Map<String,FrictionFactorMap> frictionFactors;
 	private String name;
@@ -70,9 +70,9 @@ public class Market implements ODProfileProvider {
 	private void loadData() throws IOException {
 		Map<Integer,TravelSurveyZone> zoneIDs = parent.getZones();
 		basicDemos = loadDemographics(zoneIDs);
-		frictionFactors = getFrictionFactors();
+		frictionFactors = loadFrictionFunctions();
 		basicPurposes = loadBasicPurposes(zoneIDs);
-		dummyPurposes = getDummyPurposes(zoneIDs);
+		dummyPurposes = loadSurrogatePurposes(zoneIDs);
 	}
 
 	public void reloadProperties() throws IOException {
@@ -81,15 +81,15 @@ public class Market implements ODProfileProvider {
 		loadData();
 	}
 
-	private Collection<DummyPurpose> getDummyPurposes(Map<Integer,TravelSurveyZone> zoneIDs) {
+	private Collection<SurrogatePurpose> loadSurrogatePurposes(Map<Integer,TravelSurveyZone> zoneIDs) {
 		// TODO Auto-generated method stub
 		String names = props.getProperty("purposes.dummies.ids");
 		
-		if (names == null) return Collections.<DummyPurpose>emptySet();
+		if (names == null) return Collections.<SurrogatePurpose>emptySet();
 		return Stream.of(names.split(","))
 		.map(id -> {
 			try {
-				return new DummyPurpose(this,getDirectory().resolve(props.getProperty("purposes."+id+".file")),zoneIDs);
+				return new SurrogatePurpose(this,getDirectory().resolve(props.getProperty("purposes."+id+".file")),zoneIDs);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -158,7 +158,7 @@ public class Market implements ODProfileProvider {
 		return basicDemos.values();
 	}
 
-	private Map<String,FrictionFactorMap> getFrictionFactors() {
+	private Map<String,FrictionFactorMap> loadFrictionFunctions() {
 		String ids = props.getProperty("frictFacts.ids");
 		if (ids == null || ids.isBlank()) return Collections.emptyMap();
 		return Stream.of(ids.split(","))

@@ -8,7 +8,7 @@ import java.util.Optional;
 
 import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.marketsegmentation.BasicPurpose;
-import edu.utexas.wrap.marketsegmentation.DummyPurpose;
+import edu.utexas.wrap.marketsegmentation.SurrogatePurpose;
 import edu.utexas.wrap.marketsegmentation.Market;
 import edu.utexas.wrap.net.Demographic;
 import javafx.application.HostServices;
@@ -127,7 +127,7 @@ public class EditMarketController {
 	private Button purposeEdit;
 	
 	@FXML
-	private ListView<DummyPurpose> surrogateList;
+	private ListView<SurrogatePurpose> surrogateList;
 	
 	@FXML
 	private Button surrogateAdd;

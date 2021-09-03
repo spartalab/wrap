@@ -37,15 +37,16 @@ public class FixedSizeNetworkSkim implements NetworkSkim {
 	private Path initSource;
 	private String id;
 	private Map<Integer,TravelSurveyZone> zones;
-	
+	private boolean updatable;
 	/**Construct a fixed skim from pre-existing matrix
 	 * 
 	 * @param skim
 	 */
-	public FixedSizeNetworkSkim(String name, Path source,Map<Integer,TravelSurveyZone> zones) {
+	public FixedSizeNetworkSkim(String name, Path source,Map<Integer,TravelSurveyZone> zones, boolean updatable) {
 		initSource = source;
 		id = name;
 		this.zones = zones;
+		this.updatable = updatable;
 	}
 	
 	/**Create an empty matrix of a given n*n size
@@ -104,5 +105,17 @@ public class FixedSizeNetworkSkim implements NetworkSkim {
 //		ret.putIfAbsent(orig, new ConcurrentSkipListMap<TravelSurveyZone, Float>(new ZoneComparator()));
 		skimData[orig.getOrder()][dest.getOrder()] = cost;
 //		ret.get(orig).put(dest, cost);
+	}
+
+	@Override
+	public boolean isUpdatable() {
+		// TODO Auto-generated method stub
+		return updatable;
+	}
+
+	@Override
+	public Path source() {
+		// TODO Auto-generated method stub
+		return initSource;
 	}
 }

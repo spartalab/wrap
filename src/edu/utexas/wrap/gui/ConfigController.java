@@ -41,6 +41,7 @@ import javafx.scene.control.DialogPane;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
 import javafx.scene.control.Tab;
@@ -50,6 +51,8 @@ import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.image.Image;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Toggle;
+import javafx.scene.control.ToggleGroup;
 import javafx.scene.control.ToolBar;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -174,6 +177,14 @@ public class ConfigController {
 
 	@FXML
 	private ComboBox<String> skimFunctionChooser;
+	
+	@FXML
+	private RadioButton skimUpdateEnabled;
+	
+	@FXML
+	private RadioButton skimUpdateDisabled;
+	
+	private ToggleGroup skimUpdatable;
 	
 	
 	
@@ -325,6 +336,23 @@ public class ConfigController {
 		});
 		
 		skimFunctionChooser.getItems().addAll("Travel time","Travel time (exclude HOV)");
+		
+		skimUpdatable = new ToggleGroup();
+		skimUpdatable.getToggles().add(skimUpdateDisabled);
+		skimUpdatable.getToggles().add(skimUpdateEnabled);
+		skimUpdatable.selectedToggleProperty().addListener(new ChangeListener<Toggle>() {
+
+			@Override
+			public void changed(ObservableValue<? extends Toggle> arg0, Toggle oldValue, Toggle newValue) {
+				// TODO Auto-generated method stub
+				if (newValue == skimUpdateEnabled) {
+					currentProject.setSkimUpdatable(skimList.getSelectionModel().getSelectedItem().toString(),true);
+				} else if (newValue == skimUpdateDisabled) {
+					currentProject.setSkimUpdatable(skimList.getSelectionModel().getSelectedItem().toString(),false);
+				}
+			}
+			
+		});
 
 		assignerClass.getItems().addAll("Built-in Static Assigner","External Static Assigner","File Output");
 
@@ -343,6 +371,11 @@ public class ConfigController {
 							skimSourceURI.setText(currentProject.getDirectory().toUri().relativize(newURI.toUri()).getPath());
 							skimAssignerChooser.getSelectionModel().select(currentProject.getSkimAssigner(newValue.toString()));
 							skimFunctionChooser.getSelectionModel().select(getDisplayString(currentProject.getSkimFunction(newValue.toString())));
+							if (currentProject.getSkimUpdatable(newValue.toString())) {
+								skimUpdatable.selectToggle(skimUpdateEnabled);
+							} else {
+								skimUpdatable.selectToggle(skimUpdateDisabled);
+							}
 						}
 						else {
 							skimSourceURI.clear();
@@ -350,6 +383,7 @@ public class ConfigController {
 							skimFunctionChooser.getSelectionModel().clearSelection();
 							skimRemove.setDisable(true);
 							skimBox.setDisable(true);
+							skimUpdatable.selectToggle(null);
 						}
 					}
 
@@ -785,7 +819,8 @@ public class ConfigController {
 				currentProject.addSkim(controller.getSkimID(), 
 						controller.getSkimAssigner(), 
 						controller.getSkimFunction(), 
-						controller.getSkimSourceURI());
+						controller.getSkimSourceURI(),
+						controller.getUpdatable());
 				skimList.getItems().setAll(currentProject.getSkims());
 				skimList.getItems().sort(new Comparator<NetworkSkim>() {
 

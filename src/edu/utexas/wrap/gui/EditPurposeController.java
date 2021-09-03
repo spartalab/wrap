@@ -380,7 +380,8 @@ public class EditPurposeController {
 	@FXML
 	private void initialize() {
 		unsavedChanges = false;
-
+		
+		
 		votTable.getItems().setAll(TimePeriod.values());
 		timePeriodColumn.setCellValueFactory(new Callback<CellDataFeatures<TimePeriod,String>,ObservableValue<String>>(){
 
@@ -390,9 +391,6 @@ public class EditPurposeController {
 			}
 
 		});
-
-
-
 		votColumn.setCellFactory(TextFieldTableCell.<TimePeriod,Float>forTableColumn(new FloatStringConverter()));
 		votColumn.setCellValueFactory(new Callback<CellDataFeatures<TimePeriod,Float>,ObservableValue<Float>>(){
 
@@ -415,30 +413,33 @@ public class EditPurposeController {
 			}
 
 		});
-
+		
+		
+		
 		scaling = new ToggleGroup();
 		prodToAttrButton.setToggleGroup(scaling);
 		attrToProdButton.setToggleGroup(scaling);
-
-
+		
+		
 		prodDemoType = new ToggleGroup();
 		prodBasicDemo.setToggleGroup(prodDemoType);
 		prodProportionalDemo.setToggleGroup(prodDemoType);
-
+		
 		attrDemoType = new ToggleGroup();
 		attrBasicDemo.setToggleGroup(attrDemoType);
 		attrProportionalDemo.setToggleGroup(attrDemoType);
-
+		
+		
 		prodRateType = new ToggleGroup();
 		prodGenericRate.setToggleGroup(prodRateType);
 		prodTypeRate.setToggleGroup(prodRateType);
-
+		
 		attrRateType = new ToggleGroup();
 		attrGenericRate.setToggleGroup(attrRateType);
 		attrTypeRate.setToggleGroup(attrRateType);
 		
 		
-
+		
 		distributorList.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<TripDistributor>() {
 
 			@Override
@@ -460,7 +461,9 @@ public class EditPurposeController {
 			}
 			
 		});
-
+		
+		
+		
 		timePeriodDistCol.setCellValueFactory(new Callback<CellDataFeatures<TimePeriod,String>,ObservableValue<String>>(){
 
 			@Override

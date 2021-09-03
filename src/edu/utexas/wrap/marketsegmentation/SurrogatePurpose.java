@@ -56,7 +56,7 @@ import edu.utexas.wrap.util.io.ProductionAttractionFactory;
  * @author William
  *
  */
-public class DummyPurpose implements Purpose {
+public class SurrogatePurpose implements Purpose {
 	
 	private Properties props;
 	private Map<Integer, TravelSurveyZone> zones;
@@ -64,7 +64,7 @@ public class DummyPurpose implements Purpose {
 	private String name;
 	private Market parent;
 	
-	public DummyPurpose(Market parent, Path propsPath, Map<Integer, TravelSurveyZone> zones) throws IOException {
+	public SurrogatePurpose(Market parent, Path propsPath, Map<Integer, TravelSurveyZone> zones) throws IOException {
 		this.parent = parent;
 		props = new Properties();
 		props.load(Files.newInputStream(propsPath));

@@ -9,7 +9,9 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ToggleGroup;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Window;
@@ -34,6 +36,14 @@ public class NewSkimController {
 	private Project currentProject;
 	
 	private Window parent;
+	
+	@FXML
+	private RadioButton updateEnabled;
+	
+	@FXML
+	private RadioButton updateDisabled;
+	
+	private ToggleGroup update;
 		
 
 	@FXML
@@ -41,7 +51,10 @@ public class NewSkimController {
 		currentProject = null;
 		
 		skimFunctionChooser.getItems().addAll("Travel time","Travel time (exclude HOV)");
-
+		
+		update = new ToggleGroup();
+		update.getToggles().add(updateDisabled);
+		update.getToggles().add(updateEnabled);
 	}
 
 	@FXML
@@ -112,11 +125,17 @@ public class NewSkimController {
 	}
 	
 	protected BooleanBinding notReady() {
-		return Bindings.or(Bindings.or(Bindings.or(
+		return Bindings.or(Bindings.or(Bindings.or(Bindings.or(
 				skimAssignerChooser.getSelectionModel().selectedItemProperty().isNull(), 
 				skimFunctionChooser.getSelectionModel().selectedItemProperty().isNull()),
 				skimSourceURI.textProperty().isEmpty()),
-				skimID.textProperty().isEmpty());
+				skimID.textProperty().isEmpty()),
+				update.selectedToggleProperty().isNull());
 		
+	}
+
+	public Boolean getUpdatable() {
+		// TODO Auto-generated method stub
+		return update.getSelectedToggle() == updateEnabled;
 	}
 }

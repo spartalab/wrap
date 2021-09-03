@@ -42,6 +42,7 @@
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.SeparatorMenuItem?>
 <?import javafx.scene.control.Spinner?>
@@ -197,9 +198,20 @@
                                                       <Insets />
                                                    </VBox.margin>
                                                 </Label>
-                                                <HBox prefHeight="100.0" prefWidth="200.0">
+                                                <HBox prefWidth="200.0">
                                                    <children>
                                                       <ComboBox fx:id="skimFunctionChooser" onAction="#changeSkimFunction" prefHeight="25.0" prefWidth="200.0" />
+                                                   </children>
+                                                </HBox>
+                                                <Label text="Feedback Updating:">
+                                                   <padding>
+                                                      <Insets top="5.0" />
+                                                   </padding>
+                                                </Label>
+                                                <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0">
+                                                   <children>
+                                                      <RadioButton fx:id="skimUpdateEnabled" mnemonicParsing="false" text="Enabled" />
+                                                      <RadioButton fx:id="skimUpdateDisabled" mnemonicParsing="false" text="Disabled" />
                                                    </children>
                                                 </HBox>
                                              </children>

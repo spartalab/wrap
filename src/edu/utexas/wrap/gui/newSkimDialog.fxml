@@ -4,12 +4,12 @@
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.RadioButton?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-
-<VBox minHeight="-Infinity" prefHeight="200.0" prefWidth="100.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.utexas.wrap.gui.NewSkimController">
+<VBox minHeight="-Infinity" prefHeight="250.0" prefWidth="100.0" xmlns="http://javafx.com/javafx/16" xmlns:fx="http://javafx.com/fxml/1" fx:controller="edu.utexas.wrap.gui.NewSkimController">
    <children>
       <Label layoutX="20.0" layoutY="20.0" text="Skim ID:" />
       <HBox layoutX="20.0" layoutY="37.0" spacing="10.0">
@@ -42,6 +42,17 @@
       <HBox prefHeight="50.0" prefWidth="200.0" VBox.vgrow="ALWAYS">
          <children>
             <ComboBox fx:id="skimFunctionChooser" onAction="#changeSkimFunction" prefHeight="25.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
+         </children>
+      </HBox>
+      <Label text="Feedback Updating:">
+         <padding>
+            <Insets top="5.0" />
+         </padding>
+      </Label>
+      <HBox prefHeight="100.0" prefWidth="200.0" spacing="10.0">
+         <children>
+            <RadioButton fx:id="updateEnabled" mnemonicParsing="false" text="Enabled" />
+            <RadioButton fx:id="updateDisabled" mnemonicParsing="false" text="Disabled" />
          </children>
       </HBox>
    </children>
