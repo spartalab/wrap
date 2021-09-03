@@ -5,9 +5,11 @@ import java.util.HashSet;
 
 import edu.utexas.wrap.Project;
 import edu.utexas.wrap.marketsegmentation.MarketRunner;
-import edu.utexas.wrap.marketsegmentation.PurposeRunner;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
 import javafx.fxml.FXML;
@@ -20,6 +22,8 @@ import javafx.scene.control.TreeTableColumn;
 import javafx.scene.control.TreeTableColumn.CellDataFeatures;
 import javafx.scene.control.TreeTableView;
 import javafx.scene.control.cell.ProgressBarTreeTableCell;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TreeItemPropertyValueFactory;
 import javafx.util.Callback;
 
 public class RunnerController extends Task<Integer> {
@@ -76,16 +80,23 @@ public class RunnerController extends Task<Integer> {
 	
 	private Collection<MarketRunner> marketRunners;
 	
+	private TreeItem<Task<Double>> marketRoot;
+	
+	private SimpleIntegerProperty completedMarketCount;
+	
+	
 	
 	public void initialize() {
 		marketRunners = new HashSet<MarketRunner>();
 		modelProgress.progressProperty().bind(this.progressProperty());
 		iterationNumber.textProperty().bind(Bindings.convert(valueProperty()));
+		completedMarketCount = new SimpleIntegerProperty(0);
 	}
 	
 	public void setProject(Project project) {
 		this.project = project;
 		iterationLimit.setText(project.getMaxIterations().toString());
+		marketProgress.progressProperty().bind(completedMarketCount.divide((double) project.getMarkets().size()));
 
 		marketTable.setShowRoot(false);
 		IDColumn.setCellValueFactory(new Callback<CellDataFeatures<Task<Double>,String>,ObservableValue<String>>(){
@@ -98,31 +109,14 @@ public class RunnerController extends Task<Integer> {
 			
 		});
 		
-		marketProgressColumn.setCellValueFactory(new Callback<CellDataFeatures<Task<Double>,Double>,ObservableValue<Double>>() {
-
-			@Override
-			public ObservableValue<Double> call(CellDataFeatures<Task<Double>, Double> arg0) {
-				// TODO Auto-generated method stub
-				return new ReadOnlyObjectWrapper<Double>(arg0.getValue().getValue().getProgress());
-			}
-			
-		});
+		marketProgressColumn.setCellValueFactory(new TreeItemPropertyValueFactory<Task<Double>, Double>("progress"));
 		marketProgressColumn.setCellFactory(ProgressBarTreeTableCell.<Task<Double>>forTreeTableColumn());
+	
 		
-		TreeItem<Task<Double>> marketRoot = new TreeItem<Task<Double>>();
+		
+		marketRoot = new TreeItem<Task<Double>>();
 		marketRoot.setExpanded(true);
-		project.getMarkets().forEach(market -> {
-			MarketRunner marketRunner = new MarketRunner(market);
-			marketRunners.add(marketRunner);
-			TreeItem<Task<Double>> marketItem = new TreeItem<Task<Double>>(marketRunner);
-			marketRoot.getChildren().add(marketItem);
-			market.getBasicPurposes().forEach(purpose -> {
-				PurposeRunner purposeRunner = new PurposeRunner(purpose);
-				marketRunner.attach(purposeRunner);
-				TreeItem<Task<Double>> purposeItem = new TreeItem<Task<Double>>(purposeRunner);
-				marketItem.getChildren().add(purposeItem);
-			});
-		});
+		
 		
 		marketTable.setRoot(marketRoot);
 
@@ -140,14 +134,42 @@ public class RunnerController extends Task<Integer> {
 			if (isCancelled()) {
 				break;
 			}
+			marketRoot.getChildren().clear();
+			completedMarketCount.set(0);
+			project.getMarkets().forEach(market -> {
+				MarketRunner marketRunner = new MarketRunner(market,this);
+				marketRunners.add(marketRunner);
+				TreeItem<Task<Double>> marketItem = new TreeItem<Task<Double>>(marketRunner);
+				
+				
+				
+				
+				marketRoot.getChildren().add(marketItem);
+//				market.getBasicPurposes().forEach(purpose -> {
+//					PurposeRunner purposeRunner = new PurposeRunner(purpose);
+//					marketRunner.attach(purposeRunner);
+//					TreeItem<Task<Double>> purposeItem = new TreeItem<Task<Double>>(purposeRunner);
+//					marketItem.getChildren().add(purposeItem);
+//				});
+			});
 			
 			//TODO run the subthreads
-			Thread.sleep(5000);
+			marketRunners.parallelStream().forEach(Task::run);
 			
+			
+
+			Thread.sleep(1);
 			updateValue(i+1);
 			updateProgress(i,project.getMaxIterations());
 		}
 		return Integer.parseInt(iterationNumber.getText());
+	}
+
+	public void increaseCompletedMarkets() {
+		// TODO Auto-generated method stub
+		completedMarketCount.set(completedMarketCount.get()+1);
+		
+		
 	}
 
 }
