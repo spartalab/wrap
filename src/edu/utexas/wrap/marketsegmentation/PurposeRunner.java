@@ -8,7 +8,7 @@ public class PurposeRunner extends Task<Double> {
 	private MarketRunner parent;
 	
 	
-	public PurposeRunner(BasicPurpose purpose, MarketRunner parent) {
+	public PurposeRunner(Purpose purpose, MarketRunner parent) {
 		// TODO Auto-generated constructor stub
 		this.purpose = purpose;
 		this.parent = parent;
@@ -21,8 +21,10 @@ public class PurposeRunner extends Task<Double> {
 
 	@Override
 	protected Double call() throws Exception {
+		updateProgress(0, 1);
 		Thread.sleep(500);
 		// TODO Auto-generated method stub
+		updateProgress(1,1);
 		return null;
 	}
 

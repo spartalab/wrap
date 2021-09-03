@@ -325,4 +325,8 @@ public class Market implements ODProfileProvider {
 		// TODO Auto-generated method stub
 		return parent.getNetworkSkim(skimID);
 	}
+	
+	public Collection<Purpose> getPurposes() {
+		return Stream.concat(basicPurposes.values().stream(),dummyPurposes.stream()).collect(Collectors.toSet());
+	}
 }

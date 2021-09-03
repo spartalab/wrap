@@ -143,7 +143,7 @@ public class RunnerController extends Task<Integer> {
 				
 				
 				marketRoot.getChildren().add(marketItem);
-				market.getBasicPurposes().forEach(purpose -> {
+				market.getPurposes().forEach(purpose -> {
 					PurposeRunner purposeRunner = new PurposeRunner(purpose, marketRunner);
 					marketRunner.attach(purposeRunner);
 					TreeItem<Task<Double>> purposeItem = new TreeItem<Task<Double>>(purposeRunner);

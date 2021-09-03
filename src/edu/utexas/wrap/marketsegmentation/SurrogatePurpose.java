@@ -70,7 +70,7 @@ public class SurrogatePurpose implements Purpose {
 		props.load(Files.newInputStream(propsPath));
 		this.zones = zones;
 		dir = propsPath.getParent().resolve(props.getProperty("dir"));
-		name = propsPath.toString();
+		name = propsPath.getFileName().toString();
 	}
 
 	/**Develop an ODProfile according to the DummyPurpose's specifications
