@@ -276,8 +276,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		return tp;
 	}
 
-	public NetworkSkim getSkim(ToDoubleFunction<Link> function) {
-		return SkimFactory.calculateSkim(network, function);
+	public NetworkSkim getSkim(String id, ToDoubleFunction<Link> function) {
+		return SkimFactory.calculateSkim(network, function, id);
 	}
 
 

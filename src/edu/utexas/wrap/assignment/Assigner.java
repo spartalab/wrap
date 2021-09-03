@@ -28,7 +28,7 @@ public interface Assigner extends Runnable {
 	
 	public void process(ODProfile profile);
 	
-	public NetworkSkim getSkim(ToDoubleFunction<Link> function);
+	public NetworkSkim getSkim(String id, ToDoubleFunction<Link> function);
 
 	public void outputFlows(Path outputFile);
 	

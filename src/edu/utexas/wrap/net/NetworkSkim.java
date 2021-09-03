@@ -17,8 +17,6 @@
  */
 package edu.utexas.wrap.net;
 
-import java.nio.file.Path;
-
 /**Interface for defining a cost of travel between two zones
  * 
  * This interface provides a mechanism for defining a matrix of costs

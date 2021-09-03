@@ -53,10 +53,10 @@ public class SkimFactory {
 	}
 
 
-	public static NetworkSkim calculateSkim(Graph network,ToDoubleFunction<Link> costFunction) {
+	public static NetworkSkim calculateSkim(Graph network,ToDoubleFunction<Link> costFunction, String id) {
 		Collection<TravelSurveyZone> zones = network.getTSZs();
 		
-		FixedSizeNetworkSkim skim = new FixedSizeNetworkSkim(network.numZones());
+		FixedSizeNetworkSkim skim = new FixedSizeNetworkSkim(id,network.numZones());
 		
 		zones.stream()
 		

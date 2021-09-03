@@ -136,7 +136,7 @@ public class StreamPassthroughAssigner implements StaticAssigner {
 		}
 	}
 	
-	public NetworkSkim getSkim(ToDoubleFunction<Link> function) {
+	public NetworkSkim getSkim(String id, ToDoubleFunction<Link> function) {
 		throw new RuntimeException("Not yet implemented");
 	}
 

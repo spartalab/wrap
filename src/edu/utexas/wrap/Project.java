@@ -214,9 +214,7 @@ public class Project implements Runnable {
 				.collect(
 						Collectors.toMap(
 								Function.identity(), 
-								id -> new FixedSizeNetworkSkim(id,
-										projDir.resolve(props.getProperty("skims."+id+".file")), 
-										zones
+								id -> new FixedSizeNetworkSkim(id
 										)
 								)
 						)
@@ -256,7 +254,7 @@ public class Project implements Runnable {
 							case "travelTime":
 								func = Link::getTravelTime;
 							}
-							return assigner.getSkim(func);
+							return assigner.getSkim(id,func);
 						}
 						)
 				);
@@ -462,7 +460,7 @@ public class Project implements Runnable {
 		props.setProperty("skims."+skimID+".function", skimFunction);
 		props.setProperty("skims."+skimID+".overwrite", updatable.toString());
 		
-		currentSkims.put(skimID,new FixedSizeNetworkSkim(skimID,Paths.get(skimSourceURI),zones));
+		currentSkims.put(skimID,new FixedSizeNetworkSkim(skimID));
 		
 	}
 
