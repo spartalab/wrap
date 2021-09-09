@@ -21,14 +21,15 @@ package edu.utexas.wrap.distribution;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.containers.FixedSizeAggregatePAMatrix;
 import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.marketsegmentation.Purpose;
-import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
+import javafx.concurrent.Task;
 
 /**A trip distribution class that uses the traditional gravity
  * model to calculate trips. Given a friction factor map, this
@@ -41,23 +42,25 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  * @author William
  *
  */
-public class GravityDistributor extends TripDistributor {
+public class GravityDistributor implements TripDistributor {
 	private final String id;
+	private final int maxIterations;
 	protected final Purpose purpose;
-	private final FrictionFactorMap friction;
 	private final Double margin = 0.001;
 	private Double scalingFactor;
+	private Collection<TravelSurveyZone> zones;
 	protected Double[] producerWeights, attractorWeights;
 	protected DistributionWeights weights;
 
-	public GravityDistributor(String name, Purpose parent, Double scalingFactor, FrictionFactorMap fm, DistributionWeights weights) {
+	public GravityDistributor(String name, Purpose parent, Double scalingFactor, int maxIterations, DistributionWeights weights) {
 		id = name;
 		this.purpose = parent;
 		this.scalingFactor = scalingFactor;
-		friction = fm;
+		this.maxIterations = maxIterations;
 		this.weights = weights;
 		producerWeights = weights.getProductionWeights();
 		attractorWeights = weights.getAttractionWeights();
+		zones = purpose.getMarket().getZones().values();
 		
 		
 	}
@@ -71,80 +74,38 @@ public class GravityDistributor extends TripDistributor {
 	 * between the two zones.
 	 *
 	 */
-	public AggregatePAMatrix distribute(PAMap pa,NetworkSkim skim) {
-		//Begin by iteratively calculating each zone's A and B values
-		Collection<TravelSurveyZone> zones = purpose.getMarket().getZones().values();
-		
-		Float[][] ff = new Float[zones.size()][zones.size()];
-		
-		zones.parallelStream().forEach(i -> {
-			zones.stream().forEach(j ->{
-				ff[i.getOrder()][j.getOrder()] = friction.get(skim.getCost(i, j));
-			});
-		});
-		
-		AtomicBoolean converged = new AtomicBoolean(false);
-		//While the previous iteration made changes
-		int iterations = 0;
-		while (!converged.get() && iterations < 100) {
-			converged.set(true);
-			iterations++;
-//			System.out.println("Iteration "+iterations);
+//	public AggregatePAMatrix distribute(PAMap pa,NetworkSkim skim) {
+//		//Begin by iteratively calculating each zone's A and B values
+//		ImpedanceMatrix impedances = new ImpedanceMatrix(zones, skim, friction);
+//
+//
+//		AtomicBoolean converged = new AtomicBoolean(false);
+//		//While the previous iteration made changes
+//		int iterations = 0;
+//		while (!converged.get() && iterations < 100) {
+//			converged.set(true);
+//			iterations++;
+////			System.out.println("Iteration "+iterations);
+//
+//			updateProducerWeights(pa, impedances, converged);
+//
+//			
+//			updateAttractorWeights(pa, impedances, converged);
+//		}
+//		
+//		weights.updateWeights(producerWeights,attractorWeights);
+//		
+//		
+//		return constructMatrix(pa, impedances);
+//
+//	}
 
-			//For each producer
-			zones.parallelStream().forEach(i -> {
-				//Calculate a new denominator as sum_attractors(attractions*impedance*b)
-				Double denom = zones.stream()
-						.mapToDouble(x -> 
-						(attractorWeights[x.getOrder()] == null? 1.0 : attractorWeights[x.getOrder()])
-						*pa.getAttractions(x)*ff[i.getOrder()][x.getOrder()])
-						.sum();
-				
-				//Check for errors
-				if (denom == 0.0 || denom.isNaN()) throw new RuntimeException();
-				
-				//Write a new A value for this producer
-				Double temp = producerWeights[i.getOrder()];
-				producerWeights[i.getOrder()] = 1.0/denom;
-				
-				//If no A value exists yet or this is not within the numerical tolerance of the previous value
-				if (temp == null || !converged(temp, producerWeights[i.getOrder()])) {
-					converged.set(false);
-				}
-			});
-
-			
-			//For each attractor
-			zones.parallelStream().forEach(j->{
-				
-				//Calculate a new denominator as sum_producers(productions*impedance*a)
-				Double denom = zones.stream()
-						.mapToDouble(x-> 
-						(producerWeights[x.getOrder()] == null? 1.0 : producerWeights[x.getOrder()])
-						*pa.getProductions(x)*ff[x.getOrder()][j.getOrder()])
-						.sum();
-				
-				//Check for errors
-				if (denom == 0.0 || denom.isNaN()) throw new RuntimeException();
-				
-				//Write a new B value for this attractor
-				Double temp = attractorWeights[j.getOrder()];
-				attractorWeights[j.getOrder()] = 1.0/denom;
-				
-				//If no B value exists yet or this is not within the numerical tolerance of the previous value
-				if (temp == null || !converged(temp, attractorWeights[j.getOrder()])) {
-					converged.set(false);
-				}	
-			});
-		}
-		
-		weights.updateWeights(producerWeights,attractorWeights);
-		
-		
+	public AggregatePAMatrix constructMatrix(PAMap pa, ImpedanceMatrix impedances) {
 		//Now begin constructing the matrix
+		weights.updateWeights(producerWeights,attractorWeights);
 		FixedSizeAggregatePAMatrix pam = new FixedSizeAggregatePAMatrix(zones);
 		//For each producer
-		zones.parallelStream().forEach(producer -> {
+		zones.stream().forEach(producer -> {
 			//Construct a new DemandMap
 			DemandMap d = new FixedSizeDemandMap(zones);
 			//For each attractor
@@ -156,7 +117,7 @@ public class GravityDistributor extends TripDistributor {
 						*pa.getProductions(producer)
 						*attractorWeights[attractor.getOrder()]
 						*pa.getAttractions(attractor)
-						*ff[producer.getOrder()][ attractor.getOrder()];
+						*impedances.getImpedance(producer, attractor);
 				
 				//Check for errors
 				if (Tij.isNaN()) throw new RuntimeException();
@@ -167,8 +128,58 @@ public class GravityDistributor extends TripDistributor {
 			//Store the DemandMap in the new matrix
 			pam.putDemandMap(producer, d);
 		});
-
 		return pam;
+	}
+
+	public void updateAttractorWeights(PAMap pa, ImpedanceMatrix impedances,
+			AtomicBoolean converged) {
+		//For each attractor
+		zones.stream().forEach(j->{
+			
+			//Calculate a new denominator as sum_producers(productions*impedance*a)
+			Double denom = zones.stream()
+					.mapToDouble(x-> 
+					(producerWeights[x.getOrder()] == null? 1.0 : producerWeights[x.getOrder()])
+					*pa.getProductions(x)*impedances.getImpedance(x, j))
+					.sum();
+			
+			//Check for errors
+			if (denom == 0.0 || denom.isNaN()) throw new RuntimeException();
+			
+			//Write a new B value for this attractor
+			Double temp = attractorWeights[j.getOrder()];
+			attractorWeights[j.getOrder()] = 1.0/denom;
+			
+			//If no B value exists yet or this is not within the numerical tolerance of the previous value
+			if (temp == null || !converged(temp, attractorWeights[j.getOrder()])) {
+				converged.set(false);
+			}	
+		});
+	}
+
+	public void updateProducerWeights(PAMap pa, ImpedanceMatrix impedances,
+			AtomicBoolean converged) {
+		//For each producer
+		zones.stream().forEach(i -> {
+			//Calculate a new denominator as sum_attractors(attractions*impedance*b)
+			Double denom = zones.stream()
+					.mapToDouble(x -> 
+					(attractorWeights[x.getOrder()] == null? 1.0 : attractorWeights[x.getOrder()])
+					*pa.getAttractions(x)*impedances.getImpedance(i, x))
+					.sum();
+			
+			//Check for errors
+			if (denom == 0.0 || denom.isNaN()) throw new RuntimeException();
+			
+			//Write a new A value for this producer
+			Double temp = producerWeights[i.getOrder()];
+			producerWeights[i.getOrder()] = 1.0/denom;
+			
+			//If no A value exists yet or this is not within the numerical tolerance of the previous value
+			if (temp == null || !converged(temp, producerWeights[i.getOrder()])) {
+				converged.set(false);
+			}
+		});
 	}
 
 	private Boolean converged(Double a, Double b) {
@@ -178,5 +189,11 @@ public class GravityDistributor extends TripDistributor {
 	@Override
 	public String toString() {
 		return id;
+	}
+
+	@Override
+	public int maxIterations() {
+		// TODO Auto-generated method stub
+		return maxIterations;
 	}
 }

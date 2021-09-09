@@ -27,5 +27,5 @@ package edu.utexas.wrap.demand;
  */
 public interface AggregatePAMatrixProvider {
 
-	AggregatePAMatrix getAggregatePAMatrix();
+	AggregatePAMatrix getAggregatePAMatrix(PAMap map);
 }

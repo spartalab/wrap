@@ -48,7 +48,6 @@ import edu.utexas.wrap.net.FixedSizeNetworkSkim;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
-import edu.utexas.wrap.util.io.SkimFactory;
 import edu.utexas.wrap.util.io.output.FilePassthroughDummyAssigner;
 
 /** A high-level representation of a multi-market, multi-purpose travel demand model. This class 
@@ -64,7 +63,7 @@ import edu.utexas.wrap.util.io.output.FilePassthroughDummyAssigner;
  * @author William
  *
  */
-public class Project implements Runnable {
+public class Project {
 	private final Properties props;
 	private Map<Integer, TravelSurveyZone> zones;
 	private Map<String,NetworkSkim> currentSkims;
@@ -214,8 +213,7 @@ public class Project implements Runnable {
 				.collect(
 						Collectors.toMap(
 								Function.identity(), 
-								id -> new FixedSizeNetworkSkim(id
-										)
+								id -> new FixedSizeNetworkSkim(id, zones.size())
 								)
 						)
 		;
@@ -292,27 +290,27 @@ public class Project implements Runnable {
 	/**
 	 * @param assigners
 	 */
-	private void output(Map<String,Assigner> assigners) {
-		// TODO Auto-generated method stub
-		updateFeedbackSkims(assigners);
-		System.out.println("Printing final skims");
-		currentSkims.entrySet().stream()
-		.filter(entry -> getSkimUpdatable(entry.getKey()))
-		.forEach(
-				entry -> SkimFactory.outputCSV(
-						currentSkims.get(entry.getKey()),
-						Paths.get(getSkimFile(entry.getKey())),
-						zones.values()
-						)
-				);
-		
-		
-		System.out.println("Printing final flows");
-		assigners.forEach((id, assigner) -> {
-			assigner.outputFlows(projDir.resolve(id+"flows.csv"));
-		});
-
-	}
+//	private void output(Map<String,Assigner> assigners) {
+//		// TODO Auto-generated method stub
+//		updateFeedbackSkims(assigners);
+//		System.out.println("Printing final skims");
+//		currentSkims.entrySet().stream()
+//		.filter(entry -> getSkimUpdatable(entry.getKey()))
+//		.forEach(
+//				entry -> SkimFactory.outputCSV(
+//						currentSkims.get(entry.getKey()),
+//						Paths.get(getSkimFile(entry.getKey())),
+//						zones.values()
+//						)
+//				);
+//		
+//		
+//		System.out.println("Printing final flows");
+//		assigners.forEach((id, assigner) -> {
+//			assigner.outputFlows(projDir.resolve(id+"flows.csv"));
+//		});
+//
+//	}
 	
 	/**
 	 *
@@ -325,50 +323,50 @@ public class Project implements Runnable {
 		return projDir;
 	}
 	
-	@Override
-	public void run() {
-		if (markets == null) markets = loadMarkets();
-		
-
-		Map<String,Assigner> assigners = null;
-		
-		for (int i = 0; i < getMaxIterations(); i++) {
-			System.out.println("Beginning feedback iteration "+i);
-			assigners = loadAssigners();
-			
-			//Update skims and redistribute
-			if (i > 0) updateFeedbackSkims(assigners);
-			
-			
-			Collection<Assigner> ac = assigners.values();
-
-			System.out.println("Calculating disaggregated ODProfiles");
-			Stream.concat(
-					markets.parallelStream()
-					.flatMap(market -> market.getODProfiles()),
-					surrogates.parallelStream()
-					.flatMap(dummy -> dummy.getODProfiles())
-					)
-			.forEach(
-					od -> 
-					ac.stream().forEach(assigner -> assigner.process(od))
-					);
-
-			
-			System.out.println("Starting assignment");
-			ac.stream().forEach(Assigner::run);
-			
-
-			
-		}
-		
-		System.out.println("Feedback loop(s) completed");
-		
-		output(assigners);
-		
-		
-		System.out.println("Done");
-	}
+//	@Override
+//	public void run() {
+//		if (markets == null) markets = loadMarkets();
+//		
+//
+//		Map<String,Assigner> assigners = null;
+//		
+//		for (int i = 0; i < getMaxIterations(); i++) {
+//			System.out.println("Beginning feedback iteration "+i);
+//			assigners = loadAssigners();
+//			
+//			//Update skims and redistribute
+//			if (i > 0) updateFeedbackSkims(assigners);
+//			
+//			
+//			Collection<Assigner> ac = assigners.values();
+//
+//			System.out.println("Calculating disaggregated ODProfiles");
+//			Stream.concat(
+//					markets.parallelStream()
+//					.flatMap(market -> market.getODProfiles()),
+//					surrogates.parallelStream()
+//					.flatMap(dummy -> dummy.getODProfiles())
+//					)
+//			.forEach(
+//					od -> 
+//					ac.stream().forEach(assigner -> assigner.process(od))
+//					);
+//
+//			
+//			System.out.println("Starting assignment");
+//			ac.stream().forEach(Assigner::run);
+//			
+//
+//			
+//		}
+//		
+//		System.out.println("Feedback loop(s) completed");
+//		
+//		output(assigners);
+//		
+//		
+//		System.out.println("Done");
+//	}
 
 	public Integer getMaxIterations() {
 		// TODO Auto-generated method stub
@@ -460,7 +458,7 @@ public class Project implements Runnable {
 		props.setProperty("skims."+skimID+".function", skimFunction);
 		props.setProperty("skims."+skimID+".overwrite", updatable.toString());
 		
-		currentSkims.put(skimID,new FixedSizeNetworkSkim(skimID));
+		currentSkims.put(skimID,new FixedSizeNetworkSkim(skimID, zones.size()));
 		
 	}
 

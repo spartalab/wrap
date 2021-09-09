@@ -31,4 +31,6 @@ public interface NetworkSkim {
 
 	public float getCost(TravelSurveyZone producer, TravelSurveyZone attractor);
 	
+	public void putCost(TravelSurveyZone producer, TravelSurveyZone attractor, float cost);
+	
 }

@@ -17,7 +17,7 @@
  */
 package edu.utexas.wrap.demand;
 
-import java.util.stream.Stream;
+import java.util.Collection;
 
 /**This interface defines the origin point of daily ODMatrices;
  * that is, any class which implements this interface must define
@@ -29,5 +29,5 @@ import java.util.stream.Stream;
  */
 public interface DailyODMatrixProvider {
 
-	Stream<ODMatrix> getDailyODMatrices();
+	Collection<ODMatrix> getDailyODMatrices(Collection<ModalPAMatrix> matrices);
 }

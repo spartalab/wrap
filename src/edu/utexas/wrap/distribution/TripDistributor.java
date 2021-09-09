@@ -17,9 +17,10 @@
  */
 package edu.utexas.wrap.distribution;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.PAMap;
-import edu.utexas.wrap.net.NetworkSkim;
 
 /**The second step in the Urban Transportation Modeling System
  * a.k.a. the four-step model, trip distributors use some means to
@@ -31,8 +32,14 @@ import edu.utexas.wrap.net.NetworkSkim;
  * @author William
  *
  */
-public abstract class TripDistributor {
+public interface TripDistributor {
 
-	public abstract AggregatePAMatrix distribute(PAMap pa,NetworkSkim skim);
+	public int maxIterations();
+
+	public void updateProducerWeights(PAMap map, ImpedanceMatrix impedances, AtomicBoolean converged);
+
+	public void updateAttractorWeights(PAMap map, ImpedanceMatrix impedances, AtomicBoolean converged);
+
+	public AggregatePAMatrix constructMatrix(PAMap map, ImpedanceMatrix impedances);
 	
 }

@@ -29,13 +29,7 @@ public class FixedSizeNetworkSkim implements NetworkSkim {
 	
 	float[][] skimData;
 	private String id;
-	/**Construct a fixed skim from pre-existing matrix
-	 * @param skim
-	 */
-	public FixedSizeNetworkSkim(String name) {
-		id = name;
-	}
-	
+
 	/**Create an empty matrix of a given n*n size
 	 * @param numZones the number of zones n whose data will be stored in this skim
 	 */

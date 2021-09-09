@@ -20,8 +20,11 @@ package edu.utexas.wrap.marketsegmentation;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -33,9 +36,12 @@ import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.demand.PAMap;
 import edu.utexas.wrap.demand.containers.FixedMultiplierPassthroughModalPAMatrix;
+import edu.utexas.wrap.distribution.FrictionFactorMap;
+import edu.utexas.wrap.distribution.TripDistributor;
 import edu.utexas.wrap.modechoice.FixedProportionSplitter;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.modechoice.TripInterchangeSplitter;
+import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.PassengerVehicleTripConverter;
 import edu.utexas.wrap.util.TimeOfDaySplitter;
@@ -92,17 +98,17 @@ public class SurrogatePurpose implements Purpose {
 	 *
 	 */
 	@Override
-	public Stream<ODProfile> getODProfiles() {
+	public Collection<ODProfile> getODProfiles(Collection<ODMatrix> matrices) {
 		// TODO Auto-generated method stub
 		switch (props.getProperty("type")) {
 		case "odProfile":
 			return loadProfilesFromFiles();
 		default:
-			return timeOfDaySplitter().split(getDailyODMatrices());
+			return timeOfDaySplitter().split(matrices);
 		}	
 	}
 
-	private Stream<ODProfile> loadProfilesFromFiles() {
+	private Collection<ODProfile> loadProfilesFromFiles() {
 		// TODO Auto-generated method stub
 		return Stream.of(props.getProperty("odProfile.modes").split(","))
 		.map(mode -> Mode.valueOf(mode))
@@ -118,7 +124,8 @@ public class SurrogatePurpose implements Purpose {
 				e.printStackTrace();
 				return null;
 			}
-		});
+		})
+		.collect(Collectors.toSet());
 	}
 	
 	private Map<TimePeriod,Float> getVOTs(Mode mode) {
@@ -164,13 +171,13 @@ public class SurrogatePurpose implements Purpose {
 	 *
 	 */
 	@Override
-	public Stream<ODMatrix> getDailyODMatrices() {
+	public Collection<ODMatrix> getDailyODMatrices(Collection<ModalPAMatrix> matrices) {
 		// TODO Auto-generated method stub
 		switch (props.getProperty("type")){
 		case "odMatrix":
 			throw new RuntimeException("Not yet implemented");
 		default:
-			return vehicleConverter().convert(getModalPAMatrices());
+			return vehicleConverter().convert(matrices);
 		}
 		
 	}
@@ -187,13 +194,13 @@ public class SurrogatePurpose implements Purpose {
 	 *
 	 */
 	@Override
-	public Stream<ModalPAMatrix> getModalPAMatrices() {
+	public Collection<ModalPAMatrix> getModalPAMatrices(AggregatePAMatrix matrix) {
 		// TODO Auto-generated method stub
 		switch (props.getProperty("type")) {
 		case "modalPAMatrix":
 			try {
 				Mode mode = Mode.valueOf(props.getProperty("modalPAMatrix.mode"));
-				return Stream.of(
+				return Set.of(
 						new FixedMultiplierPassthroughModalPAMatrix(mode, 1.0f, 
 								ProductionAttractionFactory.readMatrix(dir.resolve(props.getProperty("modalPAMatrix.file")), false, zones)));
 			} catch (IOException e) {
@@ -201,7 +208,7 @@ public class SurrogatePurpose implements Purpose {
 			}
 			throw new RuntimeException("Not yet implemented");
 		default:
-			return modeSplitter().split(getAggregatePAMatrix());
+			return modeSplitter().split(matrix);
 		}
 		
 	}
@@ -219,7 +226,7 @@ public class SurrogatePurpose implements Purpose {
 	 *
 	 */
 	@Override
-	public AggregatePAMatrix getAggregatePAMatrix() {
+	public AggregatePAMatrix getAggregatePAMatrix(PAMap map) {
 		// TODO Auto-generated method stub
 		switch (props.getProperty("type")) {
 		case "aggPAMatrix":
@@ -306,7 +313,7 @@ public class SurrogatePurpose implements Purpose {
 		case "modalODMatrix":
 			return 0.0;
 		default:
-			AggregatePAMatrix mtx = getAggregatePAMatrix();
+			AggregatePAMatrix mtx = getAggregatePAMatrix(getPAMap());
 			return zones.values().stream()
 					.mapToDouble(
 							orig -> zones.values().stream()
@@ -324,5 +331,29 @@ public class SurrogatePurpose implements Purpose {
 	public Market getMarket() {
 		// TODO Auto-generated method stub
 		return parent;
+	}
+
+	@Override
+	public Collection<TripDistributor> getDistributors() {
+		// TODO Auto-generated method stub
+		return Collections.emptySet();
+	}
+
+	@Override
+	public NetworkSkim getNetworkSkim(TripDistributor distributor) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public FrictionFactorMap getFrictionFunction(TripDistributor distributor) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<TravelSurveyZone> getZones() {
+		// TODO Auto-generated method stub
+		return zones.values();
 	}
 }

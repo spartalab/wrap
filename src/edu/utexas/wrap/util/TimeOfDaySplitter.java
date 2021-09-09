@@ -17,8 +17,9 @@
  */
 package edu.utexas.wrap.util;
 
+import java.util.Collection;
 import java.util.Map;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.demand.ODMatrix;
@@ -35,8 +36,10 @@ public class TimeOfDaySplitter {
 		this.vots = vots;
 	}
 
-	public Stream<ODProfile> split(Stream<ODMatrix> dailyODs) {
-		return dailyODs.map(daily -> new SegmentedODProfile(daily,depRates,new TransposeODMatrix(daily),arrRates, vots));
+	public Collection<ODProfile> split(Collection<ODMatrix> dailyODs) {
+		return dailyODs.stream()
+				.map(daily -> new SegmentedODProfile(daily,depRates,new TransposeODMatrix(daily),arrRates, vots))
+				.collect(Collectors.toSet());
 	}
 
 }

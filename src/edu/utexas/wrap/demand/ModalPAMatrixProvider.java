@@ -17,7 +17,7 @@
  */
 package edu.utexas.wrap.demand;
 
-import java.util.stream.Stream;
+import java.util.Collection;
 
 /**This interface defines the origin point of ModalPAMatrices;
  * that is, any class implementing this interface must provide
@@ -28,6 +28,6 @@ import java.util.stream.Stream;
  */
 public interface ModalPAMatrixProvider {
 	
-	Stream<ModalPAMatrix> getModalPAMatrices();
+	Collection<ModalPAMatrix> getModalPAMatrices(AggregatePAMatrix matrix);
 	
 }

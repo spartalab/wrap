@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -27,6 +28,7 @@ import edu.utexas.wrap.distribution.BasicDistributionWeights;
 import edu.utexas.wrap.distribution.DistributionWeights;
 import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.distribution.GravityDistributor;
+import edu.utexas.wrap.distribution.ImpedanceMatrix;
 import edu.utexas.wrap.distribution.TripDistributor;
 import edu.utexas.wrap.generation.AreaClassGenerationRate;
 import edu.utexas.wrap.generation.ComponentTripGenerator;
@@ -47,7 +49,8 @@ import edu.utexas.wrap.util.TimeOfDaySplitter;
  * 
  * @author William
  *
- */public class BasicPurpose implements Purpose {
+ */
+public class BasicPurpose implements Purpose {
 
 	private final Properties properties;
 	private final Market parent;
@@ -149,16 +152,15 @@ import edu.utexas.wrap.util.TimeOfDaySplitter;
 	
 	private void loadDistributors() {
 		distributors = Stream.of(properties.getProperty("distrib.ids").split(","))
-		.map(id -> new GravityDistributor(id,this,getDistributionScalingFactor(id),
-				getFrictionFunction(id),
+		.map(id -> new GravityDistributor(id,this,getDistributionScalingFactor(id),100,
 				getDistributionWeights(getZoneWeightSource(id))))
 		.collect(Collectors.toSet());
 	}
 	
 
 	
-	private NetworkSkim getNetworkSkim(String distributorID) {
-		return parent.getNetworkSkim(properties.getProperty("distrib."+distributorID+".skim"));
+	public NetworkSkim getNetworkSkim(TripDistributor distributor) {
+		return parent.getNetworkSkim(properties.getProperty("distrib."+distributor.toString()+".skim"));
 	}
 
 
@@ -225,8 +227,8 @@ import edu.utexas.wrap.util.TimeOfDaySplitter;
 
 
 
-	public FrictionFactorMap getFrictionFunction(String distributorID) {
-		return parent.getFrictionFactor(properties.getProperty("distrib."+distributorID+".frictFacts"));
+	public FrictionFactorMap getFrictionFunction(TripDistributor distributor) {
+		return parent.getFrictionFactor(properties.getProperty("distrib."+distributor+".frictFacts"));
 	}
 
 
@@ -307,8 +309,8 @@ import edu.utexas.wrap.util.TimeOfDaySplitter;
 	 *
 	 */
 	@Override
-	public Stream<ODMatrix> getDailyODMatrices() {
-		return vehicleConverter().convert(getModalPAMatrices());
+	public Collection<ODMatrix> getDailyODMatrices(Collection<ModalPAMatrix> matrices) {
+		return vehicleConverter().convert(matrices);
 	}
 
 	/**Instantiate a mode splitter and split the AggregatePAMatrix
@@ -322,8 +324,8 @@ import edu.utexas.wrap.util.TimeOfDaySplitter;
 	 *
 	 */
 	@Override
-	public Stream<ModalPAMatrix> getModalPAMatrices() {
-		return modeSplitter.split(getAggregatePAMatrix());
+	public Collection<ModalPAMatrix> getModalPAMatrices(AggregatePAMatrix matrix) {
+		return modeSplitter.split(matrix);
 	}
 
 	/**Instantiate distribution modules and distribute the model's PAMap, then combine together
@@ -338,12 +340,24 @@ import edu.utexas.wrap.util.TimeOfDaySplitter;
 	 * and {@code distrib.foo.frictFacts}.
 	 */
 	@Override
-	public AggregatePAMatrix getAggregatePAMatrix() {
+	public AggregatePAMatrix getAggregatePAMatrix(PAMap map) {
 		
 		return distributors.stream()
-				.map(distributor -> distributor.distribute(
-						getPAMap(), 
-						getNetworkSkim(distributor.toString())))
+				.map(distributor -> {
+					NetworkSkim currentObservation = getNetworkSkim(distributor);
+					FrictionFactorMap frictionFunction = getFrictionFunction(distributor);
+					ImpedanceMatrix impedances = new ImpedanceMatrix(getZones(),currentObservation,frictionFunction);
+					
+					AtomicBoolean converged = new AtomicBoolean(false);
+					
+					for (int iter = 0; iter < distributor.maxIterations();iter++) {
+						if (converged.get()) break;
+						converged.set(true);
+						distributor.updateProducerWeights(map, impedances,converged);
+						distributor.updateAttractorWeights(map,impedances,converged);
+					}
+					return distributor.constructMatrix(map,impedances);
+				})
 		
 				.collect(new AggregatePAMatrixCollector());
 
@@ -407,8 +421,8 @@ import edu.utexas.wrap.util.TimeOfDaySplitter;
 	 *
 	 */
 	@Override
-	public Stream<ODProfile> getODProfiles() {
-		return todSplitter.split(getDailyODMatrices());
+	public Collection<ODProfile> getODProfiles(Collection<ODMatrix> matrices) {
+		return todSplitter.split(matrices);
 	}
 
 	private Map<TimePeriod,Float> loadVOTs() {
@@ -527,6 +541,14 @@ import edu.utexas.wrap.util.TimeOfDaySplitter;
 	
 	public Collection<TripDistributor> getDistributors() {
 		return distributors;
+	}
+
+
+
+	@Override
+	public Collection<TravelSurveyZone> getZones() {
+		// TODO Auto-generated method stub
+		return zones.values();
 	}
 	
 }

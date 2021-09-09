@@ -17,8 +17,8 @@
  */
 package edu.utexas.wrap.modechoice;
 
-import java.util.stream.Stream;
-
+import java.util.stream.Collectors;
+import java.util.Collection;
 import java.util.Map;
 import edu.utexas.wrap.demand.containers.FixedMultiplierPassthroughModalPAMatrix;
 import edu.utexas.wrap.demand.AggregatePAMatrix;
@@ -49,10 +49,10 @@ public class FixedProportionSplitter implements TripInterchangeSplitter {
 	 *  which is added to a set.
 	 */
 	@Override
-	public Stream<ModalPAMatrix> split(AggregatePAMatrix aggregate) {
-		return map.entrySet().parallelStream()
+	public Collection<ModalPAMatrix> split(AggregatePAMatrix aggregate) {
+		return map.entrySet().stream()
 				.filter(entry -> entry.getValue() > 0)
 				.map(entry -> new FixedMultiplierPassthroughModalPAMatrix(entry.getKey(),entry.getValue(),aggregate)
-		);
+		).collect(Collectors.toSet());
 	}
 }

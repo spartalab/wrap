@@ -17,7 +17,7 @@
  */
 package edu.utexas.wrap.modechoice;
 
-import java.util.stream.Stream;
+import java.util.Collection;
 
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.ModalPAMatrix;
@@ -34,6 +34,6 @@ import edu.utexas.wrap.demand.ModalPAMatrix;
  */
 public interface TripInterchangeSplitter {
 	
-	public Stream<ModalPAMatrix> split(AggregatePAMatrix aggregate);
+	public Collection<ModalPAMatrix> split(AggregatePAMatrix aggregate);
 	
 }

@@ -454,7 +454,7 @@ public class EditPurposeController {
 				} else {
 					distributionBox.setDisable(false);
 					scalingFactorChooser.getEditor().setText(purpose.getDistributionScalingFactor(newValue.toString()).toString());
-					frictionFunction.getSelectionModel().select(purpose.getFrictionFunction(newValue.toString()));
+					frictionFunction.getSelectionModel().select(purpose.getFrictionFunction(newValue));
 					zoneSourceURI.setText(purpose.getZoneWeightSource(newValue.toString()));
 					
 				}

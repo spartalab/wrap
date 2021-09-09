@@ -30,8 +30,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import edu.utexas.wrap.Project;
-import edu.utexas.wrap.demand.ODProfile;
-import edu.utexas.wrap.demand.ODProfileProvider;
 import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.net.BasicDemographic;
 import edu.utexas.wrap.net.Demographic;
@@ -48,7 +46,7 @@ import edu.utexas.wrap.util.io.FrictionFactorFactory;
  * @author William
  *
  */
-public class Market implements ODProfileProvider {
+public class Market {
 	private Properties props;
 	private Map<String,BasicPurpose> basicPurposes;
 	private Collection<SurrogatePurpose> dummyPurposes;
@@ -101,12 +99,12 @@ public class Market implements ODProfileProvider {
 	/**Generate a Stream of ODProfiles for each Purpose associated with this Market
 	 *
 	 */
-	public Stream<ODProfile> getODProfiles() {
-		return Stream.concat(
-				basicPurposes.values().stream(),
-				dummyPurposes.stream())
-				.flatMap(Purpose::getODProfiles);
-	}
+//	public Collection<ODProfile> getODProfiles(Collection<ODMatrix> matrices) {
+//		return Stream.concat(
+//				basicPurposes.values().stream(),
+//				dummyPurposes.stream())
+//				.flatMap(Purpose::getODProfiles);
+//	}
 
 	private Map<String,BasicPurpose> loadBasicPurposes(
 			Map<Integer,TravelSurveyZone> zones

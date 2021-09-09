@@ -17,7 +17,8 @@
  */
 package edu.utexas.wrap.util;
 
-import java.util.stream.Stream;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.demand.ODMatrix;
@@ -27,14 +28,14 @@ import edu.utexas.wrap.demand.containers.ODPassthroughMatrix;
 public class PassengerVehicleTripConverter {
 
 
-	public Stream<ODMatrix> convert(Stream<ModalPAMatrix> modalPAMtxs) {
-		return modalPAMtxs.map(
+	public Collection<ODMatrix> convert(Collection<ModalPAMatrix> modalPAMtxs) {
+		return modalPAMtxs.stream().map(
 				pa -> new ODPassthroughMatrix(
 						new FixedMultiplierPassthroughModalPAMatrix(
 								1.0/pa.getMode().occupancy(), 
 								pa)
 						)
-				);
+				).collect(Collectors.toSet());
 	}
 
 }

@@ -4,7 +4,9 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import edu.utexas.wrap.Project;
+import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.marketsegmentation.MarketRunner;
+import edu.utexas.wrap.util.io.SkimLoader;
 import edu.utexas.wrap.marketsegmentation.PurposeRunner;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -18,9 +20,10 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
-import javafx.scene.control.TreeTableColumn.CellDataFeatures;
 import javafx.scene.control.TreeTableView;
+import javafx.scene.control.cell.ProgressBarTableCell;
 import javafx.scene.control.cell.ProgressBarTreeTableCell;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TreeItemPropertyValueFactory;
 import javafx.util.Callback;
 
@@ -39,13 +42,13 @@ public class RunnerController extends Task<Integer> {
 	private ProgressBar marketProgress;
 
 	@FXML
-	private TreeTableView<Task<Double>> marketTable;
+	private TreeTableView<Task<Collection<ODProfile>>> marketTable;
 
 	@FXML
-	private TreeTableColumn<Task<Double>, String> IDColumn;
+	private TreeTableColumn<Task<Collection<ODProfile>>, String> IDColumn;
 
 	@FXML
-	private TreeTableColumn<Task<Double>, Double> marketProgressColumn;
+	private TreeTableColumn<Task<Collection<ODProfile>>, Double> marketProgressColumn;
 
 	@FXML
 	private ProgressBar assignerProgress;
@@ -66,19 +69,19 @@ public class RunnerController extends Task<Integer> {
 	private ProgressBar skimProgress;
 
 	@FXML
-	private TableView<?> skimTable;
+	private TableView<Task<Void>> skimTable;
 
 	@FXML
-	private TableColumn<?, ?> skimIDColumn;
+	private TableColumn<Task<Void>, String> skimIDColumn;
 
 	@FXML
-	private TableColumn<?, ?> skimProgressColumn;
+	private TableColumn<Task<Void>, Double> skimProgressColumn;
 	
 	private Project project;
 	
 	private Collection<MarketRunner> marketRunners;
 	
-	private TreeItem<Task<Double>> marketRoot;
+	private TreeItem<Task<Collection<ODProfile>>> marketRoot;
 	
 	private SimpleIntegerProperty completedMarketCount;
 	
@@ -97,35 +100,51 @@ public class RunnerController extends Task<Integer> {
 		marketProgress.progressProperty().bind(completedMarketCount.divide((double) project.getMarkets().size()));
 
 		marketTable.setShowRoot(false);
-		IDColumn.setCellValueFactory(new Callback<CellDataFeatures<Task<Double>,String>,ObservableValue<String>>(){
+		IDColumn.setCellValueFactory(new Callback<TreeTableColumn.CellDataFeatures<Task<Collection<ODProfile>>,String>,ObservableValue<String>>(){
 
 			@Override
-			public ObservableValue<String> call(CellDataFeatures<Task<Double>, String> arg0) {
+			public ObservableValue<String> call(TreeTableColumn.CellDataFeatures<Task<Collection<ODProfile>>, String> arg0) {
 				// TODO Auto-generated method stub
 				return new ReadOnlyObjectWrapper<String>(arg0.getValue().getValue().toString());
 			}
 			
 		});
 		
-		marketProgressColumn.setCellValueFactory(new TreeItemPropertyValueFactory<Task<Double>, Double>("progress"));
-		marketProgressColumn.setCellFactory(ProgressBarTreeTableCell.<Task<Double>>forTreeTableColumn());
-	
+		marketProgressColumn.setCellValueFactory(new TreeItemPropertyValueFactory<Task<Collection<ODProfile>>, Double>("progress"));
+		marketProgressColumn.setCellFactory(ProgressBarTreeTableCell.<Task<Collection<ODProfile>>>forTreeTableColumn());
 		
-		
-		marketRoot = new TreeItem<Task<Double>>();
+		marketRoot = new TreeItem<Task<Collection<ODProfile>>>();
 		marketRoot.setExpanded(true);
 		
-		
 		marketTable.setRoot(marketRoot);
+		
+		
+		
+		project.getSkims().forEach(skim -> skimTable.getItems().add(new SkimLoader(skim,project.getDirectory().resolve(project.getSkimFile(skim.toString())),project.getZones())));
+		skimIDColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Task<Void>,String>,ObservableValue<String>>(){
 
+			@Override
+			public ObservableValue<String> call(TableColumn.CellDataFeatures<Task<Void>, String> arg0) {
+				// TODO Auto-generated method stub
+				return new ReadOnlyObjectWrapper<String>(arg0.getValue().toString());
+			}
+			
+		});
+		
+		skimProgressColumn.setCellValueFactory(new PropertyValueFactory<Task<Void>,Double>("progress"));
+		skimProgressColumn.setCellFactory(ProgressBarTableCell.<Task<Void>>forTableColumn());
 	}
 
 
 	@Override
 	protected Integer call() throws Exception {
-		// TODO Auto-generated method stub
+		//TODO load surrogate data
 		updateProgress(0,project.getMaxIterations());
 		updateValue(1);
+		
+		// load initial skims from source
+		skimTable.getItems().parallelStream().forEach(Task::run);
+		
 		
 		for (int i = 1; i < project.getMaxIterations()+1;i++) {
 			
@@ -137,7 +156,7 @@ public class RunnerController extends Task<Integer> {
 			project.getMarkets().forEach(market -> {
 				MarketRunner marketRunner = new MarketRunner(market,this);
 				marketRunners.add(marketRunner);
-				TreeItem<Task<Double>> marketItem = new TreeItem<Task<Double>>(marketRunner);
+				TreeItem<Task<Collection<ODProfile>>> marketItem = new TreeItem<Task<Collection<ODProfile>>>(marketRunner);
 				
 				
 				
@@ -146,15 +165,33 @@ public class RunnerController extends Task<Integer> {
 				market.getPurposes().forEach(purpose -> {
 					PurposeRunner purposeRunner = new PurposeRunner(purpose, marketRunner);
 					marketRunner.attach(purposeRunner);
-					TreeItem<Task<Double>> purposeItem = new TreeItem<Task<Double>>(purposeRunner);
+					TreeItem<Task<Collection<ODProfile>>> purposeItem = new TreeItem<Task<Collection<ODProfile>>>(purposeRunner);
 					marketItem.getChildren().add(purposeItem);
 				});
 			});
 			
-			//TODO run the subthreads
+			// run the subthreads to get market OD profiles
 			marketRunners.parallelStream().forEach(Task::run);
 			
+			marketRunners.stream().forEach(t -> {
+				try {
+					t.wait();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			});
+
+			if (isCancelled()) {
+				break;
+			}
+			//TODO run subthreads for assigners
 			
+			
+			if (isCancelled()) {
+				break;
+			}
+			//TODO run subthreads for updating skims
 
 			Thread.sleep(1);
 			updateValue(i+1);

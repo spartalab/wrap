@@ -17,7 +17,7 @@
  */
 package edu.utexas.wrap.demand;
 
-import java.util.stream.Stream;
+import java.util.Collection;
 
 /**This interface defines the origin point for ODProfiles;
  * that is, any class implementing this interface must
@@ -28,5 +28,5 @@ import java.util.stream.Stream;
  */
 public interface ODProfileProvider {
 
-	public Stream<ODProfile> getODProfiles();
+	public Collection<ODProfile> getODProfiles(Collection<ODMatrix> matrices);
 }

@@ -17,11 +17,17 @@
  */
 package edu.utexas.wrap.marketsegmentation;
 
+import java.util.Collection;
+
 import edu.utexas.wrap.demand.AggregatePAMatrixProvider;
 import edu.utexas.wrap.demand.DailyODMatrixProvider;
 import edu.utexas.wrap.demand.ModalPAMatrixProvider;
 import edu.utexas.wrap.demand.ODProfileProvider;
 import edu.utexas.wrap.demand.PAMapProvider;
+import edu.utexas.wrap.distribution.FrictionFactorMap;
+import edu.utexas.wrap.distribution.TripDistributor;
+import edu.utexas.wrap.net.NetworkSkim;
+import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**An interface for providing a full implementation of the UTMS
  * 
@@ -46,5 +52,13 @@ public interface Purpose extends
 	public double personTrips();
 
 	public Market getMarket();
+
+	public Collection<TripDistributor> getDistributors();
+
+	public NetworkSkim getNetworkSkim(TripDistributor distributor);
+
+	public FrictionFactorMap getFrictionFunction(TripDistributor distributor);
+
+	public Collection<TravelSurveyZone> getZones();
 };
 
