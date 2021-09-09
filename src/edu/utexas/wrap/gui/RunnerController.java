@@ -2,12 +2,17 @@ package edu.utexas.wrap.gui;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import edu.utexas.wrap.Project;
+import edu.utexas.wrap.assignment.Assigner;
 import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.marketsegmentation.MarketRunner;
 import edu.utexas.wrap.util.io.SkimLoader;
 import edu.utexas.wrap.marketsegmentation.PurposeRunner;
+import edu.utexas.wrap.net.Graph;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -17,6 +22,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableColumn.CellDataFeatures;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeTableColumn;
@@ -54,16 +60,16 @@ public class RunnerController extends Task<Integer> {
 	private ProgressBar assignerProgress;
 
 	@FXML
-	private TableView<?> assignerTable;
+	private TableView<Task<Graph>> assignerTable;
 
 	@FXML
-	private TableColumn<?, ?> assignerIDColumn;
+	private TableColumn<Task<Graph>, String> assignerIDColumn;
 
 	@FXML
-	private TableColumn<?, ?> assignerStageColumn;
+	private TableColumn<Task<Graph>, String> assignerStageColumn;
 
 	@FXML
-	private TableColumn<?, ?> assignerProgressColumn;
+	private TableColumn<Task<Graph>, Double> assignerProgressColumn;
 
 	@FXML
 	private ProgressBar skimProgress;
@@ -80,6 +86,8 @@ public class RunnerController extends Task<Integer> {
 	private Project project;
 	
 	private Collection<MarketRunner> marketRunners;
+	
+	
 	
 	private TreeItem<Task<Collection<ODProfile>>> marketRoot;
 	
@@ -133,6 +141,20 @@ public class RunnerController extends Task<Integer> {
 		
 		skimProgressColumn.setCellValueFactory(new PropertyValueFactory<Task<Void>,Double>("progress"));
 		skimProgressColumn.setCellFactory(ProgressBarTableCell.<Task<Void>>forTableColumn());
+		
+		
+		assignerIDColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Task<Graph>, String>, ObservableValue<String>>(){
+
+			@Override
+			public ObservableValue<String> call(CellDataFeatures<Task<Graph>, String> arg0) {
+				// TODO Auto-generated method stub
+				return new ReadOnlyObjectWrapper<String>(arg0.getValue().toString());
+			}
+			
+		});
+		assignerStageColumn.setCellValueFactory(new PropertyValueFactory<Task<Graph>,String>("message"));
+		assignerProgressColumn.setCellValueFactory(new PropertyValueFactory<Task<Graph>,Double>("progress"));
+		assignerProgressColumn.setCellFactory(ProgressBarTableCell.<Task<Graph>>forTableColumn());
 	}
 
 
@@ -173,19 +195,39 @@ public class RunnerController extends Task<Integer> {
 			// run the subthreads to get market OD profiles
 			marketRunners.parallelStream().forEach(Task::run);
 			
-			marketRunners.stream().forEach(t -> {
+			Collection<ODProfile> profiles = marketRunners.stream().flatMap(t -> {
 				try {
-					t.wait();
+					return t.get().stream();
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+					return Stream.empty();
+				} catch (ExecutionException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					return Stream.empty();
 				}
-			});
+			}).collect(Collectors.toSet());
+			
+			System.out.println("Number of OD Profiles: "+profiles.size());
 
+			
+			
 			if (isCancelled()) {
 				break;
 			}
 			//TODO run subthreads for assigners
+			Collection<Assigner> assigners = project.getAssigners();
+			
+			assigners.parallelStream().forEach(assigner ->{
+				AssignerRunner assignerRunner = new AssignerRunner(assigner,this);
+				profiles.stream().forEach(profile -> assigner.process(profile));
+				assignerTable.getItems().add(assignerRunner);
+				
+				assignerRunner.run();
+				
+			});
+			
 			
 			
 			if (isCancelled()) {

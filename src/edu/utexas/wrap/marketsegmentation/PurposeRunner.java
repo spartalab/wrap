@@ -43,13 +43,14 @@ public class PurposeRunner extends Task<Collection<ODProfile>> {
 		PAMap map = purpose.getPAMap();
 		updateProgress(1,maxSteps);
 		
-		
+		if (isCancelled()) return null;
 		AtomicInteger completedSteps = new AtomicInteger(0);
 		
 		this.updateMessage("Modeling trip geographic distribution");
 
-		
-		AggregatePAMatrix aggregate = distributors.parallelStream().map(distributor -> {
+		AggregatePAMatrix aggregate;
+		if (distributors.size() == 0) aggregate = purpose.getAggregatePAMatrix(map);
+		else aggregate = distributors.parallelStream().map(distributor -> {
 			NetworkSkim currentObservation = purpose.getNetworkSkim(distributor);
 			FrictionFactorMap frictionFunction = purpose.getFrictionFunction(distributor);
 			ImpedanceMatrix impedances = new ImpedanceMatrix(purpose.getZones(),currentObservation,frictionFunction);
@@ -57,7 +58,7 @@ public class PurposeRunner extends Task<Collection<ODProfile>> {
 			AtomicBoolean converged = new AtomicBoolean(false);
 			
 			for (int iter = 0; iter < distributor.maxIterations();iter++) {
-				if (converged.get()) break;
+				if (converged.get() || isCancelled()) break;
 				converged.set(true);
 				distributor.updateProducerWeights(map, impedances,converged);
 				distributor.updateAttractorWeights(map,impedances,converged);

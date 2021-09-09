@@ -54,17 +54,7 @@ public class MarketRunner extends Task<Collection<ODProfile>> {
 		purposeRunners.parallelStream().forEach(Task::run);
 		Thread.sleep(1);
 		
-		purposeRunners.stream()
-		.forEach(t -> {
-			try {
-				t.wait();
-			} catch (InterruptedException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
-			}
-		});		
 		
-		System.out.println(market.toString());
 		return purposeRunners.stream().flatMap(runner -> { try {
 			return runner.get().stream();
 		} catch (ExecutionException e) {

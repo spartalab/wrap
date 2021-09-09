@@ -186,11 +186,11 @@ public class Project {
 	 * 
 	 * @return a Map from an Assigner's id to newly-generated instance.
 	 */
-	private Map<String,Assigner> loadAssigners(){
-		System.out.println("Reading Assigner configurations");
+	public Collection<Assigner> getAssigners(){
 
 		return getAssignerIDs().stream()
-		.collect(Collectors.toMap(Function.identity(), id -> initializeAssigner(id)));
+				.map(id -> initializeAssigner(id))
+		.collect(Collectors.toSet());
 	}
 	
 	/**Read a list of NetworkSkim ids from the Project Properties, then load the
@@ -542,4 +542,5 @@ public class Project {
 		// TODO Auto-generated method stub
 		return currentSkims.get(skimID);
 	}
+
 }

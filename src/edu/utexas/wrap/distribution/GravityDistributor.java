@@ -29,7 +29,6 @@ import edu.utexas.wrap.demand.containers.FixedSizeAggregatePAMatrix;
 import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.marketsegmentation.Purpose;
 import edu.utexas.wrap.net.TravelSurveyZone;
-import javafx.concurrent.Task;
 
 /**A trip distribution class that uses the traditional gravity
  * model to calculate trips. Given a friction factor map, this

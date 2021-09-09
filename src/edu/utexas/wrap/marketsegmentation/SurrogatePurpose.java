@@ -252,7 +252,7 @@ public class SurrogatePurpose implements Purpose {
 	@Override
 	public PAMap getPAMap() {
 		// TODO Auto-generated method stub
-		throw new RuntimeException("Not yet implemented");
+		return null;
 	}
 	
 	private Map<Mode,Float> modeShares(){
