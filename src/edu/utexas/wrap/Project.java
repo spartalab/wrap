@@ -23,6 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -376,6 +377,10 @@ public class Project {
 		// TODO Auto-generated method stub
 		return Integer.parseInt(props.getProperty("feedbackIters","1"));
 	}
+	
+	public void setMaxIterations(Integer numIterations) {
+		props.setProperty("feedbackIters", numIterations.toString());
+	}
 
 	public List<String> getSkimIDs() {
 		// TODO Auto-generated method stub
@@ -545,6 +550,11 @@ public class Project {
 	public NetworkSkim getNetworkSkim(String skimID) {
 		// TODO Auto-generated method stub
 		return currentSkims.get(skimID);
+	}
+
+	public void writeProperties() throws IOException {
+		// TODO Auto-generated method stub
+		props.store(Files.newOutputStream(projDir.resolve(name), StandardOpenOption.WRITE, StandardOpenOption.CREATE), null);
 	}
 
 }

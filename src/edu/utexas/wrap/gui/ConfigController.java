@@ -311,6 +311,7 @@ public class ConfigController {
 			public void changed(ObservableValue<? extends Integer> arg0, Integer oldValue, Integer newValue) {
 				if (currentProject != null && newValue != currentProject.getMaxIterations()) {
 					//TODO modify project to reflect new maxIteration value
+					currentProject.setMaxIterations(newValue);
 					markChanged();
 				}
 			}
@@ -515,7 +516,15 @@ public class ConfigController {
 	private boolean saveModel(Event e) {
 		if (unsavedChanges) {
 			//TODO write project to file
-			markUnchanged();
+			try {
+				currentProject.writeProperties();
+				markUnchanged();
+				return true;
+			} catch (IOException ex) {
+				ex.printStackTrace();
+				return false;
+			}
+			
 		}
 		return true;
 	}
@@ -1223,13 +1232,14 @@ public class ConfigController {
 		// TODO Auto-generated method stub
 		try {
 			currentProject = new Project(Paths.get(parameters.getRaw().get(0)));
+			loadModel(null);
 		} catch (NullPointerException | IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 //		currentProject.loadPropsFromFile();
 
-		loadModel(null);
+		
 	}
 	
 	public void runModel() {

@@ -530,9 +530,15 @@ public class EditPurposeController {
 	private boolean savePurpose(Event e) {
 		if (unsavedChanges) {
 			//TODO
-			return true;
+			try {
+				purpose.writeProperties();
+				return true;
+			} catch (IOException ex) {
+				ex.printStackTrace();
+				return false;
+			}
 		}
-		return  true;
+		return true;
 	}
 
 	private void markChanged() {
@@ -548,17 +554,20 @@ public class EditPurposeController {
 
 	@FXML
 	void scaleAttrsToProds(ActionEvent event) {
+		if (!purpose.getBalancingMethod().equals("attrProportional")) markChanged();
 		purpose.setBalancingMethod("attrProportional");
 	}
 
 	@FXML
 	void scaleProdsToAttrs(ActionEvent event) {
+		if (!purpose.getBalancingMethod().equals("prodProportional")) markChanged();
 		purpose.setBalancingMethod("prodProportional");
 	}
 
 	@FXML
 	void setBasicAttrDemo(ActionEvent event) {
 		//TODO mark changed
+		if (!purpose.getAttractorDemographicType().equals("basic")) markChanged();
 		purpose.setAttractorDemographicType("basic");
 		attrSourceDemo.setDisable(false);
 		attrSourceDemo.getItems().clear();
@@ -571,6 +580,7 @@ public class EditPurposeController {
 	@FXML
 	void setBasicProdDemo(ActionEvent event) {
 		//TODO mark changed
+		if (!purpose.getProducerDemographicType().equals("basic")) markChanged();
 		purpose.setProducerDemographicType("basic");
 		prodSourceDemo.setDisable(false);
 		prodSourceDemo.getItems().clear();
@@ -593,6 +603,7 @@ public class EditPurposeController {
 	@FXML
 	void setProportionalAttrDemo(ActionEvent event) {
 		//TODO mark changed
+		if (!purpose.getAttractorDemographicType().equals("attrProportional")) markChanged();
 		purpose.setAttractorDemographicType("attrProportional");
 		attrSourceDemo.setDisable(false);
 		attrSourceDemo.getItems().clear();
@@ -606,6 +617,7 @@ public class EditPurposeController {
 	@FXML
 	void setProportionalProdDemo(ActionEvent event) {
 		//TODO mark changed
+		if (!purpose.getProducerDemographicType().equals("prodProportional")) markChanged();
 		purpose.setProducerDemographicType("prodProportional");
 		prodSourceDemo.setDisable(false);
 		prodSourceDemo.getItems().clear();

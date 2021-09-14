@@ -276,7 +276,13 @@ public class EditMarketController {
 	private boolean saveMarket(Event e) {
 		if (unsavedChanges) {
 			//TODO
-			return true;
+			try{
+				market.writeProperties();
+				return true;
+			} catch (IOException ex) {
+				ex.printStackTrace();
+				return false;
+			}
 		}
 		return true;
 	}
@@ -285,7 +291,7 @@ public class EditMarketController {
 	private void saveAndExit(ActionEvent e) {
 		try{ 
 			if (saveMarket(e)) {
-				market.reloadProperties();
+				market.loadProperties();
 				closeWindow(e);
 			}
 		} catch (IOException except) {
@@ -309,17 +315,17 @@ public class EditMarketController {
 	
 	protected void exit(Event arg0) {
 
-//		try {
+		try {
 			if (!promptToSaveChanges(arg0)) {
 				arg0.consume();
 				return;
 			}
-//			market.reloadProperties();
+			market.loadProperties();
 			closeWindow(arg0);
-//		} catch (IOException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		
 	}

@@ -5,6 +5,7 @@ package edu.utexas.wrap.marketsegmentation;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
@@ -96,6 +97,10 @@ public class BasicPurpose implements Purpose {
 		loadModeSplitter();
 		loadTimeOfDaySplitter();
 		loadBalancer();
+	}
+	
+	public void writeProperties() throws IOException {
+		properties.store(Files.newOutputStream(source, StandardOpenOption.WRITE, StandardOpenOption.CREATE), null);
 	}
 
 	private void loadProductionRates() {

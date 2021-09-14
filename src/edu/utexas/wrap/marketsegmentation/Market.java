@@ -20,6 +20,7 @@ package edu.utexas.wrap.marketsegmentation;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
@@ -61,7 +62,7 @@ public class Market {
 		source = marketFile;
 		this.parent = parent;
 		props = new Properties();
-		reloadProperties();
+		loadProperties();
 
 	}
 
@@ -73,7 +74,7 @@ public class Market {
 		dummyPurposes = loadSurrogatePurposes(zoneIDs);
 	}
 
-	public void reloadProperties() throws IOException {
+	public void loadProperties() throws IOException {
 		props.clear();
 		props.load(Files.newInputStream(source));
 		loadData();
@@ -326,5 +327,10 @@ public class Market {
 	
 	public Collection<Purpose> getPurposes() {
 		return Stream.concat(basicPurposes.values().stream(),dummyPurposes.stream()).collect(Collectors.toSet());
+	}
+
+	public void writeProperties() throws IOException {
+		// TODO Auto-generated method stub
+		props.store(Files.newOutputStream(source, StandardOpenOption.WRITE,StandardOpenOption.CREATE), null);
 	}
 }
