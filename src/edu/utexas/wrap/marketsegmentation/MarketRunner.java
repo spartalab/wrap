@@ -10,6 +10,9 @@ import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.gui.RunnerController;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
+import javafx.fxml.FXML;
 
 public class MarketRunner extends Task<Collection<ODProfile>> {
 	
@@ -23,6 +26,19 @@ public class MarketRunner extends Task<Collection<ODProfile>> {
 		this.market = market;
 		this.parent = parent;
 		purposeRunners = new HashSet<PurposeRunner>();
+	}
+	
+	@FXML
+	private void initialize() {
+		setOnCancelled(new EventHandler<WorkerStateEvent>() {
+
+			@Override
+			public void handle(WorkerStateEvent arg0) {
+				// TODO Auto-generated method stub
+				purposeRunners.forEach(Task::cancel);
+			}
+			
+		});
 	}
 
 	

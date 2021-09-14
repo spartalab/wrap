@@ -36,6 +36,7 @@ public class SkimLoader extends Task<Void> {
 		// TODO Auto-generated method stub
 		try (BufferedReader reader = Files.newBufferedReader(skimCSV)) {
 			reader.lines().forEach(line ->{
+				if (isCancelled()) return;
 				String[] args = line.split(",");
 				skim.putCost(
 						zones.get(Integer.parseInt(args[0])), 

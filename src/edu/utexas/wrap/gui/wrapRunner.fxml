@@ -17,7 +17,7 @@
    <children>
       <ToolBar minHeight="-Infinity" nodeOrientation="RIGHT_TO_LEFT" prefHeight="30.0" prefWidth="200.0" VBox.vgrow="NEVER">
         <items>
-          <Button mnemonicParsing="false" text="Stop" />
+          <Button mnemonicParsing="false" onAction="#cancel" text="Stop" />
         </items>
       </ToolBar>
       <VBox minHeight="-Infinity" prefHeight="600.0" VBox.vgrow="ALWAYS">
@@ -53,7 +53,7 @@
             <TreeTableView fx:id="marketTable" prefHeight="200.0" prefWidth="200.0" sortMode="ONLY_FIRST_LEVEL" VBox.vgrow="ALWAYS">
               <columns>
                 <TreeTableColumn fx:id="IDColumn" editable="false" minWidth="100.0" prefWidth="100.0" text="Market ID" />
-                <TreeTableColumn fx:id="marketProgressColumn" editable="false" minWidth="500.0" prefWidth="500.0" resizable="false" text="Progress" />
+                <TreeTableColumn fx:id="marketProgressColumn" editable="false" maxWidth="-1.0" minWidth="500.0" prefWidth="-1.0" resizable="false" text="Progress" />
               </columns>
                <VBox.margin>
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -74,7 +74,7 @@
               <columns>
                 <TableColumn fx:id="assignerIDColumn" editable="false" minWidth="100.0" prefWidth="100.0" resizable="false" text="Assigner ID" />
                 <TableColumn fx:id="assignerStageColumn" editable="false" maxWidth="-Infinity" minWidth="100.0" prefWidth="100.0" resizable="false" text="Stage" />
-                  <TableColumn fx:id="assignerProgressColumn" editable="false" maxWidth="-Infinity" minWidth="400.0" prefWidth="400.0" resizable="false" text="Progress" />
+                  <TableColumn fx:id="assignerProgressColumn" editable="false" maxWidth="-1.0" minWidth="400.0" prefWidth="-1.0" resizable="false" text="Progress" />
               </columns>
                <VBox.margin>
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
@@ -94,7 +94,7 @@
             <TableView fx:id="skimTable" layoutX="15.0" layoutY="97.0" minHeight="-Infinity" prefHeight="100.0" prefWidth="200.0" VBox.vgrow="NEVER">
                <columns>
                   <TableColumn fx:id="skimIDColumn" editable="false" minWidth="100.0" prefWidth="100.0" resizable="false" text="Skim ID" />
-                  <TableColumn fx:id="skimProgressColumn" editable="false" maxWidth="-Infinity" minWidth="500.0" prefWidth="500.0" resizable="false" text="Progress" />
+                  <TableColumn fx:id="skimProgressColumn" editable="false" maxWidth="-1.0" minWidth="500.0" prefWidth="-1.0" resizable="false" text="Progress" />
                </columns>
                <VBox.margin>
                   <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />

@@ -18,6 +18,8 @@ import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressBar;
@@ -155,6 +157,19 @@ public class RunnerController extends Task<Integer> {
 		assignerStageColumn.setCellValueFactory(new PropertyValueFactory<Task<Graph>,String>("message"));
 		assignerProgressColumn.setCellValueFactory(new PropertyValueFactory<Task<Graph>,Double>("progress"));
 		assignerProgressColumn.setCellFactory(ProgressBarTableCell.<Task<Graph>>forTableColumn());
+		
+		
+		setOnCancelled(new EventHandler<WorkerStateEvent>() {
+
+			@Override
+			public void handle(WorkerStateEvent arg0) {
+				// TODO Auto-generated method stub
+				marketRunners.forEach(Task::cancel);
+				skimTable.getItems().forEach(Task::cancel);
+				assignerTable.getItems().forEach(Task::cancel);
+			}
+			
+		});
 	}
 
 
