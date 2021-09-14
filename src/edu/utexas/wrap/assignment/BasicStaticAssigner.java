@@ -34,6 +34,7 @@ import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.assignment.bush.Bush;
@@ -62,6 +63,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	private AssignmentInitializer<C> initializer;
 	private Map<ODMatrix,Float> disaggregatedMtxs;
 	private Collection<C> containers;
+	private final Collection<Mode> modes;
 	private double threshold;
 	private final int maxIterations;
 	private final Graph network;
@@ -74,6 +76,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 			AssignmentEvaluator<C> evaluator,
 			AssignmentOptimizer<C> optimizer,
 			AssignmentInitializer<C> initializer,
+			Collection<Mode> modes,
 			double threshold,
 			int maxIterations,
 			Graph network,
@@ -87,6 +90,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		this.maxIterations = maxIterations;
 		this.network = network;
 		this.tp = tp;
+		this.modes = modes;
 		disaggregatedMtxs = new HashMap<ODMatrix,Float>();
 
 	}
@@ -200,9 +204,9 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 			throw new RuntimeException("Not yet implemented");
 		}
 
+		Collection<Mode> modes = Stream.of(props.getProperty("modes").split(",")).map(mode -> Mode.valueOf(mode)).collect(Collectors.toSet());
 
-
-		return new BasicStaticAssigner<Bush>(name, evaluator, optimizer, initializer, threshold, maxIterations, network, tp);
+		return new BasicStaticAssigner<Bush>(name, evaluator, optimizer, initializer, modes, threshold, maxIterations, network, tp);
 	}
 
 	public void iterate() {
@@ -245,6 +249,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 				);
 		
 		return disaggregatedMtxs.entrySet().stream()
+				.filter(entry -> modes.contains(getMode(entry.getKey())))
 		//aggregate matrices into a mapping based on aggregate mode and value of time, then store in a set
 		.collect(						
 				Collectors.groupingBy(Map.Entry::getValue,
