@@ -58,7 +58,6 @@ public class FilePassthroughDummyAssigner implements StaticAssigner {
 		this.zones = zones.values();
 	}
 
-	@Override
 	public void run() {
 		System.out.println("Aggregating ODMatrices");
 
@@ -147,5 +146,29 @@ public class FilePassthroughDummyAssigner implements StaticAssigner {
 	public void outputFlows(Path outputFile) {
 		// TODO Auto-generated method stub
 		throw new RuntimeException("Not yet implemented");
+	}
+
+	@Override
+	public void initialize() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean isConverged() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void iterate() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public double getProgress() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

@@ -74,7 +74,6 @@ public class StreamPassthroughAssigner implements StaticAssigner {
 		
 	}
 
-	@Override
 	public void run() {
 		try {
 			System.out.println("Aggregating ODMatrices");
@@ -144,5 +143,29 @@ public class StreamPassthroughAssigner implements StaticAssigner {
 	public void outputFlows(Path outputFile) {
 		// TODO Auto-generated method stub
 		throw new RuntimeException("Not yet implemented");
+	}
+
+	@Override
+	public void initialize() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean isConverged() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void iterate() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public double getProgress() {
+		// TODO Auto-generated method stub
+		return 0;
 	}
 }

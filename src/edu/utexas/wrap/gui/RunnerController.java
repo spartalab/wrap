@@ -220,7 +220,7 @@ public class RunnerController extends Task<Integer> {
 			Collection<Assigner> assigners = project.getAssigners();
 			
 			assigners.parallelStream().forEach(assigner ->{
-				AssignerRunner assignerRunner = new AssignerRunner(assigner,this);
+				AssignerRunner assignerRunner = new AssignerRunner(assigner);
 				profiles.stream().forEach(profile -> assigner.process(profile));
 				assignerTable.getItems().add(assignerRunner);
 				

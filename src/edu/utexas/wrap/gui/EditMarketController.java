@@ -309,17 +309,17 @@ public class EditMarketController {
 	
 	protected void exit(Event arg0) {
 
-		try {
+//		try {
 			if (!promptToSaveChanges(arg0)) {
 				arg0.consume();
 				return;
 			}
-			market.reloadProperties();
+//			market.reloadProperties();
 			closeWindow(arg0);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+//		} catch (IOException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
 		
 		
 	}

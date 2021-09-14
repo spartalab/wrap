@@ -6,17 +6,29 @@ import javafx.concurrent.Task;
 
 public class AssignerRunner extends Task<Graph> {
 	private Assigner assigner;
-	private RunnerController parent;
 
-	public AssignerRunner(Assigner assigner, RunnerController runnerController) {
+	public AssignerRunner(Assigner assigner) {
 		// TODO Auto-generated constructor stub
 		this.assigner = assigner;
-		this.parent = runnerController;
 	}
 
 	@Override
 	protected Graph call() throws Exception {
 		// TODO Auto-generated method stub
+		
+		assigner.initialize();
+		updateMessage("Evaluating");
+		updateProgress(assigner.getProgress(),1);
+		
+		while (!assigner.isConverged()) {
+			updateMessage("Iterating");
+			assigner.iterate();
+			
+			updateMessage("Evaluating");
+			updateProgress(assigner.getProgress(),1);
+		}
+		
+		
 		return null;
 	}
 	

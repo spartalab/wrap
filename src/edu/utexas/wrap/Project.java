@@ -71,6 +71,7 @@ public class Project {
 	private String name;
 	private Collection<Market> markets;
 	private Collection<SurrogatePurpose> surrogates;
+	private Map<String,Assigner> assigners;
 	
 	/**Project constructor from a Properties file (*.wrp)
 	 * @param projFile the location of a Project Properties (*.wrp) file
@@ -84,8 +85,9 @@ public class Project {
 			loadPropsFromFile();
 			loadZones();
 			loadInitialSkims();
-			markets = loadMarkets();
-			surrogates = loadDummyPurposes();
+			loadMarkets();
+			loadSurrogatePurposes();
+			loadAssigners();
 		} catch (NoSuchFileException e) {
 			if (currentSkims == null) currentSkims = new HashMap<String,NetworkSkim>();
 		}
@@ -123,14 +125,14 @@ public class Project {
 	 * 
 	 * @return a Collection of initialized Markets read from files
 	 */
-	private Collection<Market> loadMarkets(){
+	private void loadMarkets(){
 
 		String projNames = props.getProperty("markets.ids");
 		
 		if (projNames == null) 
-			return Collections.emptySet();
+			markets = Collections.emptySet();
 		
-		else return 
+		else markets = 
 				Stream.of(projNames.split(","))
 				.map(name -> {
 					try {
@@ -149,18 +151,21 @@ public class Project {
 	}
 	
 	public Collection<Market> getMarkets(){
-		if (markets == null) markets = loadMarkets();
 		return markets;
+	}
+	
+	public Collection<Assigner> getAssigners(){
+		return assigners.values();
 	}
 	/**
 	 * @return a Collection of DummyPurposes which are not affiliated with any particular Market
 	 */
-	private Collection<SurrogatePurpose> loadDummyPurposes() {
+	private void loadSurrogatePurposes() {
 		// TODO Auto-generated method stub
 		String dummyNames = props.getProperty("dummies.ids");
 		
-		if (dummyNames == null) return Collections.emptySet();
-		else return Stream.of(dummyNames.split(","))
+		if (dummyNames == null) surrogates = Collections.emptySet();
+		else surrogates = Stream.of(dummyNames.split(","))
 				.map(name ->{
 					try {
 						return new SurrogatePurpose(null,projDir.resolve(props.getProperty("dummies."+name+".file")), zones);
@@ -186,11 +191,10 @@ public class Project {
 	 * 
 	 * @return a Map from an Assigner's id to newly-generated instance.
 	 */
-	public Collection<Assigner> getAssigners(){
+	private void loadAssigners(){
 
-		return getAssignerIDs().stream()
-				.map(id -> initializeAssigner(id))
-		.collect(Collectors.toSet());
+		assigners = getAssignerIDs().stream()
+				.collect(Collectors.toMap(Function.identity(),id -> initializeAssigner(id)));
 	}
 	
 	/**Read a list of NetworkSkim ids from the Project Properties, then load the
@@ -232,7 +236,7 @@ public class Project {
 	 * @param assigners a Map from Assigner ids to their current instance
 	 * @return a Map from NetworkSkim ids to their updated instance
 	 */
-	private void updateFeedbackSkims(Map<String,Assigner> assigners){
+	private void updateFeedbackSkims(){
 
 		currentSkims = getSkimIDs().stream()
 		.parallel()

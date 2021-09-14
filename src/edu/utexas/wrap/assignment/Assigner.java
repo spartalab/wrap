@@ -24,12 +24,20 @@ import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.NetworkSkim;
 
-public interface Assigner extends Runnable {
+public interface Assigner {
 	
 	public void process(ODProfile profile);
 	
 	public NetworkSkim getSkim(String id, ToDoubleFunction<Link> function);
 
 	public void outputFlows(Path outputFile);
+	
+	public void initialize();
+	
+	public boolean isConverged();
+	
+	public void iterate();
+	
+	public double getProgress();
 	
 }

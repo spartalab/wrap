@@ -940,7 +940,7 @@ public class ConfigController {
 			});
 			
 			stage.showAndWait();
-			selected.reloadProperties();
+//			selected.reloadProperties();
 		} catch (IOException except) {
 			//TODO
 			except.printStackTrace();

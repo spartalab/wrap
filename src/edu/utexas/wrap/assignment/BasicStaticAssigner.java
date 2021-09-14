@@ -67,6 +67,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	private final Graph network;
 	private final TimePeriod tp;
 	private final String name;
+	private double lastEvaluation;
+	private int iterationsPerformed;
 	
 	private BasicStaticAssigner(String name,
 			AssignmentEvaluator<C> evaluator,
@@ -96,7 +98,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		Properties props = new Properties();
 		props.load(Files.newInputStream(path));
 
-		Graph network = readNetwork(props, path.getParent(), zones);
+		Graph network = readNetwork(props, path.getParent().getParent(), zones);
 		TimePeriod tp = TimePeriod.valueOf(props.getProperty("timePeriod"));
 		Double threshold = Double.parseDouble(props.getProperty("evaluator.threshold"));
 		Integer maxIterations = Integer.parseInt(props.getProperty("maxIterations"));
@@ -203,24 +205,36 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		return new BasicStaticAssigner<Bush>(name, evaluator, optimizer, initializer, threshold, maxIterations, network, tp);
 	}
 
+	public void iterate() {
+		optimizer.optimize(containers.stream());
+		iterationsPerformed++;
+	}
 
-	public void run() {
-		System.out.println("Aggregating OD matrices for "+tp);
+
+	private double evaluate() {
+		return evaluator.getValue(containers.parallelStream());
+	}
+	
+	public boolean isConverged() {
+		return lastEvaluation <= threshold;
+	}
+
+
+	public void initialize() {
+		iterationsPerformed = 0;
 		aggregateMtxs().forEach(initializer::add);
 
-		System.out.println("Initializing bushes for "+tp);
 		this.containers = initializer.initializeContainers();
-
-		int numIterations = 0;
-		double value = evaluator.getValue(containers.parallelStream()); 
-		while (value > threshold && numIterations < maxIterations) {
-			System.out.println("Iteration "+numIterations++ + "\tValue: "+value);
-			optimizer.optimize(containers.stream());
-			value = evaluator.getValue(containers.parallelStream());
-		}
-		System.out.println("Final value: "+value);
-
 	}
+	
+	public double getProgress() {
+		lastEvaluation = evaluate();
+		double iterationProgress = iterationsPerformed/maxIterations;
+		double objectiveProgress = 1/Math.pow(2, Math.log10(lastEvaluation/threshold));
+		
+		return Math.min(1,Math.max(objectiveProgress,iterationProgress));
+	}
+	
 
 	private Map<ODMatrix,Float> aggregateMtxs(){
 
