@@ -224,11 +224,9 @@ public class RunnerController extends Task<Integer> {
 				profiles.stream().forEach(profile -> assigner.process(profile));
 				assignerTable.getItems().add(assignerRunner);
 				
-				assignerRunner.run();
-				
 			});
 			
-			
+			assignerTable.getItems().stream().forEach(Task::run);
 			
 			if (isCancelled()) {
 				break;

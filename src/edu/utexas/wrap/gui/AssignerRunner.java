@@ -15,7 +15,8 @@ public class AssignerRunner extends Task<Graph> {
 	@Override
 	protected Graph call() throws Exception {
 		// TODO Auto-generated method stub
-		
+		updateProgress(0.,1.);
+		updateMessage("Initializing");
 		assigner.initialize();
 		updateMessage("Evaluating");
 		updateProgress(assigner.getProgress(),1);

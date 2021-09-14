@@ -296,7 +296,6 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 
 
 	private static Graph readNetwork(Properties props, Path projDir, Map<Integer,TravelSurveyZone> zoneIDs) {
-		System.out.println("Reading network");
 
 		try {
 			File linkFile = projDir.resolve(props.getProperty("network.links")).toFile();
