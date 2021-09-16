@@ -121,7 +121,7 @@ public class TolledEnhancedLink extends TolledLink {
 
 	public double getTravelTime() {
 		// T == T_0 + c(v) + s(v) + u(v)
-		ttLock.readLock().lock();
+		flowLock.readLock().lock();
 
 		if (cachedTT == null) {
 			double x = getFlow()/getCapacity();
@@ -130,7 +130,7 @@ public class TolledEnhancedLink extends TolledLink {
 			cachedTT = fftime + conicalDelay() + signalDelay() + unsignalizedDelay();	
 		}
 		double ret = cachedTT;
-		ttLock.readLock().unlock();
+		flowLock.readLock().unlock();
 		return ret;
 	}
 
@@ -184,7 +184,7 @@ public class TolledEnhancedLink extends TolledLink {
 	public double pricePrime(Float vot) {
 		// d( k(v) + m*t(v) )/dv
 		// == t'(v) * m + k'(v)
-		ttLock.readLock().lock();
+		flowLock.readLock().lock();
 		if (cachedTP == null) {
 			double x = this.getFlow()/this.getCapacity();
 			cachedg = g(x);
@@ -192,7 +192,7 @@ public class TolledEnhancedLink extends TolledLink {
 			cachedTP = tPrime() * vot + tollPrime();
 		}
 		double ret = cachedTP;
-		ttLock.readLock().unlock();
+		flowLock.readLock().unlock();
 		return ret;
 	}
 

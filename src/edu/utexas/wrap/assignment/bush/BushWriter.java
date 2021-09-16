@@ -32,11 +32,10 @@ public class BushWriter implements AssignmentConsumer<Bush> {
 	private Graph network;
 	private Path outputPath;
 
-	public BushWriter(Graph network, Path ioPath) throws IOException {
+	public BushWriter(Graph network, Path ioPath) {
 		this.network = network;
 		this.outputPath = ioPath;
-		Files.createDirectories(outputPath
-		.resolve(network.toString()));
+		
 	}
 	
 	public void consumeStructure(Bush bush) throws IOException {

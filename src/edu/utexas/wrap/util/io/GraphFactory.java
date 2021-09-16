@@ -39,7 +39,6 @@ import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TolledBPRLink;
 import edu.utexas.wrap.net.TolledEnhancedLink;
-import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**
  * This class provides static methods to read Graph information
@@ -54,7 +53,7 @@ public class GraphFactory {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public static Graph readTNTPGraph(File linkFile, Map<Integer,TravelSurveyZone> zoneIDs) throws FileNotFoundException, IOException {
+	public static void readTNTPLinks(File linkFile, Graph g) throws FileNotFoundException, IOException {
 
 		try {
 			MessageDigest md = MessageDigest.getInstance("MD5");
@@ -62,7 +61,6 @@ public class GraphFactory {
 			DigestInputStream dis = new DigestInputStream(new FileInputStream(linkFile), md);
 
 			String line;
-			Graph g = new Graph(zoneIDs.values());
 			BufferedReader lf = new BufferedReader(new InputStreamReader(dis));
 			Map<Integer, Node> nodeIDs = new HashMap<Integer,Node>();
 			AtomicInteger nodeIdx = new AtomicInteger(0);
@@ -92,12 +90,12 @@ public class GraphFactory {
 
 				// Create new node(s) if new, then add to map
 				if (!nodeIDs.containsKey(tail)) {
-					nodeIDs.put(tail, new Node(tail, nodeIdx.getAndIncrement(),zoneIDs.get(tail)));
+					nodeIDs.put(tail, new Node(tail, nodeIdx.getAndIncrement(),g.getZone(tail)));
 
 				}
 
 				if (!nodeIDs.containsKey(head)) {
-					nodeIDs.put(head, new Node(head, nodeIdx.getAndIncrement(),zoneIDs.get(head)));
+					nodeIDs.put(head, new Node(head, nodeIdx.getAndIncrement(),g.getZone(head)));
 				}
 				
 				// Construct new link and add to the list
@@ -115,10 +113,8 @@ public class GraphFactory {
 			lf.close();
 			g.setMD5(md.digest());
 			g.complete();
-			return g;
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
-			return null;
 		}
 
 	}
@@ -132,10 +128,9 @@ public class GraphFactory {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public static Graph readConicGraph(File f, Map<Integer,TravelSurveyZone> zoneIDs) throws FileNotFoundException, IOException {
+	public static void readConicLinks(File f, Graph g) throws FileNotFoundException, IOException {
 		try {
 		MessageDigest md = MessageDigest.getInstance("MD5");
-		Graph g = new Graph(zoneIDs.values());
 		AtomicInteger numNodes = new AtomicInteger(0), numLinks = new AtomicInteger(0);
 		DigestInputStream dis = new DigestInputStream(new FileInputStream(f), md);
 		BufferedReader lf = new BufferedReader(new InputStreamReader(dis));
@@ -154,14 +149,14 @@ public class GraphFactory {
 //				if (nodeA < thruNode) {
 //					newZone(g, numZones, numNodes, nodes, nodeA, classes.get(nodeA));
 //				} else
-					nodes.put(nodeA, new Node(nodeA, numNodes.getAndIncrement(),zoneIDs.get(nodeA)));
+					nodes.put(nodeA, new Node(nodeA, numNodes.getAndIncrement(),g.getZone(nodeA)));
 			}
 
 			if (!nodes.containsKey(nodeB)) {
 //				if (nodeB < thruNode) {
 //					newZone(g, numZones, numNodes, nodes, nodeB, classes.get(nodeB));
 //				} else
-					nodes.put(nodeB, new Node(nodeB, numNodes.getAndIncrement(),zoneIDs.get(nodeB)));
+					nodes.put(nodeB, new Node(nodeB, numNodes.getAndIncrement(),g.getZone(nodeB)));
 
 			}
 			
@@ -216,7 +211,7 @@ public class GraphFactory {
 			allowed[Mode.MED_TRUCK.ordinal()] = a;
 
 				Link AB = null;
-				if (!zoneIDs.containsKey(nodeA) && !zoneIDs.containsKey(nodeB)) {
+				if (g.getZone(nodeA) == null && g.getZone(nodeB) == null) {
 					AB = new TolledEnhancedLink(nodes.get(nodeA), nodes.get(nodeB), aCap, length, ffTimeA, alpha,
 							epsilon, sParA, uParA, satFlowA, minDel, opCostA, caA, cbA, ccA, cdA, tollA, allowed,linkID);
 				} else {
@@ -228,7 +223,7 @@ public class GraphFactory {
 
 			if (Boolean.parseBoolean(args[36].trim())) {
 				Link BA = null;
-				if (!zoneIDs.containsKey(nodeA) && !zoneIDs.containsKey(nodeB)) {
+				if (g.getZone(nodeA) == null && g.getZone(nodeB) == null) {
 					BA = new TolledEnhancedLink(nodes.get(nodeB), nodes.get(nodeA), bCap, length, ffTimeB, alpha,
 							epsilon, sParB, uParB, satFlowB, minDel, opCostB, caB, cbB, ccB, cdB, tollB, allowed, -linkID);
 				} else {
@@ -242,11 +237,9 @@ public class GraphFactory {
 		lf.close();
 		g.setMD5(md.digest());
 		g.complete();
-		return g;
 		
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
-			return null;
 		}
 	}
 

@@ -622,7 +622,6 @@ public class EditMarketController {
 			
 			EditPurposeController controller = loader.getController();
 			controller.setPurpose(selected);
-			controller.setServices(svcs);
 			
 			Scene pane = new Scene(vbox);
 			

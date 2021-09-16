@@ -241,7 +241,7 @@ public class RunnerController extends Task<Integer> {
 				
 			});
 			
-			assignerTable.getItems().stream().forEach(Task::run);
+			assignerTable.getItems().stream().sequential().forEach(Task::run);
 			
 			if (isCancelled()) {
 				break;

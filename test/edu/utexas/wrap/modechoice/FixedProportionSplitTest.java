@@ -19,7 +19,7 @@ public class FixedProportionSplitTest {
 	public static void main(String[] args) {
 		try {
 			System.out.println("Reading graph");
-			Graph g = GraphFactory.readConicGraph(new File(args[0]), 50000);
+			Graph g = GraphFactory.readConicLinks(new File(args[0]), 50000);
 			
 			System.out.println("Reading matrix");
 			AggregatePAMatrix mtx = (AggregatePAMatrix) ProductionAttractionFactory.readMatrix(new File(args[1]), false, g);

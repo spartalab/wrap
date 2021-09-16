@@ -152,7 +152,7 @@ public class StreamPassthroughAssigner implements StaticAssigner {
 	}
 
 	@Override
-	public boolean isConverged() {
+	public boolean isTerminated() {
 		// TODO Auto-generated method stub
 		return false;
 	}

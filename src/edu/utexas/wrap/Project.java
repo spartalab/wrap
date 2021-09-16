@@ -276,7 +276,8 @@ public class Project {
 
 			case "builtin":
 				return BasicStaticAssigner.fromPropsFile(id,
-						projDir.resolve(props.getProperty("assigners."+id+".file")),
+						projDir,
+						props.getProperty("assigners."+id+".file"),
 						zones
 						);
 			case "file":

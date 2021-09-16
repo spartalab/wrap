@@ -13,7 +13,6 @@ import edu.utexas.wrap.marketsegmentation.IndustryClass;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.Demographic;
 
-import javafx.application.HostServices;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleFloatProperty;
@@ -159,8 +158,6 @@ public class EditPurposeController {
 	private Label purposeSource;
 
 	private BasicPurpose purpose;
-
-	private HostServices svcs;
 
 	private Image wrapIcon;
 
@@ -333,11 +330,6 @@ public class EditPurposeController {
 			
 			attrRateTable.getColumns().add(newColumn);
 		}
-	}
-
-
-	public void setServices(HostServices svcs) {
-		this.svcs = svcs;
 	}
 
 	public void setIcon(Image wrapIcon) {

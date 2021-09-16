@@ -50,7 +50,7 @@ public class Graph {
 	private List<Node> order;
 //	private Map<Node,Integer> nodeOrder;
 	private Set<Link> links;
-	private final Collection<TravelSurveyZone> zones;
+	private final Map<Integer,TravelSurveyZone> zones;
 	private int numNodes;
 	private int numLinks;
 	private byte[] md5;
@@ -61,7 +61,7 @@ public class Graph {
 	private Map<Integer,Link> hashes = new HashMap<Integer,Link>();
 	
 	
-	public Graph(Collection<TravelSurveyZone> zones) {
+	public Graph(Map<Integer,TravelSurveyZone> zones) {
 		outLinks = (new HashMap<Node, Set<Link>>());
 		inLinks = (new HashMap<Node, Set<Link>>());
 		nodeMap = (new HashMap<Integer,Node>());
@@ -139,6 +139,10 @@ public class Graph {
 	
 	public Node getNode(Integer id) {
 		return nodeMap.get(id);
+	}
+	
+	public TravelSurveyZone getZone(Integer id) {
+		return zones.get(id);
 	}
 	
 	public Collection<Node> getNodes(){
@@ -324,7 +328,7 @@ public class Graph {
 	}
 
 	public Collection<TravelSurveyZone> getTSZs() {
-		return zones;
+		return zones.values();
 	}
 	
 //	public boolean addZone(TravelSurveyZone zone) {
@@ -383,4 +387,5 @@ public class Graph {
 		}
 		return cost;
 	}
+
 }

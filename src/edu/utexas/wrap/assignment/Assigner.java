@@ -34,7 +34,7 @@ public interface Assigner {
 	
 	public void initialize();
 	
-	public boolean isConverged();
+	public boolean isTerminated();
 	
 	public void iterate();
 	

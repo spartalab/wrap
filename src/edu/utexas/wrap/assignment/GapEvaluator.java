@@ -63,15 +63,8 @@ public class GapEvaluator<T extends AssignmentContainer> implements AssignmentEv
 		double cheapestContainerCost = network.cheapestCostPossible(container);
 		 
 		
-//		synchronized (this.incurredCost) {
 			this.incurredCost.add(incurredCost);
-//			systemIncurredCost += incurredCost;
-//		}
-//		synchronized (this.cheapestCost) {
 			this.cheapestCost.add(cheapestContainerCost);
-//			cheapestPossibleCost += cheapestContainerCost;
-			
-//		}
 		
 		try {
 			consumer.consumeStructure(container);

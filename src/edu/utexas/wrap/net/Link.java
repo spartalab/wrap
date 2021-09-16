@@ -38,7 +38,7 @@ public abstract class Link implements Priced, BackVector {
 	protected final Float fftime;
 	private final Node head;
 	private final Node tail;
-	protected ReadWriteLock ttLock;
+	protected ReadWriteLock flowLock;
 	private int headIdx;
 	
 	protected Double flo;
@@ -67,7 +67,7 @@ public abstract class Link implements Priced, BackVector {
 		
 //		long a = 3, b = 5, c = 7, d = 11;
 //		uid = (((head.getID()*a + tail.getID())*b + capacity.hashCode())*c + fftime.hashCode())*d+length.hashCode();
-		ttLock = new ReentrantReadWriteLock();
+		flowLock = new ReentrantReadWriteLock();
 	}
 
 	public abstract Boolean allowsClass(Mode c);
@@ -77,7 +77,7 @@ public abstract class Link implements Priced, BackVector {
 	 * @return whether the flow from this bush on the link is non-zero
 	 */
 	public Boolean changeFlow(Double delta) {
-		ttLock.writeLock().lock();
+		flowLock.writeLock().lock();
 
 		if (flo + delta <0.0) flo = 0.0;
 		else flo += delta;
@@ -86,7 +86,7 @@ public abstract class Link implements Priced, BackVector {
 			cachedTT = null;
 			cachedTP = null;
 		}
-		ttLock.writeLock().unlock();
+		flowLock.writeLock().unlock();
 		return flo > 0.0;
 
 	}

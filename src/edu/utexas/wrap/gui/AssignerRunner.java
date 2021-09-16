@@ -21,10 +21,10 @@ public class AssignerRunner extends Task<Graph> {
 		updateMessage("Evaluating");
 		updateProgress(assigner.getProgress(),1);
 		
-		while (!assigner.isConverged()) {
+		while (!isCancelled() && !assigner.isTerminated()) {
 			updateMessage("Iterating");
 			assigner.iterate();
-			
+			if (isCancelled()) break;
 			updateMessage("Evaluating");
 			updateProgress(assigner.getProgress(),1);
 		}

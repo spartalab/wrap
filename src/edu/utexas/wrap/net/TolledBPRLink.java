@@ -73,12 +73,12 @@ public class TolledBPRLink extends TolledLink {
 	 * @return travel time for the link at current flow
 	 */
 	public double getTravelTime() {
-		ttLock.readLock().lock();
+		flowLock.readLock().lock();
 
 		if (cachedTT == null) cachedTT = freeFlowTime()*(1+
 				b*Math.pow(getFlow()/getCapacity(), power));
 		double ret = cachedTT;
-		ttLock.readLock().unlock();
+		flowLock.readLock().unlock();
 		return ret;
 	}
 	
