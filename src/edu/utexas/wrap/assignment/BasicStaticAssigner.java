@@ -72,6 +72,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	private double lastEvaluation;
 	private int iterationsPerformed;
 	private final Properties props;
+	private final ToDoubleFunction<Link> tollingPolicy;
 	
 	private BasicStaticAssigner(String name,
 			Path projDir,
@@ -96,6 +97,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 				.map(mode -> Mode.valueOf(mode))
 				.collect(Collectors.toSet());
 
+		//TODO set tolling policy
+		tollingPolicy = (link) -> 0.0;
 
 		disaggregatedMtxs = new HashMap<ODMatrix,Float>();
 
@@ -230,11 +233,11 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 
 			case "conic":
 
-				GraphFactory.readConicLinks(linkFile, network);
+				GraphFactory.readConicLinks(linkFile, network, tollingPolicy);
 				break;
 
 			case "bpr":
-				GraphFactory.readTNTPLinks(linkFile, network);
+				GraphFactory.readTNTPLinks(linkFile, network, tollingPolicy);
 				break;
 
 			default:

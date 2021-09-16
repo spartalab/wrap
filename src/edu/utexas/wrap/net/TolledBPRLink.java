@@ -17,6 +17,8 @@
  */
 package edu.utexas.wrap.net;
 
+import java.util.function.ToDoubleFunction;
+
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.modechoice.Mode;
 
@@ -31,8 +33,8 @@ public class TolledBPRLink extends TolledLink {
 	private final Double tp;
 
 	
-	public TolledBPRLink(Node tail, Node head, Float capacity, Float length, Float fftime, Float b, Float power, Float toll, Integer linkID) {
-		super(tail,head,capacity,length,fftime, linkID);
+	public TolledBPRLink(Node tail, Node head, Float capacity, Float length, Float fftime, Float b, Float power, Float toll, Integer linkID, ToDoubleFunction<Link> tollingPolicy) {
+		super(tail,head,capacity,length,fftime, linkID, tollingPolicy);
 		
 		this.b = b;
 		this.power = power;
@@ -64,7 +66,7 @@ public class TolledBPRLink extends TolledLink {
 	
 	public Float getToll(Mode c) {
 		if (!allowsClass(c)) return Float.MAX_VALUE;
-		return toll;
+		return toll + (float) tollingPolicy.applyAsDouble(this);
 	}
 	
 	/**BPR Function

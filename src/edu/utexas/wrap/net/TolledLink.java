@@ -17,6 +17,8 @@
  */
 package edu.utexas.wrap.net;
 
+import java.util.function.ToDoubleFunction;
+
 import edu.utexas.wrap.modechoice.Mode;
 
 /**A roadway which charges a toll for various modes of travel
@@ -25,10 +27,12 @@ import edu.utexas.wrap.modechoice.Mode;
  *
  */
 public abstract class TolledLink extends Link {
+	protected final ToDoubleFunction<Link> tollingPolicy;
 	
 
-	public TolledLink(Node tail, Node head, Float capacity, Float length, Float fftime, Integer linkID) {
+	public TolledLink(Node tail, Node head, Float capacity, Float length, Float fftime, Integer linkID, ToDoubleFunction<Link> tollingPolicy) {
 		super(tail, head, capacity, length, fftime,linkID);
+		this.tollingPolicy = tollingPolicy;
 	}
 
 	public abstract Float getToll(Mode c);

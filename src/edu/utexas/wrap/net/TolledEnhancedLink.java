@@ -17,6 +17,8 @@
  */
 package edu.utexas.wrap.net;
 
+import java.util.function.ToDoubleFunction;
+
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.modechoice.Mode;
 
@@ -36,8 +38,8 @@ public class TolledEnhancedLink extends TolledLink {
 	public TolledEnhancedLink(Node tail, Node head, Float capacity, Float length, Float fftime, Float conicalParam,
 			Float VDFShift, Float sParam, Float uParam, Float saturatedFlowRate, Float minDelay, Float operCost,
 			Float CA, Float CB, Float CC, Float CD, 
-			float[] classTolls, boolean[] classesAllowed, Integer linkID) {
-		super(tail, head, capacity, length, fftime, linkID);
+			float[] classTolls, boolean[] classesAllowed, Integer linkID, ToDoubleFunction<Link> tollingPolicy) {
+		super(tail, head, capacity, length, fftime, linkID, tollingPolicy);
 		this.conicalParam = conicalParam;
 		this.VDFshift = VDFShift;
 		s = sParam;
@@ -116,7 +118,7 @@ public class TolledEnhancedLink extends TolledLink {
 	public Float getToll(Mode c) {
 		if (!allowsClass(c))
 			return Float.MAX_VALUE;
-		return classTolls[c.ordinal()] + operCost;
+		return classTolls[c.ordinal()] + operCost + (float) tollingPolicy.applyAsDouble(this);
 	}
 
 	public double getTravelTime() {

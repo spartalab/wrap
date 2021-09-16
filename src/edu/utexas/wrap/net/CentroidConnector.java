@@ -17,6 +17,8 @@
  */
 package edu.utexas.wrap.net;
 
+import java.util.function.ToDoubleFunction;
+
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.modechoice.Mode;
 
@@ -41,8 +43,8 @@ import edu.utexas.wrap.modechoice.Mode;
 public class CentroidConnector extends TolledLink {
 	private float toll;
 
-	public CentroidConnector(Node tail, Node head, Float capacity, Float length, Float fftime, Float toll, Integer linkID) {
-		super(tail, head, capacity, length, fftime, linkID);
+	public CentroidConnector(Node tail, Node head, Float capacity, Float length, Float fftime, Float toll, Integer linkID, ToDoubleFunction<Link> tollingPolicy) {
+		super(tail, head, capacity, length, fftime, linkID, tollingPolicy);
 		this.toll = toll;
 	}
 
@@ -56,7 +58,7 @@ public class CentroidConnector extends TolledLink {
 
 	public Float getToll(Mode c) {
 		if (!allowsClass(c)) return Float.MAX_VALUE;
-		return toll;
+		return toll + (float) tollingPolicy.applyAsDouble(this);
 	}
 
 	public double getTravelTime() {

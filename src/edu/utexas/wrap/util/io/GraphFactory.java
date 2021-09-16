@@ -31,6 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.ToDoubleFunction;
 
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.CentroidConnector;
@@ -53,7 +54,7 @@ public class GraphFactory {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public static void readTNTPLinks(File linkFile, Graph g) throws FileNotFoundException, IOException {
+	public static void readTNTPLinks(File linkFile, Graph g, ToDoubleFunction<Link> tollingPolicy) throws FileNotFoundException, IOException {
 
 		try {
 			MessageDigest md = MessageDigest.getInstance("MD5");
@@ -103,10 +104,10 @@ public class GraphFactory {
 				if (tail >= ftn && head >= ftn) {
 					Float B = parse(cols[5]);
 					Float power = parse(cols[6]);
-					link = new TolledBPRLink(nodeIDs.get(tail), nodeIDs.get(head), capacity, length, fftime, B, power, toll,numLinks++);
+					link = new TolledBPRLink(nodeIDs.get(tail), nodeIDs.get(head), capacity, length, fftime, B, power, toll,numLinks++, tollingPolicy);
 				}
 				else {
-					link = new CentroidConnector(nodeIDs.get(tail), nodeIDs.get(head), capacity, length, fftime, toll,numLinks++);
+					link = new CentroidConnector(nodeIDs.get(tail), nodeIDs.get(head), capacity, length, fftime, toll,numLinks++, tollingPolicy);
 				}
 				g.add(link);
 			}
@@ -128,7 +129,7 @@ public class GraphFactory {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public static void readConicLinks(File f, Graph g) throws FileNotFoundException, IOException {
+	public static void readConicLinks(File f, Graph g, ToDoubleFunction<Link> tollingPolicy) throws FileNotFoundException, IOException {
 		try {
 		MessageDigest md = MessageDigest.getInstance("MD5");
 		AtomicInteger numNodes = new AtomicInteger(0), numLinks = new AtomicInteger(0);
@@ -213,10 +214,10 @@ public class GraphFactory {
 				Link AB = null;
 				if (g.getZone(nodeA) == null && g.getZone(nodeB) == null) {
 					AB = new TolledEnhancedLink(nodes.get(nodeA), nodes.get(nodeB), aCap, length, ffTimeA, alpha,
-							epsilon, sParA, uParA, satFlowA, minDel, opCostA, caA, cbA, ccA, cdA, tollA, allowed,linkID);
+							epsilon, sParA, uParA, satFlowA, minDel, opCostA, caA, cbA, ccA, cdA, tollA, allowed,linkID, tollingPolicy);
 				} else {
 					AB = new CentroidConnector(nodes.get(nodeA), nodes.get(nodeB), aCap, length, ffTimeA,
-							opCostA.floatValue(), linkID);
+							opCostA.floatValue(), linkID, tollingPolicy);
 				}
 				numLinks.incrementAndGet();
 				g.add(AB);
@@ -225,10 +226,10 @@ public class GraphFactory {
 				Link BA = null;
 				if (g.getZone(nodeA) == null && g.getZone(nodeB) == null) {
 					BA = new TolledEnhancedLink(nodes.get(nodeB), nodes.get(nodeA), bCap, length, ffTimeB, alpha,
-							epsilon, sParB, uParB, satFlowB, minDel, opCostB, caB, cbB, ccB, cdB, tollB, allowed, -linkID);
+							epsilon, sParB, uParB, satFlowB, minDel, opCostB, caB, cbB, ccB, cdB, tollB, allowed, -linkID, tollingPolicy);
 				} else {
 					BA = new CentroidConnector(nodes.get(nodeB), nodes.get(nodeA), bCap, length, ffTimeB,
-							opCostB.floatValue(), -linkID);
+							opCostB.floatValue(), -linkID, tollingPolicy);
 				}
 				numLinks.incrementAndGet();
 				g.add(BA);
