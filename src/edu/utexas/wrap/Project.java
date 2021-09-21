@@ -422,7 +422,7 @@ public class Project {
 		return props.getProperty("markets."+marketID+".file");
 	}
 	
-	public String getAssignerFile(String assignerID) {
+	public String getAssignerFile(Assigner assignerID) {
 		return props.getProperty("assigners."+assignerID+".file");
 	}
 	
@@ -510,16 +510,16 @@ public class Project {
 		props.setProperty("markets."+curMarketID+".file", text);
 	}
 	
-	public String getAssignerClass(String assignerID) {
-		return props.getProperty("assigners."+assignerID+".class");
+	public String getAssignerClass(Assigner assigner) {
+		return props.getProperty("assigners."+assigner+".class");
 	}
 
-	public void setAssignerClass(String assignerID, String text) {
-		props.setProperty("assigners."+assignerID+".class", text);
+	public void setAssignerClass(Assigner assigner, String text) {
+		props.setProperty("assigners."+assigner+".class", text);
 	}
 	
-	public void setAssignerFile(String assignerID, String text) {
-		props.setProperty("assigners."+assignerID+".file", text);
+	public void setAssignerFile(Assigner assigner, String text) {
+		props.setProperty("assigners."+assigner+".file", text);
 	}
 
 	public void addAssigner(String assignerID, String assignerClass, String assignerSourceURI) {
@@ -531,16 +531,15 @@ public class Project {
 		props.setProperty("assigners."+assignerID+".file", assignerSourceURI);
 	}
 
-	public void removeAssigner(String assignerID) {
+	public void removeAssigner(Assigner assigner) {
 		// TODO Auto-generated method stub
-		List<String> ids = getAssignerIDs();
-		ids.remove(assignerID);
-		if (!ids.isEmpty()) props.setProperty("assigners.ids", String.join(",", ids));
+		assigners.remove(assigner.toString());
+		if (!assigners.isEmpty()) props.setProperty("assigners.ids", String.join(",", assigners.keySet()));
 		else props.remove("assigners.ids");
 		
 		Set<String> keys = props.stringPropertyNames();
 		for (String key : keys) {
-			if (key.startsWith("assigners."+assignerID)) props.remove(key);
+			if (key.startsWith("assigners."+assigner)) props.remove(key);
 		}
 	}
 

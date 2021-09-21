@@ -49,9 +49,12 @@ import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.demand.containers.AddingODMatrix;
 import edu.utexas.wrap.modechoice.Mode;
+import edu.utexas.wrap.net.CentroidConnector;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.NetworkSkim;
+import edu.utexas.wrap.net.TolledBPRLink;
+import edu.utexas.wrap.net.TolledEnhancedLink;
 import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.io.GraphFactory;
 import edu.utexas.wrap.util.io.SkimFactory;
@@ -72,7 +75,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	private double lastEvaluation;
 	private int iterationsPerformed;
 	private final Properties props;
-	private final ToDoubleFunction<Link> tollingPolicy;
+	private ToDoubleFunction<Link> tollingPolicy;
+	private final Class<? extends Link> linkType;
 	
 	private BasicStaticAssigner(String name,
 			Path projDir,
@@ -80,7 +84,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 			Graph network,
 			AssignmentEvaluator<C> evaluator,
 			AssignmentOptimizer<C> optimizer,
-			AssignmentInitializer<C> initializer
+			AssignmentInitializer<C> initializer,
+			Class<? extends Link> linkType
 			){
 		this.name = name;
 		this.evaluator = evaluator;
@@ -99,7 +104,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 
 		//TODO set tolling policy
 		tollingPolicy = (link) -> 0.0;
-
+		this.linkType = linkType;
 		disaggregatedMtxs = new HashMap<ODMatrix,Float>();
 
 	}
@@ -134,6 +139,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		AssignmentOptimizer<Bush> optimizer;
 		AssignmentInitializer<Bush> initializer;
 		AssignmentBuilder<Bush> builder;
+		Class<? extends Link> linkType;
 		
 		Graph network = new Graph(zones);
 		
@@ -205,9 +211,20 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		default:
 			throw new RuntimeException("Not yet implemented");
 		}
+		
+		switch (props.getProperty("network.linkType")) {
+		case "conic":
+			linkType = TolledEnhancedLink.class;
+			break;
+		case "bpr":
+			linkType = TolledBPRLink.class;
+			break;
+		default:
+			linkType = CentroidConnector.class;
+		}
 
 
-		return new BasicStaticAssigner<Bush>(name, projectPath, props, network, evaluator, optimizer, initializer);
+		return new BasicStaticAssigner<Bush>(name, projectPath, props, network, evaluator, optimizer, initializer, linkType);
 	}
 
 	public void iterate() {
@@ -276,6 +293,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 				);
 		
 		return disaggregatedMtxs.entrySet().stream()
+				//disregard matrices which use a mode not handled by this assigner
 				.filter(entry -> modes.contains(getMode(entry.getKey())))
 		//aggregate matrices into a mapping based on aggregate mode and value of time, then store in a set
 		.collect(						
@@ -374,5 +392,27 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 
 	public String toString() {
 		return name;
+	}
+
+
+	@Override
+	public Class<? extends Link> getLinkType(){
+		return linkType;
+	}
+
+
+	@Override
+	public Collection<Mode> assignedModes() {
+		// TODO Auto-generated method stub
+		return modes;
+	}
+	
+	@Override
+	public Integer maxIterations() {
+		return maxIterations;
+	}
+	
+	public void setTollingPolicy(ToDoubleFunction<Link> policy) {
+		tollingPolicy = policy;
 	}
 }

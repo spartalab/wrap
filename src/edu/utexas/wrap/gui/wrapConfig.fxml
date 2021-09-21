@@ -282,8 +282,8 @@
                                                 <ListView id="assignerList" fx:id="assignerList" prefHeight="340.0" prefWidth="150.0" VBox.vgrow="ALWAYS" />
                                                 <HBox spacing="5.0">
                                                    <children>
-                                                      <Button fx:id="assignerCreate" mnemonicParsing="false" onAction="#createAssigner" text="Create..." />
-                                                      <Button id="addAssigner" fx:id="assignerAttach" alignment="CENTER" mnemonicParsing="false" onAction="#attachAssigner" text="+" />
+                                                      <Button fx:id="assignerCreate" disable="true" mnemonicParsing="false" onAction="#createAssigner" text="Create..." />
+                                                      <Button id="addAssigner" fx:id="assignerAttach" alignment="CENTER" disable="true" mnemonicParsing="false" onAction="#attachAssigner" text="+" />
                                                       <Button id="removeAssigner" fx:id="assignerRemove" alignment="CENTER" disable="true" mnemonicParsing="false" onAction="#removeAssigner" text="-" />
                                                    </children>
                                                    <padding>
@@ -309,7 +309,7 @@
                                                    <children>
                                                       <TextField id="assignerConfigurationPath" fx:id="assignerSourceURI" editable="false" minWidth="-Infinity" onAction="#changeAssignerSourceURI" prefHeight="25.0" prefWidth="250.0" HBox.hgrow="ALWAYS" />
                                                       <Button id="assignerConfigurationBrowse" fx:id="assignerBrowse" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#browseAssigner" text="Browse..." />
-                                                      <Button id="assignerConfigurationEdit" fx:id="assignerEdit" disable="true" layoutX="332.0" layoutY="10.0" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#editAssigner" text="Edit..." />
+                                                      <Button id="assignerConfigurationEdit" fx:id="assignerEdit" layoutX="332.0" layoutY="10.0" maxWidth="-Infinity" minWidth="-Infinity" mnemonicParsing="false" onAction="#editAssigner" text="Edit..." />
                                                    </children>
                                                 </HBox>
                                              </children>

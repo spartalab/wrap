@@ -18,6 +18,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import edu.utexas.wrap.Project;
+import edu.utexas.wrap.assignment.Assigner;
+import edu.utexas.wrap.assignment.StaticAssigner;
 import edu.utexas.wrap.marketsegmentation.Market;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.NetworkSkim;
@@ -227,7 +229,7 @@ public class ConfigController {
 	private Tab assignerTab;
 	
 	@FXML
-	private ListView<String> assignerList;
+	private ListView<StaticAssigner> assignerList;
 
 	@FXML
 	private VBox assignerBox;
@@ -414,10 +416,10 @@ public class ConfigController {
 				);
 		
 		assignerList.getSelectionModel().selectedItemProperty().addListener(
-				new ChangeListener<String>() {
+				new ChangeListener<Assigner>() {
 
 					@Override
-					public void changed(ObservableValue<? extends String> arg0, String oldValue, String newValue) {
+					public void changed(ObservableValue<? extends Assigner> arg0, Assigner oldValue, Assigner newValue) {
 						if (newValue != null) {
 							assignerBox.setDisable(false);
 							assignerRemove.setDisable(false);
@@ -1087,7 +1089,10 @@ public class ConfigController {
 			}
 			
 			if (currentProject != null) {
-				assignerList.setItems(FXCollections.observableArrayList(currentProject.getAssignerIDs()));
+				assignerList.setItems(FXCollections.observableArrayList(currentProject.getAssigners().stream()
+						.filter(assigner -> assigner instanceof StaticAssigner)
+						.map(assigner -> (StaticAssigner) assigner)
+						.collect(Collectors.toSet())));
 				assignerBox.setDisable(true);
 			} else {
 				assignerList.getItems().clear();
@@ -1098,21 +1103,21 @@ public class ConfigController {
 	
 	@FXML
 	private void changeAssignerClass(ActionEvent e) {
-		String curAssignerID = assignerList.getSelectionModel().getSelectedItem();
+		Assigner curAssigner = assignerList.getSelectionModel().getSelectedItem();
 		
 		if (!assignerClass.getSelectionModel().isEmpty() && 
 				!assignerClass.getSelectionModel().getSelectedItem()
 				.equals(
-						getDisplayString(currentProject.getAssignerClass(curAssignerID))
+						getDisplayString(currentProject.getAssignerClass(curAssigner))
 						)) {
-			currentProject.setAssignerClass(curAssignerID,getOptionID(assignerClass.getSelectionModel().getSelectedItem()));
+			currentProject.setAssignerClass(curAssigner,getOptionID(assignerClass.getSelectionModel().getSelectedItem()));
 			markChanged();
 		}
 	}
 	
 	@FXML
 	private void changeAssignerSourceURI(ActionEvent e) {
-		String curAssignerID = assignerList.getSelectionModel().getSelectedItem();
+		Assigner curAssignerID = assignerList.getSelectionModel().getSelectedItem();
 		
 		if (!assignerSourceURI.getText().equals(
 				currentProject.getAssignerFile(curAssignerID)
@@ -1138,6 +1143,7 @@ public class ConfigController {
 	
 	@FXML
 	private void attachAssigner(ActionEvent e) {
+		//TODO redo this method
 		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
 		try {
 			FXMLLoader loader = new FXMLLoader();
@@ -1160,7 +1166,7 @@ public class ConfigController {
 			
 			if (dialog.getResult() == ButtonType.OK) {
 				currentProject.addAssigner(controller.getAssignerID(),getOptionID(controller.getAssignerClass()),controller.getAssignerSourceURI());
-				assignerList.getItems().add(controller.getAssignerID());
+//				assignerList.getItems().add(controller.getAssignerID());
 				markChanged();
 			}
 		} catch (IOException exception) {
@@ -1171,10 +1177,47 @@ public class ConfigController {
 	@FXML
 	private void editAssigner(ActionEvent e) {
 		//TODO
+//		Market selected = marketList.getSelectionModel().getSelectedItem();
+		StaticAssigner selected = assignerList.getSelectionModel().getSelectedItem();
+		try {
+			FXMLLoader loader = new FXMLLoader();
+			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/assignerDialog.fxml").openStream());
+			
+			EditAssignerController controller = loader.getController();
+			controller.setAssigner(selected);
+			
+			Scene pane = new Scene(vbox);
+
+
+			Stage stage = new Stage();
+			stage.initModality(Modality.APPLICATION_MODAL);
+			stage.setScene(pane);
+			stage.setTitle("Edit Assigner");
+			stage.getIcons().add(wrapIcon);
+//			controller.setIcon(wrapIcon);
+//			controller.setScene(stage.getScene());
+			
+			stage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+
+				@Override
+				public void handle(WindowEvent arg0) {
+					// TODO Auto-generated method stub
+					controller.exit(arg0);
+				}
+				
+			});
+			
+			stage.showAndWait();
+//			selected.reloadProperties();
+		} catch (IOException except) {
+			//TODO
+			except.printStackTrace();
+		}
 	}
 	
 	@FXML
 	private void createAssigner(ActionEvent e) {
+		//TODO redo this method
 		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
 		try {
 			FXMLLoader loader = new FXMLLoader();
@@ -1198,7 +1241,7 @@ public class ConfigController {
 			
 			if (dialog.getResult() == ButtonType.OK) {
 				currentProject.addAssigner(controller.getAssignerID(),getOptionID(controller.getAssignerClass()),controller.getAssignerSourceURI());
-				assignerList.getItems().add(controller.getAssignerID());
+//				assignerList.getItems().add(controller.getAssignerID());
 				markChanged();
 			}
 		} catch (IOException exception) {
@@ -1208,7 +1251,7 @@ public class ConfigController {
 
 	@FXML
 	private void removeAssigner(ActionEvent e) {
-		String assignerName = assignerList.getSelectionModel().getSelectedItem();
+		Assigner assignerName = assignerList.getSelectionModel().getSelectedItem();
 		if (assignerName != null) {
 			Alert alert = new Alert(AlertType.CONFIRMATION,"Remove assigner "+assignerName+" from model?",ButtonType.YES,ButtonType.NO);
 			((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(wrapIcon);

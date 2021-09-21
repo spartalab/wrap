@@ -18,9 +18,11 @@
 package edu.utexas.wrap.assignment;
 
 import java.nio.file.Path;
+import java.util.Collection;
 import java.util.function.ToDoubleFunction;
 
 import edu.utexas.wrap.demand.ODProfile;
+import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.NetworkSkim;
 
@@ -39,5 +41,7 @@ public interface Assigner {
 	public void iterate();
 	
 	public double getProgress();
+	
+	public Collection<Mode> assignedModes();
 	
 }

@@ -17,10 +17,18 @@
  */
 package edu.utexas.wrap.assignment;
 
+import java.util.function.ToDoubleFunction;
+
 import edu.utexas.wrap.TimePeriod;
+import edu.utexas.wrap.net.Link;
 
 public interface StaticAssigner extends Assigner {
 
 	public TimePeriod getTimePeriod();
 	
+	public Class<? extends Link> getLinkType();
+	
+	public Integer maxIterations();
+	
+	public void setTollingPolicy(ToDoubleFunction<Link> policy);
 }
