@@ -159,7 +159,7 @@ public class EditAssignerController {
 		
 		timePeriodChooser.getItems().setAll(TimePeriod.values());
 		outerIterationChooser.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,Integer.MAX_VALUE));
-		distMultiplierChooser.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(0., Float.MAX_VALUE));
+		distMultiplierChooser.setValueFactory(new SpinnerValueFactory.DoubleSpinnerValueFactory(0., Float.MAX_VALUE,0.,0.01));
 		distMultiplierChooser.valueProperty().addListener(new ChangeListener<Double>() {
 
 			@Override
