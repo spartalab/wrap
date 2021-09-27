@@ -231,7 +231,7 @@ public class RunnerController extends Task<Integer> {
 			if (isCancelled()) {
 				break;
 			}
-			//TODO run subthreads for assigners
+			// run subthreads for assigners
 			Collection<Assigner> assigners = project.getAssigners();
 			
 			assigners.parallelStream().forEach(assigner ->{
@@ -247,6 +247,14 @@ public class RunnerController extends Task<Integer> {
 				break;
 			}
 			//TODO run subthreads for updating skims
+			skimTable.getItems().clear();
+			project.getSkimIDs().forEach(skimID -> skimTable.getItems().add(new SkimUpdater(skimID,project)));
+			skimTable.getItems().parallelStream().forEach(Task::run);
+			
+			
+			if (isCancelled()) {
+				break;
+			}
 
 			Thread.sleep(1);
 			updateValue(i+1);

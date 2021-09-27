@@ -34,7 +34,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
-import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -43,10 +42,8 @@ import edu.utexas.wrap.assignment.BasicStaticAssigner;
 import edu.utexas.wrap.assignment.bush.StreamPassthroughAssigner;
 import edu.utexas.wrap.marketsegmentation.SurrogatePurpose;
 import edu.utexas.wrap.marketsegmentation.Market;
-import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.AreaClass;
 import edu.utexas.wrap.net.FixedSizeNetworkSkim;
-import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.io.output.FilePassthroughDummyAssigner;
@@ -68,7 +65,7 @@ public class Project {
 	private final Properties props;
 	private Map<Integer, TravelSurveyZone> zones;
 	private Map<String,NetworkSkim> currentSkims;
-	private final Path projDir;
+	private final Path projFile;
 	private String name;
 	private Collection<Market> markets;
 	private Collection<SurrogatePurpose> surrogates;
@@ -79,9 +76,9 @@ public class Project {
 	 * @throws IOException if the file located by {@code projFile} does not exist or is corrupt
 	 */
 	public Project(Path projFile) throws IOException, NullPointerException {
+		this.projFile = projFile;
 		props = new Properties();
 		name = projFile.getFileName().toString();
-		projDir = projFile.getParent();
 		try{ 
 			loadPropsFromFile();
 			loadZones();
@@ -96,12 +93,16 @@ public class Project {
 	}
 
 	private void loadPropsFromFile() throws IOException, NoSuchFileException {
-		props.load(Files.newInputStream(projDir.resolve(name)));
+		props.load(Files.newInputStream(getPath()));
+	}
+
+	public Path getPath() {
+		return projFile;
 	}
 
 	public void loadZones() {
 		try {
-		BufferedReader reader = Files.newBufferedReader(projDir.resolve(props.getProperty("network.zones")));
+		BufferedReader reader = Files.newBufferedReader(getDirectory().resolve(props.getProperty("network.zones")));
 		reader.readLine();
 		AtomicInteger idx = new AtomicInteger(0);
 
@@ -137,7 +138,7 @@ public class Project {
 				Stream.of(projNames.split(","))
 				.map(name -> {
 					try {
-						return new Market(name,projDir.resolve(props.getProperty("markets."+name+".file")), this);
+						return new Market(name,getDirectory().resolve(props.getProperty("markets."+name+".file")), this);
 					} catch (IOException e) {
 						System.err.println("Could not load trip purposes for "+name);
 						e.printStackTrace();
@@ -158,6 +159,10 @@ public class Project {
 	public Collection<Assigner> getAssigners(){
 		return assigners.values();
 	}
+	
+	public Assigner getAssigner(String id) {
+		return assigners.get(id);
+	}
 	/**
 	 * @return a Collection of DummyPurposes which are not affiliated with any particular Market
 	 */
@@ -169,7 +174,7 @@ public class Project {
 		else surrogates = Stream.of(dummyNames.split(","))
 				.map(name ->{
 					try {
-						return new SurrogatePurpose(null,projDir.resolve(props.getProperty("dummies."+name+".file")), zones);
+						return new SurrogatePurpose(null,getDirectory().resolve(props.getProperty("dummies."+name+".file")), zones);
 					} catch (IOException e) {
 						System.out.println("Could not load dummy trip purpose "+name);
 						e.printStackTrace();
@@ -237,31 +242,35 @@ public class Project {
 	 * @param assigners a Map from Assigner ids to their current instance
 	 * @return a Map from NetworkSkim ids to their updated instance
 	 */
-	private void updateFeedbackSkims(){
-
-		currentSkims = getSkimIDs().stream()
-		.parallel()
-		.collect(
-				Collectors.toMap(
-						Function.identity(),
-						id ->{
-							Assigner assigner = assigners.get(props.getProperty("skims."+id+".assigner"));
-							ToDoubleFunction<Link> func;
-							switch (props.getProperty("skims."+id+".function")) {
-							case "travelTimeSingleOcc":
-								func = (Link x) -> 
-									x.allowsClass(Mode.SINGLE_OCC)? x.getTravelTime() : Double.MAX_VALUE;
-									break;
-							default:
-								System.err.println("Skim funciton not yet implemented. Reverting to travel time");
-							case "travelTime":
-								func = Link::getTravelTime;
-							}
-							return assigner.getSkim(id,func);
-						}
-						)
-				);
-
+//	private void updateFeedbackSkims(){
+//
+//		currentSkims = getSkimIDs().stream()
+//		.parallel()
+//		.collect(
+//				Collectors.toMap(
+//						Function.identity(),
+//						id ->{
+//							Assigner assigner = assigners.get(props.getProperty("skims."+id+".assigner"));
+//							ToDoubleFunction<Link> func;
+//							switch (props.getProperty("skims."+id+".function")) {
+//							case "travelTimeSingleOcc":
+//								func = (Link x) -> 
+//									x.allowsClass(Mode.SINGLE_OCC)? x.getTravelTime() : Double.MAX_VALUE;
+//									break;
+//							default:
+//								System.err.println("Skim funciton not yet implemented. Reverting to travel time");
+//							case "travelTime":
+//								func = Link::getTravelTime;
+//							}
+//							return assigner.getSkim(id,func);
+//						}
+//						)
+//				);
+//
+//	}
+	
+	public void updateSkim(String id, NetworkSkim skim) {
+		currentSkims.put(id, skim);
 	}
 
 	private Assigner initializeAssigner(String id) {
@@ -270,18 +279,18 @@ public class Project {
 			switch (props.getProperty("assigners."+id+".class")) {
 			case "stream":
 				return new StreamPassthroughAssigner(
-						projDir.resolve(props.getProperty("assigners."+id+".file"))
+						getDirectory().resolve(props.getProperty("assigners."+id+".file"))
 						);
 
 
 			case "builtin":
 				return BasicStaticAssigner.fromPropsFile(id,
-						projDir,
+						getDirectory(),
 						props.getProperty("assigners."+id+".file"),
 						zones
 						);
 			case "file":
-				return new FilePassthroughDummyAssigner(projDir.resolve(props.getProperty("assigners."+id+".file")),zones);
+				return new FilePassthroughDummyAssigner(getDirectory().resolve(props.getProperty("assigners."+id+".file")),zones);
 			default:
 				throw new RuntimeException("Not yet implemented");
 			}
@@ -326,7 +335,7 @@ public class Project {
 	}
 
 	public Path getDirectory() {
-		return projDir;
+		return projFile.getParent();
 	}
 	
 //	@Override
@@ -554,7 +563,7 @@ public class Project {
 
 	public void writeProperties() throws IOException {
 		// TODO Auto-generated method stub
-		props.store(Files.newOutputStream(projDir.resolve(name), StandardOpenOption.WRITE, StandardOpenOption.CREATE), null);
+		props.store(Files.newOutputStream(getPath(), StandardOpenOption.WRITE, StandardOpenOption.CREATE), null);
 	}
 
 }
