@@ -23,16 +23,11 @@ import edu.utexas.wrap.net.Node;
 
 public class BushGapEvaluator implements BushEvaluator {
 	
-	private final Graph graph;
-	
-	public BushGapEvaluator(Graph g) {
-		graph = g;
-	}
 
 	@Override
-	public double getValue(Bush bush) {
+	public double getValue(Bush bush, Graph network) {
 		Double num = bush.incurredCost();
-		Double denom = cheapestCostPossible(bush);
+		Double denom = cheapestCostPossible(bush, network);
 		if (num.isNaN() || denom.isNaN() || (((Double) (num/denom)).isNaN() && !num.equals(denom))) 
 			throw new RuntimeException();
 		else if (((Double) (num/denom)).isNaN())
@@ -40,7 +35,7 @@ public class BushGapEvaluator implements BushEvaluator {
 		return num/denom - 1.0;
 	}
 	
-	private Double cheapestCostPossible(Bush bush) {
+	private Double cheapestCostPossible(Bush bush, Graph graph) {
 		Node[] to = bush.getTopologicalOrder(true);
 		double[] latent = new double[graph.numNodes()];
 		PathCostCalculator pcc = new PathCostCalculator(bush);

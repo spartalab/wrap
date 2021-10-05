@@ -20,18 +20,9 @@ package edu.utexas.wrap.assignment.bush;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
-import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-import java.util.AbstractMap;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collector;
-import java.util.stream.Collectors;
-import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 import edu.utexas.wrap.assignment.AssignmentProvider;
@@ -40,15 +31,13 @@ import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 
 public class BushReader implements AssignmentProvider<Bush> {
-	Graph network;
 	private Path inputPath;
 	
-	public BushReader(Graph network, Path ioPath) {
-		this.network = network;
+	public BushReader(Path ioPath) {
 		this.inputPath = ioPath;
 	}
 
-	public void getStructure(Bush bush) throws IOException {
+	public void getStructure(Bush bush, Graph network) throws IOException {
 		//Load the bush from the network directory's file matching the bush's hash code
 		Path p = inputPath
 				.resolve(network.toString())
@@ -57,85 +46,85 @@ public class BushReader implements AssignmentProvider<Bush> {
 		
 		
 		InputStream in = Files.newInputStream(p);
-		readFromStream(bush, in);
+		readFromStream(bush, network, in);
 		in.close();
 	}
 	
-	public BackVector[] newRead(Path p) throws IOException {
-		FileChannel channel = FileChannel.open(p, StandardOpenOption.READ);
-		final long fileSize = channel.size();
-		final int bufSize = Integer.BYTES*2 + Double.BYTES;
-		final long numLinks = fileSize/bufSize;
-		
-		Collector<
-			Map.Entry<Link, Double>, 
-			?, 
-			Map<
-				Node, 
-				List<
-					Map.Entry<
-						Link, 
-						Double
-					>
-				>
-			>
-		>
-		downstream = Collectors.groupingBy(entry -> entry.getKey().getHead());
-		
-		Function<			
-			Map<
-				Node, 
-				List<
-					Map.Entry<
-						Link, 
-						Double
-						>
-					>
-			>,
-			BackVector[]
-		> 
-		finisher = map -> {
-			BackVector[] q = new BackVector[network.numNodes()];
-			map.entrySet()
-			.forEach(entry -> 
-				q[entry.getKey().getOrder()] = 
-					entry.getValue().size() == 0? 
-							entry.getValue().get(0).getKey() : 
-								new BushMerge(entry.getKey(),entry.getValue())
-			);
-			return q;
-		};
-
-		return LongStream.range(0,numLinks)
-		.parallel()
-		.mapToObj(i -> ByteBuffer.allocate(bufSize))
-		.map(bb -> {
-			int rs;
-			try {
-				rs = channel.read(bb);
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				throw new RuntimeException(e);
-			}
-			if (rs < bufSize) throw new RuntimeException();
-			Integer nid = bb.getInt();
-			Integer bvhc = bb.getInt();
-			Double split = bb.getDouble();
-			Node n = network.getNode(nid);
-
-			//Find the appropriate link instance
-//				Link bv = null;
-			Optional<Link> bvo = Stream.of(n.reverseStar()).parallel().filter(l -> l.hashCode()==bvhc).findAny();
-
-			//If it can't be found, throw an error
-			if (!bvo.isPresent()) throw new RuntimeException("Unknown Link econuntered. Node ID: "+nid+"\tHash: "+bvhc);
-			
-			return new AbstractMap.SimpleEntry<Link,Double>(bvo.get(),split);
-		})
-		.collect(Collectors.collectingAndThen(downstream,finisher));
-	}
+//	public BackVector[] newRead(Path p) throws IOException {
+//		FileChannel channel = FileChannel.open(p, StandardOpenOption.READ);
+//		final long fileSize = channel.size();
+//		final int bufSize = Integer.BYTES*2 + Double.BYTES;
+//		final long numLinks = fileSize/bufSize;
+//		
+//		Collector<
+//			Map.Entry<Link, Double>, 
+//			?, 
+//			Map<
+//				Node, 
+//				List<
+//					Map.Entry<
+//						Link, 
+//						Double
+//					>
+//				>
+//			>
+//		>
+//		downstream = Collectors.groupingBy(entry -> entry.getKey().getHead());
+//		
+//		Function<			
+//			Map<
+//				Node, 
+//				List<
+//					Map.Entry<
+//						Link, 
+//						Double
+//						>
+//					>
+//			>,
+//			BackVector[]
+//		> 
+//		finisher = map -> {
+//			BackVector[] q = new BackVector[network.numNodes()];
+//			map.entrySet()
+//			.forEach(entry -> 
+//				q[entry.getKey().getOrder()] = 
+//					entry.getValue().size() == 0? 
+//							entry.getValue().get(0).getKey() : 
+//								new BushMerge(entry.getKey(),entry.getValue())
+//			);
+//			return q;
+//		};
+//
+//		return LongStream.range(0,numLinks)
+//		.parallel()
+//		.mapToObj(i -> ByteBuffer.allocate(bufSize))
+//		.map(bb -> {
+//			int rs;
+//			try {
+//				rs = channel.read(bb);
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				throw new RuntimeException(e);
+//			}
+//			if (rs < bufSize) throw new RuntimeException();
+//			Integer nid = bb.getInt();
+//			Integer bvhc = bb.getInt();
+//			Double split = bb.getDouble();
+//			Node n = network.getNode(nid);
+//
+//			//Find the appropriate link instance
+////				Link bv = null;
+//			Optional<Link> bvo = Stream.of(n.reverseStar()).parallel().filter(l -> l.hashCode()==bvhc).findAny();
+//
+//			//If it can't be found, throw an error
+//			if (!bvo.isPresent()) throw new RuntimeException("Unknown Link econuntered. Node ID: "+nid+"\tHash: "+bvhc);
+//			
+//			return new AbstractMap.SimpleEntry<Link,Double>(bvo.get(),split);
+//		})
+//		.collect(Collectors.collectingAndThen(downstream,finisher));
+//	}
 	
-	private void readFromStream(Bush bush, InputStream in) throws IOException {
+	private void readFromStream(Bush bush, Graph network, InputStream in) throws IOException {
 		final int bufSize = Integer.BYTES*2+Double.BYTES;
 		final long fileSize = in.available();
 		
@@ -160,7 +149,7 @@ public class BushReader implements AssignmentProvider<Bush> {
 			in.read(b);
 			pos += bufSize;
 			ByteBuffer bb = ByteBuffer.wrap(b);
-			processBytes(bush, q, bb);
+			processBytes(bush, network, q, bb);
 
 //			bush.add(bv);
 //			throw new RuntimeException("BackVector splits aren't implemented yet");
@@ -168,7 +157,7 @@ public class BushReader implements AssignmentProvider<Bush> {
 		bush.setQ(q);
 	}
 
-	private void processBytes(Bush bush, BackVector[] q, ByteBuffer bb) {
+	private void processBytes(Bush bush, Graph network, BackVector[] q, ByteBuffer bb) {
 		Integer nid = bb.getInt();
 		Integer bvhc = bb.getInt();
 		Double split = bb.getDouble();

@@ -35,10 +35,22 @@ public class TolledEnhancedLink extends TolledLink {
 	private final float[] classTolls;
 	private Double cachedg = null, cachedr = null;
 
-	public TolledEnhancedLink(Node tail, Node head, Float capacity, Float length, Float fftime, Float conicalParam,
-			Float VDFShift, Float sParam, Float uParam, Float saturatedFlowRate, Float minDelay, Float operCost,
+	public TolledEnhancedLink(
+			Node tail, Node head, 
+			Float capacity, 
+			Float length, 
+			Float fftime, 
+			Float conicalParam,
+			Float VDFShift, 
+			Float sParam, Float uParam, 
+			Float saturatedFlowRate, 
+			Float minDelay, 
+			Float operCost,
 			Float CA, Float CB, Float CC, Float CD, 
-			float[] classTolls, boolean[] classesAllowed, Integer linkID, ToDoubleFunction<Link> tollingPolicy) {
+			float[] classTolls, boolean[] classesAllowed,
+			Integer linkID, 
+			ToDoubleFunction<Link> tollingPolicy) {
+		
 		super(tail, head, capacity, length, fftime, linkID, tollingPolicy);
 		this.conicalParam = conicalParam;
 		this.VDFshift = VDFShift;

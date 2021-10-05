@@ -31,7 +31,6 @@ import edu.utexas.wrap.net.Graph;
 
 public class BushInitializer implements AssignmentInitializer<Bush>{
 	
-	private Graph network;
 	private AssignmentProvider<Bush> provider;
 	private AssignmentConsumer<Bush> writer, forgetter;
 	private AssignmentBuilder<Bush> builder;
@@ -41,16 +40,14 @@ public class BushInitializer implements AssignmentInitializer<Bush>{
 			AssignmentProvider<Bush> provider, 
 			AssignmentConsumer<Bush> writer,
 			AssignmentConsumer<Bush> forgetter,
-			AssignmentBuilder<Bush> builder,
-			Graph network) {
+			AssignmentBuilder<Bush> builder) {
 		this.provider = provider;
 		this.writer = writer;
 		this.forgetter = forgetter;
 		this.builder = builder;
-		this.network = network;
 	}
 	
-	public void add(ODMatrix matrix, Float vot) {
+	public void add(Graph network, ODMatrix matrix, Float vot) {
 		Stream<Bush> rawBushes = matrix.getZones()
 				.parallelStream()
 				.filter(tsz -> !matrix.getDemandMap(tsz).isEmpty())
@@ -65,29 +62,31 @@ public class BushInitializer implements AssignmentInitializer<Bush>{
 			Stream.concat(containers, rawBushes);
 	}
 	
-	private void loadContainer(Bush bush) {
+	private void loadContainer(Graph network, Bush bush) {
 		boolean needsWriting = false;
 		try{
-			provider.getStructure(bush);
+			provider.getStructure(bush, network);
 		} catch (IOException e) {
 			//TODO this can be wrapped into the same provider inside AssignmentBuilder
 			System.err.println("INFO: Could not find source for "+bush+". Building from free-flow network");
-			builder.buildStructure(bush);
+			builder.buildStructure(bush, network);
 			needsWriting = true;
 		}
 		
 		network.loadDemand(bush);
 		
 		try{
-			if (needsWriting) writer.consumeStructure(bush);
-			else forgetter.consumeStructure(bush);
+			if (needsWriting) writer.consumeStructure(bush, network);
+			else forgetter.consumeStructure(bush, network);
 		} catch (IOException e) {
 			System.err.println("WARN: Could not write structure for "+bush+". Source may be corrupted");
 		
 		}
 	}
 	
-	public Collection<Bush> initializeContainers() {
-		return containers.peek(this::loadContainer).collect(Collectors.toSet());
+	public Collection<Bush> initializeContainers(Graph network) {
+		Stream<Bush> tmp = containers;
+		containers = null;
+		return tmp.peek(bush -> loadContainer(network, bush)).collect(Collectors.toSet());
 	}
 }

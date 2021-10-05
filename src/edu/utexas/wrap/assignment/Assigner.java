@@ -23,6 +23,7 @@ import java.util.function.ToDoubleFunction;
 
 import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.modechoice.Mode;
+import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.NetworkSkim;
 
@@ -34,7 +35,7 @@ public interface Assigner {
 
 	public void outputFlows(Path outputFile);
 	
-	public void initialize();
+	public void initialize(Collection<ODProfile> profiles);
 	
 	public boolean isTerminated();
 	
@@ -43,5 +44,7 @@ public interface Assigner {
 	public double getProgress();
 	
 	public Collection<Mode> assignedModes();
+	
+	public Graph getNetwork();
 	
 }

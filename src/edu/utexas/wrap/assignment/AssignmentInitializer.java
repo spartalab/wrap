@@ -20,10 +20,11 @@ package edu.utexas.wrap.assignment;
 import java.util.Collection;
 
 import edu.utexas.wrap.demand.ODMatrix;
+import edu.utexas.wrap.net.Graph;
 
 public interface AssignmentInitializer<T extends AssignmentContainer> {
 	
-	public Collection<T> initializeContainers();
+	public Collection<T> initializeContainers(Graph network);
 	
-	public void add(ODMatrix matrix, Float vot);
+	public void add(Graph network, ODMatrix matrix, Float vot);
 }

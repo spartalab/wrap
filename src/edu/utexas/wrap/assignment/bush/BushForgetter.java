@@ -18,11 +18,12 @@
 package edu.utexas.wrap.assignment.bush;
 
 import edu.utexas.wrap.assignment.AssignmentConsumer;
+import edu.utexas.wrap.net.Graph;
 
 public class BushForgetter implements AssignmentConsumer<Bush> {
 
 	@Override
-	public void consumeStructure(Bush container) {
+	public void consumeStructure(Bush container, Graph network) {
 		container.clear();
 		container.setQ(null);
 	}

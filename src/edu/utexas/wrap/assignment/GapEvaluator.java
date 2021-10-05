@@ -25,41 +25,41 @@ import edu.utexas.wrap.net.Graph;
 
 public class GapEvaluator<T extends AssignmentContainer> implements AssignmentEvaluator<T> {
 	
-	private Graph network;
 	private AssignmentProvider<T> provider;
 	private AssignmentConsumer<T> consumer;
 //	private Double systemIncurredCost, cheapestPossibleCost; //total system general cost, total cheapest path general cost
 	private DoubleAdder incurredCost, cheapestCost;
 	
-	public GapEvaluator(Graph network,
+	public GapEvaluator(
 			AssignmentProvider<T> provider,
 			AssignmentConsumer<T> consumer) {
-		this.network = network;
 		this.provider = provider;
 		this.consumer = consumer;
+		incurredCost = new DoubleAdder();
+		cheapestCost = new DoubleAdder();
 	}
 	
 
 	@Override
-	public double getValue(Stream<T> containerStream) {
+	public double getValue(Stream<T> containerStream, Graph network) {
 //		systemIncurredCost = 0d;
 //		cheapestPossibleCost = 0d;
 		
-		containerStream.forEach(this::process);
-		
+		containerStream.forEach(container -> process(container, network));
+		System.out.println("Finished accumulating");
 		return (incurredCost.sum() - cheapestCost.sum())/cheapestCost.sum();
 	}
 
-	private void process(T container) {
+	private void process(T container, Graph network) {
 		
 		try{
-			provider.getStructure(container);
+			provider.getStructure(container, network);
 		} catch (IOException e) {
 			System.err.println("WARN: Could not read source for "+container+". Ignoring");
 			return;
 		}
-		
 		double incurredCost = container.incurredCost();
+		System.out.println("Getting cheapest cost possible");
 		double cheapestContainerCost = network.cheapestCostPossible(container);
 		 
 		
@@ -67,7 +67,7 @@ public class GapEvaluator<T extends AssignmentContainer> implements AssignmentEv
 			this.cheapestCost.add(cheapestContainerCost);
 		
 		try {
-			consumer.consumeStructure(container);
+			consumer.consumeStructure(container, network);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			System.err.println("WARN: Could not consume "+container+".");

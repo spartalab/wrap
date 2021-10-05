@@ -17,8 +17,10 @@
  */
 package edu.utexas.wrap.assignment;
 
+import edu.utexas.wrap.net.Graph;
+
 public interface AssignmentBuilder<T> {
 	
-	public void buildStructure(T container);
+	public void buildStructure(T container, Graph network);
 
 }

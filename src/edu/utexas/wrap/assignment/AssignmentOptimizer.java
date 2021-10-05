@@ -19,8 +19,10 @@ package edu.utexas.wrap.assignment;
 
 import java.util.stream.Stream;
 
+import edu.utexas.wrap.net.Graph;
+
 public interface AssignmentOptimizer<T extends AssignmentContainer> {
 	
-	public void optimize(Stream<T> containerStream);
+	public void optimize(Stream<T> containerStream, Graph network);
 
 }

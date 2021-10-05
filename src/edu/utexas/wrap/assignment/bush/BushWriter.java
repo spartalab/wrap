@@ -29,16 +29,14 @@ import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 
 public class BushWriter implements AssignmentConsumer<Bush> {
-	private Graph network;
 	private Path outputPath;
 
-	public BushWriter(Graph network, Path ioPath) {
-		this.network = network;
+	public BushWriter(Path ioPath) {
 		this.outputPath = ioPath;
 		
 	}
 	
-	public void consumeStructure(Bush bush) throws IOException {
+	public void consumeStructure(Bush bush, Graph network) throws IOException {
 		OutputStream out = Files.newOutputStream(
 				outputPath
 				.resolve(network.toString())
@@ -58,7 +56,7 @@ public class BushWriter implements AssignmentConsumer<Bush> {
 		
 		
 		//For each node
-		network.getNodes().parallelStream().filter(n -> n != null).forEach(n ->{
+		bush.getNodes().parallelStream().filter(n -> n != null).forEach(n ->{
 			BackVector qn = bush.getBackVector(n);
 			//get all the links leading to the node
 			//write them to a file

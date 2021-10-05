@@ -7,12 +7,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import edu.utexas.wrap.Project;
-import edu.utexas.wrap.assignment.Assigner;
 import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.marketsegmentation.MarketRunner;
 import edu.utexas.wrap.util.io.SkimLoader;
 import edu.utexas.wrap.marketsegmentation.PurposeRunner;
 import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.net.NetworkSkim;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -77,13 +77,13 @@ public class RunnerController extends Task<Integer> {
 	private ProgressBar skimProgress;
 
 	@FXML
-	private TableView<Task<Void>> skimTable;
+	private TableView<Task<NetworkSkim>> skimTable;
 
 	@FXML
-	private TableColumn<Task<Void>, String> skimIDColumn;
+	private TableColumn<Task<NetworkSkim>, String> skimIDColumn;
 
 	@FXML
-	private TableColumn<Task<Void>, Double> skimProgressColumn;
+	private TableColumn<Task<NetworkSkim>, Double> skimProgressColumn;
 	
 	private Project project;
 	
@@ -131,18 +131,18 @@ public class RunnerController extends Task<Integer> {
 		
 		
 		project.getSkims().forEach(skim -> skimTable.getItems().add(new SkimLoader(skim,project.getDirectory().resolve(project.getSkimFile(skim.toString())),project.getZones())));
-		skimIDColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Task<Void>,String>,ObservableValue<String>>(){
+		skimIDColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Task<NetworkSkim>,String>,ObservableValue<String>>(){
 
 			@Override
-			public ObservableValue<String> call(TableColumn.CellDataFeatures<Task<Void>, String> arg0) {
+			public ObservableValue<String> call(TableColumn.CellDataFeatures<Task<NetworkSkim>, String> arg0) {
 				// TODO Auto-generated method stub
 				return new ReadOnlyObjectWrapper<String>(arg0.getValue().toString());
 			}
 			
 		});
 		
-		skimProgressColumn.setCellValueFactory(new PropertyValueFactory<Task<Void>,Double>("progress"));
-		skimProgressColumn.setCellFactory(ProgressBarTableCell.<Task<Void>>forTableColumn());
+		skimProgressColumn.setCellValueFactory(new PropertyValueFactory<Task<NetworkSkim>,Double>("progress"));
+		skimProgressColumn.setCellFactory(ProgressBarTableCell.<Task<NetworkSkim>>forTableColumn());
 		
 		
 		assignerIDColumn.setCellValueFactory(new Callback<TableColumn.CellDataFeatures<Task<Graph>, String>, ObservableValue<String>>(){
@@ -189,7 +189,9 @@ public class RunnerController extends Task<Integer> {
 				break;
 			}
 			marketRoot.getChildren().clear();
+			marketRunners.clear();
 			completedMarketCount.set(0);
+			
 			project.getMarkets().forEach(market -> {
 				MarketRunner marketRunner = new MarketRunner(market,this);
 				marketRunners.add(marketRunner);
@@ -232,25 +234,51 @@ public class RunnerController extends Task<Integer> {
 				break;
 			}
 			// run subthreads for assigners
-			Collection<Assigner> assigners = project.getAssigners();
 			
-			assigners.parallelStream().forEach(assigner ->{
-				AssignerRunner assignerRunner = new AssignerRunner(assigner);
-				profiles.stream().forEach(profile -> assigner.process(profile));
+			project.getAssigners().parallelStream().forEach(assigner ->{
+				AssignerRunner assignerRunner = new AssignerRunner(assigner,profiles);
 				assignerTable.getItems().add(assignerRunner);
 				
 			});
 			
 			assignerTable.getItems().stream().sequential().forEach(Task::run);
 			
+//			Collection<Graph> networks = assignerTable.getItems().stream().map(t -> {
+//				try {
+//					return t.get();
+//				} catch (InterruptedException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//					return null;
+//				} catch (ExecutionException e) {
+//					// TODO Auto-generated catch block
+//					e.printStackTrace();
+//					return null;
+//				}
+//			}).collect(Collectors.toSet());
+			
 			if (isCancelled()) {
 				break;
 			}
+			
 			//TODO run subthreads for updating skims
 			skimTable.getItems().clear();
 			project.getSkimIDs().forEach(skimID -> skimTable.getItems().add(new SkimUpdater(skimID,project)));
 			skimTable.getItems().parallelStream().forEach(Task::run);
 			
+			skimTable.getItems().stream().map(t -> {
+				try {
+					return t.get();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					return null;
+				} catch (ExecutionException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					return null;
+				}
+			}).forEach(skim -> project.updateSkim(skim.toString(), skim));
 			
 			if (isCancelled()) {
 				break;

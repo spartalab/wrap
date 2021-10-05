@@ -27,6 +27,7 @@ import edu.utexas.wrap.assignment.AssignmentConsumer;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.bush.BushEvaluator;
 import edu.utexas.wrap.assignment.bush.PathCostCalculator;
+import edu.utexas.wrap.net.Graph;
 
 public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 	private final AssignmentProvider<Bush> provider;
@@ -55,7 +56,7 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 	}
 
 	@Override
-	public void optimize(Stream<Bush> bushStream) {
+	public void optimize(Stream<Bush> bushStream, Graph network) {
 		//		queue = 
 		bushStream
 		//				.map( bush -> {
@@ -89,7 +90,7 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 		.forEach(bush -> {
 			//						boolean isEquilibrated = false;
 			try{
-				provider.getStructure(bush);
+				provider.getStructure(bush, network);
 			} catch (IOException e) {
 				System.err.println("WARN: Could not find source for "+bush+". Ignoring");
 				return;
@@ -108,7 +109,7 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				Double val = evaluator.getValue(bush);
+				Double val = evaluator.getValue(bush, network);
 				//							System.out.println(val);
 				if (val < threshold) break;
 				pcc.clear();
@@ -116,7 +117,7 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 			
 
 			try {
-				consumer.consumeStructure(bush);
+				consumer.consumeStructure(bush, network);
 			} catch (IOException e) {
 				System.err.println("WARN: Could not write structure for "+bush+". Source may be corrupted");
 			}

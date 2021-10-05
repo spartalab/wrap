@@ -19,8 +19,10 @@ package edu.utexas.wrap.assignment;
 
 import java.io.IOException;
 
+import edu.utexas.wrap.net.Graph;
+
 public interface AssignmentProvider<C extends AssignmentContainer> {
 	
-	public void getStructure(C container) throws IOException;
+	public void getStructure(C container, Graph network) throws IOException;
 
 }

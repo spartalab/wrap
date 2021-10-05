@@ -6,9 +6,10 @@ import edu.utexas.wrap.Project;
 import edu.utexas.wrap.assignment.Assigner;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Link;
+import edu.utexas.wrap.net.NetworkSkim;
 import javafx.concurrent.Task;
 
-public class SkimUpdater extends Task<Void> {
+public class SkimUpdater extends Task<NetworkSkim> {
 	private String skimID;
 	private Project project;
 
@@ -19,7 +20,7 @@ public class SkimUpdater extends Task<Void> {
 	}
 
 	@Override
-	protected Void call() throws Exception {
+	protected NetworkSkim call() throws Exception {
 		// TODO Auto-generated method stub
 		Assigner assigner = project.getAssigner(project.getSkimAssigner(skimID));
 		ToDoubleFunction<Link> func;
@@ -33,8 +34,10 @@ public class SkimUpdater extends Task<Void> {
 		case "travelTime":
 			func = Link::getTravelTime;
 		}
-		project.updateSkim(skimID, assigner.getSkim(skimID, func));
-		return null;
+		return assigner.getSkim(skimID, func);
 	}
 
+	public String toString() {
+		return skimID;
+	}
 }

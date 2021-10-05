@@ -1,15 +1,20 @@
 package edu.utexas.wrap.gui;
 
+import java.util.Collection;
+
 import edu.utexas.wrap.assignment.Assigner;
+import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.net.Graph;
 import javafx.concurrent.Task;
 
 public class AssignerRunner extends Task<Graph> {
-	private Assigner assigner;
+	private final Assigner assigner;
+	private final Collection<ODProfile> profiles;
 
-	public AssignerRunner(Assigner assigner) {
+	public AssignerRunner(Assigner assigner, Collection<ODProfile> profiles) {
 		// TODO Auto-generated constructor stub
 		this.assigner = assigner;
+		this.profiles = profiles;
 	}
 
 	@Override
@@ -17,7 +22,8 @@ public class AssignerRunner extends Task<Graph> {
 		// TODO Auto-generated method stub
 		updateProgress(0.,1.);
 		updateMessage("Initializing");
-		assigner.initialize();
+		assigner.initialize(profiles);
+
 		updateMessage("Evaluating");
 		updateProgress(assigner.getProgress(),1);
 		
@@ -30,7 +36,7 @@ public class AssignerRunner extends Task<Graph> {
 		}
 		
 		
-		return null;
+		return assigner.getNetwork();
 	}
 	
 	@Override

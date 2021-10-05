@@ -11,7 +11,7 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.concurrent.Task;
 
-public class SkimLoader extends Task<Void> {
+public class SkimLoader extends Task<NetworkSkim> {
 	
 	private NetworkSkim skim;
 	private Path skimCSV;
@@ -32,7 +32,7 @@ public class SkimLoader extends Task<Void> {
 	}
 
 	@Override
-	protected Void call() throws Exception {
+	protected NetworkSkim call() throws Exception {
 		// TODO Auto-generated method stub
 		try (BufferedReader reader = Files.newBufferedReader(skimCSV)) {
 			reader.lines().forEach(line ->{
@@ -49,7 +49,7 @@ public class SkimLoader extends Task<Void> {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return null;
+		return skim;
 	}
 
 	public String toString() {

@@ -66,47 +66,43 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	private Map<ODMatrix,Float> disaggregatedMtxs;
 	private Collection<C> containers;
 	private final Collection<Mode> modes;
-	private final Path projDir;
 	private double threshold;
 	private final int maxIterations;
-	private final Graph network;
+	private Graph network;
 	private final TimePeriod tp;
 	private final String name;
 	private double lastEvaluation;
 	private int iterationsPerformed;
-	private final Properties props;
 	private ToDoubleFunction<Link> tollingPolicy;
 	private final Class<? extends Link> linkType;
-	
+	private final Path containerSource, linkSource;
+	private final Map<Integer, TravelSurveyZone> zones;
 	private BasicStaticAssigner(String name,
-			Path projDir,
-			Properties props,
-			Graph network,
+			Map<Integer, TravelSurveyZone> zones,
 			AssignmentEvaluator<C> evaluator,
 			AssignmentOptimizer<C> optimizer,
 			AssignmentInitializer<C> initializer,
-			Class<? extends Link> linkType
+			Class<? extends Link> linkType,
+			Double threshold,
+			Integer maxIterations,
+		TimePeriod tp,
+		Collection<Mode> modes,
+		Path containerSource,
+		Path linkSource
 			){
 		this.name = name;
 		this.evaluator = evaluator;
 		this.optimizer = optimizer;
 		this.initializer = initializer;
-		this.projDir = projDir;
-		this.props = props;
 		
-		this.threshold = Double.parseDouble(props.getProperty("evaluator.threshold"));
-		this.maxIterations = Integer.parseInt(props.getProperty("maxIterations"));
-		this.network = network;
-		this.tp = TimePeriod.valueOf(props.getProperty("timePeriod"));
-		this.modes = Stream.of(props.getProperty("modes").split(","))
-				.map(mode -> Mode.valueOf(mode))
-				.collect(Collectors.toSet());
-
-		//TODO set tolling policy
-		tollingPolicy = (link) -> 0.0;
+		this.threshold = threshold;
+		this.maxIterations = maxIterations;
+		this.tp = tp;
+		this.modes = modes;
 		this.linkType = linkType;
-		disaggregatedMtxs = new HashMap<ODMatrix,Float>();
-
+		this.linkSource= linkSource;
+		this.containerSource = containerSource;
+		this.zones = zones;
 	}
 
 
@@ -119,7 +115,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		switch (props.getProperty("containerType")) {
 
 		case "bush":
-			return bushAssignerFromProps(name, projectPath, props, zones);
+			return bushAssignerFromProps(name, zones, projectPath, props);
 
 		case "path":
 			
@@ -132,7 +128,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	}
 
 
-	private static BasicStaticAssigner<Bush> bushAssignerFromProps(String name, Path projectPath, Properties props,Map<Integer,TravelSurveyZone> zones) throws IOException {
+	private static BasicStaticAssigner<Bush> bushAssignerFromProps(String name,
+			Map<Integer, TravelSurveyZone> zones, Path projectPath, Properties props) throws IOException {
 		AssignmentProvider<Bush> provider;
 		AssignmentConsumer<Bush> writer, forgetter;
 		AssignmentEvaluator<Bush> evaluator;
@@ -141,15 +138,13 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		AssignmentBuilder<Bush> builder;
 		Class<? extends Link> linkType;
 		
-		Graph network = new Graph(zones);
-		
-		
+	
 		switch (props.getProperty("providerConsumer")) {
 		case "bushIOsuite":
 			//TODO custom paths
 			Path ioPath = Paths.get(props.getProperty("providerConsumer.source"));
-			provider = new BushReader(network,ioPath);
-			writer = new BushWriter(network,ioPath);
+			provider = new BushReader(ioPath);
+			writer = new BushWriter(ioPath);
 			forgetter = new BushForgetter();
 			break;
 		default:
@@ -160,7 +155,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 
 		switch (props.getProperty("builder")) {
 		case "bush":
-			builder = new BushBuilder(network);
+			builder = new BushBuilder();
 			break;
 		default:
 			throw new RuntimeException("Not yet implemented");
@@ -170,7 +165,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 
 		switch (props.getProperty("initializer")) {
 		case "bush":
-			initializer = new BushInitializer(provider, writer, forgetter, builder,network);
+			initializer = new BushInitializer(provider, writer, forgetter, builder);
 			break;
 		default:
 			throw new RuntimeException("Not yet implemented");
@@ -180,7 +175,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 
 		switch (props.getProperty("evaluator")) {
 		case "gap":
-			evaluator = new GapEvaluator<Bush>(network, provider, forgetter);
+			evaluator = new GapEvaluator<Bush>(provider, forgetter);
 			break;
 		default:
 			throw new RuntimeException("Not yet implemented");
@@ -194,7 +189,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 			
 			switch(props.getProperty("optimizer.iterEvaluator")) {
 			case "bushGap":
-				iterEvaluator = new BushGapEvaluator(network);
+				iterEvaluator = new BushGapEvaluator();
 				break;
 			default:
 				throw new RuntimeException("Not yet implemented");
@@ -223,60 +218,67 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 			linkType = CentroidConnector.class;
 		}
 
+		Double threshold = Double.parseDouble(props.getProperty("evaluator.threshold"));
+		Integer maxIterations = Integer.parseInt(props.getProperty("maxIterations"));
+		TimePeriod tp = TimePeriod.valueOf(props.getProperty("timePeriod"));
+		Collection<Mode> modes = Stream.of(props.getProperty("modes").split(","))
+				.map(mode -> Mode.valueOf(mode))
+				.collect(Collectors.toSet());
+		Path linkSource = projectPath.resolve(props.getProperty("network.links"));
+		Path containerSource = Paths.get(props.getProperty("providerConsumer.source"));
 
-		return new BasicStaticAssigner<Bush>(name, projectPath, props, network, evaluator, optimizer, initializer, linkType);
+		return new BasicStaticAssigner<Bush>(name, zones, evaluator, optimizer, initializer, linkType, threshold, maxIterations, tp, modes, containerSource, linkSource);
 	}
 
 	public void iterate() {
-		optimizer.optimize(containers.stream());
+		optimizer.optimize(containers.stream(), network);
+		System.out.println("Finished iterating "+toString());
 		iterationsPerformed++;
 	}
 
 
 	private double evaluate() {
-		return evaluator.getValue(containers.parallelStream());
+		return evaluator.getValue(containers.parallelStream(), network);
 	}
 	
 	public boolean isTerminated() {
-		return lastEvaluation <= threshold;
+		return lastEvaluation <= threshold || iterationsPerformed >= maxIterations;
 	}
 
 
-	public void initialize() {
+	public void initialize(Collection<ODProfile> profiles) {
+		disaggregatedMtxs = new HashMap<ODMatrix,Float>();
+		profiles.forEach(this::process);
+		if (tollingPolicy == null) tollingPolicy = link -> 0.0;
+
+		network = new Graph(zones);
+		
+		//TODO get tolling policy
 		try {			
-			File linkFile = projDir.resolve(props.getProperty("network.links")).toFile();
+			File linkFile = linkSource.toFile();
 
-			switch(props.getProperty("network.linkType")) {
-
-			case "conic":
-
+			if (TolledEnhancedLink.class.isAssignableFrom(linkType))
 				GraphFactory.readConicLinks(linkFile, network, tollingPolicy);
-				break;
-
-			case "bpr":
+			else if (TolledBPRLink.class.isAssignableFrom(linkType))
 				GraphFactory.readTNTPLinks(linkFile, network, tollingPolicy);
-				break;
 
-			default:
-				throw new IllegalArgumentException("network.type");
-			}
 			
-			Files.createDirectories(Paths.get(props.getProperty("providerConsumer.source"))
+			Files.createDirectories(containerSource
 					.resolve(network.toString()));
 
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-
 		iterationsPerformed = 0;
-		aggregateMtxs().forEach(initializer::add);
-
-		this.containers = initializer.initializeContainers();
+		aggregateMtxs().forEach( (mtx, vot) -> initializer.add(network, mtx, vot));
+		this.containers = initializer.initializeContainers(network);
 	}
 	
 	public double getProgress() {
+		System.out.println("Evaluating "+this);
 		lastEvaluation = evaluate();
+		System.out.println("Done evaluating "+this);
 		double iterationProgress = iterationsPerformed/maxIterations;
 		double objectiveProgress = 1/Math.pow(2, Math.log10(lastEvaluation/threshold));
 		
@@ -414,5 +416,12 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	
 	public void setTollingPolicy(ToDoubleFunction<Link> policy) {
 		tollingPolicy = policy;
+	}
+
+
+	@Override
+	public Graph getNetwork() {
+		// TODO Auto-generated method stub
+		return network;
 	}
 }

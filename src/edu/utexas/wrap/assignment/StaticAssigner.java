@@ -31,4 +31,5 @@ public interface StaticAssigner extends Assigner {
 	public Integer maxIterations();
 	
 	public void setTollingPolicy(ToDoubleFunction<Link> policy);
+	
 }

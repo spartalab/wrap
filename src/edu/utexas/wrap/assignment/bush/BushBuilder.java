@@ -29,19 +29,17 @@ import edu.utexas.wrap.util.FibonacciLeaf;
 
 public class BushBuilder implements AssignmentBuilder<Bush> {
 	
-	private Graph network;
 	private ToDoubleFunction<Link> costFunction;
 	
-	public BushBuilder(Graph network) {
-		this(network, Link::freeFlowTime);
+	public BushBuilder() {
+		this(Link::freeFlowTime);
 	}
 	
-	public BushBuilder(Graph network, ToDoubleFunction<Link> costFunction) {
-		this.network = network;
+	public BushBuilder(ToDoubleFunction<Link> costFunction) {
 		this.costFunction = costFunction;
 	}
 
-	public void buildStructure(Bush bush) {
+	public void buildStructure(Bush bush, Graph network) {
 		// Initialize every nodeL to infinity except this, the origin
 		// Initialize the empty map of finalized nodes, the map of 
 		// eligible nodes to contain this origin only, and the 

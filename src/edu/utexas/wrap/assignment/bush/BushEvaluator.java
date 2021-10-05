@@ -17,7 +17,9 @@
  */
 package edu.utexas.wrap.assignment.bush;
 
+import edu.utexas.wrap.net.Graph;
+
 public interface BushEvaluator {
 
-	public double getValue(Bush bush);
+	public double getValue(Bush bush, Graph network);
 }
