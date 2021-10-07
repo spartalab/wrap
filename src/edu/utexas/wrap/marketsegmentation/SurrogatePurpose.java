@@ -104,7 +104,7 @@ public class SurrogatePurpose implements Purpose {
 		case "odProfile":
 			return loadProfilesFromFiles();
 		default:
-			return timeOfDaySplitter().split(matrices);
+			return timeOfDaySplitter().split(matrices, this);
 		}	
 	}
 
@@ -118,7 +118,8 @@ public class SurrogatePurpose implements Purpose {
 						dir.resolve(props.getProperty("odProfile."+mode.toString()+".file")),
 						mode,
 						getVOTs(mode),
-						zones);
+						zones,
+						this);
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -155,6 +156,11 @@ public class SurrogatePurpose implements Purpose {
 		return ret;
 	}
 	
+	
+	@Override
+	public Float getVOT(TimePeriod tp) {
+		return getVOTs().get(tp);
+	}
 	/**Develop a daily ODMatrix according to the DummyPurpose's specifications
 	 * 
 	 * This method reads the {@code type} property and,

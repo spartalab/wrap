@@ -156,8 +156,11 @@ public class Project {
 		return markets;
 	}
 	
-	public Collection<Assigner> getAssigners(){
-		return assigners.values();
+	public List<Assigner> getAssigners(){
+		return assigners.entrySet().stream()
+				.sorted(Map.Entry.comparingByKey())
+				.map(Map.Entry::getValue)
+				.collect(Collectors.toList());
 	}
 	
 	public Assigner getAssigner(String id) {
@@ -564,6 +567,11 @@ public class Project {
 	public void writeProperties() throws IOException {
 		// TODO Auto-generated method stub
 		props.store(Files.newOutputStream(getPath(), StandardOpenOption.WRITE, StandardOpenOption.CREATE), null);
+	}
+
+	public Path metricOutputPath() {
+		// TODO Auto-generated method stub
+		return getDirectory().resolve(props.getProperty("metricOutputPath"));
 	}
 
 }

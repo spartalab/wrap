@@ -1,17 +1,31 @@
 package edu.utexas.wrap.gui;
 
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import edu.utexas.wrap.Project;
+import edu.utexas.wrap.TimePeriod;
+import edu.utexas.wrap.assignment.Assigner;
+import edu.utexas.wrap.assignment.StaticAssigner;
+import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.ODProfile;
+import edu.utexas.wrap.marketsegmentation.Market;
 import edu.utexas.wrap.marketsegmentation.MarketRunner;
+import edu.utexas.wrap.marketsegmentation.Purpose;
+import edu.utexas.wrap.util.io.SkimFactory;
 import edu.utexas.wrap.util.io.SkimLoader;
 import edu.utexas.wrap.marketsegmentation.PurposeRunner;
 import edu.utexas.wrap.net.Graph;
+import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.NetworkSkim;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -62,7 +76,7 @@ public class RunnerController extends Task<Integer> {
 	private ProgressBar assignerProgress;
 
 	@FXML
-	private TableView<Task<Graph>> assignerTable;
+	private TableView<AssignerRunner> assignerTable;
 
 	@FXML
 	private TableColumn<Task<Graph>, String> assignerIDColumn;
@@ -178,6 +192,8 @@ public class RunnerController extends Task<Integer> {
 		//TODO load surrogate data
 		updateProgress(0,project.getMaxIterations());
 		updateValue(1);
+		Collection<ODProfile> profiles = null;
+//		Collection<Graph> networks = null;
 		
 		// load initial skims from source
 		skimTable.getItems().parallelStream().forEach(Task::run);
@@ -212,7 +228,7 @@ public class RunnerController extends Task<Integer> {
 			// run the subthreads to get market OD profiles
 			marketRunners.parallelStream().forEach(Task::run);
 			
-			Collection<ODProfile> profiles = marketRunners.stream().flatMap(t -> {
+			profiles = marketRunners.stream().flatMap(t -> {
 				try {
 					return t.get().stream();
 				} catch (InterruptedException e) {
@@ -226,7 +242,7 @@ public class RunnerController extends Task<Integer> {
 				}
 			}).collect(Collectors.toSet());
 			
-			System.out.println("Number of OD Profiles: "+profiles.size());
+//			System.out.println("Number of OD Profiles: "+profiles.size());
 
 			
 			
@@ -234,16 +250,17 @@ public class RunnerController extends Task<Integer> {
 				break;
 			}
 			// run subthreads for assigners
+			Collection<ODProfile> profilesToLoad = profiles;
 			
 			project.getAssigners().parallelStream().forEach(assigner ->{
-				AssignerRunner assignerRunner = new AssignerRunner(assigner,profiles);
+				AssignerRunner assignerRunner = new AssignerRunner(assigner,profilesToLoad);
 				assignerTable.getItems().add(assignerRunner);
 				
 			});
 			
 			assignerTable.getItems().stream().sequential().forEach(Task::run);
 			
-//			Collection<Graph> networks = assignerTable.getItems().stream().map(t -> {
+//			networks = assignerTable.getItems().stream().map(t -> {
 //				try {
 //					return t.get();
 //				} catch (InterruptedException e) {
@@ -288,6 +305,69 @@ public class RunnerController extends Task<Integer> {
 			updateValue(i+1);
 			updateProgress(i,project.getMaxIterations());
 		}
+
+		BufferedWriter out = Files.newBufferedWriter(project.metricOutputPath(), StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+		out.write("Market,Purpose,Time Period,Assigner,Total Travel Time,Total Toll Cost\n");
+		
+		if (profiles != null) {
+			profiles.stream().map(profile -> {
+				String result = "";
+				Purpose tripPurpose = profile.getTripPurpose();
+				
+
+				Market market = null;
+
+				if (tripPurpose != null) {
+					market = tripPurpose.getMarket();
+					if (market != null) result += market.toString()+","+tripPurpose.toString()+",";
+					else result += "null,"+tripPurpose.toString()+",";
+
+				}
+				else result += "null,null,";
+
+				//TODO add columns here
+				for (TimePeriod tp : TimePeriod.values()) {
+					result += tp.toString()+",";
+					ODMatrix mtx = profile.getMatrix(tp);
+					Collection<ToDoubleFunction<Link>> evaluationMetrics = List.of(
+							Link::getTravelTime,
+							link -> link.getPrice(tripPurpose.getVOT(tp), mtx.getMode())
+							);;
+					for (Assigner assigner : project.getAssigners()) {
+						if (assigner instanceof StaticAssigner && ((StaticAssigner) assigner).getTimePeriod() != tp) continue;
+						
+						result += assigner.toString()+",";
+						Graph network = assigner.getNetwork();
+
+						for (ToDoubleFunction<Link> costFunction : evaluationMetrics) {
+
+							NetworkSkim costSkim = SkimFactory.calculateSkim(network, costFunction, null);
+
+							Double cost = mtx.getZones().stream().mapToDouble(origin -> 
+							mtx.getZones().stream().mapToDouble(destination -> 
+							costSkim.getCost(origin,destination)*mtx.getDemand(origin, destination)
+									).sum()
+									).sum();
+							result += cost.toString()+",";
+						}
+					};
+				}
+				result += "\n";
+				return result;
+
+			})
+			//TODO output results
+			.forEach(line -> {
+				try {
+					out.write(line);
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			});
+			;
+		}
+		
 		return Integer.parseInt(iterationNumber.getText());
 	}
 

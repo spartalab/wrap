@@ -25,22 +25,26 @@ import java.util.stream.Stream;
 import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.ODProfile;
+import edu.utexas.wrap.marketsegmentation.Purpose;
 import edu.utexas.wrap.modechoice.Mode;
 
 public class SegmentedODProfile implements ODProfile {
 	private final Map<TimePeriod,ODMatrix> matrices;
 	private final Map<TimePeriod,Float> vots;
 	private final Mode mode;
+	private final Purpose parent;
 
 	public SegmentedODProfile(
 			ODMatrix dailyDepartures,
 			Map<TimePeriod,Float> departureRates,
 			ODMatrix dailyArrivals,
 			Map<TimePeriod,Float> arrivalRates,
-			Map<TimePeriod,Float> vots
+			Map<TimePeriod,Float> vots,
+			Purpose parent
 			) {
 		mode = dailyDepartures.getMode();
 		this.vots = vots;
+		this.parent = parent;
 		matrices = Stream.of(TimePeriod.values())
 				.filter(tp -> departureRates.containsKey(tp) || arrivalRates.containsKey(tp))
 				.collect(
@@ -65,10 +69,11 @@ public class SegmentedODProfile implements ODProfile {
 						);
 	}
 	
-	public SegmentedODProfile(Map<TimePeriod,ODMatrix> matrices, Map<TimePeriod,Float> vots, Mode mode) {
+	public SegmentedODProfile(Map<TimePeriod,ODMatrix> matrices, Map<TimePeriod,Float> vots, Mode mode, Purpose parent) {
 		this.matrices = matrices;
 		this.vots = vots;
 		this.mode = mode;
+		this.parent = parent;
 	}
 
 	@Override
@@ -84,5 +89,10 @@ public class SegmentedODProfile implements ODProfile {
 	@Override
 	public Mode getMode() {
 		return mode;
+	}
+	
+	@Override
+	public Purpose getTripPurpose() {
+		return parent;
 	}
 }

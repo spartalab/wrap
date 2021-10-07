@@ -44,4 +44,9 @@ public class AssignerRunner extends Task<Graph> {
 		return assigner.toString();
 	}
 
+	public Assigner getAssigner() {
+		// TODO Auto-generated method stub
+		return assigner;
+	}
+
 }

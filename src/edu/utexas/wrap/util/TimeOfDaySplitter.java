@@ -26,6 +26,7 @@ import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.demand.containers.SegmentedODProfile;
 import edu.utexas.wrap.demand.containers.TransposeODMatrix;
+import edu.utexas.wrap.marketsegmentation.Purpose;
 
 public class TimeOfDaySplitter {
 	final Map<TimePeriod,Float> depRates, arrRates,vots;
@@ -36,9 +37,9 @@ public class TimeOfDaySplitter {
 		this.vots = vots;
 	}
 
-	public Collection<ODProfile> split(Collection<ODMatrix> dailyODs) {
+	public Collection<ODProfile> split(Collection<ODMatrix> dailyODs, Purpose parent) {
 		return dailyODs.stream()
-				.map(daily -> new SegmentedODProfile(daily,depRates,new TransposeODMatrix(daily),arrRates, vots))
+				.map(daily -> new SegmentedODProfile(daily,depRates,new TransposeODMatrix(daily),arrRates, vots, parent))
 				.collect(Collectors.toSet());
 	}
 

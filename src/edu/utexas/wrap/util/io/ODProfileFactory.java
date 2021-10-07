@@ -33,12 +33,13 @@ import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.demand.containers.FixedSizeODMatrix;
 import edu.utexas.wrap.demand.containers.SegmentedODProfile;
+import edu.utexas.wrap.marketsegmentation.Purpose;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class ODProfileFactory {
 
-	public static ODProfile readFromFile(Path path, Mode mode, Map<TimePeriod,Float> vots, Map<Integer, TravelSurveyZone> zones) throws IOException {
+	public static ODProfile readFromFile(Path path, Mode mode, Map<TimePeriod,Float> vots, Map<Integer, TravelSurveyZone> zones, Purpose parent) throws IOException {
 		
 		BufferedReader in = Files.newBufferedReader(path);
 		final String[] header = in.readLine().split(",");
@@ -76,6 +77,6 @@ public class ODProfileFactory {
 		
 		in.close();
 		
-		return new SegmentedODProfile(matrices,vots,mode);
+		return new SegmentedODProfile(matrices,vots,mode, parent);
 	}
 }

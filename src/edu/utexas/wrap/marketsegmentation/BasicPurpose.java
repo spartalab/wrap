@@ -427,7 +427,7 @@ public class BasicPurpose implements Purpose {
 	 */
 	@Override
 	public Collection<ODProfile> getODProfiles(Collection<ODMatrix> matrices) {
-		return todSplitter.split(matrices);
+		return todSplitter.split(matrices, this);
 	}
 
 	private Map<TimePeriod,Float> loadVOTs() {
@@ -442,6 +442,7 @@ public class BasicPurpose implements Purpose {
 		return ret;
 	}
 
+	@Override
 	public Float getVOT(TimePeriod tp) {
 		try{
 			return Float.parseFloat(properties.getProperty("vot."+tp.toString()));
@@ -555,5 +556,6 @@ public class BasicPurpose implements Purpose {
 		// TODO Auto-generated method stub
 		return zones.values();
 	}
+
 	
 }

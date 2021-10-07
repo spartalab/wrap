@@ -18,6 +18,7 @@
 package edu.utexas.wrap.demand;
 
 import edu.utexas.wrap.TimePeriod;
+import edu.utexas.wrap.marketsegmentation.Purpose;
 import edu.utexas.wrap.modechoice.Mode;
 
 /**An interface which contains travel demand over multiple
@@ -51,5 +52,7 @@ public interface ODProfile {
 	 * those making trips in this ODProfile during the given TimePeriod
 	 */
 	public Float getVOT(TimePeriod timePeriod);
+	
+	public Purpose getTripPurpose();
 	
 }

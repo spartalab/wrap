@@ -19,6 +19,7 @@ package edu.utexas.wrap.marketsegmentation;
 
 import java.util.Collection;
 
+import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.demand.AggregatePAMatrixProvider;
 import edu.utexas.wrap.demand.DailyODMatrixProvider;
 import edu.utexas.wrap.demand.ModalPAMatrixProvider;
@@ -60,5 +61,8 @@ public interface Purpose extends
 	public FrictionFactorMap getFrictionFunction(TripDistributor distributor);
 
 	public Collection<TravelSurveyZone> getZones();
+	
+	public Float getVOT(TimePeriod tp);
+
 };
 
