@@ -46,7 +46,6 @@ public class GapEvaluator<T extends AssignmentContainer> implements AssignmentEv
 //		cheapestPossibleCost = 0d;
 		
 		containerStream.forEach(container -> process(container, network));
-		System.out.println("Finished accumulating");
 		return (incurredCost.sum() - cheapestCost.sum())/cheapestCost.sum();
 	}
 
@@ -59,7 +58,6 @@ public class GapEvaluator<T extends AssignmentContainer> implements AssignmentEv
 			return;
 		}
 		double incurredCost = container.incurredCost();
-		System.out.println("Getting cheapest cost possible");
 		double cheapestContainerCost = network.cheapestCostPossible(container);
 		 
 		

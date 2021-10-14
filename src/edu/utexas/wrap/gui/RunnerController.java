@@ -251,8 +251,8 @@ public class RunnerController extends Task<Integer> {
 			}
 			// run subthreads for assigners
 			Collection<ODProfile> profilesToLoad = profiles;
-			
-			project.getAssigners().parallelStream().forEach(assigner ->{
+			assignerTable.getItems().clear();
+			project.getAssigners().stream().forEach(assigner ->{
 				AssignerRunner assignerRunner = new AssignerRunner(assigner,profilesToLoad);
 				assignerTable.getItems().add(assignerRunner);
 				
@@ -316,18 +316,17 @@ public class RunnerController extends Task<Integer> {
 				
 
 				Market market = null;
-
+				String purposeLabel = "";
 				if (tripPurpose != null) {
 					market = tripPurpose.getMarket();
-					if (market != null) result += market.toString()+","+tripPurpose.toString()+",";
-					else result += "null,"+tripPurpose.toString()+",";
+					if (market != null) purposeLabel = market.toString()+","+tripPurpose.toString()+",";
+					else purposeLabel = "null,"+tripPurpose.toString()+",";
 
 				}
-				else result += "null,null,";
+				else purposeLabel = "null,null,";
 
 				//TODO add columns here
 				for (TimePeriod tp : TimePeriod.values()) {
-					result += tp.toString()+",";
 					ODMatrix mtx = profile.getMatrix(tp);
 					Collection<ToDoubleFunction<Link>> evaluationMetrics = List.of(
 							Link::getTravelTime,
@@ -336,7 +335,7 @@ public class RunnerController extends Task<Integer> {
 					for (Assigner assigner : project.getAssigners()) {
 						if (assigner instanceof StaticAssigner && ((StaticAssigner) assigner).getTimePeriod() != tp) continue;
 						
-						result += assigner.toString()+",";
+						result += purposeLabel+ tp.toString()+","+assigner.toString()+",";
 						Graph network = assigner.getNetwork();
 
 						for (ToDoubleFunction<Link> costFunction : evaluationMetrics) {
@@ -350,9 +349,10 @@ public class RunnerController extends Task<Integer> {
 									).sum();
 							result += cost.toString()+",";
 						}
+						result += "\n";
 					};
 				}
-				result += "\n";
+
 				return result;
 
 			})
@@ -365,7 +365,8 @@ public class RunnerController extends Task<Integer> {
 					e.printStackTrace();
 				}
 			});
-			;
+			
+			out.close();
 		}
 		
 		return Integer.parseInt(iterationNumber.getText());

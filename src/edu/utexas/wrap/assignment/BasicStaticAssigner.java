@@ -232,7 +232,6 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 
 	public void iterate() {
 		optimizer.optimize(containers.stream(), network);
-		System.out.println("Finished iterating "+toString());
 		iterationsPerformed++;
 	}
 
@@ -276,9 +275,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	}
 	
 	public double getProgress() {
-		System.out.println("Evaluating "+this);
 		lastEvaluation = evaluate();
-		System.out.println("Done evaluating "+this);
 		double iterationProgress = iterationsPerformed/maxIterations;
 		double objectiveProgress = 1/Math.pow(2, Math.log10(lastEvaluation/threshold));
 		

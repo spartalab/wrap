@@ -344,7 +344,7 @@ public class Graph {
 
 
 	public void loadDemand(AssignmentContainer container) {
-		container.flows().entrySet().parallelStream().forEach(pair -> pair.getKey().changeFlow(pair.getValue()));
+		container.flows(false).entrySet().parallelStream().forEach(pair -> pair.getKey().changeFlow(pair.getValue()));
 	}
 
 	public double cheapestCostPossible(AssignmentContainer container) {

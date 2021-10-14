@@ -35,7 +35,7 @@ public class AssignerRunner extends Task<Graph> {
 			updateProgress(assigner.getProgress(),1);
 		}
 		
-		
+		updateMessage("Done");
 		return assigner.getNetwork();
 	}
 	

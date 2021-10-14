@@ -52,9 +52,10 @@ public interface AssignmentContainer {
 	public Collection<Link> usedLinks();
 
 	/**
+	 * @param useCached TODO
 	 * @return the set of link flows from this container
 	 */
-	public Map<Link, Double> flows();
+	public Map<Link, Double> flows(boolean useCached);
 
 	public double incurredCost();
 

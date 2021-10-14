@@ -44,7 +44,7 @@ public class AlgorithmBEquilibrator {
 
 		//Assign the correct back-pointers to BushMerges using topological search
 		//Get the flows on the current bush
-		Map<Link,Double> bushFlows = new ConcurrentHashMap<Link, Double>(bush.flows());
+		Map<Link,Double> bushFlows = new ConcurrentHashMap<Link, Double>(bush.flows(true));
 //		PathCostCalculator pcc = new PathCostCalculator(bush);
 		synchronized (this) {
 			//In reverse topological order,

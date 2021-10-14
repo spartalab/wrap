@@ -83,7 +83,7 @@ public class SegmentedODProfile implements ODProfile {
 	
 	@Override
 	public Float getVOT(TimePeriod period) {
-		return vots.get(period);
+		return vots.getOrDefault(period,0.0f);
 	}
 
 	@Override

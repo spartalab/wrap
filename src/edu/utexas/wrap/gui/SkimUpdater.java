@@ -22,6 +22,7 @@ public class SkimUpdater extends Task<NetworkSkim> {
 	@Override
 	protected NetworkSkim call() throws Exception {
 		// TODO Auto-generated method stub
+		updateProgress(0,1);
 		Assigner assigner = project.getAssigner(project.getSkimAssigner(skimID));
 		ToDoubleFunction<Link> func;
 		switch (project.getSkimFunction(skimID)) {
@@ -34,7 +35,9 @@ public class SkimUpdater extends Task<NetworkSkim> {
 		case "travelTime":
 			func = Link::getTravelTime;
 		}
-		return assigner.getSkim(skimID, func);
+		NetworkSkim skim = assigner.getSkim(skimID, func);
+		updateProgress(1,1);
+		return skim;
 	}
 
 	public String toString() {

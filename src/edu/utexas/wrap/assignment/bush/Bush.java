@@ -41,7 +41,7 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 public class Bush implements AssignmentContainer {
 
 	public static boolean orderCachingEnabled = true;
-	public static boolean flowCachingEnabled = false;
+	public static boolean flowCachingEnabled = true;
 	// Bush attributes
 	private final Node origin;
 	private final Float vot;
@@ -306,8 +306,8 @@ public class Bush implements AssignmentContainer {
 	/** Get all Bush flows
 	 * @return a Map from a Link to the amount of flow from this Bush on the Link
 	 */
-	public Map<Link, Double> flows(){
-		if (cachedFlows != null) return cachedFlows;
+	public Map<Link, Double> flows(boolean useCached){
+		if (cachedFlows != null && useCached) return cachedFlows;
 		//Get the reverse topological ordering and a place to store node flows
 //		Map<TravelSurveyZone,Double> tszFlow = demand.doubleClone();
 //		
@@ -415,6 +415,7 @@ public class Bush implements AssignmentContainer {
 	 */
 	public void clear() {
 		cachedTopoOrder = null;
+		cachedFlows = null;
 	}
 
 
@@ -422,8 +423,8 @@ public class Bush implements AssignmentContainer {
 	 * @return the total generalized cost for trips in this bush
 	 */
 	public double incurredCost() {
-		Map<Link,Double> flows = flows();
-		System.out.println("Getting incurred costs");
+		Map<Link,Double> flows = flows(false);
+//		System.out.println("Getting incurred costs");
 		Stream<Link> ul = getUsedLinkStream().parallel();
 		
 		return ul.mapToDouble(l -> flows.getOrDefault(l, 0.0)*l.getPrice(vot, c)).sum();

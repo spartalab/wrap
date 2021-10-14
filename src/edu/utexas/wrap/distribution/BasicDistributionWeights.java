@@ -27,7 +27,7 @@ public class BasicDistributionWeights implements DistributionWeights {
 		if (weightFile != null) try {
 			readWeightFile();
 		} catch (IOException e) {
-//			e.printStackTrace();
+			e.printStackTrace();
 		}
 
 	}
