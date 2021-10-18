@@ -79,8 +79,9 @@ public abstract class Link implements Priced, BackVector {
 	public Boolean changeFlow(Double delta) {
 		flowLock.writeLock().lock();
 
-		if (flo + delta <0.0) flo = 0.0;
-		else flo += delta;
+		double temp = flo + delta;
+		flo = Math.max(temp, 0.0);
+
 
 		if (delta != 0.0) {
 			cachedTT = null;

@@ -195,6 +195,8 @@ public class RunnerController extends Task<Integer> {
 		Collection<ODProfile> profiles = null;
 //		Collection<Graph> networks = null;
 		
+		//TODO load surrogates
+		
 		// load initial skims from source
 		skimTable.getItems().parallelStream().forEach(Task::run);
 		

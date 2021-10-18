@@ -380,9 +380,9 @@ public class Bush implements AssignmentContainer {
 	 */
 	public Stream<Link> getUsedLinkStream(){
 		//Include all standalone Links
-		Stream<Link> a = Stream.of(q).parallel().filter(bv -> bv instanceof Link).map(l -> (Link) l);
+		Stream<Link> a = Stream.of(q).filter(bv -> bv instanceof Link).map(l -> (Link) l);
 		//and Links stored inside a BackVector
-		Stream<Link> b = Stream.of(q).parallel().filter(bv -> bv instanceof BushMerge).map(bv -> (BushMerge) bv).flatMap(bv -> bv.getLinks().parallel());
+		Stream<Link> b = Stream.of(q).filter(bv -> bv instanceof BushMerge).map(bv -> (BushMerge) bv).flatMap(bv -> bv.getLinks());
 		return Stream.concat(a, b);
 	}
 	
@@ -397,7 +397,7 @@ public class Bush implements AssignmentContainer {
 	 * @return a Collection of all Links not used by the bush that could be added
 	 */
 	public Stream<Link> getUnusedLinks(){
-		return Stream.of(q).parallel().flatMap(bv ->{
+		return Stream.of(q).flatMap(bv ->{
 			if (bv instanceof Link)
 				return Stream.of(bv.getHead().reverseStar()).filter(link -> link != bv);
 			else if (bv instanceof BushMerge)

@@ -187,6 +187,10 @@ public class Project {
 				.collect(Collectors.toSet());
 	}
 	
+	public Collection<SurrogatePurpose> getSurrogates(){
+		return surrogates;
+	}
+	
 	/**Read a list of Assigner ids from the Project Properties, then load the
 	 * corresponding Assigners according to their definition. 
 	 * 

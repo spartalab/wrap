@@ -38,7 +38,7 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 
 	private final BushEvaluator evaluator;
 	private double threshold;
-	private int maxIterations = 10;
+	private int maxIterations = 25;
 
 	public AlgorithmBOptimizer(
 			AssignmentProvider<Bush> provider, 
