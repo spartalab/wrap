@@ -73,7 +73,15 @@ public class BushInitializer implements AssignmentInitializer<Bush>{
 			needsWriting = true;
 		}
 		
-		network.loadDemand(bush);
+		try {
+			network.loadDemand(bush);
+		} catch (RuntimeException e) {
+			System.err.println("INFO: Corrupted source for "+bush+". Rebuilding from free-flow network");
+			e.printStackTrace();
+			builder.buildStructure(bush, network);
+			network.loadDemand(bush);
+			needsWriting = true;
+		}
 		
 		try{
 			if (needsWriting) writer.consumeStructure(bush, network);
@@ -87,6 +95,12 @@ public class BushInitializer implements AssignmentInitializer<Bush>{
 	public Collection<Bush> initializeContainers(Graph network) {
 		Stream<Bush> tmp = containers;
 		containers = null;
-		return tmp.peek(bush -> loadContainer(network, bush)).collect(Collectors.toSet());
+		Collection<Bush> ret = tmp.peek(bush -> {try {
+			loadContainer(network, bush);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}}).collect(Collectors.toSet());
+		
+		return ret;
 	}
 }
