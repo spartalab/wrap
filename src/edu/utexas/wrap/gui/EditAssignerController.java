@@ -142,7 +142,7 @@ public class EditAssignerController {
 	@FXML
 	private Spinner<Double> iterationThreshold;
 	
-	private StaticAssigner assigner;
+	private StaticAssigner<?> assigner;
 	
 	private ToggleGroup containerType;
 	
@@ -314,7 +314,7 @@ public class EditAssignerController {
 
 	}
 
-	public void setAssigner(StaticAssigner selected) {
+	public void setAssigner(StaticAssigner<?> selected) {
 		// TODO Auto-generated method stub
 		assigner = selected;
 		

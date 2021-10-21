@@ -17,11 +17,13 @@
  */
 package edu.utexas.wrap.assignment;
 
-import java.util.stream.Stream;
-
 import edu.utexas.wrap.net.Graph;
 
 public interface AssignmentEvaluator<T extends AssignmentContainer> {
 
-	public double getValue(Stream<T> collectorStream, Graph network);
+	public double getValue();
+	
+	public void process(T container, Graph network);
+	
+	public void initialize();
 }

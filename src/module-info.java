@@ -17,6 +17,7 @@
  */
 module wrap {
 	requires java.base;
+	requires java.logging;
 	requires javafx.fxml;
 	requires javafx.controls;
 	requires transitive javafx.graphics;

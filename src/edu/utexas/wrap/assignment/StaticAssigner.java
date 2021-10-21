@@ -22,7 +22,7 @@ import java.util.function.ToDoubleFunction;
 import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.net.Link;
 
-public interface StaticAssigner extends Assigner {
+public interface StaticAssigner<C extends AssignmentContainer> extends Assigner<C> {
 
 	public TimePeriod getTimePeriod();
 	

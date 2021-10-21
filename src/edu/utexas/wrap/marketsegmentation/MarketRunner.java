@@ -3,6 +3,8 @@ package edu.utexas.wrap.marketsegmentation;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -20,9 +22,9 @@ public class MarketRunner extends Task<Collection<ODProfile>> {
 	private Collection<PurposeRunner> purposeRunners;
 	private RunnerController parent;
 	private SimpleIntegerProperty completedPurposes;
+	private Logger logger = Logger.getLogger("wrap.runner.market");
 
 	public MarketRunner(Market market, RunnerController parent) {
-		// TODO Auto-generated constructor stub
 		this.market = market;
 		this.parent = parent;
 		purposeRunners = new HashSet<PurposeRunner>();
@@ -30,11 +32,12 @@ public class MarketRunner extends Task<Collection<ODProfile>> {
 	
 	@FXML
 	private void initialize() {
+		logger.info("Initializing MarketRunner for "+market);
 		setOnCancelled(new EventHandler<WorkerStateEvent>() {
 
 			@Override
 			public void handle(WorkerStateEvent arg0) {
-				// TODO Auto-generated method stub
+				logger.info("MarketRunner for "+market+" cancelled");
 				purposeRunners.forEach(Task::cancel);
 			}
 			
@@ -54,6 +57,7 @@ public class MarketRunner extends Task<Collection<ODProfile>> {
 
 	@Override
 	protected Collection<ODProfile> call() throws Exception {
+		logger.info("Starting MarketRunner for "+market);
 		completedPurposes = new SimpleIntegerProperty(0);
 		
 		//TODO load surrogate data
@@ -67,6 +71,7 @@ public class MarketRunner extends Task<Collection<ODProfile>> {
 		
 		
 		// run subtasks for each purpose
+		logger.info("Starting PurposeRunners for "+market);
 		purposeRunners.parallelStream().forEach(Task::run);
 		Thread.sleep(1);
 		
@@ -74,8 +79,10 @@ public class MarketRunner extends Task<Collection<ODProfile>> {
 		return purposeRunners.stream().flatMap(runner -> { try {
 			return runner.get().stream();
 		} catch (ExecutionException e) {
+			logger.log(Level.SEVERE,"An error was encountered while executing PurposeRunner "+runner,e);
 			return Stream.empty();
 		} catch (InterruptedException e) {
+			logger.log(Level.WARNING,"PurposeRunner "+runner+" was interrupted",e);
 			return Stream.empty();
 		}
 		})
@@ -85,6 +92,7 @@ public class MarketRunner extends Task<Collection<ODProfile>> {
 	
 	@Override
 	protected void succeeded() {
+		logger.info("MarketRunner for "+market+" completed successfully");
 		parent.increaseCompletedMarkets();
 	}
 

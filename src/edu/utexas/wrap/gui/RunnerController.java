@@ -9,6 +9,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.function.ToDoubleFunction;
+import java.util.logging.Logger;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -76,7 +78,7 @@ public class RunnerController extends Task<Integer> {
 	private ProgressBar assignerProgress;
 
 	@FXML
-	private TableView<AssignerRunner> assignerTable;
+	private TableView<AssignerRunner<?>> assignerTable;
 
 	@FXML
 	private TableColumn<Task<Graph>, String> assignerIDColumn;
@@ -86,6 +88,9 @@ public class RunnerController extends Task<Integer> {
 
 	@FXML
 	private TableColumn<Task<Graph>, Double> assignerProgressColumn;
+	
+	@FXML
+	private TableColumn<Task<Graph>,Double> subtaskProgressColumn;
 
 	@FXML
 	private ProgressBar skimProgress;
@@ -109,20 +114,31 @@ public class RunnerController extends Task<Integer> {
 	
 	private SimpleIntegerProperty completedMarketCount;
 	
+	private SimpleIntegerProperty completedAssignerCount;
+	
+	private Logger logger = Logger.getLogger("wrap.runner");
+	
 	
 	
 	public void initialize() {
+		logger.info("Initializing RunnerController");
 		marketRunners = new HashSet<MarketRunner>();
 		modelProgress.progressProperty().bind(this.progressProperty());
 		iterationNumber.textProperty().bind(Bindings.convert(valueProperty()));
+		
 		completedMarketCount = new SimpleIntegerProperty(0);
+		completedAssignerCount = new SimpleIntegerProperty(0);
 	}
 	
 	public void setProject(Project project) {
+		logger.info("Setting project: "+project.getPath());
 		this.project = project;
+		
 		iterationLimit.setText(project.getMaxIterations().toString());
 		marketProgress.progressProperty().bind(completedMarketCount.divide((double) project.getMarkets().size()));
+		assignerProgress.progressProperty().bind(completedAssignerCount.divide((double) project.getAssignerIDs().size()));
 
+		
 		marketTable.setShowRoot(false);
 		IDColumn.setCellValueFactory(new Callback<TreeTableColumn.CellDataFeatures<Task<Collection<ODProfile>>,String>,ObservableValue<String>>(){
 
@@ -172,6 +188,8 @@ public class RunnerController extends Task<Integer> {
 		assignerProgressColumn.setCellValueFactory(new PropertyValueFactory<Task<Graph>,Double>("progress"));
 		assignerProgressColumn.setCellFactory(ProgressBarTableCell.<Task<Graph>>forTableColumn());
 		
+		subtaskProgressColumn.setCellValueFactory(new PropertyValueFactory<Task<Graph>,Double>("subtaskProgress"));
+		subtaskProgressColumn.setCellFactory(ProgressBarTableCell.<Task<Graph>>forTableColumn());
 		
 		setOnCancelled(new EventHandler<WorkerStateEvent>() {
 
@@ -190,7 +208,9 @@ public class RunnerController extends Task<Integer> {
 	@Override
 	protected Integer call() throws Exception {
 		//TODO load surrogate data
+		logger.info("Starting run");
 		updateProgress(0,project.getMaxIterations());
+		logger.info("Number of iterations: "+project.getMaxIterations());
 		updateValue(1);
 		Collection<ODProfile> profiles = null;
 //		Collection<Graph> networks = null;
@@ -198,18 +218,20 @@ public class RunnerController extends Task<Integer> {
 		//TODO load surrogates
 		
 		// load initial skims from source
+		logger.info("Reading initial skims");
 		skimTable.getItems().parallelStream().forEach(Task::run);
 		
 		
 		for (int i = 1; i < project.getMaxIterations()+1;i++) {
-			
+			logger.info("Beginning iteration "+i);
 			if (isCancelled()) {
+				logger.warning("Run cancelled");
 				break;
 			}
 			marketRoot.getChildren().clear();
 			marketRunners.clear();
 			completedMarketCount.set(0);
-			
+			logger.info("Creating MarketRunners");
 			project.getMarkets().forEach(market -> {
 				MarketRunner marketRunner = new MarketRunner(market,this);
 				marketRunners.add(marketRunner);
@@ -217,7 +239,7 @@ public class RunnerController extends Task<Integer> {
 				
 				
 				
-				
+				logger.info("Creating PurposeRunners for "+market.toString());
 				marketRoot.getChildren().add(marketItem);
 				market.getPurposes().forEach(purpose -> {
 					PurposeRunner purposeRunner = new PurposeRunner(purpose, marketRunner);
@@ -228,38 +250,40 @@ public class RunnerController extends Task<Integer> {
 			});
 			
 			// run the subthreads to get market OD profiles
+			logger.info("Starting MarketRunners");
 			marketRunners.parallelStream().forEach(Task::run);
 			
 			profiles = marketRunners.stream().flatMap(t -> {
 				try {
 					return t.get().stream();
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					logger.log(Level.WARNING,"MarketRunner "+t+" interrupted.",e);
 					return Stream.empty();
 				} catch (ExecutionException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					logger.log(Level.SEVERE,"MarketRunner "+t+" encountered an error in execution.",e);
 					return Stream.empty();
 				}
 			}).collect(Collectors.toSet());
 			
-//			System.out.println("Number of OD Profiles: "+profiles.size());
+			logger.info("MarketRunners complete. Number of OD Profiles: "+profiles.size());
 
 			
 			
 			if (isCancelled()) {
+				logger.warning("Run cancelled");
 				break;
 			}
 			// run subthreads for assigners
+			logger.info("Creating AssignerRunners");
 			Collection<ODProfile> profilesToLoad = profiles;
 			assignerTable.getItems().clear();
-			project.getAssigners().stream().forEach(assigner ->{
-				AssignerRunner assignerRunner = new AssignerRunner(assigner,profilesToLoad);
+			project.getAssigners().stream().forEach( assigner ->{
+				AssignerRunner<?> assignerRunner = new AssignerRunner<>(assigner,profilesToLoad,this);
 				assignerTable.getItems().add(assignerRunner);
 				
 			});
 			
+			logger.info("Starting AssignerRunners");
 			assignerTable.getItems().stream().sequential().forEach(Task::run);
 			
 //			networks = assignerTable.getItems().stream().map(t -> {
@@ -277,12 +301,15 @@ public class RunnerController extends Task<Integer> {
 //			}).collect(Collectors.toSet());
 			
 			if (isCancelled()) {
+				logger.warning("Run cancelled");
 				break;
 			}
 			
 			//TODO run subthreads for updating skims
 			skimTable.getItems().clear();
+			logger.info("Creating SkimUpdaters");
 			project.getSkimIDs().forEach(skimID -> skimTable.getItems().add(new SkimUpdater(skimID,project)));
+			logger.info("Running SkimUpdaters");
 			skimTable.getItems().parallelStream().forEach(Task::run);
 			
 			skimTable.getItems().stream().map(t -> {
@@ -290,24 +317,30 @@ public class RunnerController extends Task<Integer> {
 					return t.get();
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
+					logger.log(Level.WARNING,"SkimUpdater "+t+" interrupted.",e);
 					return null;
 				} catch (ExecutionException e) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
+					logger.log(Level.SEVERE,"SkimUpdater "+t+" encountered an error in execution.",e);
 					return null;
 				}
-			}).forEach(skim -> project.updateSkim(skim.toString(), skim));
+			}).forEach(skim -> {
+				logger.info("Updating skim "+skim.toString()+" in project");
+				project.updateSkim(skim.toString(), skim);
+			});
 			
 			if (isCancelled()) {
+				logger.warning("Run cancelled");
 				break;
 			}
 
+			logger.info("Iteration "+i+" completed");
 			Thread.sleep(1);
 			updateValue(i+1);
 			updateProgress(i,project.getMaxIterations());
 		}
 
+		logger.info("Writing output metrics");
 		BufferedWriter out = Files.newBufferedWriter(project.metricOutputPath(), StandardOpenOption.WRITE, StandardOpenOption.CREATE);
 		out.write("Market,Purpose,Time Period,Assigner,Total Travel Time,Total Toll Cost\n");
 		
@@ -327,15 +360,14 @@ public class RunnerController extends Task<Integer> {
 				}
 				else purposeLabel = "null,null,";
 
-				//TODO add columns here
 				for (TimePeriod tp : TimePeriod.values()) {
 					ODMatrix mtx = profile.getMatrix(tp);
 					Collection<ToDoubleFunction<Link>> evaluationMetrics = List.of(
 							Link::getTravelTime,
 							link -> link.getPrice(tripPurpose.getVOT(tp), mtx.getMode())
 							);;
-					for (Assigner assigner : project.getAssigners()) {
-						if (assigner instanceof StaticAssigner && ((StaticAssigner) assigner).getTimePeriod() != tp) continue;
+					for (Assigner<?> assigner : project.getAssigners()) {
+						if (assigner instanceof StaticAssigner && ((StaticAssigner<?>) assigner).getTimePeriod() != tp) continue;
 						
 						result += purposeLabel+ tp.toString()+","+assigner.toString()+",";
 						Graph network = assigner.getNetwork();
@@ -358,13 +390,13 @@ public class RunnerController extends Task<Integer> {
 				return result;
 
 			})
-			//TODO output results
+			// output results
 			.forEach(line -> {
 				try {
 					out.write(line);
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
+					logger.log(Level.SEVERE,"An error was encountered while writing output metrics.",e);
 				}
 			});
 			
@@ -375,10 +407,11 @@ public class RunnerController extends Task<Integer> {
 	}
 
 	public void increaseCompletedMarkets() {
-		// TODO Auto-generated method stub
 		completedMarketCount.set(completedMarketCount.get()+1);
-		
-		
+	}
+
+	public void increaseCompletedAssigners() {
+		completedAssignerCount.set(completedAssignerCount.get()+1);
 	}
 
 }

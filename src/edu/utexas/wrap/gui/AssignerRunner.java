@@ -3,20 +3,44 @@ package edu.utexas.wrap.gui;
 import java.util.Collection;
 
 import edu.utexas.wrap.assignment.Assigner;
+import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.net.Graph;
+import javafx.beans.property.ReadOnlyDoubleProperty;
+import javafx.beans.property.ReadOnlyDoubleWrapper;
 import javafx.concurrent.Task;
+import javafx.concurrent.WorkerStateEvent;
+import javafx.event.EventHandler;
 
-public class AssignerRunner extends Task<Graph> {
-	private final Assigner assigner;
+public class AssignerRunner<C extends AssignmentContainer> extends Task<Graph> {
+	private final Assigner<C> assigner;
 	private final Collection<ODProfile> profiles;
+	private Task<Double> evaluator;
+	private Task<Void> iterator;
+	public ReadOnlyDoubleWrapper subtaskProgress;
+	private RunnerController parent;
 
-	public AssignerRunner(Assigner assigner, Collection<ODProfile> profiles) {
+	public AssignerRunner(Assigner<C> assigner, Collection<ODProfile> profiles, RunnerController parent) {
 		// TODO Auto-generated constructor stub
 		this.assigner = assigner;
 		this.profiles = profiles;
+		this.parent = parent;
 		updateProgress(0.,1.);
+
+		subtaskProgress = new ReadOnlyDoubleWrapper();
+		setOnCancelled(new EventHandler<WorkerStateEvent>() {
+
+			@Override
+			public void handle(WorkerStateEvent arg0) {
+				// TODO Auto-generated method stub
+//				if (initializer != null) initializer.cancel();
+				if (evaluator != null) evaluator.cancel();
+				if (iterator != null) iterator.cancel();
+			}
+			
+		});
 	}
+	
 
 	@Override
 	protected Graph call() throws Exception {
@@ -25,18 +49,46 @@ public class AssignerRunner extends Task<Graph> {
 		assigner.initialize(profiles);
 
 		updateMessage("Evaluating");
-		updateProgress(assigner.getProgress(),1);
+		evaluator = new EvaluatorRunner<C>(
+				assigner.getEvaluator(),
+				assigner.getContainers(), 
+				assigner.getNetwork(),
+				this);
+
+		evaluator.run();
+		int numIterations = 0;
 		
-		while (!isCancelled() && !assigner.isTerminated()) {
+		Double progress = assigner.getProgress(evaluator.get(), numIterations);
+		updateProgress(progress,1);
+		
+		while (!isCancelled() && progress < 1) {
 			updateMessage("Iterating");
-			assigner.iterate();
+			iterator = new IteratorRunner<C>(
+					assigner.getOptimizer(), 
+					assigner.getContainers(),
+					assigner.getNetwork(),
+					this);
+
+			numIterations++;
+			iterator.run();
 			if (isCancelled()) break;
+			
 			updateMessage("Evaluating");
-			updateProgress(assigner.getProgress(),1);
+			evaluator = new EvaluatorRunner<C>(
+					assigner.getEvaluator(),
+					assigner.getContainers(), 
+					assigner.getNetwork(),
+					this);
+
+			evaluator.run();
+			progress = assigner.getProgress(evaluator.get(),numIterations);
+			updateProgress(progress,1);
 		}
-		
 		updateMessage("Done");
+		updateProgress(1,1);
+		updateSubtaskProgress(1,1);
 		return assigner.getNetwork();
+		
 	}
 	
 	@Override
@@ -44,9 +96,23 @@ public class AssignerRunner extends Task<Graph> {
 		return assigner.toString();
 	}
 
-	public Assigner getAssigner() {
+	public Assigner<C> getAssigner() {
 		// TODO Auto-generated method stub
 		return assigner;
 	}
+	
+	public ReadOnlyDoubleProperty subtaskProgressProperty() {
+		return subtaskProgress;
+	}
 
+
+	public void updateSubtaskProgress(int newVal, int size) {
+		// TODO Auto-generated method stub
+		subtaskProgress.set(newVal/size);
+	}
+
+	@Override
+	protected void succeeded() {
+		parent.increaseCompletedAssigners();
+	}
 }

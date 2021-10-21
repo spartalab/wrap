@@ -19,7 +19,6 @@ package edu.utexas.wrap.assignment.bush.algoB;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Stream;
 
 import edu.utexas.wrap.assignment.AssignmentOptimizer;
 import edu.utexas.wrap.assignment.AssignmentProvider;
@@ -56,76 +55,46 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 	}
 
 	@Override
-	public void optimize(Stream<Bush> bushStream, Graph network) {
-		//		queue = 
-		bushStream
-		//				.map( bush -> {
-		//					try{
-		//						provider.getStructure(bush);
-		//					} catch (IOException e) {
-		//						System.err.println("WARN: Could not find source for "+bush+". Ignoring");
-		//						return null;
-		//					}
-		//
-		//					updater.update(bush);
-		//
-		//					try {
-		//						consumer.consumeStructure(bush);
-		//					} catch (IOException e) {
-		//						System.err.println("WARN: Could not write structure for "+bush+". Source may be corrupted");
-		//					}
-		//
-		//					return bush;
-		//				})
-		//				.collect(Collectors.toSet());
+	public void process(Bush bush, Graph network) {
+		try{
+			provider.getStructure(bush, network);
+		} catch (IOException e) {
+			System.err.println("WARN: Could not find source for "+bush+". Ignoring");
+			return;
+		}
 
-		//		int numIterations = 0;
-
-		//FIXME: This while loop is inconsistent with design
-		//		while (!queue.isEmpty() && numIterations < maxIterations) {
-		//			System.out.print("Inner iteration "+numIterations+++"\tQueue length: "+queue.size()+"     \r");
-		//			queue = queue
-		//					.parallelStream()
-		.parallel()
-		.forEach(bush -> {
-			//						boolean isEquilibrated = false;
-			try{
-				provider.getStructure(bush, network);
-			} catch (IOException e) {
-				System.err.println("WARN: Could not find source for "+bush+". Ignoring");
-				return;
-			}
-
-			PathCostCalculator pcc = new PathCostCalculator(bush);
-			updater.update(bush, pcc);
-			
-			for (int i = 0; i < maxIterations;i++) {
-				try {
-					equilibrator.equilibrate(bush, pcc);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (ExecutionException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-				Double val = evaluator.getValue(bush, network);
-				//							System.out.println(val);
-				if (val < threshold) break;
-				pcc.clear();
-			}
-			
-
+		PathCostCalculator pcc = new PathCostCalculator(bush);
+		updater.update(bush, pcc);
+		
+		for (int i = 0; i < maxIterations;i++) {
 			try {
-				consumer.consumeStructure(bush, network);
-			} catch (IOException e) {
-				System.err.println("WARN: Could not write structure for "+bush+". Source may be corrupted");
+				equilibrator.equilibrate(bush, pcc);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ExecutionException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-			//						return !isEquilibrated;
-		});
-		//					.collect(Collectors.toSet());
+			Double val = evaluator.getValue(bush, network);
+			//							System.out.println(val);
+			if (val < threshold) break;
+			pcc.clear();
+		}
+		
+
+		try {
+			consumer.consumeStructure(bush, network);
+		} catch (IOException e) {
+			System.err.println("WARN: Could not write structure for "+bush+". Source may be corrupted");
+		}
 	}
-	//	}
+
+	@Override
+	public void initialize() {
+		// TODO Auto-generated method stub
+		
+	}
 
 
 }

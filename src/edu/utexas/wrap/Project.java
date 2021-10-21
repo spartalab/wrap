@@ -69,7 +69,7 @@ public class Project {
 	private String name;
 	private Collection<Market> markets;
 	private Collection<SurrogatePurpose> surrogates;
-	private Map<String,Assigner> assigners;
+	private Map<String,Assigner<?>> assigners;
 	
 	/**Project constructor from a Properties file (*.wrp)
 	 * @param projFile the location of a Project Properties (*.wrp) file
@@ -156,14 +156,14 @@ public class Project {
 		return markets;
 	}
 	
-	public List<Assigner> getAssigners(){
+	public List<Assigner<?>> getAssigners(){
 		return assigners.entrySet().stream()
 				.sorted(Map.Entry.comparingByKey())
 				.map(Map.Entry::getValue)
 				.collect(Collectors.toList());
 	}
 	
-	public Assigner getAssigner(String id) {
+	public Assigner<?> getAssigner(String id) {
 		return assigners.get(id);
 	}
 	/**
@@ -277,10 +277,14 @@ public class Project {
 //	}
 	
 	public void updateSkim(String id, NetworkSkim skim) {
-		currentSkims.put(id, skim);
+		try {
+			currentSkims.put(id, skim);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
-	private Assigner initializeAssigner(String id) {
+	private Assigner<?> initializeAssigner(String id) {
 		try {
 
 			switch (props.getProperty("assigners."+id+".class")) {
@@ -438,7 +442,7 @@ public class Project {
 		return props.getProperty("markets."+marketID+".file");
 	}
 	
-	public String getAssignerFile(Assigner assignerID) {
+	public String getAssignerFile(Assigner<?> assignerID) {
 		return props.getProperty("assigners."+assignerID+".file");
 	}
 	
@@ -526,15 +530,15 @@ public class Project {
 		props.setProperty("markets."+curMarketID+".file", text);
 	}
 	
-	public String getAssignerClass(Assigner assigner) {
+	public String getAssignerClass(Assigner<?> assigner) {
 		return props.getProperty("assigners."+assigner+".class");
 	}
 
-	public void setAssignerClass(Assigner assigner, String text) {
+	public void setAssignerClass(Assigner<?> assigner, String text) {
 		props.setProperty("assigners."+assigner+".class", text);
 	}
 	
-	public void setAssignerFile(Assigner assigner, String text) {
+	public void setAssignerFile(Assigner<?> assigner, String text) {
 		props.setProperty("assigners."+assigner+".file", text);
 	}
 
@@ -547,7 +551,7 @@ public class Project {
 		props.setProperty("assigners."+assignerID+".file", assignerSourceURI);
 	}
 
-	public void removeAssigner(Assigner assigner) {
+	public void removeAssigner(Assigner<?> assigner) {
 		// TODO Auto-generated method stub
 		assigners.remove(assigner.toString());
 		if (!assigners.isEmpty()) props.setProperty("assigners.ids", String.join(",", assigners.keySet()));

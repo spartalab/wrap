@@ -27,9 +27,7 @@ import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.NetworkSkim;
 
-public interface Assigner {
-	
-	public void process(ODProfile profile);
+public interface Assigner<C extends AssignmentContainer> {
 	
 	public NetworkSkim getSkim(String id, ToDoubleFunction<Link> function);
 
@@ -37,14 +35,16 @@ public interface Assigner {
 	
 	public void initialize(Collection<ODProfile> profiles);
 	
-	public boolean isTerminated();
-	
-	public void iterate();
-	
-	public double getProgress();
+	public double getProgress(double currentValue, int numIterations);
 	
 	public Collection<Mode> assignedModes();
 	
 	public Graph getNetwork();
+
+	public AssignmentEvaluator<C> getEvaluator();
+
+	public Collection<C> getContainers();
+
+	AssignmentOptimizer<C> getOptimizer();
 	
 }

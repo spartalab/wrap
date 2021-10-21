@@ -55,9 +55,9 @@ public class SkimFactory {
 
 	public static NetworkSkim calculateSkim(Graph network,ToDoubleFunction<Link> costFunction, String id) {
 		Collection<TravelSurveyZone> zones = network.getTSZs();
-		
+		System.out.println("Got zones for "+id);
 		FixedSizeNetworkSkim skim = new FixedSizeNetworkSkim(id,network.numZones());
-		
+		System.out.println("Created empty skim for "+id);
 		zones.stream()
 		
 		.forEach(orig -> {
@@ -86,6 +86,7 @@ public class SkimFactory {
 				}
 			}
 		});
+		System.out.println("Populated "+id+" skim");
 		return skim;
 	}
 

@@ -19,7 +19,6 @@ package edu.utexas.wrap.assignment;
 
 import java.io.IOException;
 import java.util.concurrent.atomic.DoubleAdder;
-import java.util.stream.Stream;
 
 import edu.utexas.wrap.net.Graph;
 
@@ -35,21 +34,25 @@ public class GapEvaluator<T extends AssignmentContainer> implements AssignmentEv
 			AssignmentConsumer<T> consumer) {
 		this.provider = provider;
 		this.consumer = consumer;
+	}
+	
+	public void initialize() {
 		incurredCost = new DoubleAdder();
 		cheapestCost = new DoubleAdder();
 	}
 	
 
 	@Override
-	public double getValue(Stream<T> containerStream, Graph network) {
+	public double getValue() {
 //		systemIncurredCost = 0d;
 //		cheapestPossibleCost = 0d;
+		if (incurredCost == null || cheapestCost == null) return 0.;
 		
-		containerStream.forEach(container -> process(container, network));
 		return (incurredCost.sum() - cheapestCost.sum())/cheapestCost.sum();
 	}
 
-	private void process(T container, Graph network) {
+	@Override
+	public void process(T container, Graph network) {
 		
 		try{
 			provider.getStructure(container, network);

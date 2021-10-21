@@ -229,7 +229,7 @@ public class ConfigController {
 	private Tab assignerTab;
 	
 	@FXML
-	private ListView<StaticAssigner> assignerList;
+	private ListView<StaticAssigner<?>> assignerList;
 
 	@FXML
 	private VBox assignerBox;
@@ -416,10 +416,10 @@ public class ConfigController {
 				);
 		
 		assignerList.getSelectionModel().selectedItemProperty().addListener(
-				new ChangeListener<Assigner>() {
+				new ChangeListener<Assigner<?>>() {
 
 					@Override
-					public void changed(ObservableValue<? extends Assigner> arg0, Assigner oldValue, Assigner newValue) {
+					public void changed(ObservableValue<? extends Assigner<?>> arg0, Assigner<?> oldValue, Assigner<?> newValue) {
 						if (newValue != null) {
 							assignerBox.setDisable(false);
 							assignerRemove.setDisable(false);
@@ -1091,7 +1091,7 @@ public class ConfigController {
 			if (currentProject != null) {
 				assignerList.setItems(FXCollections.observableArrayList(currentProject.getAssigners().stream()
 						.filter(assigner -> assigner instanceof StaticAssigner)
-						.map(assigner -> (StaticAssigner) assigner)
+						.map(assigner -> (StaticAssigner<?>) assigner)
 						.collect(Collectors.toSet())));
 				assignerBox.setDisable(true);
 			} else {
@@ -1103,7 +1103,7 @@ public class ConfigController {
 	
 	@FXML
 	private void changeAssignerClass(ActionEvent e) {
-		Assigner curAssigner = assignerList.getSelectionModel().getSelectedItem();
+		Assigner<?> curAssigner = assignerList.getSelectionModel().getSelectedItem();
 		
 		if (!assignerClass.getSelectionModel().isEmpty() && 
 				!assignerClass.getSelectionModel().getSelectedItem()
@@ -1117,7 +1117,7 @@ public class ConfigController {
 	
 	@FXML
 	private void changeAssignerSourceURI(ActionEvent e) {
-		Assigner curAssignerID = assignerList.getSelectionModel().getSelectedItem();
+		Assigner<?> curAssignerID = assignerList.getSelectionModel().getSelectedItem();
 		
 		if (!assignerSourceURI.getText().equals(
 				currentProject.getAssignerFile(curAssignerID)
@@ -1178,7 +1178,7 @@ public class ConfigController {
 	private void editAssigner(ActionEvent e) {
 		//TODO
 //		Market selected = marketList.getSelectionModel().getSelectedItem();
-		StaticAssigner selected = assignerList.getSelectionModel().getSelectedItem();
+		StaticAssigner<?> selected = assignerList.getSelectionModel().getSelectedItem();
 		try {
 			FXMLLoader loader = new FXMLLoader();
 			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/assignerDialog.fxml").openStream());
@@ -1251,7 +1251,7 @@ public class ConfigController {
 
 	@FXML
 	private void removeAssigner(ActionEvent e) {
-		Assigner assignerName = assignerList.getSelectionModel().getSelectedItem();
+		Assigner<?> assignerName = assignerList.getSelectionModel().getSelectedItem();
 		if (assignerName != null) {
 			Alert alert = new Alert(AlertType.CONFIRMATION,"Remove assigner "+assignerName+" from model?",ButtonType.YES,ButtonType.NO);
 			((Stage) alert.getDialogPane().getScene().getWindow()).getIcons().add(wrapIcon);

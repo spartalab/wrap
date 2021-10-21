@@ -14,30 +14,39 @@ public class SkimUpdater extends Task<NetworkSkim> {
 	private Project project;
 
 	public SkimUpdater(String skimID, Project project) {
-		// TODO Auto-generated constructor stub
 		this.skimID = skimID;
 		this.project = project;
 	}
 
 	@Override
-	protected NetworkSkim call() throws Exception {
+	protected NetworkSkim call() {
 		// TODO Auto-generated method stub
-		updateProgress(0,1);
-		Assigner assigner = project.getAssigner(project.getSkimAssigner(skimID));
-		ToDoubleFunction<Link> func;
-		switch (project.getSkimFunction(skimID)) {
-		case "travelTimeSingleOcc":
-			func = (Link x) -> 
+		try { 
+			updateProgress(0,1); 
+
+			System.out.println("Getting assigner for "+skimID);
+			Assigner<?> assigner = project.getAssigner(project.getSkimAssigner(skimID));
+			System.out.println("Assigner: "+assigner);
+			ToDoubleFunction<Link> func;
+			switch (project.getSkimFunction(skimID)) {
+			case "travelTimeSingleOcc":
+				func = (Link x) -> 
 				x.allowsClass(Mode.SINGLE_OCC)? x.getTravelTime() : Double.MAX_VALUE;
 				break;
-		default:
-			System.err.println("Skim funciton not yet implemented. Reverting to travel time");
-		case "travelTime":
-			func = Link::getTravelTime;
+			default:
+				System.err.println("Skim funciton not yet implemented. Reverting to travel time");
+			case "travelTime":
+				func = Link::getTravelTime;
+			}
+			System.out.println("Function is null? "+(func == null));
+			NetworkSkim skim = assigner.getSkim(skimID, func);
+			System.out.println("Got skim "+skimID);
+			updateProgress(1,1);
+			return skim;
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
 		}
-		NetworkSkim skim = assigner.getSkim(skimID, func);
-		updateProgress(1,1);
-		return skim;
 	}
 
 	public String toString() {

@@ -59,7 +59,7 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.io.GraphFactory;
 import edu.utexas.wrap.util.io.SkimFactory;
 
-public class BasicStaticAssigner<C extends AssignmentContainer> implements StaticAssigner {
+public class BasicStaticAssigner<C extends AssignmentContainer> implements StaticAssigner<C> {
 	private AssignmentEvaluator<C> evaluator;
 	private AssignmentOptimizer<C> optimizer;
 	private AssignmentInitializer<C> initializer;
@@ -230,20 +230,10 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		return new BasicStaticAssigner<Bush>(name, zones, evaluator, optimizer, initializer, linkType, threshold, maxIterations, tp, modes, containerSource, linkSource);
 	}
 
-	public void iterate() {
-		optimizer.optimize(containers.stream(), network);
-		iterationsPerformed++;
-	}
 
-
-	private double evaluate() {
-		return evaluator.getValue(containers.parallelStream(), network);
-	}
-	
-	public boolean isTerminated() {
-		return lastEvaluation <= threshold || iterationsPerformed >= maxIterations;
-	}
-
+//	public boolean isTerminated() {
+//		return lastEvaluation <= threshold || iterationsPerformed >= maxIterations;
+//	}
 
 	public void initialize(Collection<ODProfile> profiles) {
 		disaggregatedMtxs = new HashMap<ODMatrix,Float>();
@@ -274,8 +264,9 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		this.containers = initializer.initializeContainers(network);
 	}
 	
-	public double getProgress() {
-		lastEvaluation = evaluate();
+	public double getProgress(double currentValue, int numIterations) {
+		lastEvaluation = currentValue;
+		iterationsPerformed = numIterations;
 		double iterationProgress = iterationsPerformed/maxIterations;
 		double objectiveProgress = 1/Math.pow(2, Math.log10(lastEvaluation/threshold));
 		
@@ -330,7 +321,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	}
 	
 
-	public void process(ODProfile profile) {
+	private void process(ODProfile profile) {
 		disaggregatedMtxs.put(
 				profile.getMatrix(getTimePeriod()),
 				profile.getVOT(getTimePeriod()));
@@ -341,8 +332,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		return tp;
 	}
 	
-
 	public NetworkSkim getSkim(String id, ToDoubleFunction<Link> function) {
+		System.out.println("Getting skim from assigner for "+id);
 		return SkimFactory.calculateSkim(network, function, id);
 	}
 	
@@ -415,10 +406,25 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		tollingPolicy = policy;
 	}
 
+	@Override
+	public AssignmentEvaluator<C> getEvaluator() {
+		return evaluator;
+	}
+	
+	@Override
+	public AssignmentOptimizer<C> getOptimizer() {
+		return optimizer;
+	}
 
 	@Override
 	public Graph getNetwork() {
 		// TODO Auto-generated method stub
 		return network;
 	}
+	
+	public Collection<C> getContainers() {
+		return containers;
+	}
+
+
 }

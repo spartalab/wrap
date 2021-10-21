@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
@@ -17,14 +19,14 @@ public class SkimLoader extends Task<NetworkSkim> {
 	private Path skimCSV;
 	private Map<Integer,TravelSurveyZone> zones;
 	private SimpleIntegerProperty completedLines;
+	private Logger logger = Logger.getLogger("wrap.runner.skimLoader");
 	
 	public SkimLoader(NetworkSkim skim, Path csv, Map<Integer, TravelSurveyZone> zones) {
-		// TODO Auto-generated constructor stub
 		this.skim = skim;
 		this.skimCSV = csv;
 		this.zones = zones;
 		int size = zones.size() * zones.size();
-
+		logger.info("Initializing SkimLoader for "+skim+". Size = "+size+"x"+size);
 		completedLines = new SimpleIntegerProperty(0);
 		completedLines.addListener((obs,oldVal,newVal)->{
 			updateProgress((int) newVal,size);
@@ -33,7 +35,7 @@ public class SkimLoader extends Task<NetworkSkim> {
 
 	@Override
 	protected NetworkSkim call() throws Exception {
-		// TODO Auto-generated method stub
+		logger.info("Reading "+skim+" from file "+skimCSV);
 		try (BufferedReader reader = Files.newBufferedReader(skimCSV)) {
 			reader.lines().forEach(line ->{
 				if (isCancelled()) return;
@@ -46,8 +48,7 @@ public class SkimLoader extends Task<NetworkSkim> {
 				
 			});
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.log(Level.SEVERE,"An error was encountered while reading "+skim+".",e);
 		}
 		return skim;
 	}
