@@ -56,6 +56,8 @@ public class CostBasedFrictionFactorMap implements FrictionFactorMap {
 	public Float get(float skimCost) {
 		if (skimCost < 0) throw new RuntimeException("Negative travel cost");
 		
+		else if (skimCost >= costFactors.lastKey()) return costFactors.lastEntry().getValue();
+		
 		//Get the nearest costFactors to this cost
 		int floor = (int) Math.floor(skimCost);
 		NavigableMap<Integer, Float> submap = costFactors.subMap(floor, true, floor+1,true);
@@ -71,10 +73,17 @@ public class CostBasedFrictionFactorMap implements FrictionFactorMap {
 		//Handle boundary cases
 		if (lowerBd == null && upperBd != null) return upperBd.getValue();
 		else if (lowerBd != null && upperBd == null) return lowerBd.getValue();
-		else if (lowerBd == null && upperBd == null) throw new RuntimeException("No mappings in cost factor tree");
-
+		else if (lowerBd == null && upperBd == null) {
+			Entry<Integer,Float> lastEntry = costFactors.lastEntry();
+			if (lastEntry != null && skimCost > lastEntry.getKey()) return lastEntry.getValue();
+			
+			Entry<Integer,Float> firstEntry = costFactors.firstEntry();
+			if (firstEntry != null && skimCost < firstEntry.getKey()) return firstEntry.getValue();
+			throw new RuntimeException("No mappings in cost factor tree");
+		}
 		
 		//Otherwise, linearly interpolate between the two
+		if (upperBd.getKey() == lowerBd.getKey()) return lowerBd.getValue();
 		Float pct = (skimCost - lowerBd.getKey())/(upperBd.getKey() - lowerBd.getKey());
 		
 		return pct*upperBd.getValue() + (1-pct)*lowerBd.getValue();

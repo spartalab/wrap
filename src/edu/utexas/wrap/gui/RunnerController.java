@@ -402,7 +402,7 @@ public class RunnerController extends Task<Integer> {
 			
 			out.close();
 		}
-		
+		logger.info("Run completed successfully");
 		return Integer.parseInt(iterationNumber.getText());
 	}
 
