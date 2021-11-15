@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -30,16 +31,19 @@ import java.util.function.ToDoubleFunction;
 import java.util.stream.Collectors;
 
 import edu.utexas.wrap.TimePeriod;
+import edu.utexas.wrap.assignment.AssignmentEvaluator;
+import edu.utexas.wrap.assignment.AssignmentOptimizer;
 import edu.utexas.wrap.assignment.StaticAssigner;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.modechoice.Mode;
+import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.util.ODMatrixCollector;
 import edu.utexas.wrap.util.io.output.ODMatrixStreamWriter;
 
-public class StreamPassthroughAssigner implements StaticAssigner {
+public class StreamPassthroughAssigner implements StaticAssigner<Bush> {
 
 	private Map<ODMatrix,Float> disaggregatedMtxs;
 	private final TimePeriod period;
@@ -114,7 +118,6 @@ public class StreamPassthroughAssigner implements StaticAssigner {
 	}
 
 
-	@Override
 	public void process(ODProfile profile) {
 		disaggregatedMtxs.put(profile.getMatrix(period),profile.getVOT(period));
 	}
@@ -145,27 +148,83 @@ public class StreamPassthroughAssigner implements StaticAssigner {
 		throw new RuntimeException("Not yet implemented");
 	}
 
-	@Override
 	public void initialize() {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
 	public boolean isTerminated() {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	@Override
 	public void iterate() {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
 	public double getProgress() {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	@Override
+	public void initialize(Collection<ODProfile> profiles) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public double getProgress(double currentValue, int numIterations) {
+		// TODO Auto-generated method stub
+		return 0;
+	}
+
+	@Override
+	public Collection<Mode> assignedModes() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Graph getNetwork() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public AssignmentEvaluator<Bush> getEvaluator() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Collection<Bush> getContainers() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public AssignmentOptimizer<Bush> getOptimizer() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Class<? extends Link> getLinkType() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public Integer maxIterations() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public void setTollingPolicy(ToDoubleFunction<Link> policy) {
+		// TODO Auto-generated method stub
+		
 	}
 }

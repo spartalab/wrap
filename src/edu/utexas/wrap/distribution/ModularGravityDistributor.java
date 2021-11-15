@@ -45,8 +45,8 @@ public class ModularGravityDistributor extends GravityDistributor {
 
 	public ModularGravityDistributor(String name, Purpose parent, Double scalingFactor, FrictionFactorMap fm, DistributionWeights weights,
 									 PAMap pa, Double margin) {
-		super(name, parent, scalingFactor, fm, weights);
 
+		super(name, parent, scalingFactor, 10, weights);
 		friction = fm;
 
 		this.pa = pa;

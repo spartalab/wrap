@@ -3,6 +3,7 @@ package edu.utexas.wrap.gui;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.HashSet;
@@ -341,14 +342,19 @@ public class RunnerController extends Task<Integer> {
 		}
 
 		logger.info("Writing output metrics");
-		BufferedWriter out = Files.newBufferedWriter(project.metricOutputPath(), StandardOpenOption.WRITE, StandardOpenOption.CREATE);
-		out.write("Market,Purpose,Time Period,Assigner,Total Travel Time,Total Toll Cost\n");
-		
-		if (profiles != null) {
-			profiles.stream().map(profile -> {
-				String result = "";
-				Purpose tripPurpose = profile.getTripPurpose();
-				
+		try {
+			Path outputPath = project.metricOutputPath();
+			logger.info("Metric output path: "+outputPath);
+			BufferedWriter out = Files.newBufferedWriter(outputPath, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+			logger.info("Created metric file");
+			out.write("Market,Purpose,Time Period,Assigner,Total Travel Time,Total Toll Cost\n");
+			logger.info("Handling profiles");
+			if (profiles != null) {
+				profiles.stream().map(profile -> {
+					String result = "";
+
+					try {
+						Purpose tripPurpose = profile.getTripPurpose();
 
 				Market market = null;
 				String purposeLabel = "";
@@ -359,6 +365,7 @@ public class RunnerController extends Task<Integer> {
 
 				}
 				else purposeLabel = "null,null,";
+				logger.info("Reading values for "+purposeLabel);
 
 				for (TimePeriod tp : TimePeriod.values()) {
 					ODMatrix mtx = profile.getMatrix(tp);
@@ -388,7 +395,11 @@ public class RunnerController extends Task<Integer> {
 				}
 
 				return result;
-
+				}
+				catch (Exception e) {
+					logger.log(Level.SEVERE,"An error occurred while calculating output metrics.",e);
+					return null;
+				}
 			})
 			// output results
 			.forEach(line -> {
@@ -400,10 +411,16 @@ public class RunnerController extends Task<Integer> {
 				}
 			});
 			
-			out.close();
+			
 		}
+		logger.info("Completed writing metrics");
+		out.close();
 		logger.info("Run completed successfully");
 		return Integer.parseInt(iterationNumber.getText());
+		} catch (Exception e) {
+			logger.log(Level.SEVERE,"An error was encountered while writing output metrics.",e);
+			return -1;
+		}
 	}
 
 	public void increaseCompletedMarkets() {

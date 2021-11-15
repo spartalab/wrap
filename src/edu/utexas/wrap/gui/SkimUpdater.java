@@ -24,9 +24,7 @@ public class SkimUpdater extends Task<NetworkSkim> {
 		try { 
 			updateProgress(0,1); 
 
-			System.out.println("Getting assigner for "+skimID);
 			Assigner<?> assigner = project.getAssigner(project.getSkimAssigner(skimID));
-			System.out.println("Assigner: "+assigner);
 			ToDoubleFunction<Link> func;
 			switch (project.getSkimFunction(skimID)) {
 			case "travelTimeSingleOcc":
@@ -38,9 +36,7 @@ public class SkimUpdater extends Task<NetworkSkim> {
 			case "travelTime":
 				func = Link::getTravelTime;
 			}
-			System.out.println("Function is null? "+(func == null));
 			NetworkSkim skim = assigner.getSkim(skimID, func);
-			System.out.println("Got skim "+skimID);
 			updateProgress(1,1);
 			return skim;
 		} catch (Exception e) {

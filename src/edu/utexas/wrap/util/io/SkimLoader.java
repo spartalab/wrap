@@ -26,7 +26,7 @@ public class SkimLoader extends Task<NetworkSkim> {
 		this.skimCSV = csv;
 		this.zones = zones;
 		int size = zones.size() * zones.size();
-		logger.info("Initializing SkimLoader for "+skim+". Size = "+size+"x"+size);
+		logger.info("Initializing SkimLoader for "+skim+". Size = "+zones.size()+"x"+zones.size());
 		completedLines = new SimpleIntegerProperty(0);
 		completedLines.addListener((obs,oldVal,newVal)->{
 			updateProgress((int) newVal,size);
