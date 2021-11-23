@@ -77,7 +77,7 @@ public class BushInitializer implements AssignmentInitializer<Bush>{
 			network.loadDemand(bush);
 		} catch (RuntimeException e) {
 			System.err.println("INFO: Corrupted source for "+bush+". Rebuilding from free-flow network");
-			e.printStackTrace();
+//			e.printStackTrace();
 			builder.buildStructure(bush, network);
 			network.loadDemand(bush);
 			needsWriting = true;

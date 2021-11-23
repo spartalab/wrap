@@ -347,10 +347,10 @@ public class RunnerController extends Task<Integer> {
 			logger.info("Metric output path: "+outputPath);
 			BufferedWriter out = Files.newBufferedWriter(outputPath, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
 			logger.info("Created metric file");
-			out.write("Market,Purpose,Time Period,Assigner,Total Travel Time,Total Toll Cost\n");
+			out.write("Market,Purpose,Time Period,Assigner,Mode,Total Travel Time,Total Toll Cost\n");
 			logger.info("Handling profiles");
 			if (profiles != null) {
-				profiles.stream().map(profile -> {
+				profiles.parallelStream().map(profile -> {
 					String result = "";
 
 					try {
@@ -377,6 +377,7 @@ public class RunnerController extends Task<Integer> {
 						if (assigner instanceof StaticAssigner && ((StaticAssigner<?>) assigner).getTimePeriod() != tp) continue;
 						
 						result += purposeLabel+ tp.toString()+","+assigner.toString()+",";
+						result += profile.getMode()+",";
 						Graph network = assigner.getNetwork();
 
 						for (ToDoubleFunction<Link> costFunction : evaluationMetrics) {
