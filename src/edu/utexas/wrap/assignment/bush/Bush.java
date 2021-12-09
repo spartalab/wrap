@@ -306,7 +306,12 @@ public class Bush implements AssignmentContainer {
 	/** Get all Bush flows
 	 * @return a Map from a Link to the amount of flow from this Bush on the Link
 	 */
-	public Map<Link, Double> flows(boolean useCached){
+	public Map<Link,Double> flows(boolean useCached){
+		return flows(useCached,this.demand);
+	}
+	
+	public Map<Link, Double> flows(boolean useCached, DemandMap demand){
+		
 		if (cachedFlows != null && useCached) return cachedFlows;
 		//Get the reverse topological ordering and a place to store node flows
 //		Map<TravelSurveyZone,Double> tszFlow = demand.doubleClone();

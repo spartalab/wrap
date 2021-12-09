@@ -77,6 +77,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	private final Class<? extends Link> linkType;
 	private final Path containerSource, linkSource;
 	private final Map<Integer, TravelSurveyZone> zones;
+	
 	private BasicStaticAssigner(String name,
 			Map<Integer, TravelSurveyZone> zones,
 			AssignmentEvaluator<C> evaluator,
@@ -342,7 +343,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 
 	
 
-	private Mode getMode(ODMatrix mtx) {
+	public Mode getMode(ODMatrix mtx) {
 		switch (mtx.getMode()) {
 		case HOV_2_PSGR:
 		case HOV_3_PSGR:
@@ -426,5 +427,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		return containers;
 	}
 
+	public Path getContainerSource() {
+		return containerSource;
+	}
 
 }
