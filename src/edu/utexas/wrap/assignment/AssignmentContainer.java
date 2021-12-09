@@ -55,7 +55,8 @@ public interface AssignmentContainer {
 	 * @param useCached TODO
 	 * @return the set of link flows from this container
 	 */
-	public Map<Link, Double> flows(boolean useCached);
+	public Map<Link, Double> flows(boolean useCached, DemandMap demand);
+	public Map<Link,Double> flows(boolean useCached);
 
 	public double incurredCost();
 
