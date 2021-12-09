@@ -59,7 +59,7 @@ public class ODPassthroughMatrix implements ODMatrix {
 	@Override
 	public DemandMap getDemandMap(TravelSurveyZone origin) {
 		// TODO Auto-generated method stub
-		return null;
+		return base.getDemandMap(origin);
 	}
 
 	@Override

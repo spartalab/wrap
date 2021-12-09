@@ -63,7 +63,10 @@ public class TransposeODMatrix implements ODMatrix {
 	@Override
 	public DemandMap getDemandMap(TravelSurveyZone origin) {
 		// TODO Auto-generated method stub
-		throw new RuntimeException("Undefined");
+		DemandMap newmap = new FixedSizeDemandMap(getZones());
+		getZones().forEach(zone -> newmap.put(zone, parent.getDemand(zone, origin)));
+		
+		return newmap;
 	}
 
 }

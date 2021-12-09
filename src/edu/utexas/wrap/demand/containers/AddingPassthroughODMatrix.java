@@ -67,7 +67,7 @@ public class AddingPassthroughODMatrix implements ODMatrix {
 	@Override
 	public DemandMap getDemandMap(TravelSurveyZone origin) {
 		// TODO Auto-generated method stub
-		throw new RuntimeException();
+		return new AddingPassthroughDemandMap(od1.getDemandMap(origin),od2.getDemandMap(origin));
 	}
 
 }

@@ -69,7 +69,7 @@ public class FixedMultiplierPassthroughODMatrix implements ODMatrix {
 	@Override
 	public DemandMap getDemandMap(TravelSurveyZone origin) {
 		// TODO Auto-generated method stub
-		throw new RuntimeException();
+		return new FixedMultiplierPassthroughDemandMap(parent.getDemandMap(origin),multiplier);
 	}
 
 }
