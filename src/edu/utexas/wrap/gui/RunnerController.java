@@ -8,7 +8,9 @@ import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.ToDoubleFunction;
 import java.util.logging.Logger;
 import java.util.logging.Level;
@@ -19,12 +21,15 @@ import edu.utexas.wrap.Project;
 import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.assignment.Assigner;
 import edu.utexas.wrap.assignment.StaticAssigner;
+import edu.utexas.wrap.assignment.bush.Bush;
+import edu.utexas.wrap.assignment.bush.BushForgetter;
+import edu.utexas.wrap.assignment.bush.BushReader;
+import edu.utexas.wrap.assignment.BasicStaticAssigner;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.marketsegmentation.Market;
 import edu.utexas.wrap.marketsegmentation.MarketRunner;
 import edu.utexas.wrap.marketsegmentation.Purpose;
-import edu.utexas.wrap.util.io.SkimFactory;
 import edu.utexas.wrap.util.io.SkimLoader;
 import edu.utexas.wrap.marketsegmentation.PurposeRunner;
 import edu.utexas.wrap.net.Graph;
@@ -343,85 +348,120 @@ public class RunnerController extends Task<Integer> {
 
 		logger.info("Writing output metrics");
 		try {
+			AtomicInteger completed = new AtomicInteger(0);
 			Path outputPath = project.metricOutputPath();
 			logger.info("Metric output path: "+outputPath);
-			BufferedWriter out = Files.newBufferedWriter(outputPath, StandardOpenOption.WRITE, StandardOpenOption.CREATE);
+			BufferedWriter out = Files.newBufferedWriter(outputPath, StandardOpenOption.WRITE, StandardOpenOption.CREATE,StandardOpenOption.TRUNCATE_EXISTING);
 			logger.info("Created metric file");
-			out.write("Market,Purpose,Time Period,Assigner,Mode,Total Travel Time,Total Toll Cost\n");
+			out.write("Market,Purpose,Time Period,Assigner,Mode,Total Travel Time,Total Toll Cost,Total Distance Traveled\n");
 			logger.info("Handling profiles");
 			if (profiles != null) {
-				profiles.parallelStream().map(profile -> {
+				int totalMetrics = profiles.size()*project.getAssigners().size();
+				profiles.stream().map(profile -> {
 					String result = "";
 
 					try {
 						Purpose tripPurpose = profile.getTripPurpose();
 
-				Market market = null;
-				String purposeLabel = "";
-				if (tripPurpose != null) {
-					market = tripPurpose.getMarket();
-					if (market != null) purposeLabel = market.toString()+","+tripPurpose.toString()+",";
-					else purposeLabel = "null,"+tripPurpose.toString()+",";
+						Market market = null;
+						String purposeLabel = "";
+						if (tripPurpose != null) {
+							market = tripPurpose.getMarket();
+							if (market != null) purposeLabel = market.toString()+","+tripPurpose.toString()+",";
+							else purposeLabel = "null,"+tripPurpose.toString()+",";
 
-				}
-				else purposeLabel = "null,null,";
-				logger.info("Reading values for "+purposeLabel);
-
-				for (TimePeriod tp : TimePeriod.values()) {
-					ODMatrix mtx = profile.getMatrix(tp);
-					Collection<ToDoubleFunction<Link>> evaluationMetrics = List.of(
-							Link::getTravelTime,
-							link -> link.getPrice(tripPurpose.getVOT(tp), mtx.getMode())
-							);;
-					for (Assigner<?> assigner : project.getAssigners()) {
-						if (assigner instanceof StaticAssigner && ((StaticAssigner<?>) assigner).getTimePeriod() != tp) continue;
-						
-						result += purposeLabel+ tp.toString()+","+assigner.toString()+",";
-						result += profile.getMode()+",";
-						Graph network = assigner.getNetwork();
-
-						for (ToDoubleFunction<Link> costFunction : evaluationMetrics) {
-
-							NetworkSkim costSkim = SkimFactory.calculateSkim(network, costFunction, null);
-
-							Double cost = mtx.getZones().stream().mapToDouble(origin -> 
-							mtx.getZones().stream().mapToDouble(destination -> 
-							costSkim.getCost(origin,destination)*mtx.getDemand(origin, destination)
-									).sum()
-									).sum();
-							result += cost.toString()+",";
 						}
-						result += "\n";
-					};
-				}
+						else purposeLabel = "null,null,";
+						logger.info("Reading values for "+purposeLabel);
 
-				return result;
-				}
-				catch (Exception e) {
-					logger.log(Level.SEVERE,"An error occurred while calculating output metrics.",e);
-					return null;
-				}
-			})
-			// output results
-			.forEach(line -> {
-				try {
-					out.write(line);
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					logger.log(Level.SEVERE,"An error was encountered while writing output metrics.",e);
-				}
-			});
-			
-			
-		}
-		logger.info("Completed writing metrics");
-		out.close();
-		logger.info("Run completed successfully");
-		return Integer.parseInt(iterationNumber.getText());
+						for (TimePeriod tp : TimePeriod.values()) {
+							ODMatrix mtx = profile.getMatrix(tp);
+							Collection<ToDoubleFunction<Link>> evaluationMetrics = List.of(
+									Link::getTravelTime,
+									link -> link.getPrice(tripPurpose.getVOT(tp), mtx.getMode()),
+									Link::getLength
+									);
+
+							for (Assigner<?> assigner : project.getAssigners()) {
+								if (assigner instanceof StaticAssigner && ((StaticAssigner<?>) assigner).getTimePeriod() != tp) continue;
+
+								result += purposeLabel+ tp.toString()+","+assigner.toString()+",";
+								result += profile.getMode()+",";
+								//										Graph network = assigner.getNetwork();
+
+								for (ToDoubleFunction<Link> costFunction : evaluationMetrics) {
+									if (assigner instanceof BasicStaticAssigner<?>) {
+										Double cost = getMetricFromBush(mtx,tripPurpose.getVOT(tp),(BasicStaticAssigner<?>) assigner,costFunction);
+										result += cost.toString()+",";
+									}
+									//											Double cost = getMetricFromSkim(mtx, network, costFunction);
+
+								}
+								result += "\n";
+								logger.info("Completed metrics: "+completed.incrementAndGet()+" / "+totalMetrics);
+							};
+						}
+
+						return result;
+					}
+					catch (Exception e) {
+						logger.log(Level.SEVERE,"An error occurred while calculating output metrics.",e);
+						return null;
+					}
+				})
+				// output results
+				.forEach(line -> {
+					try {
+						out.write(line);
+						out.flush();
+
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						logger.log(Level.SEVERE,"An error was encountered while writing output metrics.",e);
+					}
+				});
+
+
+			}
+			logger.info("Completed writing metrics");
+			out.close();
+			logger.info("Run completed successfully");
+			return Integer.parseInt(iterationNumber.getText());
 		} catch (Exception e) {
 			logger.log(Level.SEVERE,"An error was encountered while writing output metrics.",e);
 			return -1;
 		}
+	}
+
+	public Double getMetricFromBush(ODMatrix mtx, Float vot, BasicStaticAssigner<?> assigner, ToDoubleFunction<Link> costFunction) {
+		BushReader reader = new BushReader(assigner.getContainerSource());
+		BushForgetter forgetter = new BushForgetter();
+		Stream<Map<Link,Double>> str = assigner.getContainers().parallelStream()
+		.filter(container -> container.vehicleClass().equals(assigner.getMode(mtx)))
+		.filter(container -> container.valueOfTime().equals(vot))
+		.map(container -> {
+			try {
+				
+				reader.getStructure((Bush) container, assigner.getNetwork());
+				Map<Link, Double> ret = container.flows(false,mtx.getDemandMap(container.root()));
+				forgetter.consumeStructure((Bush) container, assigner.getNetwork());
+				return ret;
+			} catch (IOException e) {
+				e.printStackTrace();
+				throw new RuntimeException();
+			}
+		});
+		
+		
+		return str
+		.flatMap(map -> map.entrySet().stream())
+		.mapToDouble(entry -> {
+			double val = entry.getValue() * costFunction.applyAsDouble(entry.getKey());
+			
+			return val;
+		})
+		.sum()
+		;
 	}
 
 	public void increaseCompletedMarkets() {
