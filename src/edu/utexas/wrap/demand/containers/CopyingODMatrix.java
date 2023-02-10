@@ -18,6 +18,7 @@
 package edu.utexas.wrap.demand.containers;
 
 import java.util.Collection;
+import java.util.stream.Stream;
 
 import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.demand.DemandMap;
@@ -75,4 +76,7 @@ public class CopyingODMatrix implements ODMatrix {
 		return demandMaps[origin.getOrder()];
 	}
 
+	public double getTotalDemand() {
+		return Stream.of(demandMaps).mapToDouble(dm -> dm.totalDemand()).sum();
+	}
 }

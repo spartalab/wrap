@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.DoubleAdder;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 import java.util.stream.Collector;
@@ -77,6 +78,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	private final Class<? extends Link> linkType;
 	private final Path containerSource, linkSource;
 	private final Map<Integer, TravelSurveyZone> zones;
+	private double averageVOT;
+	private MarginalVOTPolicy votPolicy;
 	
 	private BasicStaticAssigner(String name,
 			Map<Integer, TravelSurveyZone> zones,
@@ -89,7 +92,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		TimePeriod tp,
 		Collection<Mode> modes,
 		Path containerSource,
-		Path linkSource
+		Path linkSource,
+		MarginalVOTPolicy votPolicy
 			){
 		this.name = name;
 		this.evaluator = evaluator;
@@ -104,6 +108,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		this.linkSource= linkSource;
 		this.containerSource = containerSource;
 		this.zones = zones;
+		this.votPolicy = votPolicy;
 	}
 
 
@@ -183,14 +188,27 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		}
 
 
-
+		boolean useMarginalCost = Boolean.parseBoolean(props.getProperty("optimizer.useMarginalCost"));
+		MarginalVOTPolicy marginalVOTPolicy = new MarginalVOTPolicy(useMarginalCost);
 		switch (props.getProperty("optimizer")) {
 		case "algoB":
 			BushEvaluator iterEvaluator;
+
+//			switch (props.getProperty("optimizer.marginalCostMethod")) {
+//			case "network-wide":
+//				
+//				break;
+//			
+//			case "per-bush":
+//			case "per-link":
+//			default:
+////				vot = null;
+//			}
 			
 			switch(props.getProperty("optimizer.iterEvaluator")) {
 			case "bushGap":
-				iterEvaluator = new BushGapEvaluator();
+				
+				iterEvaluator = new BushGapEvaluator(marginalVOTPolicy);
 				break;
 			default:
 				throw new RuntimeException("Not yet implemented");
@@ -202,7 +220,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 					provider, 
 					writer, 
 					iterEvaluator,
-					iterThreshold);
+					iterThreshold, 
+					marginalVOTPolicy);
 			break;
 		default:
 			throw new RuntimeException("Not yet implemented");
@@ -228,7 +247,19 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		Path linkSource = projectPath.resolve(props.getProperty("network.links"));
 		Path containerSource = Paths.get(props.getProperty("providerConsumer.source"));
 
-		return new BasicStaticAssigner<Bush>(name, zones, evaluator, optimizer, initializer, linkType, threshold, maxIterations, tp, modes, containerSource, linkSource);
+		return new BasicStaticAssigner<Bush>(name, 
+				zones, 
+				evaluator, 
+				optimizer, 
+				initializer, 
+				linkType, 
+				threshold, 
+				maxIterations, 
+				tp, 
+				modes, 
+				containerSource, 
+				linkSource,
+				marginalVOTPolicy);
 	}
 
 
@@ -261,7 +292,15 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 			e.printStackTrace();
 		}
 		iterationsPerformed = 0;
-		aggregateMtxs().forEach( (mtx, vot) -> initializer.add(network, mtx, vot));
+		DoubleAdder overallTrips = new DoubleAdder();
+		DoubleAdder votTally = new DoubleAdder();
+		aggregateMtxs().forEach( (mtx, vot) -> {
+			overallTrips.add(mtx.getTotalDemand());
+			votTally.add(mtx.getTotalDemand() * vot);
+			initializer.add(network, mtx, vot);
+			});
+		averageVOT = votTally.doubleValue() / overallTrips.doubleValue();
+		votPolicy.setMarginalVOT(averageVOT);
 		this.containers = initializer.initializeContainers(network);
 	}
 	
@@ -429,6 +468,10 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 
 	public Path getContainerSource() {
 		return containerSource;
+	}
+	
+	public Double averageVOT() {
+		return averageVOT;
 	}
 
 }

@@ -68,5 +68,9 @@ public class TransposeODMatrix implements ODMatrix {
 		
 		return newmap;
 	}
+	
+	public double getTotalDemand() {
+		return parent.getTotalDemand();
+	}
 
 }

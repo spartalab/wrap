@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.DoubleAdder;
 
 import edu.utexas.wrap.assignment.AssignmentContainer;
+import edu.utexas.wrap.assignment.MarginalVOTPolicy;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.bush.PathCostCalculator;
 import edu.utexas.wrap.demand.DemandMap;
@@ -32,10 +33,16 @@ public class UsedPathsRelativeGapCalculator extends Thread {
 	Graph graph;
 	Set<AssignmentContainer> assignmentContainers;
 	TotalSystemGeneralizedCostCalculator cc;
+	MarginalVOTPolicy votPolicy;
 	
-	public UsedPathsRelativeGapCalculator(Graph g, Set<AssignmentContainer> o, TotalSystemGeneralizedCostCalculator tc) {
+	public UsedPathsRelativeGapCalculator(
+			Graph g, 
+			Set<AssignmentContainer> o, 
+			TotalSystemGeneralizedCostCalculator tc,
+			MarginalVOTPolicy votPolicy) {
 		graph = g;
 		assignmentContainers = o;
+		this.votPolicy = votPolicy;
 	}
 	
 	@Override
@@ -53,7 +60,7 @@ public class UsedPathsRelativeGapCalculator extends Thread {
 		.map(b -> (Bush) b)
 		.forEach(b ->{
 			
-			PathCostCalculator pcc = new PathCostCalculator(b);
+			PathCostCalculator pcc = new PathCostCalculator(b, votPolicy);
 			
 			DemandMap dem = b.getDemandMap(); 
 			dem.getZones().parallelStream().forEach(tsz -> {

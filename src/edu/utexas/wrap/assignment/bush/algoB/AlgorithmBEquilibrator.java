@@ -45,7 +45,7 @@ public class AlgorithmBEquilibrator {
 		//Assign the correct back-pointers to BushMerges using topological search
 		//Get the flows on the current bush
 		Map<Link,Double> bushFlows = new ConcurrentHashMap<Link, Double>(bush.flows(true));
-//		PathCostCalculator pcc = new PathCostCalculator(bush);
+
 		synchronized (this) {
 			//In reverse topological order,
 			for (int i = topoOrder.length - 1; i >= 0; i--) {
@@ -243,10 +243,10 @@ public class AlgorithmBEquilibrator {
 		Node cur = terminus;
 		Link ll = pcc.getqLong(cur);
 		Double max = null;
-		int lpl = 0;
+		int longPathLinks = 0;
 		do {
 			//Keep track of the number of links until the diverge
-			lpl++;
+			longPathLinks++;
 			//Keep track of the maximum bush flow that can be removed
 			if (max == null) max = bushFlows.getOrDefault(ll,0.0);
 			else max = Math.min(max,bushFlows.getOrDefault(ll,0.0));
@@ -259,15 +259,15 @@ public class AlgorithmBEquilibrator {
 		//Trace back through the shortest path
 		cur = terminus;
 		ll = pcc.getqShort(cur);
-		int spl = 0;
+		int shortPathLinks = 0;
 		do {
 			//Count how many links until the diverge
-			spl++;
+			shortPathLinks++;
 			cur = ll.getTail();
 			ll = pcc.getqShort(cur);
 		} while (cur != diverge);
 		
-		return new AlternateSegmentPair(terminus, diverge, max, pcc, lpl, spl);
+		return new AlternateSegmentPair(terminus, diverge, max, pcc, longPathLinks, shortPathLinks);
 	}
 
 }

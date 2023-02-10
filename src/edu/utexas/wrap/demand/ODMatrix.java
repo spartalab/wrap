@@ -68,5 +68,7 @@ public interface ODMatrix {
 	 * @return a DemandMap containing all trips from the given TravelSurveyZone to all zones
 	 */
 	public DemandMap getDemandMap(TravelSurveyZone origin);
+	
+	public double getTotalDemand();
 
 }

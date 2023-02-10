@@ -71,5 +71,9 @@ public class FixedMultiplierPassthroughODMatrix implements ODMatrix {
 		// TODO Auto-generated method stub
 		return new FixedMultiplierPassthroughDemandMap(parent.getDemandMap(origin),multiplier);
 	}
+	
+	public double getTotalDemand() {
+		return parent.getTotalDemand() * multiplier;
+	}
 
 }

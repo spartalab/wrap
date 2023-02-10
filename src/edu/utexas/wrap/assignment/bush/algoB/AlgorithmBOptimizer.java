@@ -22,6 +22,7 @@ import java.util.concurrent.ExecutionException;
 
 import edu.utexas.wrap.assignment.AssignmentOptimizer;
 import edu.utexas.wrap.assignment.AssignmentProvider;
+import edu.utexas.wrap.assignment.MarginalVOTPolicy;
 import edu.utexas.wrap.assignment.AssignmentConsumer;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.bush.BushEvaluator;
@@ -38,18 +39,22 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 	private final BushEvaluator evaluator;
 	private double threshold;
 	private int maxIterations = 25;
+	private MarginalVOTPolicy policy;
+
 
 	public AlgorithmBOptimizer(
 			AssignmentProvider<Bush> provider, 
 			AssignmentConsumer<Bush> consumer, 
 			BushEvaluator evaluator,
-			double threshold) {
+			double threshold,
+			MarginalVOTPolicy policy
+			) {
 
 		this.provider = provider;
 		this.consumer = consumer;
 		this.evaluator = evaluator;
 		this.threshold = threshold;
-
+		this.policy = policy;
 		updater = new AlgorithmBUpdater();
 		equilibrator = new AlgorithmBEquilibrator();
 	}
@@ -63,7 +68,7 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 			return;
 		}
 
-		PathCostCalculator pcc = new PathCostCalculator(bush);
+		PathCostCalculator pcc = new PathCostCalculator(bush,policy);
 		updater.update(bush, pcc);
 		
 		for (int i = 0; i < maxIterations;i++) {
@@ -77,7 +82,6 @@ public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
 				e.printStackTrace();
 			}
 			Double val = evaluator.getValue(bush, network);
-			//							System.out.println(val);
 			if (val < threshold) break;
 			pcc.clear();
 		}

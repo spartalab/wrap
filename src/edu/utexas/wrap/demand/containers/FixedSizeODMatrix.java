@@ -73,4 +73,7 @@ public class FixedSizeODMatrix<T extends DemandMap> implements ODMatrix {
 		return tp;
 	}
 	
+	public double getTotalDemand() {
+		return zones.stream().mapToDouble(zone -> getDemandMap(zone).totalDemand()).sum();
+	}
 }

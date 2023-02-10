@@ -25,5 +25,5 @@ public interface AssignmentOptimizer<T extends AssignmentContainer> {
 	public void process(T container, Graph network);
 	
 	public void initialize();
-
+	
 }

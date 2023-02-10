@@ -274,6 +274,61 @@ public class RunnerController extends Task<Integer> {
 			logger.info("MarketRunners complete. Number of OD Profiles: "+profiles.size());
 
 			
+			if (profiles != null) {
+//				int totalMetrics = profiles.size()*project.getAssigners().size();
+				profiles.stream().map(profile -> {
+					String result = "";
+
+					try {
+						Purpose tripPurpose = profile.getTripPurpose();
+
+						Market market = null;
+						String purposeLabel = "";
+						if (tripPurpose != null) {
+							market = tripPurpose.getMarket();
+							if (market != null) purposeLabel = market.toString()+","+tripPurpose.toString()+",";
+							else purposeLabel = "null,"+tripPurpose.toString()+",";
+
+						}
+						else purposeLabel = "null,null,";
+						logger.info("Reading values for "+purposeLabel);
+
+						for (TimePeriod tp : TimePeriod.values()) {
+							ODMatrix mtx = profile.getMatrix(tp);
+
+
+							for (Assigner<?> assigner : project.getAssigners()) {
+								if (assigner instanceof StaticAssigner && ((StaticAssigner<?>) assigner).getTimePeriod() != tp) continue;
+
+								result += purposeLabel+ tp.toString()+","+assigner.toString()+",";
+								result += profile.getMode()+",";
+
+								double vehTrips = mtx.getZones().parallelStream().mapToDouble(orig -> mtx.getZones().stream().mapToDouble(dest -> mtx.getDemand(orig, dest)).sum()).sum();
+								double personTrips = vehTrips * mtx.getMode().occupancy();
+								result += vehTrips + "," + personTrips;
+								
+								result += "\n";
+							};
+						}
+
+						return result;
+					}
+					catch (Exception e) {
+						logger.log(Level.SEVERE,"An error occurred while calculating output metrics.",e);
+						return null;
+					}
+				})
+				// output results
+				.forEach(line -> {
+						System.out.println(line);
+						System.out.flush();
+				});
+
+
+			}
+			System.exit(0);
+			
+			
 			
 			if (isCancelled()) {
 				logger.warning("Run cancelled");
@@ -387,14 +442,12 @@ public class RunnerController extends Task<Integer> {
 
 								result += purposeLabel+ tp.toString()+","+assigner.toString()+",";
 								result += profile.getMode()+",";
-								//										Graph network = assigner.getNetwork();
 
 								for (ToDoubleFunction<Link> costFunction : evaluationMetrics) {
 									if (assigner instanceof BasicStaticAssigner<?>) {
 										Double cost = getMetricFromBush(mtx,tripPurpose.getVOT(tp),(BasicStaticAssigner<?>) assigner,costFunction);
 										result += cost.toString()+",";
 									}
-									//											Double cost = getMetricFromSkim(mtx, network, costFunction);
 
 								}
 								result += "\n";
@@ -436,7 +489,8 @@ public class RunnerController extends Task<Integer> {
 	public Double getMetricFromBush(ODMatrix mtx, Float vot, BasicStaticAssigner<?> assigner, ToDoubleFunction<Link> costFunction) {
 		BushReader reader = new BushReader(assigner.getContainerSource());
 		BushForgetter forgetter = new BushForgetter();
-		Stream<Map<Link,Double>> str = assigner.getContainers().parallelStream()
+				
+		return assigner.getContainers().parallelStream()
 		.filter(container -> container.vehicleClass().equals(assigner.getMode(mtx)))
 		.filter(container -> container.valueOfTime().equals(vot))
 		.map(container -> {
@@ -450,16 +504,11 @@ public class RunnerController extends Task<Integer> {
 				e.printStackTrace();
 				throw new RuntimeException();
 			}
-		});
-		
-		
-		return str
-		.flatMap(map -> map.entrySet().stream())
-		.mapToDouble(entry -> {
-			double val = entry.getValue() * costFunction.applyAsDouble(entry.getKey());
-			
-			return val;
 		})
+		.flatMap(map -> map.entrySet().stream())
+		.mapToDouble(entry -> 
+					entry.getValue() * costFunction.applyAsDouble(entry.getKey())
+		)
 		.sum()
 		;
 	}

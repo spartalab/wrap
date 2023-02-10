@@ -22,15 +22,17 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import edu.utexas.wrap.assignment.MarginalVOTPolicy;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 
 public class PathCostCalculator {
 	Double[] shortCache, longCache;
 	Bush bush;
-
-	public PathCostCalculator(Bush bush) {
+	MarginalVOTPolicy policy;
+	public PathCostCalculator(Bush bush, MarginalVOTPolicy marginalPolicy) {
 		this.bush = bush;
+		this.policy = marginalPolicy;
 	}
 	
 	public boolean checkForShortcut(Link l) {
@@ -43,7 +45,7 @@ public class PathCostCalculator {
 		
 		if (uTail == null || uHead == null) return false;
 		
-		return uTail + l.getPrice(bush) < uHead;
+		return uTail + l.getPrice(bush) + (policy.useMarginalCost()? l.pricePrime((float) policy.getVOT()) : 0.)< uHead;
 	}
 	
 	public Link getShortestPathLink(BushMerge bm) {
@@ -52,7 +54,7 @@ public class PathCostCalculator {
 		}
 
 		return bm.getLinks().min(Comparator.comparing( (Link x) -> 
-		shortCache[x.getTail().getOrder()]+x.getPrice(bush)
+		shortCache[x.getTail().getOrder()]+x.getPrice(bush)+ (policy.useMarginalCost()? x.pricePrime((float) policy.getVOT()) : 0.)
 				)).orElseThrow(RuntimeException::new);
 	}
 
@@ -93,7 +95,8 @@ public class PathCostCalculator {
 	 */
 	private void shortRelax(Link l) {
 		//Calculate the cost of adding this link to the shortest path
-		Double Licij = l.getPrice(bush) + shortCache[l.getTail().getOrder()];
+		Double Licij = l.getPrice(bush) + (policy.useMarginalCost()? l.pricePrime((float) policy.getVOT()) : 0.)
+				+ shortCache[l.getTail().getOrder()];
 		Node head = l.getHead();
 		BackVector back = bush.getBackVector(head);
 		
@@ -112,7 +115,7 @@ public class PathCostCalculator {
 		}
 		
 		return bm.getLinks().max(Comparator.comparing((Link x) ->
-		longCache[x.getTail().getOrder()]+x.getPrice(bush)
+		longCache[x.getTail().getOrder()]+x.getPrice(bush) + (policy.useMarginalCost()? x.pricePrime((float) policy.getVOT()) : 0.)
 				)).orElseThrow(RuntimeException::new);
 	}
 	
@@ -142,7 +145,7 @@ public class PathCostCalculator {
 	
 	private void longRelax(Link l) {
 		//Calculate the cost of adding the link to the longest path
-		Double Uicij = l.getPrice(bush) 
+		Double Uicij = l.getPrice(bush) + (policy.useMarginalCost()? l.pricePrime((float) policy.getVOT()) : 0.)
 				+ longCache[l.getTail().getOrder()];
 		Node head = l.getHead();
 

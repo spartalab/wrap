@@ -67,5 +67,9 @@ public class ODPassthroughMatrix implements ODMatrix {
 		// TODO Auto-generated method stub
 		return tp;
 	}
+	
+	public double getTotalDemand() {
+		return base.getZones().stream().mapToDouble(zone -> getDemandMap(zone).totalDemand()).sum();
+	}
 
 }

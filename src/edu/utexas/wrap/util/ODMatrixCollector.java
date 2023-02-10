@@ -132,6 +132,10 @@ class CombinedODMatrix implements ODMatrix {
 		// TODO Auto-generated method stub
 		throw new RuntimeException("Not yet implemented");
 	}
+	
+	public double getTotalDemand() {
+		return children.stream().mapToDouble(mtx -> mtx.getTotalDemand()).sum();
+	}
 
 
 }

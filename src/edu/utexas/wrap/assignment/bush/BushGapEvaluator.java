@@ -17,12 +17,18 @@
  */
 package edu.utexas.wrap.assignment.bush;
 
+import edu.utexas.wrap.assignment.MarginalVOTPolicy;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 
 public class BushGapEvaluator implements BushEvaluator {
 	
+	private MarginalVOTPolicy marginalVOTPolicy;
+	
+	public BushGapEvaluator(MarginalVOTPolicy marginalVOTPolicy) {
+		this.marginalVOTPolicy = marginalVOTPolicy;
+	}
 
 	@Override
 	public double getValue(Bush bush, Graph network) {
@@ -38,7 +44,7 @@ public class BushGapEvaluator implements BushEvaluator {
 	private Double cheapestCostPossible(Bush bush, Graph graph) {
 		Node[] to = bush.getTopologicalOrder(true);
 		double[] latent = new double[graph.numNodes()];
-		PathCostCalculator pcc = new PathCostCalculator(bush);
+		PathCostCalculator pcc = new PathCostCalculator(bush,marginalVOTPolicy);
 		
 		Double val = 0.0;
 		
@@ -46,7 +52,7 @@ public class BushGapEvaluator implements BushEvaluator {
 			if (to[i] == null) continue;
 			double toDemand = bush.getDemand(to[i]) + latent[to[i].getOrder()];
 			Link q = pcc.getqShort(to[i]);
-			double linkCost = q.getPrice(bush);
+			double linkCost = q.getPrice(bush) + (marginalVOTPolicy.useMarginalCost()? q.pricePrime((float) marginalVOTPolicy.getVOT()) : 0.);
 			
 			latent[q.getTail().getOrder()] += toDemand;
 			

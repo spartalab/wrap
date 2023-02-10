@@ -70,4 +70,7 @@ public class AddingPassthroughODMatrix implements ODMatrix {
 		return new AddingPassthroughDemandMap(od1.getDemandMap(origin),od2.getDemandMap(origin));
 	}
 
+	public double getTotalDemand() {
+		return od1.getTotalDemand() + od2.getTotalDemand();
+	}
 }

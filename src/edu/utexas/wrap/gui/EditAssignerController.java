@@ -90,7 +90,7 @@ public class EditAssignerController {
 
 	@FXML
 	private TextField overlayLinksSourceURI;
-
+	
 	@FXML
 	private Button overlayBrowse;
 

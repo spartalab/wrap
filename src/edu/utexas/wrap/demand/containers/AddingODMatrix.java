@@ -77,4 +77,7 @@ public class AddingODMatrix implements ODMatrix {
 		return demandMaps[origin.getOrder()];
 	}
 
+	public double getTotalDemand() {
+		return zones.stream().mapToDouble(zone -> getDemandMap(zone).totalDemand()).sum();
+	}
 }
