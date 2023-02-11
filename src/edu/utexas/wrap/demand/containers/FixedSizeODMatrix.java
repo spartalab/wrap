@@ -32,8 +32,9 @@ public class FixedSizeODMatrix<T extends DemandMap> implements ODMatrix {
 	private final DemandMap[] demandMaps;
 	private TimePeriod tp;
 	
-	public FixedSizeODMatrix(Mode mode, Collection<TravelSurveyZone> zones) {
+	public FixedSizeODMatrix(Mode mode, Collection<TravelSurveyZone> zones, TimePeriod tp) {
 		this.mode = mode;
+		this.tp = tp;
 		this.zones = zones;
 		this.demandMaps = new DemandMap[zones.size()];
 	}

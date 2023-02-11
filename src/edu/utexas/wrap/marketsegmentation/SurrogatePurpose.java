@@ -161,6 +161,10 @@ public class SurrogatePurpose implements Purpose {
 	public Float getVOT(TimePeriod tp) {
 		return getVOTs().get(tp);
 	}
+	
+	public Float getVOT(Mode m, TimePeriod tp) {
+		return getVOTs(m).get(tp);
+	}
 	/**Develop a daily ODMatrix according to the DummyPurpose's specifications
 	 * 
 	 * This method reads the {@code type} property and,

@@ -32,6 +32,7 @@ import edu.utexas.wrap.marketsegmentation.MarketRunner;
 import edu.utexas.wrap.marketsegmentation.Purpose;
 import edu.utexas.wrap.util.io.SkimLoader;
 import edu.utexas.wrap.marketsegmentation.PurposeRunner;
+import edu.utexas.wrap.marketsegmentation.SurrogatePurpose;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.NetworkSkim;
@@ -282,6 +283,14 @@ public class RunnerController extends Task<Integer> {
 			// run subthreads for assigners
 			logger.info("Creating AssignerRunners");
 			Collection<ODProfile> profilesToLoad = profiles;
+			
+			Collection<SurrogatePurpose> surrogates = project.getSurrogates();
+			
+			for (SurrogatePurpose surrogate : surrogates) {
+				Collection<ODProfile> others = surrogate.getODProfiles(null);
+				profilesToLoad.addAll(others);
+			}
+			
 			assignerTable.getItems().clear();
 			project.getAssigners().stream().forEach( assigner ->{
 				AssignerRunner<?> assignerRunner = new AssignerRunner<>(assigner,profilesToLoad,this);
@@ -353,7 +362,7 @@ public class RunnerController extends Task<Integer> {
 			logger.info("Metric output path: "+outputPath);
 			BufferedWriter out = Files.newBufferedWriter(outputPath, StandardOpenOption.WRITE, StandardOpenOption.CREATE,StandardOpenOption.TRUNCATE_EXISTING);
 			logger.info("Created metric file");
-			out.write("Market,Purpose,Time Period,Assigner,Mode,Total Travel Time,Total Toll Cost,Total Distance Traveled\n");
+			out.write("Market,Purpose,Time Period,Assigner,Mode,Total Travel Time,Total Generalized Cost,Total Distance Traveled\n");
 			logger.info("Handling profiles");
 			if (profiles != null) {
 				int totalMetrics = profiles.size()*project.getAssigners().size();
@@ -378,7 +387,7 @@ public class RunnerController extends Task<Integer> {
 							ODMatrix mtx = profile.getMatrix(tp);
 							Collection<ToDoubleFunction<Link>> evaluationMetrics = List.of(
 									Link::getTravelTime,
-									link -> link.getPrice(tripPurpose.getVOT(tp), mtx.getMode()),
+									link -> link.getPrice(tripPurpose.getVOT(mtx.getMode(),tp), mtx.getMode()),
 									Link::getLength
 									);
 
@@ -391,7 +400,7 @@ public class RunnerController extends Task<Integer> {
 
 								for (ToDoubleFunction<Link> costFunction : evaluationMetrics) {
 									if (assigner instanceof BasicStaticAssigner<?>) {
-										Double cost = getMetricFromBush(mtx,tripPurpose.getVOT(tp),(BasicStaticAssigner<?>) assigner,costFunction);
+										Double cost = getMetricFromBush(mtx,tripPurpose.getVOT(mtx.getMode(),tp),(BasicStaticAssigner<?>) assigner,costFunction);
 										result += cost.toString()+",";
 									}
 									//											Double cost = getMetricFromSkim(mtx, network, costFunction);

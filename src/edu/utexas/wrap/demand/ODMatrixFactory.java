@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.util.Collection;
 import java.util.HashSet;
 
+import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.demand.containers.FixedSizeODMatrix;
 import edu.utexas.wrap.modechoice.Mode;
@@ -34,7 +35,7 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 
 public class ODMatrixFactory {
 
-	public static ODMatrix readTNTPMatrix(File file, Graph g) throws IOException {
+	public static ODMatrix readTNTPMatrix(File file, Graph g, TimePeriod tp) throws IOException {
 		BufferedReader of = Files.newBufferedReader(file.toPath());
 		int numZones = 0;
 		String line;
@@ -52,7 +53,7 @@ public class ODMatrixFactory {
 		if (numZones <= 0) throw new IOException("Invalid number of zones: "+numZones+"\r\nCheck file metadata");
 		
 		numZones = g.numZones();
-		FixedSizeODMatrix<FixedSizeDemandMap> od = new FixedSizeODMatrix<FixedSizeDemandMap>(null,g.getTSZs());
+		FixedSizeODMatrix<FixedSizeDemandMap> od = new FixedSizeODMatrix<FixedSizeDemandMap>(null,g.getTSZs(),tp);
 		
 		while (true) {
 			while (line != null && !line.startsWith("O"))
@@ -113,24 +114,24 @@ public class ODMatrixFactory {
 		return dests;
 	}
 	
-	public static Collection<ODMatrix> readConicTrips(File odMatrix, Graph g) throws FileNotFoundException,IOException {
+	public static Collection<ODMatrix> readConicTrips(File odMatrix, Graph g, TimePeriod tp) throws FileNotFoundException,IOException {
 		
 		BufferedReader matrixFile = Files.newBufferedReader(odMatrix.toPath());
 		Collection<TravelSurveyZone> zones = g.getTSZs();
 		
 		FixedSizeODMatrix<FixedSizeDemandMap> 
-		solo17 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.SINGLE_OCC, zones), 
-		solo35 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.SINGLE_OCC, zones), 
-		solo45 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.SINGLE_OCC, zones), 
-		solo90 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.SINGLE_OCC, zones),
+		solo17 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.SINGLE_OCC, zones,tp), 
+		solo35 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.SINGLE_OCC, zones,tp), 
+		solo45 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.SINGLE_OCC, zones,tp), 
+		solo90 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.SINGLE_OCC, zones,tp),
 
-		hov17 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.HOV, zones), 
-		hov35 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.HOV, zones), 
-		hov45 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.HOV, zones), 
-		hov90 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.HOV, zones),
+		hov17 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.HOV, zones,tp), 
+		hov35 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.HOV, zones,tp), 
+		hov45 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.HOV, zones,tp), 
+		hov90 = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.HOV, zones,tp),
 
-		medTrucks = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.MED_TRUCK, zones), 
-		hvyTrucks = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.MED_TRUCK, zones);
+		medTrucks = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.MED_TRUCK, zones,tp), 
+		hvyTrucks = new FixedSizeODMatrix<FixedSizeDemandMap>(Mode.MED_TRUCK, zones,tp);
 		
 
 		matrixFile.lines().sequential().forEach(line -> {

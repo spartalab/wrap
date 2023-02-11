@@ -450,6 +450,11 @@ public class BasicPurpose implements Purpose {
 			return 0f;
 		}
 	}
+	
+	@Override
+	public Float getVOT(Mode m, TimePeriod tp) {
+		return getVOT(tp);
+	}
 
 	public double personTrips() {
 		return getPAMap().getAttractionMap().totalDemand();

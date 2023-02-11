@@ -53,7 +53,7 @@ public class ODProfileFactory {
 						Collectors.toMap(
 								Function.identity(), 
 								tp -> {
-									FixedSizeODMatrix<FixedSizeDemandMap> mtx = new FixedSizeODMatrix<FixedSizeDemandMap>(mode, zones.values());
+									FixedSizeODMatrix<FixedSizeDemandMap> mtx = new FixedSizeODMatrix<FixedSizeDemandMap>(mode, zones.values(),tp);
 									zones.values().forEach(zone -> mtx.setDemandMap(zone, new FixedSizeDemandMap(zones.values())));
 									return mtx;
 								}

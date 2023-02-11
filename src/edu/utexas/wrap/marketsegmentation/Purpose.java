@@ -27,6 +27,7 @@ import edu.utexas.wrap.demand.ODProfileProvider;
 import edu.utexas.wrap.demand.PAMapProvider;
 import edu.utexas.wrap.distribution.FrictionFactorMap;
 import edu.utexas.wrap.distribution.TripDistributor;
+import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
@@ -63,6 +64,8 @@ public interface Purpose extends
 	public Collection<TravelSurveyZone> getZones();
 	
 	public Float getVOT(TimePeriod tp);
+	
+	public Float getVOT(Mode m, TimePeriod tp);
 
 };
 
