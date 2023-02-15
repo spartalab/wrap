@@ -166,11 +166,7 @@ public class Graph {
 	public Integer numNodes() {
 		return numNodes;
 	}
-	
-//	public Link[] outLinks(Node u) {
-//		return forwardStar[u.getOrder()];
-////		return outLinks.getOrDefault(u, Collections.emptySet()).stream().toArray(n->new Link[n]);
-//	}
+
 
 	public Boolean remove(Link link) {
 		
@@ -241,30 +237,15 @@ public class Graph {
 	public int numLinks() {
 		return numLinks;
 	}
-	
-//	public Map<Link, Link> getDerivativeLinks(Map<Link,Double> derivs, Link oldFocus, Link newFocus, Map<Node,Node> nodeMap){
-//		Map<Link, Link> linkMap = new HashMap<Link,Link>(numLinks,1.0f);
-//
-//		
-//		IntStream.range(0,forwardStar.length).parallel().forEach(j ->{
-//			Link[] oldLinks = forwardStar[j];
-//			if (oldLinks == null) return;
-//			for (int i = 0; i < oldLinks.length; i++) {
-//				Link oldLink = oldLinks[i];
-//				Link newLink;
-//				if (oldLink.equals(oldFocus)) newLink = newFocus;
-//				else  newLink = new DerivativeLink(nodeMap.get(oldLink.getTail()), nodeMap.get(oldLink.getHead()), oldLink.getCapacity(), oldLink.getLength(), oldLink.freeFlowTime(), oldLink, derivs);
-//				linkMap.put(oldLink, newLink);
-//			}
-//		});
-//		return linkMap;
-//	}
-	
+
 	public Map<Node,Node> duplicateNodes(){
-		return order.stream().collect(Collectors.toMap(Function.identity(), x -> new Node(x)));
+		return order.stream().collect(
+				Collectors.toMap(Function.identity(), x -> new Node(x)));
 	}
 
-	public Graph getDerivativeGraph(Map<Link, Link> linkMap, Map<Node,Node> mapOfNodes) {
+	public Graph getDerivativeGraph(
+			Map<Link, Link> linkMap, 
+			Map<Node,Node> mapOfNodes) {
 		// TODO Auto-generated method stub
 		Graph ret = new Graph(zones);
 		
@@ -274,7 +255,9 @@ public class Graph {
 		ret.forwardStar = new Link[forwardStar.length][];
 		ret.reverseStar = new Link[reverseStar.length][];
 		ret.setMD5(getMD5());
-		ret.order = order.stream().map(n -> mapOfNodes.get(n)).collect(Collectors.toList());
+		ret.order = order.stream().map(
+				n -> mapOfNodes.get(n)
+				).collect(Collectors.toList());
 		
 		IntStream.range(0,forwardStar.length).parallel().forEach(j ->{
 			Link[] oldLinks = forwardStar[j];
@@ -306,6 +289,44 @@ public class Graph {
 		return ret;
 	}
 	
+	public void setSignalTimings(
+			Map<Integer,Float> greenShares,
+			Map<Integer,Float> cycleLengths
+			) {
+		if (greenShares == null || cycleLengths == null) return;
+		
+		Set<SignalizedNode> toCover = new HashSet<SignalizedNode>();
+		
+		for (Integer link_hash : greenShares.keySet()) {
+			Link l = hashes.get(link_hash);
+			Node n = l.getHead();
+			if (n instanceof SignalizedNode) toCover.add((SignalizedNode) n);
+		}
+		
+		for (SignalizedNode n : toCover) {
+			
+			//TODO handle case where some entries are missing in greenShares
+			Float[] greenArray = new Float[reverseStar[n.getOrder()].length];
+			float total = 0.f;
+			for (int i = 0; i < reverseStar[n.getOrder()].length;i++) {
+				Link l = reverseStar[n.getOrder()][i];
+				Float greenShare = greenShares.get(l.hashCode());
+				greenArray[i] = greenShare;
+				if (
+						!greenShare.isNaN()
+					&&	!greenShare.isInfinite()
+					) total += greenShare;
+			}
+			
+			for (int i = 0; i < greenArray.length; i++) {
+				greenArray[i] = greenArray[i]/total;
+			}
+			n.setGreenShares(greenArray);
+			n.setCycleLength(cycleLengths.get(n.getID()));
+		}
+	}
+
+	
 	public void complete() {
 		forwardStar = new Link[numNodes][];
 		reverseStar = new Link[numNodes][];
@@ -330,21 +351,10 @@ public class Graph {
 	public Collection<TravelSurveyZone> getTSZs() {
 		return zones.values();
 	}
-	
-//	public boolean addZone(TravelSurveyZone zone) {
-//		return zones.add(zone);
-//	}
-
-//	public Set<RegionalAreaAnalysisZone> getRAAs() {
-//		return zones.parallelStream().map(TravelSurveyZone::getRAA).collect(Collectors.toSet());
-//	}
-	
-
-
-
 
 	public void loadDemand(AssignmentContainer container) {
-		container.flows(false).entrySet().parallelStream().forEach(pair -> pair.getKey().changeFlow(pair.getValue()));
+		container.flows(false).entrySet().parallelStream()
+			.forEach(pair -> pair.getKey().changeFlow(pair.getValue()));
 	}
 
 	public double cheapestCostPossible(AssignmentContainer container) {
@@ -368,14 +378,18 @@ public class Graph {
 			cost += container.demand(u.node) * u.key;
 			
 			for (Link uv : u.node.forwardStar()) {
-				//TODO expand this admissibility check to other implementations of AssignmentContainer
-				if (container instanceof Bush && !((Bush) container).canUseLink(uv)) continue;
+				//TODO expand this admissibility check to other implementations 
+				//of AssignmentContainer
+				if (container instanceof Bush && 
+						!((Bush) container).canUseLink(uv)) continue;
 //				if (!uv.allowsClass(c) || isInvalidConnector(uv)) continue;
 				
 				
-				//If this link doesn't allow this bush's class of driver on the link, don't consider it
-				//This was removed to allow flow onto all links for the initial bush, and any illegal
-				//flow will be removed on the first flow shift due to high price
+				//If this link doesn't allow this bush's class of driver on the 
+				//link, don't consider it
+				//This was removed to allow flow onto all links for the initial 
+				//bush, and any illegal flow will be removed on the first flow 
+				//shift due to high price
 				
 				FibonacciLeaf v = Q.getLeaf(uv.getHead());
 				Double alt = uv.getPrice(container)+u.key;
@@ -387,5 +401,6 @@ public class Graph {
 		}
 		return cost;
 	}
+	
 
 }

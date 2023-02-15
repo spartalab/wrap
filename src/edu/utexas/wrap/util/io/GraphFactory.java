@@ -38,6 +38,7 @@ import edu.utexas.wrap.net.CentroidConnector;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.SignalizedNode;
 import edu.utexas.wrap.net.TolledBPRLink;
 import edu.utexas.wrap.net.TolledEnhancedLink;
 
@@ -54,7 +55,15 @@ public class GraphFactory {
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public static void readTNTPLinks(File linkFile, Graph g, ToDoubleFunction<Link> tollingPolicy) throws FileNotFoundException, IOException {
+	public static void readTNTPLinks(
+			
+			File linkFile, 
+			Graph g, 
+			ToDoubleFunction<Link> tollingPolicy,
+			Map<Integer, Float> greenShares,
+			Map<Integer, Float> cycleLengths
+			
+			) throws FileNotFoundException, IOException {
 
 		try {
 			MessageDigest md = MessageDigest.getInstance("MD5");
@@ -91,12 +100,22 @@ public class GraphFactory {
 
 				// Create new node(s) if new, then add to map
 				if (!nodeIDs.containsKey(tail)) {
-					nodeIDs.put(tail, new Node(tail, nodeIdx.getAndIncrement(),g.getZone(tail)));
+					nodeIDs.put(tail, 
+						greenShares == null ?	
+							new Node(tail, nodeIdx.getAndIncrement(),g.getZone(tail)) :
+							new SignalizedNode(tail, nodeIdx.getAndIncrement(),g.getZone(tail))
+							
+							);
 
 				}
 
 				if (!nodeIDs.containsKey(head)) {
-					nodeIDs.put(head, new Node(head, nodeIdx.getAndIncrement(),g.getZone(head)));
+					nodeIDs.put(head, 
+						greenShares == null ?
+							new Node(head, nodeIdx.getAndIncrement(),g.getZone(head)) :
+							new SignalizedNode(tail, nodeIdx.getAndIncrement(),g.getZone(tail))
+							
+							);
 				}
 				
 				// Construct new link and add to the list
@@ -114,6 +133,8 @@ public class GraphFactory {
 			lf.close();
 			g.setMD5(md.digest());
 			g.complete();
+			g.setSignalTimings(greenShares, cycleLengths);
+
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}

@@ -33,7 +33,17 @@ public class TolledBPRLink extends TolledLink {
 	private final Double tp;
 
 	
-	public TolledBPRLink(Node tail, Node head, Float capacity, Float length, Float fftime, Float b, Float power, Float toll, Integer linkID, ToDoubleFunction<Link> tollingPolicy) {
+	public TolledBPRLink(
+			Node tail, 
+			Node head, 
+			Float capacity, 
+			Float length, 
+			Float fftime, 
+			Float b, 
+			Float power, 
+			Float toll, 
+			Integer linkID, 
+			ToDoubleFunction<Link> tollingPolicy) {
 		super(tail,head,capacity,length,fftime, linkID, tollingPolicy);
 		
 		this.b = b;
@@ -58,7 +68,6 @@ public class TolledBPRLink extends TolledLink {
 	}
 	
 	public double getPrice(Float vot, Mode c) {
-//		if (cachedPrice != null) return cachedPrice; // Causes a convergence failure for some reason
 
 		return getTravelTime() * vot + getToll(null);
 		
@@ -81,8 +90,15 @@ public class TolledBPRLink extends TolledLink {
 				b*Math.pow(getFlow()/getCapacity(), power));
 		double ret = cachedTT;
 		flowLock.readLock().unlock();
-		return ret;
+		Node head = getHead();
+		SignalizedNode sHead = head instanceof SignalizedNode? 
+				(SignalizedNode) head : null;
+		double signalizedDelay = sHead != null? 
+				sHead.getSignalizedDelay(this) : 0.;
+		return ret + signalizedDelay;
 	}
+
+
 	
 	public double pricePrime(Float vot) {
 		Double r = vot*tPrime() + tollPrime();

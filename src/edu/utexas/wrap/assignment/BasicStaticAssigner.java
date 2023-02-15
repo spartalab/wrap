@@ -250,7 +250,11 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 			if (TolledEnhancedLink.class.isAssignableFrom(linkType))
 				GraphFactory.readConicLinks(linkFile, network, tollingPolicy);
 			else if (TolledBPRLink.class.isAssignableFrom(linkType))
-				GraphFactory.readTNTPLinks(linkFile, network, tollingPolicy);
+				GraphFactory.readTNTPLinks(
+						linkFile, 
+						network, 
+						tollingPolicy,
+						null, null);
 
 			
 			Files.createDirectories(containerSource
