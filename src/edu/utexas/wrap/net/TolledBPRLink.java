@@ -94,7 +94,7 @@ public class TolledBPRLink extends TolledLink {
 		SignalizedNode sHead = head instanceof SignalizedNode? 
 				(SignalizedNode) head : null;
 		double signalizedDelay = sHead != null? 
-				sHead.getSignalizedDelay(this) : 0.;
+				sHead.getSignalizedDelay(this) * getFlow() / getCapacity() : 0.;
 		return ret + signalizedDelay;
 	}
 

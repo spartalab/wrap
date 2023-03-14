@@ -17,6 +17,7 @@
  */
 package edu.utexas.wrap.assignment;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
@@ -45,6 +46,7 @@ import edu.utexas.wrap.assignment.bush.BushInitializer;
 import edu.utexas.wrap.assignment.bush.BushReader;
 import edu.utexas.wrap.assignment.bush.BushWriter;
 import edu.utexas.wrap.assignment.bush.algoB.AlgorithmBOptimizer;
+import edu.utexas.wrap.assignment.bush.signalized.SignalizedOptimizer;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.demand.containers.AddingODMatrix;
@@ -75,7 +77,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	private int iterationsPerformed;
 	private ToDoubleFunction<Link> tollingPolicy;
 	private final Class<? extends Link> linkType;
-	private final Path containerSource, linkSource;
+	private final Path containerSource, linkSource, 
+		cycleLengthSource, cycleSplitSource;
 	private final Map<Integer, TravelSurveyZone> zones;
 	
 	private BasicStaticAssigner(String name,
@@ -89,7 +92,9 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		TimePeriod tp,
 		Collection<Mode> modes,
 		Path containerSource,
-		Path linkSource
+		Path linkSource,
+		Path cycleLengthSource,
+		Path cycleSplitSource
 			){
 		this.name = name;
 		this.evaluator = evaluator;
@@ -102,6 +107,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		this.modes = modes;
 		this.linkType = linkType;
 		this.linkSource= linkSource;
+		this.cycleLengthSource = cycleLengthSource;
+		this.cycleSplitSource = cycleSplitSource;
 		this.containerSource = containerSource;
 		this.zones = zones;
 	}
@@ -183,20 +190,21 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		}
 
 
+		BushEvaluator iterEvaluator;
+		
+		switch(props.getProperty("optimizer.iterEvaluator")) {
+		case "bushGap":
+			iterEvaluator = new BushGapEvaluator();
+			break;
+		default:
+			throw new RuntimeException("Not yet implemented");
+		}
+
+		double iterThreshold = Double.parseDouble(props.getProperty("optimizer.iterThreshold"));
+
 
 		switch (props.getProperty("optimizer")) {
 		case "algoB":
-			BushEvaluator iterEvaluator;
-			
-			switch(props.getProperty("optimizer.iterEvaluator")) {
-			case "bushGap":
-				iterEvaluator = new BushGapEvaluator();
-				break;
-			default:
-				throw new RuntimeException("Not yet implemented");
-			}
-
-			double iterThreshold = Double.parseDouble(props.getProperty("optimizer.iterThreshold"));
 
 			optimizer = new AlgorithmBOptimizer(
 					provider, 
@@ -204,6 +212,13 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 					iterEvaluator,
 					iterThreshold);
 			break;
+		case "signalized":
+			
+			optimizer = new SignalizedOptimizer(
+					provider,
+					writer,
+					iterEvaluator,
+					iterThreshold);
 		default:
 			throw new RuntimeException("Not yet implemented");
 		}
@@ -219,16 +234,33 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 			linkType = CentroidConnector.class;
 		}
 
-		Double threshold = Double.parseDouble(props.getProperty("evaluator.threshold"));
-		Integer maxIterations = Integer.parseInt(props.getProperty("maxIterations"));
-		TimePeriod tp = TimePeriod.valueOf(props.getProperty("timePeriod"));
-		Collection<Mode> modes = Stream.of(props.getProperty("modes").split(","))
+		Double threshold = Double.parseDouble(
+				props.getProperty("evaluator.threshold"));
+		Integer maxIterations = Integer.parseInt(
+				props.getProperty("maxIterations"));
+		TimePeriod tp = TimePeriod.valueOf(
+				props.getProperty("timePeriod"));
+		Collection<Mode> modes = Stream.of(
+				props.getProperty("modes").split(","))
 				.map(mode -> Mode.valueOf(mode))
 				.collect(Collectors.toSet());
-		Path linkSource = projectPath.resolve(props.getProperty("network.links"));
-		Path containerSource = Paths.get(props.getProperty("providerConsumer.source"));
+		Path linkSource = projectPath.resolve(
+				props.getProperty("network.links"));
+		Path containerSource = Paths.get(
+				props.getProperty("providerConsumer.source"));
+		Path cycleLengthSource = Paths.get(
+				props.getProperty("signalTimings.cycleLengths"));
+		Path cycleSplitSource = Paths.get(
+				props.getProperty("signalTimings.cycleSplits")
+				);
 
-		return new BasicStaticAssigner<Bush>(name, zones, evaluator, optimizer, initializer, linkType, threshold, maxIterations, tp, modes, containerSource, linkSource);
+		return new BasicStaticAssigner<Bush>(
+				name, zones, 
+				evaluator, optimizer, initializer, 
+				linkType, 
+				threshold, maxIterations, tp, 
+				modes, 
+				containerSource, linkSource,cycleLengthSource,cycleSplitSource);
 	}
 
 
@@ -246,6 +278,15 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		//TODO get tolling policy
 		try {			
 			File linkFile = linkSource.toFile();
+			
+			Map<Integer, Float> greenShares = null;
+			Map<Integer, Float> cycleLengths = null;
+			
+			if (cycleSplitSource != null && cycleLengthSource != null) {
+				greenShares = getSplits();
+				cycleLengths = getCycleLengths();
+			}
+			
 
 			if (TolledEnhancedLink.class.isAssignableFrom(linkType))
 				GraphFactory.readConicLinks(linkFile, network, tollingPolicy);
@@ -254,7 +295,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 						linkFile, 
 						network, 
 						tollingPolicy,
-						null, null);
+						greenShares, cycleLengths);
 
 			
 			Files.createDirectories(containerSource
@@ -269,6 +310,29 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		this.containers = initializer.initializeContainers(network);
 	}
 	
+	private Map<Integer, Float> getCycleLengths() throws IOException {
+		// TODO Auto-generated method stub
+		BufferedReader lf = Files.newBufferedReader(cycleLengthSource);
+		
+		return lf.lines().parallel().collect(
+				Collectors.toMap(
+						line -> Integer.parseInt(line.split(",")[0]),
+						line -> Float.parseFloat(line.split(",")[1])));
+		
+	}
+
+
+	private Map<Integer, Float> getSplits() throws IOException {
+		// TODO Auto-generated method stub
+		BufferedReader lf = Files.newBufferedReader(cycleSplitSource);
+		
+		return lf.lines().parallel().collect(
+				Collectors.toMap(
+						line -> Integer.parseInt(line.split(",")[0]), 
+						line -> Float.parseFloat(line.split(",")[1])));
+	}
+
+
 	public double getProgress(double currentValue, int numIterations) {
 		lastEvaluation = currentValue;
 		iterationsPerformed = numIterations;
@@ -341,11 +405,6 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		System.out.println("Getting skim from assigner for "+id);
 		return SkimFactory.calculateSkim(network, function, id);
 	}
-	
-
-
-
-	
 
 	public Mode getMode(ODMatrix mtx) {
 		switch (mtx.getMode()) {
