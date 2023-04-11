@@ -432,7 +432,10 @@ public class Bush implements AssignmentContainer {
 //		System.out.println("Getting incurred costs");
 		Stream<Link> ul = getUsedLinkStream().parallel();
 		
-		return ul.mapToDouble(l -> flows.getOrDefault(l, 0.0)*l.getPrice(vot, c)).sum();
+		return ul.mapToDouble(l -> 
+		flows.getOrDefault(l, 0.0)
+		*l.getPrice(vot, c)
+		).sum();
 	}
 //	
 //	/**
@@ -505,3 +508,4 @@ public class Bush implements AssignmentContainer {
 	}
 	
 }
+

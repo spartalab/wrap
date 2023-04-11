@@ -20,6 +20,7 @@ package edu.utexas.wrap.net;
 import java.util.function.ToDoubleFunction;
 
 import edu.utexas.wrap.assignment.AssignmentContainer;
+import edu.utexas.wrap.assignment.PressureFunction;
 import edu.utexas.wrap.modechoice.Mode;
 
 /**A tolled link whose travel time function is modeled using a BPR VDF
@@ -31,6 +32,7 @@ public class TolledBPRLink extends TolledLink {
 	
 	private final float b, power, toll;
 	private final Double tp;
+	private final PressureFunction pressureFunction;
 
 	
 	public TolledBPRLink(
@@ -43,12 +45,14 @@ public class TolledBPRLink extends TolledLink {
 			Float power, 
 			Float toll, 
 			Integer linkID, 
-			ToDoubleFunction<Link> tollingPolicy) {
+			ToDoubleFunction<Link> tollingPolicy, 
+			PressureFunction pressureFunction) {
 		super(tail,head,capacity,length,fftime, linkID, tollingPolicy);
 		
 		this.b = b;
 		this.power = power;
 		this.toll = toll;
+		this.pressureFunction = pressureFunction;
 		
 		Double ca = Math.pow(capacity, -power);
 		tp = power*fftime*b*ca;
@@ -90,12 +94,12 @@ public class TolledBPRLink extends TolledLink {
 				b*Math.pow(getFlow()/getCapacity(), power));
 		double ret = cachedTT;
 		flowLock.readLock().unlock();
-		Node head = getHead();
-		SignalizedNode sHead = head instanceof SignalizedNode? 
-				(SignalizedNode) head : null;
-		double signalizedDelay = sHead != null? 
-				sHead.getSignalizedDelay(this) * getFlow() / getCapacity() : 0.;
-		return ret + signalizedDelay;
+//		Node head = getHead();
+//		SignalizedNode sHead = head instanceof SignalizedNode? 
+//				(SignalizedNode) head : null;
+//		double signalizedDelay = sHead != null? 
+//				sHead.getSignalizedDelay(this) * getFlow() / getCapacity() : 0.;
+		return ret + pressureFunction.perVehicleDelay(this);// + signalizedDelay;
 	}
 
 

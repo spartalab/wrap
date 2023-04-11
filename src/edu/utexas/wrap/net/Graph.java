@@ -304,6 +304,7 @@ public class Graph {
 		}
 		
 		for (SignalizedNode n : toCover) {
+			// TODO set phase groups
 			
 			//TODO handle case where some entries are missing in greenShares
 			Float[] greenArray = new Float[reverseStar[n.getOrder()].length];

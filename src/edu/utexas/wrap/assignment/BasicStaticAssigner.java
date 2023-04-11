@@ -78,7 +78,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	private ToDoubleFunction<Link> tollingPolicy;
 	private final Class<? extends Link> linkType;
 	private final Path containerSource, linkSource, 
-		cycleLengthSource, cycleSplitSource;
+		cycleLengthSource, cycleSplitSource, compatiblePhaseSource;
+	private final PressureFunction pressureFunction;
 	private final Map<Integer, TravelSurveyZone> zones;
 	
 	private BasicStaticAssigner(String name,
@@ -94,7 +95,9 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		Path containerSource,
 		Path linkSource,
 		Path cycleLengthSource,
-		Path cycleSplitSource
+		Path cycleSplitSource,
+		Path compatiblePhaseSource,
+		PressureFunction pressure
 			){
 		this.name = name;
 		this.evaluator = evaluator;
@@ -110,7 +113,9 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		this.cycleLengthSource = cycleLengthSource;
 		this.cycleSplitSource = cycleSplitSource;
 		this.containerSource = containerSource;
+		this.compatiblePhaseSource = compatiblePhaseSource;
 		this.zones = zones;
+		this.pressureFunction = pressure;
 	}
 
 
@@ -144,6 +149,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		AssignmentOptimizer<Bush> optimizer;
 		AssignmentInitializer<Bush> initializer;
 		AssignmentBuilder<Bush> builder;
+		PressureFunction pressureFunction = null;
 		Class<? extends Link> linkType;
 		
 	
@@ -213,12 +219,27 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 					iterThreshold);
 			break;
 		case "signalized":
+			switch (props.getProperty("optimizer.pressureFunc")) {
+			case "P0":
+				pressureFunction = new P0();
+				break;
+			case "WLYM":
+				pressureFunction = new WLYM();
+				break;
+			case "Alexander":
+				pressureFunction = new Alexander();
+				break;
+			default:
+				throw new RuntimeException("Not yet implemented");
+			}
 			
 			optimizer = new SignalizedOptimizer(
 					provider,
 					writer,
 					iterEvaluator,
-					iterThreshold);
+					iterThreshold,
+					pressureFunction);
+			break;
 		default:
 			throw new RuntimeException("Not yet implemented");
 		}
@@ -248,11 +269,23 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 				props.getProperty("network.links"));
 		Path containerSource = Paths.get(
 				props.getProperty("providerConsumer.source"));
-		Path cycleLengthSource = Paths.get(
+		
+		// make the below optional
+		Path cycleLengthSource = null, 
+				cycleSplitSource = null,
+				compatiblePhaseSource = null;
+		try {
+		 cycleLengthSource = Paths.get(
 				props.getProperty("signalTimings.cycleLengths"));
-		Path cycleSplitSource = Paths.get(
+		 cycleSplitSource = Paths.get(
 				props.getProperty("signalTimings.cycleSplits")
 				);
+		 compatiblePhaseSource = Paths.get(
+				props.getProperty("signalTimings.compatiblePhases")
+				);
+		} catch (Exception e) {
+			
+		}
 
 		return new BasicStaticAssigner<Bush>(
 				name, zones, 
@@ -260,7 +293,9 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 				linkType, 
 				threshold, maxIterations, tp, 
 				modes, 
-				containerSource, linkSource,cycleLengthSource,cycleSplitSource);
+				containerSource, linkSource,
+				cycleLengthSource,cycleSplitSource,compatiblePhaseSource, 
+				pressureFunction);
 	}
 
 
@@ -281,21 +316,26 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 			
 			Map<Integer, Float> greenShares = null;
 			Map<Integer, Float> cycleLengths = null;
+			Map<Integer, Collection<Integer>> compatiblePhases = null;
 			
-			if (cycleSplitSource != null && cycleLengthSource != null) {
+			if (cycleSplitSource != null 
+					&& cycleLengthSource != null
+//					&& compatiblePhaseSource != null
+					) {
 				greenShares = getSplits();
 				cycleLengths = getCycleLengths();
+//				compatiblePhases = getCompatiblePhases();
 			}
 			
 
 			if (TolledEnhancedLink.class.isAssignableFrom(linkType))
-				GraphFactory.readConicLinks(linkFile, network, tollingPolicy);
+				GraphFactory.readConicLinks(linkFile, network, tollingPolicy,pressureFunction);
 			else if (TolledBPRLink.class.isAssignableFrom(linkType))
 				GraphFactory.readTNTPLinks(
 						linkFile, 
 						network, 
-						tollingPolicy,
-						greenShares, cycleLengths);
+						tollingPolicy, pressureFunction,
+						greenShares, cycleLengths, compatiblePhases);
 
 			
 			Files.createDirectories(containerSource
@@ -310,6 +350,27 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		this.containers = initializer.initializeContainers(network);
 	}
 	
+//	private Map<Integer, Collection<Integer>> getCompatiblePhases()
+//			throws IOException {
+//		// TODO Auto-generated method stub
+//		BufferedReader lf = Files.newBufferedReader(compatiblePhaseSource);
+//		return lf.lines().parallel()
+//				.map(line->line.split(","))
+//				.flatMap(strs -> {
+//					Set<Integer> set = new HashSet<Integer>();
+//					for (String str : strs) {
+//						set.add(Integer.parseInt(str));
+//					}
+//					Map<Integer,Collection<Integer>> ret 
+//					= new HashMap<Integer, Collection<Integer>>();
+//					for (Integer l : set) {
+//						ret.put(l, set);
+//					}
+//					return ret.entrySet().stream();
+//				}).collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+//	}
+
+
 	private Map<Integer, Float> getCycleLengths() throws IOException {
 		// TODO Auto-generated method stub
 		BufferedReader lf = Files.newBufferedReader(cycleLengthSource);

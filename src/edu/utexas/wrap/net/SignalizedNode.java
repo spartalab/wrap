@@ -1,15 +1,23 @@
 package edu.utexas.wrap.net;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.stream.Stream;
+
 public class SignalizedNode extends Node {
 	
 	private Float[] greenShares;
 	private Float cycleLength;
+//	private final Map<Integer, Collection<Integer>> compatiblePhases;
+
 
 	public SignalizedNode(
 			Integer ID, 
 			Integer order, 
-			TravelSurveyZone zone) {
+			TravelSurveyZone zone,
+			Map<Integer, Collection<Integer>> compatiblePhases) {
 		super(ID, order, zone);
+//		this.compatiblePhases = compatiblePhases;
 	}
 	
 	@Override
@@ -26,20 +34,31 @@ public class SignalizedNode extends Node {
 		return cycleLength;
 	}
 	
-	public void setGreenShares(Float[] newShares) {
+	protected void setGreenShares(Float[] newShares) {
 		greenShares = newShares;
 	}
 	
 	public void setCycleLength(Float newCycLength) {
 		cycleLength = newCycLength;
 	}
-	
-	public double getSignalizedDelay(Link inLink) {
-		return 
+
+//	public boolean compatiblePhases(Link i, Link j) {
+//		
+//		return compatiblePhases.get(i.hashCode()).contains(j.hashCode()) ||
+//				compatiblePhases.get(j.hashCode()).contains(i.hashCode());
+//	}
+
+	public void updateGreenShares(Map<Link, Double> deltaG) {
+		// TODO Auto-generated method stub
+		Float[] shares = new Float[greenShares.length];
+		Stream.of(reverseStar()).forEach(l -> {
+				shares[l.headIndex()] = (float) 
+						(deltaG.get(l) + greenShares[l.headIndex()] );
 			
-		((1.-getGreenShare(inLink))*cycleLength)
-		*((1.-getGreenShare(inLink))*cycleLength + 1)
-		
-		/ (2.*cycleLength);
+		});
+		setGreenShares(shares);
 	}
+	
+	
+
 }

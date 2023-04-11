@@ -20,7 +20,6 @@ package edu.utexas.wrap.assignment.bush.algoB;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
-import edu.utexas.wrap.assignment.AssignmentOptimizer;
 import edu.utexas.wrap.assignment.AssignmentProvider;
 import edu.utexas.wrap.assignment.AssignmentConsumer;
 import edu.utexas.wrap.assignment.bush.Bush;
@@ -28,7 +27,7 @@ import edu.utexas.wrap.assignment.bush.BushEvaluator;
 import edu.utexas.wrap.assignment.bush.PathCostCalculator;
 import edu.utexas.wrap.net.Graph;
 
-public class AlgorithmBOptimizer implements AssignmentOptimizer<Bush> {
+public class AlgorithmBOptimizer implements ParallelizedOptimizer<Bush> {
 	private final AssignmentProvider<Bush> provider;
 	private final AssignmentConsumer<Bush> consumer;
 

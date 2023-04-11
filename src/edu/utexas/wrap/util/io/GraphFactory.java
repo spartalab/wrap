@@ -27,12 +27,14 @@ import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.ToDoubleFunction;
 
+import edu.utexas.wrap.assignment.PressureFunction;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.CentroidConnector;
 import edu.utexas.wrap.net.Graph;
@@ -51,6 +53,7 @@ public class GraphFactory {
 	 * More information about the TNTP Format can be found here:
 	 * https://github.com/bstabler/TransportationNetworks
 	 * @param linkFile File with the network information
+	 * @param pressureFunction 
 	 * @return Graph object representation of input network
 	 * @throws FileNotFoundException
 	 * @throws IOException
@@ -60,8 +63,9 @@ public class GraphFactory {
 			File linkFile, 
 			Graph g, 
 			ToDoubleFunction<Link> tollingPolicy,
-			Map<Integer, Float> greenShares,
-			Map<Integer, Float> cycleLengths
+			PressureFunction pressureFunction, Map<Integer, Float> greenShares,
+			Map<Integer, Float> cycleLengths,
+			Map<Integer,Collection<Integer>> compatiblePhases
 			
 			) throws FileNotFoundException, IOException {
 
@@ -103,7 +107,11 @@ public class GraphFactory {
 					nodeIDs.put(tail, 
 						greenShares == null ?	
 							new Node(tail, nodeIdx.getAndIncrement(),g.getZone(tail)) :
-							new SignalizedNode(tail, nodeIdx.getAndIncrement(),g.getZone(tail))
+							new SignalizedNode(
+									tail, 
+									nodeIdx.getAndIncrement(),
+									g.getZone(tail),
+									compatiblePhases)
 							
 							);
 
@@ -113,7 +121,11 @@ public class GraphFactory {
 					nodeIDs.put(head, 
 						greenShares == null ?
 							new Node(head, nodeIdx.getAndIncrement(),g.getZone(head)) :
-							new SignalizedNode(tail, nodeIdx.getAndIncrement(),g.getZone(tail))
+							new SignalizedNode(
+									head, 
+									nodeIdx.getAndIncrement(),
+									g.getZone(head),
+									compatiblePhases)
 							
 							);
 				}
@@ -123,7 +135,11 @@ public class GraphFactory {
 				if (tail >= ftn && head >= ftn) {
 					Float B = parse(cols[5]);
 					Float power = parse(cols[6]);
-					link = new TolledBPRLink(nodeIDs.get(tail), nodeIDs.get(head), capacity, length, fftime, B, power, toll,numLinks++, tollingPolicy);
+					link = new TolledBPRLink(
+							nodeIDs.get(tail), 
+							nodeIDs.get(head), 
+							capacity, length, fftime, B, power, 
+							toll, numLinks++, tollingPolicy, pressureFunction);
 				}
 				else {
 					link = new CentroidConnector(nodeIDs.get(tail), nodeIDs.get(head), capacity, length, fftime, toll,numLinks++, tollingPolicy);
@@ -146,11 +162,12 @@ public class GraphFactory {
 	 * The file contains information about the CONAC paramters and uses EnhancedLinks
 	 * to build the graph
 	 * @param f File with the network information
+	 * @param pressureFunction 
 	 * @return Graph object representation of input network
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
-	public static void readConicLinks(File f, Graph g, ToDoubleFunction<Link> tollingPolicy) throws FileNotFoundException, IOException {
+	public static void readConicLinks(File f, Graph g, ToDoubleFunction<Link> tollingPolicy, PressureFunction pressureFunction) throws FileNotFoundException, IOException {
 		try {
 		MessageDigest md = MessageDigest.getInstance("MD5");
 		AtomicInteger numNodes = new AtomicInteger(0), numLinks = new AtomicInteger(0);

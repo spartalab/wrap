@@ -61,6 +61,7 @@ public class AssignerRunner<C extends AssignmentContainer> extends Task<Graph> {
 		Double progress = assigner.getProgress(evaluator.get(), numIterations);
 		updateProgress(progress,1);
 		
+		
 		while (!isCancelled() && progress < 1) {
 			updateMessage("Iterating");
 			iterator = new IteratorRunner<C>(
@@ -86,6 +87,8 @@ public class AssignerRunner<C extends AssignmentContainer> extends Task<Graph> {
 		}
 		updateMessage("Done");
 		updateProgress(1,1);
+		System.err.println("Final gap: "+evaluator.get());
+		System.err.println("Num iterations: "+numIterations);
 		updateSubtaskProgress(1,1);
 		return assigner.getNetwork();
 		

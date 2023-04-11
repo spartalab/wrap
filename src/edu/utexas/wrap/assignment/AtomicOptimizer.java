@@ -1,18 +1,17 @@
 package edu.utexas.wrap.assignment;
 
-import java.util.Map;
+import java.util.Collection;
 
+import edu.utexas.wrap.gui.IteratorRunner;
 import edu.utexas.wrap.net.Graph;
-import edu.utexas.wrap.net.Link;
 
 public interface AtomicOptimizer<T extends AssignmentContainer> 
 			extends AssignmentOptimizer<T>{
-	
-	public void process(T container, 
-			Graph network, 
-			Map<Link,Double> flows,
-			Map<Link,Double> greenShares, 
-			Map<Link, Double> bottleneckDelays, 
-			Map<Link, Double> map);
+
+	public void iterate(
+			Collection<T> containers,
+			Graph network,
+			IteratorRunner<T> runner
+			);
 
 }

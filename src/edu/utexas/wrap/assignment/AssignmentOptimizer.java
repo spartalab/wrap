@@ -18,11 +18,9 @@
 package edu.utexas.wrap.assignment;
 
 
-import edu.utexas.wrap.net.Graph;
 
 public interface AssignmentOptimizer<T extends AssignmentContainer> {
 	
-	public void process(T container, Graph network);
 	
 	public void initialize();
 
