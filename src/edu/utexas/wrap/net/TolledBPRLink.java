@@ -141,7 +141,7 @@ public class TolledBPRLink extends TolledLink {
 			throw new RuntimeException("Invalid BPR parameters");
 		}
 		cachedTP = r;
-		return r;
+		return r + pressureFunction.delayPrime(this);
 	}
 
 	public double getPrice(AssignmentContainer container) {

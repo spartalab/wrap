@@ -14,4 +14,6 @@ public interface AtomicOptimizer<T extends AssignmentContainer>
 			IteratorRunner<T> runner
 			);
 
+	public void setCompletedIterations(int i);
+
 }

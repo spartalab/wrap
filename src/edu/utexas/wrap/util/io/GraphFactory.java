@@ -28,11 +28,16 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import edu.utexas.wrap.assignment.PressureFunction;
 import edu.utexas.wrap.modechoice.Mode;
@@ -40,9 +45,11 @@ import edu.utexas.wrap.net.CentroidConnector;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
+import edu.utexas.wrap.net.Ring;
 import edu.utexas.wrap.net.SignalizedNode;
 import edu.utexas.wrap.net.TolledBPRLink;
 import edu.utexas.wrap.net.TolledEnhancedLink;
+import edu.utexas.wrap.net.TurningMovement;
 
 /**
  * This class provides static methods to read Graph information
@@ -63,16 +70,19 @@ public class GraphFactory {
 			File linkFile, 
 			Graph g, 
 			ToDoubleFunction<Link> tollingPolicy,
-			PressureFunction pressureFunction, Map<Integer, Float> greenShares,
+			PressureFunction pressureFunction, 
+			Map<Integer, Float> greenShares,
 			Map<Integer, Float> cycleLengths,
-			Map<Integer,Collection<Integer>> compatiblePhases
-			
+			Map<Integer,Map<Integer, Integer>> signalGroups,
+			Map<Integer,Map<Integer, Integer>> ringMap,
+			Map<Integer,Map<Integer,Double>> turningMovementShares
 			) throws FileNotFoundException, IOException {
 
 		try {
 			MessageDigest md = MessageDigest.getInstance("MD5");
 			
-			DigestInputStream dis = new DigestInputStream(new FileInputStream(linkFile), md);
+			DigestInputStream dis = new DigestInputStream(
+					new FileInputStream(linkFile), md);
 
 			String line;
 			BufferedReader lf = new BufferedReader(new InputStreamReader(dis));
@@ -110,8 +120,7 @@ public class GraphFactory {
 							new SignalizedNode(
 									tail, 
 									nodeIdx.getAndIncrement(),
-									g.getZone(tail),
-									compatiblePhases)
+									g.getZone(tail))
 							
 							);
 
@@ -124,8 +133,7 @@ public class GraphFactory {
 							new SignalizedNode(
 									head, 
 									nodeIdx.getAndIncrement(),
-									g.getZone(head),
-									compatiblePhases)
+									g.getZone(head))
 							
 							);
 				}
@@ -142,14 +150,46 @@ public class GraphFactory {
 							toll, numLinks++, tollingPolicy, pressureFunction);
 				}
 				else {
-					link = new CentroidConnector(nodeIDs.get(tail), nodeIDs.get(head), capacity, length, fftime, toll,numLinks++, tollingPolicy);
+					link = new CentroidConnector(
+							nodeIDs.get(tail), 
+							nodeIDs.get(head), 
+							capacity, length, fftime, toll,numLinks++, 
+							tollingPolicy);
 				}
+				
 				g.add(link);
 			}
 			lf.close();
 			g.setMD5(md.digest());
 			g.complete();
-			g.setSignalTimings(greenShares, cycleLengths);
+			
+			Map<Link,Collection<TurningMovement>> mvmts = g.getLinks().stream()
+			.collect(
+				Collectors.toMap(
+					Function.identity(),
+					inLink -> inLink.getHead() instanceof SignalizedNode?
+						// if it's a signalized node
+						Stream.of(inLink.getHead().forwardStar())
+						.filter(
+								//disallowing u-turns
+							outlink -> outlink.getHead() != inLink.getTail())
+						.map(
+							outLink -> new TurningMovement(inLink,outLink))
+						.collect(Collectors.toSet())
+						
+						: //else
+							
+						Collections.emptySet()
+					)
+					);
+			Map<TurningMovement,Double> ringShares = getRingShares(
+					mvmts.values().stream().flatMap(Collection::stream).collect(Collectors.toSet()),
+					turningMovementShares);
+			Map<TurningMovement,Ring> rings = getRings(mvmts,ringMap,ringShares);
+			g.setSignalTimings(greenShares, 
+					cycleLengths, 
+					signalGroups, 
+					mvmts, rings);
 
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
@@ -157,9 +197,41 @@ public class GraphFactory {
 
 	}
 
+	private static Map<TurningMovement, Double> getRingShares(
+			Set<TurningMovement> movements,
+			Map<Integer, Map<Integer, Double>> turningMovementShares) {
+		// TODO Auto-generated method stub
+		return movements.stream().collect(
+				Collectors.toMap(
+						Function.identity(), 
+						tm -> turningMovementShares.get(tm.getTail().hashCode())
+								.get(tm.getHead().hashCode())));
+	}
+
+	private static Map<TurningMovement, Ring> getRings(Map<Link, Collection<TurningMovement>> mvmts,
+			Map<Integer, Map<Integer, Integer>> ringMap,Map<TurningMovement,Double> ringShares) {
+		// TODO Auto-generated method stub
+		Map<SignalizedNode,Map<Integer,Ring>> nodeRings = new HashMap<SignalizedNode,Map<Integer,Ring>>();
+		return mvmts.values().stream().flatMap(Collection::stream)
+		.collect(
+			Collectors.toMap(
+					Function.identity(),
+					tm -> {
+						SignalizedNode intx = (SignalizedNode) tm.getTail().getHead();
+						nodeRings.putIfAbsent(intx, new HashMap<Integer,Ring>());
+						
+						Map<Integer,Ring> rings = nodeRings.get(intx);
+						int ringID = ringMap.get(tm.getTail().hashCode())
+								.get(tm.getHead().hashCode());
+						rings.putIfAbsent(ringID, new Ring(ringShares));
+						return rings.get(ringID);
+					}
+					));
+	}
+
 	/**
 	 * This method produces a Graph object after reading it from a CSV file
-	 * The file contains information about the CONAC paramters and uses EnhancedLinks
+	 * The file contains information about the CONAC parameters and uses EnhancedLinks
 	 * to build the graph
 	 * @param f File with the network information
 	 * @param pressureFunction 

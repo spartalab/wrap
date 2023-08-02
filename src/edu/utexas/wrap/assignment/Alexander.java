@@ -2,25 +2,44 @@ package edu.utexas.wrap.assignment;
 
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.SignalizedNode;
+import edu.utexas.wrap.net.TurningMovement;
 
 public class Alexander implements PressureFunction {
 
 	@Override
 	public double stagePressure(Link link) {
-		// TODO Auto-generated method stub
 		
 		
-		return perVehicleDelay(link)*link.getCapacity() ;
+		return perVehicleDelay(link)*link.getFlow() ;
 			
 	}
 	
 	public double perVehicleDelay(Link link) {
-//		return 0.;
 		if (!(link.getHead() instanceof SignalizedNode)) return 0;
 
 		SignalizedNode node = (SignalizedNode) link.getHead();
+		
+		/*for each turning movement from the link,
+		 * evaluate the per-vehicle delay for that movement
+		 * then take the logsumexp to get a smooth maximum
+		 * (this assumes spillback blocks the other movements)
+		 * */
+		return Math.log(node.getMovements(link).stream()
+			.mapToDouble(
+					mvmt -> 
+					Math.exp(
+							(1.-node.getGreenShare(mvmt))
+							*node.getCycleLength()
+							/2.
+							)
+					).sum());
+	}
 
-		return (1.-node.getGreenShare(link))*node.getCycleLength()/2 ;
+	@Override
+	public Double delayPrime(Link link) {
+		// TODO Auto-generated method stub
+
+		return 0.;
 	}
 
 }

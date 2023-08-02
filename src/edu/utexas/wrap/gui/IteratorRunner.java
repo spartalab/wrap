@@ -63,4 +63,11 @@ public class IteratorRunner<T extends AssignmentContainer> extends Task<Void> {
 
 	}
 
+	public void setCompletedIterations(int i) {
+		// TODO Auto-generated method stub
+		if (optimizer instanceof AtomicOptimizer<?>) {
+			((AtomicOptimizer<?>) optimizer).setCompletedIterations(i);
+		}
+	}
+
 }

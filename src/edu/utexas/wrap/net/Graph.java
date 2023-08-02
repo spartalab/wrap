@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.bush.BackVector;
@@ -147,10 +148,6 @@ public class Graph {
 	
 	public Collection<Node> getNodes(){
 		return order;
-//		Set<Node> ret = new HashSet<Node>(inLinks.keySet());
-//		ret.addAll(outLinks.keySet());
-//		return ret;
-//		return nodeOrder.keySet();
 	}
 
 	public int numZones() {
@@ -291,7 +288,10 @@ public class Graph {
 	
 	public void setSignalTimings(
 			Map<Integer,Float> greenShares,
-			Map<Integer,Float> cycleLengths
+			Map<Integer,Float> cycleLengths,
+			Map<Integer,Map<Integer,Integer>> signalGroups,//Node id -> link id -> grp id
+			Map<Link,Collection<TurningMovement>> mvmts,
+			Map<TurningMovement,Ring> rings
 			) {
 		if (greenShares == null || cycleLengths == null) return;
 		
@@ -303,16 +303,62 @@ public class Graph {
 			if (n instanceof SignalizedNode) toCover.add((SignalizedNode) n);
 		}
 		
+		
 		for (SignalizedNode n : toCover) {
-			// TODO set phase groups
+			// set phase groups
+			Map<Integer,Integer> linkMap = signalGroups.get(n.getID());
+			Map<Integer,SignalGroup> sigGroups = linkMap.values()
+				.stream()
+				.collect(
+					Collectors.toMap(
+						Function.identity(), // group ID as int
+						groupID -> {
+							
+							//Map the links in this signal group to their Turning Movements
+							Map<Link,Collection<TurningMovement>> relevantMovements = 
+								Stream.of(n.reverseStar())
+									.filter(link -> linkMap.get(link.hashCode()) == groupID)
+									.collect(
+										Collectors.toMap(
+											Function.identity(), 
+											link -> mvmts.get(link)));
+							
+							//Map each turning movement to a ring
+							Map<TurningMovement,Ring> relevantRings = 
+								Stream.of(n.reverseStar())
+								.flatMap(
+									link -> mvmts.get(link).stream()
+								)
+								.collect(Collectors.toMap(
+									Function.identity(),
+									mvmt->rings.get(mvmt)));
+							
+							return new SignalGroup(
+									groupID,
+									relevantMovements,
+									relevantRings);
+						}
+						)
+				);
+
+			n.setSignalGroups(sigGroups.values(),
+					signalGroups.get(n.getID())
+					.entrySet().stream()
+					.collect(
+							Collectors.toMap(
+									entry -> hashes.get(entry.getKey()),
+									entry -> sigGroups.get(entry.getValue())))
+					);
 			
 			//TODO handle case where some entries are missing in greenShares
-			Float[] greenArray = new Float[reverseStar[n.getOrder()].length];
+			Float[] greenArray = new Float[n.getSignalGroups().size()];
 			float total = 0.f;
-			for (int i = 0; i < reverseStar[n.getOrder()].length;i++) {
-				Link l = reverseStar[n.getOrder()][i];
-				Float greenShare = greenShares.get(l.hashCode());
-				greenArray[i] = greenShare;
+			for (SignalGroup i : n.getSignalGroups()) {
+				
+				
+
+				Float greenShare = greenShares.get(i.getID());
+				greenArray[i.getID()] = greenShare;
 				if (
 						!greenShare.isNaN()
 					&&	!greenShare.isInfinite()
@@ -322,7 +368,7 @@ public class Graph {
 			for (int i = 0; i < greenArray.length; i++) {
 				greenArray[i] = greenArray[i]/total;
 			}
-			n.setGreenShares(greenArray);
+			n.setGroupGreenShares(greenArray);
 			n.setCycleLength(cycleLengths.get(n.getID()));
 		}
 	}

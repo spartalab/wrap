@@ -78,7 +78,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	private ToDoubleFunction<Link> tollingPolicy;
 	private final Class<? extends Link> linkType;
 	private final Path containerSource, linkSource, 
-		cycleLengthSource, cycleSplitSource, compatiblePhaseSource;
+		cycleLengthSource, cycleSplitSource, signalGroupSource, ringSource,ringShareSource;
 	private final PressureFunction pressureFunction;
 	private final Map<Integer, TravelSurveyZone> zones;
 	
@@ -96,7 +96,9 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		Path linkSource,
 		Path cycleLengthSource,
 		Path cycleSplitSource,
-		Path compatiblePhaseSource,
+		Path signalGroupSource,
+		Path ringSource,
+		Path ringShareSource,
 		PressureFunction pressure
 			){
 		this.name = name;
@@ -113,7 +115,9 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		this.cycleLengthSource = cycleLengthSource;
 		this.cycleSplitSource = cycleSplitSource;
 		this.containerSource = containerSource;
-		this.compatiblePhaseSource = compatiblePhaseSource;
+		this.signalGroupSource = signalGroupSource;
+		this.ringSource = ringSource;
+		this.ringShareSource = ringShareSource;
 		this.zones = zones;
 		this.pressureFunction = pressure;
 	}
@@ -273,16 +277,23 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		// make the below optional
 		Path cycleLengthSource = null, 
 				cycleSplitSource = null,
-				compatiblePhaseSource = null;
+				signalGroupSource = null,
+				ringSource = null,
+				ringShareSource = null;
 		try {
 		 cycleLengthSource = Paths.get(
 				props.getProperty("signalTimings.cycleLengths"));
 		 cycleSplitSource = Paths.get(
 				props.getProperty("signalTimings.cycleSplits")
 				);
-		 compatiblePhaseSource = Paths.get(
-				props.getProperty("signalTimings.compatiblePhases")
+		 signalGroupSource = Paths.get(
+				props.getProperty("signalTimings.signalGroups")
 				);
+		 ringSource = Paths.get(
+				 props.getProperty("signalTimings.rings")
+				 );
+		 ringShareSource = Paths.get(
+				 props.getProperty("signalTimings.ringShares"));
 		} catch (Exception e) {
 			
 		}
@@ -294,7 +305,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 				threshold, maxIterations, tp, 
 				modes, 
 				containerSource, linkSource,
-				cycleLengthSource,cycleSplitSource,compatiblePhaseSource, 
+				cycleLengthSource,cycleSplitSource,
+				signalGroupSource,ringSource, ringShareSource,
 				pressureFunction);
 	}
 
@@ -302,6 +314,10 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 //	public boolean isTerminated() {
 //		return lastEvaluation <= threshold || iterationsPerformed >= maxIterations;
 //	}
+	
+	public PressureFunction getPressureFunction() {
+		return pressureFunction;
+	}
 
 	public void initialize(Collection<ODProfile> profiles) {
 		disaggregatedMtxs = new HashMap<ODMatrix,Float>();
@@ -316,15 +332,21 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 			
 			Map<Integer, Float> greenShares = null;
 			Map<Integer, Float> cycleLengths = null;
-			Map<Integer, Collection<Integer>> compatiblePhases = null;
+			Map<Integer, Map<Integer,Integer>> signalGroups = null;
+			Map<Integer, Map<Integer,Integer>> rings = null;
+			Map<Integer,Map<Integer,Double>> ringShares = null;
 			
 			if (cycleSplitSource != null 
 					&& cycleLengthSource != null
-//					&& compatiblePhaseSource != null
+					&& signalGroupSource != null
+					&& ringSource != null
+					&& ringShareSource != null
 					) {
 				greenShares = getSplits();
 				cycleLengths = getCycleLengths();
-//				compatiblePhases = getCompatiblePhases();
+				signalGroups = getSignalGroups();
+				rings = getRings();
+				ringShares = getRingShares();
 			}
 			
 
@@ -335,7 +357,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 						linkFile, 
 						network, 
 						tollingPolicy, pressureFunction,
-						greenShares, cycleLengths, compatiblePhases);
+						greenShares, cycleLengths, signalGroups, rings,ringShares);
 
 			
 			Files.createDirectories(containerSource
@@ -350,25 +372,43 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		this.containers = initializer.initializeContainers(network);
 	}
 	
-//	private Map<Integer, Collection<Integer>> getCompatiblePhases()
-//			throws IOException {
+	private Map<Integer, Map<Integer, Double>> getRingShares() throws IOException {
+		// TODO Auto-generated method stub
+		BufferedReader lf = Files.newBufferedReader(ringShareSource);
+		return lf.lines().parallel()
+				.map(line -> line.split(","))
+				.collect(Collectors.groupingBy(
+						args -> Integer.parseInt(args[0]),
+						Collectors.toMap(args -> Integer.parseInt(args[1]), 
+								args -> Double.parseDouble(args[2]))));
+	}
+
+
+	private Map<Integer, Map<Integer, Integer>> getRings() throws IOException {
+		// TODO Auto-generated method stub
+		BufferedReader lf = Files.newBufferedReader(ringSource);
+		return lf.lines().parallel()
+				.map(line->line.split(","))
+				.collect(Collectors.groupingBy(
+						args-> Integer.parseInt(args[0]),
+						Collectors.toMap(
+								args -> Integer.parseInt(args[1]),
+								args -> Integer.parseInt(args[2]))));
+	}
+
+
+	private Map<Integer, Map<Integer,Integer>> getSignalGroups()
+			throws IOException {
 //		// TODO Auto-generated method stub
-//		BufferedReader lf = Files.newBufferedReader(compatiblePhaseSource);
-//		return lf.lines().parallel()
-//				.map(line->line.split(","))
-//				.flatMap(strs -> {
-//					Set<Integer> set = new HashSet<Integer>();
-//					for (String str : strs) {
-//						set.add(Integer.parseInt(str));
-//					}
-//					Map<Integer,Collection<Integer>> ret 
-//					= new HashMap<Integer, Collection<Integer>>();
-//					for (Integer l : set) {
-//						ret.put(l, set);
-//					}
-//					return ret.entrySet().stream();
-//				}).collect(Collectors.toMap(Entry::getKey, Entry::getValue));
-//	}
+		BufferedReader lf = Files.newBufferedReader(signalGroupSource);
+		return lf.lines().parallel()
+				.map(line->line.split(","))
+				.collect(Collectors.groupingBy(
+						args -> Integer.parseInt(args[0]), 
+						Collectors.toMap(
+								args -> Integer.parseInt(args[1]), 
+								args -> Integer.parseInt(args[2]))));
+	}
 
 
 	private Map<Integer, Float> getCycleLengths() throws IOException {

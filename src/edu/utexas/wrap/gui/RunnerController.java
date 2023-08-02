@@ -362,7 +362,11 @@ public class RunnerController extends Task<Integer> {
 			logger.info("Metric output path: "+outputPath);
 			BufferedWriter out = Files.newBufferedWriter(outputPath, StandardOpenOption.WRITE, StandardOpenOption.CREATE,StandardOpenOption.TRUNCATE_EXISTING);
 			logger.info("Created metric file");
-			out.write("Market,Purpose,Time Period,Assigner,Mode,Total Travel Time,Total Generalized Cost,Total Distance Traveled\n");
+			
+			
+			out.write("Market,Purpose,Time Period,Assigner,Mode,Total Travel Time,Total Generalized Cost,Total Distance Traveled,Signalized Delay\n");
+			
+			
 			logger.info("Handling profiles");
 			if (profiles != null) {
 				int totalMetrics = profiles.size()*project.getAssigners().size();
@@ -385,13 +389,19 @@ public class RunnerController extends Task<Integer> {
 
 						for (TimePeriod tp : TimePeriod.values()) {
 							ODMatrix mtx = profile.getMatrix(tp);
-							Collection<ToDoubleFunction<Link>> evaluationMetrics = List.of(
-									Link::getTravelTime,
-									link -> link.getPrice(tripPurpose.getVOT(mtx.getMode(),tp), mtx.getMode()),
-									Link::getLength
-									);
+
 
 							for (Assigner<?> assigner : project.getAssigners()) {
+								Collection<ToDoubleFunction<Link>> evaluationMetrics = List.of(
+										Link::getTravelTime,
+										link -> link.getPrice(tripPurpose.getVOT(mtx.getMode(),tp), mtx.getMode()),
+										Link::getLength,
+										link -> assigner instanceof BasicStaticAssigner? 
+												((BasicStaticAssigner<?>) assigner).getPressureFunction().perVehicleDelay(link):
+												 0.
+										);
+					
+								
 								if (assigner instanceof StaticAssigner && ((StaticAssigner<?>) assigner).getTimePeriod() != tp) continue;
 
 								result += purposeLabel+ tp.toString()+","+assigner.toString()+",";

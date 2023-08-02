@@ -8,4 +8,6 @@ public interface PressureFunction {
 	
 	public double perVehicleDelay(Link link);
 
+	public Double delayPrime(Link link);
+
 }
