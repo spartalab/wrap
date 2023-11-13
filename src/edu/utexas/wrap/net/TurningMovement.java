@@ -2,13 +2,16 @@ package edu.utexas.wrap.net;
 
 public class TurningMovement {
 	private final Link tailLink, headLink;
+	private final int id;
 	
 	public TurningMovement(
 			Link tailLink,
-			Link headLink
+			Link headLink,
+			int id
 			) {
 		this.tailLink = tailLink;
 		this.headLink = headLink;
+		this.id = id;
 	}
 	
 	public Link getHead() {
@@ -19,4 +22,7 @@ public class TurningMovement {
 		return tailLink;
 	}
 	
+	public int getID() {
+		return id;
+	}
 }

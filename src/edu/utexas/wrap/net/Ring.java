@@ -1,5 +1,6 @@
 package edu.utexas.wrap.net;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -29,4 +30,7 @@ public class Ring {
 		this.turningMvmtGreenShares = newShares;
 	}
 
+	public Collection<TurningMovement> getTurningMovements(){
+		return turningMvmtGreenShares.keySet();
+	}
 }

@@ -1,17 +1,16 @@
 package edu.utexas.wrap.assignment;
 
 import edu.utexas.wrap.net.Link;
+import edu.utexas.wrap.net.SignalGroup;
 import edu.utexas.wrap.net.SignalizedNode;
 import edu.utexas.wrap.net.TurningMovement;
 
 public class Alexander implements PressureFunction {
 
 	@Override
-	public double stagePressure(Link link) {
-		
-		
-		return perVehicleDelay(link)*link.getFlow() ;
-			
+	public double signalGroupPressure(SignalGroup sigGroup) {
+		return sigGroup.getLinks().stream()
+		.mapToDouble(link -> perVehicleDelay(link)*link.getCapacity()).sum();
 	}
 	
 	public double perVehicleDelay(Link link) {
@@ -36,10 +35,26 @@ public class Alexander implements PressureFunction {
 	}
 
 	@Override
-	public Double delayPrime(Link link) {
+	public Double delayPrime(TurningMovement mvmt) {
 		// TODO Auto-generated method stub
-
-		return 0.;
+		SignalizedNode intx = (SignalizedNode) mvmt.getTail().getHead();
+		double numerator = Math.exp(
+				(1.-intx.getGreenShare(mvmt))*intx.getCycleLength()/2.
+				);
+		double denominator = intx.getMovements(mvmt.getTail())
+				.stream().mapToDouble(j -> 
+				Math.exp(
+						(1.-intx.getGreenShare(j))*intx.getCycleLength()/2.)
+				).sum();
+		return numerator/denominator;
 	}
+
+	@Override
+	public double turningMovementPressure(TurningMovement tm) {
+		// TODO Auto-generated method stub
+		return tm.getTail().getCapacity()*perVehicleDelay(tm.getTail());
+	}
+	
+	
 
 }

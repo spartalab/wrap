@@ -2,6 +2,7 @@ package edu.utexas.wrap.net;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class SignalGroup {
 	
@@ -31,6 +32,14 @@ public class SignalGroup {
 	public Double getGreenShare(TurningMovement tm) {
 		// TODO Auto-generated method stub
 		return rings.get(tm).getGreenShare(tm);
+	}
+	
+	public Collection<Link> getLinks(){
+		return movements.keySet();
+	}
+	
+	public Stream<Ring> getRings(){
+		return rings.values().stream().distinct();
 	}
 
 }

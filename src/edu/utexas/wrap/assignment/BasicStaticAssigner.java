@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import edu.utexas.wrap.TimePeriod;
+import edu.utexas.wrap.assignment.bush.AlternateSegmentPair;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.bush.BushBuilder;
 import edu.utexas.wrap.assignment.bush.BushEvaluator;
@@ -220,7 +221,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 					provider, 
 					writer, 
 					iterEvaluator,
-					iterThreshold);
+					iterThreshold,
+					AlternateSegmentPair::getDerivativeSum);
 			break;
 		case "signalized":
 			switch (props.getProperty("optimizer.pressureFunc")) {

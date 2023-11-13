@@ -128,7 +128,7 @@ public class BushMerge implements BackVector {
 		return false;
 	}
 	
-	/** get a Link´s share of the merge demand
+	/** get a Link's share of the merge demand
 	 * @param l the link whose split should be returned
 	 * @return the share of the demand through this node carried by the Link
 	 */

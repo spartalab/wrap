@@ -19,9 +19,11 @@ package edu.utexas.wrap.assignment.bush.algoB;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
+import java.util.function.ToDoubleFunction;
 
 import edu.utexas.wrap.assignment.AssignmentProvider;
 import edu.utexas.wrap.assignment.AssignmentConsumer;
+import edu.utexas.wrap.assignment.bush.AlternateSegmentPair;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.bush.BushEvaluator;
 import edu.utexas.wrap.assignment.bush.PathCostCalculator;
@@ -29,7 +31,8 @@ import edu.utexas.wrap.net.Graph;
 
 public class AlgorithmBOptimizer implements ParallelizedOptimizer<Bush> {
 	private final AssignmentProvider<Bush> provider;
-	private final AssignmentConsumer<Bush> consumer;
+	private final AssignmentConsumer<Bush> consumer; 
+	private final ToDoubleFunction<AlternateSegmentPair> stepSizeFunc;
 
 	private final AlgorithmBUpdater updater;
 	private final AlgorithmBEquilibrator equilibrator;
@@ -42,7 +45,8 @@ public class AlgorithmBOptimizer implements ParallelizedOptimizer<Bush> {
 			AssignmentProvider<Bush> provider, 
 			AssignmentConsumer<Bush> consumer, 
 			BushEvaluator evaluator,
-			double threshold) {
+			double threshold,
+			ToDoubleFunction<AlternateSegmentPair> stepSizeFunc) {
 
 		this.provider = provider;
 		this.consumer = consumer;
@@ -51,6 +55,7 @@ public class AlgorithmBOptimizer implements ParallelizedOptimizer<Bush> {
 
 		updater = new AlgorithmBUpdater();
 		equilibrator = new AlgorithmBEquilibrator();
+		this.stepSizeFunc = stepSizeFunc;
 	}
 
 	@Override
@@ -67,7 +72,7 @@ public class AlgorithmBOptimizer implements ParallelizedOptimizer<Bush> {
 		
 		for (int i = 0; i < maxIterations;i++) {
 			try {
-				equilibrator.equilibrate(bush, pcc);
+				equilibrator.equilibrate(bush, pcc, stepSizeFunc);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

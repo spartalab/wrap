@@ -97,6 +97,7 @@ public class GraphFactory {
 			} while (!line.startsWith("~"));
 
 			int numLinks = 0;
+			AtomicInteger numTurningMovements = new AtomicInteger(0);
 			while (true) { // Iterate through each link (row)
 				line = lf.readLine();
 				if (line == null)
@@ -174,7 +175,9 @@ public class GraphFactory {
 								//disallowing u-turns
 							outlink -> outlink.getHead() != inLink.getTail())
 						.map(
-							outLink -> new TurningMovement(inLink,outLink))
+							outLink -> new TurningMovement(
+									inLink,outLink,
+									numTurningMovements.getAndIncrement()))
 						.collect(Collectors.toSet())
 						
 						: //else

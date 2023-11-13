@@ -21,6 +21,7 @@ import java.util.Iterator;
 import java.util.Spliterator;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import edu.utexas.wrap.modechoice.Mode;
@@ -313,4 +314,21 @@ public class AlternateSegmentPair {
 			return s;
 		}
 	}
+
+
+	public Double getDerivativeSum() {
+		// TODO Auto-generated method stub
+		return Stream.concat(
+				//for all links in the longest and shortest paths
+				StreamSupport.stream(shortPath().spliterator(), false),
+				StreamSupport.stream(longPath().spliterator(), false))
+				
+				//In no particular order, sum the price derivatives
+				.unordered()
+				.mapToDouble(x -> x.pricePrime(getBush().valueOfTime()))
+				.sum();
+	}
+	
+
+	
 }

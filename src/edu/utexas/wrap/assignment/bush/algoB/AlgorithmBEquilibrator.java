@@ -21,9 +21,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.function.ToDoubleFunction;
 //import java.util.concurrent.ForkJoinPool;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import edu.utexas.wrap.assignment.bush.AlternateSegmentPair;
@@ -37,7 +37,9 @@ import edu.utexas.wrap.util.NegativeFlowException;
 public class AlgorithmBEquilibrator {
 	Integer numThreshold = 100;
 	
-	public void equilibrate(Bush bush, PathCostCalculator pcc) throws InterruptedException, ExecutionException {
+	public void equilibrate(Bush bush, PathCostCalculator pcc, 
+			ToDoubleFunction<AlternateSegmentPair> stepSizeFunc) 
+			throws InterruptedException, ExecutionException {
 //		bush.clear();
 		Node[] topoOrder = bush.getTopologicalOrder(true);
 		Node cur;
@@ -59,7 +61,7 @@ public class AlgorithmBEquilibrator {
 				if (asp == null) continue; //No ASP exists
 
 				//calculate delta h, capping at maxDelta
-				Double deltaH = getDeltaH(asp);
+				Double deltaH = getDeltaH(asp, stepSizeFunc);
 
 				//Modify link flows
 				updateDeltaX(asp, bushFlows, deltaH);
@@ -79,16 +81,11 @@ public class AlgorithmBEquilibrator {
 	 * @throws ExecutionException 
 	 * @throws InterruptedException 
 	 */
-	private Double getDeltaH(AlternateSegmentPair asp) throws InterruptedException, ExecutionException {
-		Float vot = asp.getBush().valueOfTime();
+	private Double getDeltaH(AlternateSegmentPair asp, 
+			ToDoubleFunction<AlternateSegmentPair> denominatorFunc) 
+					throws InterruptedException, ExecutionException {
 		
-		Double denominator = Stream.concat(
-				//for all links in the longest and shortest paths
-				StreamSupport.stream(asp.shortPath().spliterator(), false),
-				StreamSupport.stream(asp.longPath().spliterator(), false))
-				
-				//In no particular order, sum the price derivatives
-				.unordered().mapToDouble(x -> x.pricePrime(vot)).sum();
+		Double denominator = denominatorFunc.applyAsDouble(asp);
 
 		//cut off at the maximum delta
 		return Math.min(asp.maxDelta(), asp.priceDiff()/denominator);

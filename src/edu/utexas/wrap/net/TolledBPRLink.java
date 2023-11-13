@@ -99,7 +99,8 @@ public class TolledBPRLink extends TolledLink {
 //				(SignalizedNode) head : null;
 //		double signalizedDelay = sHead != null? 
 //				sHead.getSignalizedDelay(this) * getFlow() / getCapacity() : 0.;
-		return ret + pressureFunction.perVehicleDelay(this);// + signalizedDelay;
+		return ret + (pressureFunction == null? 0. : 
+				pressureFunction.perVehicleDelay(this));// + signalizedDelay;
 	}
 
 
@@ -141,7 +142,7 @@ public class TolledBPRLink extends TolledLink {
 			throw new RuntimeException("Invalid BPR parameters");
 		}
 		cachedTP = r;
-		return r + pressureFunction.delayPrime(this);
+		return r;
 	}
 
 	public double getPrice(AssignmentContainer container) {
