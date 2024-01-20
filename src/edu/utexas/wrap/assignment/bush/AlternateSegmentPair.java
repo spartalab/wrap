@@ -82,13 +82,17 @@ public class AlternateSegmentPair {
 	public Double priceDiff() throws InterruptedException, ExecutionException {
 		Float vot = pcc.getBush().valueOfTime();
 		Mode klass = pcc.getBush().vehicleClass();
+		Double longPrice = null, shortPrice = null;
 		
 		//For each link in the longest and shortest paths, sum the link prices in parallel through a Stream
-		Double longPrice = StreamSupport.stream(longPath().spliterator(), false)
+		try {
+		longPrice = StreamSupport.stream(longPath().spliterator(), false)
 				.unordered().mapToDouble(x -> x.getPrice(vot, klass)).sum();
-		Double shortPrice =  StreamSupport.stream(shortPath().spliterator(), false)
+		shortPrice =  StreamSupport.stream(shortPath().spliterator(), false)
 				.unordered().mapToDouble(x -> x.getPrice(vot, klass)).sum();
-
+		} catch (NullPointerException ex) {
+			ex.printStackTrace();
+		}
 		//Perform a quick numerical check
 		Double ulp = Math.max(Math.ulp(longPrice),Math.ulp(shortPrice));
 		if (longPrice < shortPrice) {

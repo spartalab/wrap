@@ -95,6 +95,7 @@ public class AssignerRunner<C extends AssignmentContainer> extends Task<Graph> {
 
 			evaluator.run();
 			progress = assigner.getProgress(evaluator.get(),numIterations);
+			System.err.println("Iteration "+numIterations+" gap: "+evaluator.get());
 			updateProgress(progress,1);
 		}
 		updateMessage("Done");

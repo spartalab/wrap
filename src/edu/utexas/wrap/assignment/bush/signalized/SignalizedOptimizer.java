@@ -1,7 +1,6 @@
 package edu.utexas.wrap.assignment.bush.signalized;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 import edu.utexas.wrap.assignment.AssignmentConsumer;
@@ -29,7 +28,8 @@ implements AtomicOptimizer<Bush> {
 	private double scalingFactor = 0.000001;
 	private double maxPressure;
 	private final AlgorithmBOptimizer optimizer;
-
+	private Map<SignalGroup,Double> deltaG;
+	private Map<TurningMovement,Double> deltaM;
 
 	public SignalizedOptimizer(
 			AssignmentProvider<Bush> provider, 
@@ -54,9 +54,9 @@ implements AtomicOptimizer<Bush> {
 		// get flows
 
 		//combine into a green shift map
-		Map<SignalGroup,Double> deltaG = getGreenShareChange(network, 
+		deltaG = pressureFunction.getGreenShareChange(network, 
 				scalingFactor);
-		Map<TurningMovement,Double> deltaM = getGreenSplitChange(
+		deltaM = pressureFunction.getGreenSplitChange(
 				network,scalingFactor);
 
 		containers.parallelStream().forEach(container -> {
@@ -68,20 +68,22 @@ implements AtomicOptimizer<Bush> {
 
 
 		// update signal timings
-		throw new RuntimeException("Not yet implemented");
-//		network.getNodes().parallelStream()
-//		.filter(
-//				node -> node instanceof SignalizedNode
-//				)
-//		.map(
-//				node-> (SignalizedNode) node
-//				)
-//		.forEach(
-//				node ->{
-//					node.updateGroupGreenShares(deltaG);
-//
-//				}
-//				);
+//		throw new RuntimeException("Not yet implemented");
+		network.getNodes().parallelStream()
+		.filter(
+				node -> node instanceof SignalizedNode
+				)
+		.map(
+				node-> (SignalizedNode) node
+				)
+		.forEach(
+				node ->{
+					node.updateGroupGreenShares(deltaG);
+					node.updateMovementGreenShares(deltaM);
+				}
+				);
+		deltaG = null;
+		deltaM = null;
 
 	}
 
@@ -99,15 +101,19 @@ implements AtomicOptimizer<Bush> {
 
 			} else if (l.getHead() instanceof SignalizedNode){
 				// TODO get derivative for turning movement
+				SignalGroup sg = ((SignalizedNode) l.getHead()).getSignalGroup(l);
 				for (TurningMovement mvmt : 
-					((SignalizedNode) l.getHead()).getMovements(l)) {
+					sg.getMovements(l)) {
 					if (mvmt.getHead() == nextLink) {
 						sum += l.pricePrime(asp.getBush().valueOfTime()) 
-								+ pressureFunction.delayPrime(mvmt);
+								+ pressureFunction.delayPrime(mvmt,
+										// TODO handle linked movements
+										deltaG.get(sg)*deltaM.get(mvmt),
+										0.);
 						break;
 					}
 				}
-
+				
 			}
 			nextLink = l;
 		}
@@ -118,83 +124,25 @@ implements AtomicOptimizer<Bush> {
 				sum += l.pricePrime(asp.getBush().valueOfTime()) + 1;
 			} else if (l.getHead() instanceof SignalizedNode){
 				// TODO get derivative for turning movement
-				for (TurningMovement mvmt : ((SignalizedNode) l.getHead()).getMovements(l)) {
+				SignalGroup sg = ((SignalizedNode) l.getHead()).getSignalGroup(l);
+				for (TurningMovement mvmt : sg.getMovements(l)) {
+					
 					if (mvmt.getHead() == nextLink) {
 						sum += l.pricePrime(asp.getBush().valueOfTime()) 
-								+ pressureFunction.delayPrime(mvmt);
+								+ pressureFunction.delayPrime(mvmt,
+										// TODO handle linked movements
+										deltaG.get(sg)*deltaM.get(mvmt),
+										0.);
 						break;
 					}
 				}
+
 			}
 			nextLink = l;
 		}
 		return sum;
 	}
 
-
-	private Map<SignalGroup,Double> getGreenShareChange(
-			Graph network, 
-
-			Double scalingFactor
-			) {
-		Map<SignalGroup,Double> deltaG = new HashMap<SignalGroup,Double>();
-		network.getNodes().stream()
-		.filter(node -> node instanceof SignalizedNode)
-		.map(node -> (SignalizedNode) node)
-		.forEach(node -> {
-
-			for (SignalGroup sg_a : node.getSignalGroups()) {
-				for (SignalGroup sg_b : node.getSignalGroups()) {
-					if (sg_a.getID() >= sg_b.getID()) continue;
-					else {
-
-						double pressureDiff = pressureFunction.signalGroupPressure(
-								sg_a
-								) - pressureFunction.signalGroupPressure(
-										sg_b
-										);
-						deltaG.put(sg_a, 
-								deltaG.getOrDefault(sg_a, 0.)
-								+ scalingFactor*pressureDiff*node.getGreenShare(sg_a));
-						deltaG.put(sg_b, 
-								deltaG.getOrDefault(sg_b, 0.)
-								- scalingFactor*pressureDiff*node.getGreenShare(sg_b));
-					}
-				}
-			}
-
-		});
-		return deltaG;
-	}
-
-	private Map<TurningMovement,Double> getGreenSplitChange(
-			Graph network, double scalingFactor){
-		Map<TurningMovement,Double> deltaM = new HashMap<TurningMovement,Double>();
-		
-		network.getNodes().stream()
-		.filter(node -> node instanceof SignalizedNode)
-		.map(node -> (SignalizedNode) node)
-		.flatMap(node -> node.getSignalGroups().stream())
-		.flatMap(sg -> sg.getRings())
-		.forEach(ring -> {
-			for (TurningMovement tm_a : ring.getTurningMovements()) {
-				for (TurningMovement tm_b : ring.getTurningMovements()) {
-					if (tm_a.getID() >= tm_b.getID()) continue;
-					double pressureDiff = pressureFunction.turningMovementPressure(
-							tm_a
-							) - pressureFunction.turningMovementPressure(tm_b);
-					
-					deltaM.put(tm_a, deltaM.getOrDefault(tm_a, 0.)
-							+ scalingFactor * pressureDiff*ring.getGreenShare(tm_a));
-					deltaM.put(tm_b, deltaM.getOrDefault(tm_b, 0.)
-							- scalingFactor*pressureDiff*ring.getGreenShare(tm_b));
-				}
-			}
-		});
-		;
-		
-		return deltaM;
-	}
 
 	@Override
 	public void initialize() {

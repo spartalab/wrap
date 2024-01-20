@@ -25,4 +25,10 @@ public class TurningMovement {
 	public int getID() {
 		return id;
 	}
+	
+	public String toString() {
+		return "Movement "+tailLink.getTail().getID().toString()+"->"
+				+tailLink.getHead().getID().toString()+"->"
+				+headLink.getHead().getID().toString();
+	}
 }

@@ -290,16 +290,15 @@ public class Graph {
 			Map<Integer,Float> greenShares,
 			Map<Integer,Float> cycleLengths,
 			Map<Integer,Map<Integer,Integer>> signalGroups,//Node id -> link id -> grp id
-			Map<Link,Collection<TurningMovement>> mvmts,
-			Map<TurningMovement,Ring> rings
+			Map<Link,Collection<TurningMovement>> unlinkedMvmts,
+			Map<TurningMovement,Ring> rings,
+			Map<Link,Collection<LinkedTurningMovement>> linkedMvmts
 			) {
 		if (greenShares == null || cycleLengths == null) return;
 		
 		Set<SignalizedNode> toCover = new HashSet<SignalizedNode>();
 		
-		for (Integer link_hash : greenShares.keySet()) {
-			Link l = hashes.get(link_hash);
-			Node n = l.getHead();
+		for (Node n : getNodes()) {
 			if (n instanceof SignalizedNode) toCover.add((SignalizedNode) n);
 		}
 		
@@ -308,7 +307,7 @@ public class Graph {
 			// set phase groups
 			Map<Integer,Integer> linkMap = signalGroups.get(n.getID());
 			Map<Integer,SignalGroup> sigGroups = linkMap.values()
-				.stream()
+				.stream().distinct()
 				.collect(
 					Collectors.toMap(
 						Function.identity(), // group ID as int
@@ -317,26 +316,30 @@ public class Graph {
 							//Map the links in this signal group to their Turning Movements
 							Map<Link,Collection<TurningMovement>> relevantMovements = 
 								Stream.of(n.reverseStar())
-									.filter(link -> linkMap.get(link.hashCode()) == groupID)
+								//for all incoming links in the signal group
+									.filter(link -> linkMap.get(link.hashCode()).equals(groupID))
 									.collect(
 										Collectors.toMap(
 											Function.identity(), 
-											link -> mvmts.get(link)));
+											link -> unlinkedMvmts.get(link)));
 							
 							//Map each turning movement to a ring
+							Collection<TurningMovement> mvmtStream = relevantMovements.keySet().stream()
+									.flatMap(
+											link -> unlinkedMvmts.get(link).stream()
+									)
+									.collect(Collectors.toSet());
 							Map<TurningMovement,Ring> relevantRings = 
-								Stream.of(n.reverseStar())
-								.flatMap(
-									link -> mvmts.get(link).stream()
-								)
+								mvmtStream.stream()
 								.collect(Collectors.toMap(
 									Function.identity(),
 									mvmt->rings.get(mvmt)));
 							
-							return new SignalGroup(
+							SignalGroup ret = new SignalGroup(
 									groupID,
 									relevantMovements,
 									relevantRings);
+							return ret;
 						}
 						)
 				);
@@ -358,7 +361,7 @@ public class Graph {
 				
 
 				Float greenShare = greenShares.get(i.getID());
-				greenArray[i.getID()] = greenShare;
+				greenArray[i.getOrder()] = greenShare;
 				if (
 						!greenShare.isNaN()
 					&&	!greenShare.isInfinite()

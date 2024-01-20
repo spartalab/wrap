@@ -306,7 +306,7 @@ public class ConfigController {
 		unsavedChanges = false;
 		modelFeedbackSpinner.setValueFactory(new SpinnerValueFactory.IntegerSpinnerValueFactory(1,Integer.MAX_VALUE));
 		modelFeedbackSpinner.getEditor().setDisable(true);
-		wrapIcon = new Image("/edu/utexas/wrap/gui/wrap.png");
+		wrapIcon = new Image("wrap.png");
 		modelFeedbackSpinner.valueProperty().addListener(new ChangeListener<Integer>() {
 
 			@Override
@@ -596,7 +596,7 @@ public class ConfigController {
 		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
 		try {
 			FXMLLoader loader = new FXMLLoader();
-			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/aboutDialog.fxml").openStream());
+			VBox vbox = loader.load(getClass().getClassLoader().getResource("aboutDialog.fxml").openStream());
 			AboutDialog controller = loader.getController();
 			
 			controller.setHostServices(svcs);
@@ -808,7 +808,7 @@ public class ConfigController {
 		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
 		try {
 			FXMLLoader loader = new FXMLLoader();
-			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/newSkimDialog.fxml").openStream());
+			VBox vbox = loader.load(getClass().getClassLoader().getResource("newSkimDialog.fxml").openStream());
 			NewSkimController controller = loader.getController();
 			controller.setProject(currentProject);
 			DialogPane pane = new DialogPane();
@@ -923,7 +923,7 @@ public class ConfigController {
 		Market selected = marketList.getSelectionModel().getSelectedItem();
 		try {
 			FXMLLoader loader = new FXMLLoader();
-			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/marketDialog.fxml").openStream());
+			VBox vbox = loader.load(getClass().getClassLoader().getResource("marketDialog.fxml").openStream());
 			
 			EditMarketController controller = loader.getController();
 			controller.setMarket(selected);
@@ -963,7 +963,7 @@ public class ConfigController {
 		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
 		try {
 			FXMLLoader loader = new FXMLLoader();
-			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/newMarketDialog.fxml").openStream());
+			VBox vbox = loader.load(getClass().getClassLoader().getResource("newMarketDialog.fxml").openStream());
 			NewMarketController controller = loader.getController();
 			controller.setProject(currentProject);
 			DialogPane pane = new DialogPane();
@@ -1008,7 +1008,7 @@ public class ConfigController {
 		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
 		try {
 			FXMLLoader loader = new FXMLLoader();
-			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/attachMarketDialog.fxml").openStream());
+			VBox vbox = loader.load(getClass().getClassLoader().getResource("attachMarketDialog.fxml").openStream());
 			AttachMarketController controller = loader.getController();
 			controller.setProject(currentProject);
 			DialogPane pane = new DialogPane();
@@ -1147,7 +1147,7 @@ public class ConfigController {
 		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
 		try {
 			FXMLLoader loader = new FXMLLoader();
-			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/attachAssignerDialog.fxml").openStream());
+			VBox vbox = loader.load(getClass().getClassLoader().getResource("attachAssignerDialog.fxml").openStream());
 			AttachAssignerController controller = loader.getController();
 			controller.setProject(currentProject);
 			DialogPane pane = new DialogPane();
@@ -1181,7 +1181,7 @@ public class ConfigController {
 		StaticAssigner<?> selected = assignerList.getSelectionModel().getSelectedItem();
 		try {
 			FXMLLoader loader = new FXMLLoader();
-			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/assignerDialog.fxml").openStream());
+			VBox vbox = loader.load(getClass().getClassLoader().getResource("assignerDialog.fxml").openStream());
 			
 			EditAssignerController controller = loader.getController();
 			controller.setAssigner(selected);
@@ -1221,7 +1221,7 @@ public class ConfigController {
 		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
 		try {
 			FXMLLoader loader = new FXMLLoader();
-			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/newAssignerDialog.fxml").openStream());
+			VBox vbox = loader.load(getClass().getClassLoader().getResource("newAssignerDialog.fxml").openStream());
 			NewAssignerController controller = loader.getController();
 			controller.setProject(currentProject);
 			DialogPane pane = new DialogPane();
@@ -1291,7 +1291,7 @@ public class ConfigController {
 		stage.getIcons().add(wrapIcon);
 		try {
 			FXMLLoader loader = new FXMLLoader();
-			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/wrapRunner.fxml").openStream());
+			VBox vbox = loader.load(getClass().getClassLoader().getResource("wrapRunner.fxml").openStream());
 			RunnerController controller = loader.getController();
 			controller.setProject(currentProject);
 			

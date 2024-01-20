@@ -27,7 +27,7 @@ public class Alexander implements PressureFunction {
 			.mapToDouble(
 					mvmt -> 
 					Math.exp(
-							(1.-node.getGreenShare(mvmt))
+							Math.pow(1.-node.getGreenShare(mvmt),2)
 							*node.getCycleLength()
 							/2.
 							)
@@ -35,18 +35,26 @@ public class Alexander implements PressureFunction {
 	}
 
 	@Override
-	public Double delayPrime(TurningMovement mvmt) {
+	public Double delayPrime(
+			TurningMovement mvmt, 
+			double greenSharePrime, 
+			double cycleLengthPrime) {
 		// TODO Auto-generated method stub
 		SignalizedNode intx = (SignalizedNode) mvmt.getTail().getHead();
 		double numerator = Math.exp(
-				(1.-intx.getGreenShare(mvmt))*intx.getCycleLength()/2.
+				Math.pow(1.-intx.getGreenShare(mvmt),2)*intx.getCycleLength()/2.
 				);
 		double denominator = intx.getMovements(mvmt.getTail())
 				.stream().mapToDouble(j -> 
 				Math.exp(
-						(1.-intx.getGreenShare(j))*intx.getCycleLength()/2.)
+						Math.pow(1.-intx.getGreenShare(j), 2)*intx.getCycleLength()/2.)
 				).sum();
-		return numerator/denominator;
+		return (numerator/denominator)*(
+				(1-intx.getGreenShare(mvmt))
+				*(
+						(1-intx.getGreenShare(mvmt))*cycleLengthPrime 
+						- (2*intx.getCycleLength()*greenSharePrime))
+				)/2;
 	}
 
 	@Override
@@ -54,7 +62,5 @@ public class Alexander implements PressureFunction {
 		// TODO Auto-generated method stub
 		return tm.getTail().getCapacity()*perVehicleDelay(tm.getTail());
 	}
-	
-	
 
 }

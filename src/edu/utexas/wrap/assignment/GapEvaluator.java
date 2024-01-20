@@ -53,27 +53,27 @@ public class GapEvaluator<T extends AssignmentContainer> implements AssignmentEv
 
 	@Override
 	public void process(T container, Graph network) {
-		
-		try{
-			provider.getStructure(container, network);
-		} catch (IOException e) {
-			System.err.println("WARN: Could not read source for "+container+". Ignoring");
-			return;
-		}
-		double incurredCost = container.incurredCost();
-		double cheapestContainerCost = network.cheapestCostPossible(container);
-		 
-		
+		synchronized (container) {
+			try{
+				provider.getStructure(container, network);
+			} catch (IOException e) {
+				System.err.println("WARN: Could not read source for "+container+". Ignoring");
+				return;
+			}
+			double incurredCost = container.incurredCost();
+			double cheapestContainerCost = network.cheapestCostPossible(container);
+
+
 			this.incurredCost.add(incurredCost);
 			this.cheapestCost.add(cheapestContainerCost);
-		
-		try {
-			consumer.consumeStructure(container, network);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			System.err.println("WARN: Could not consume "+container+".");
-			e.printStackTrace();
+
+			try {
+				consumer.consumeStructure(container, network);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				System.err.println("WARN: Could not consume "+container+".");
+				e.printStackTrace();
+			}
 		}
 	}
-
 }

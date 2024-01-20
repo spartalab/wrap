@@ -79,7 +79,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	private ToDoubleFunction<Link> tollingPolicy;
 	private final Class<? extends Link> linkType;
 	private final Path containerSource, linkSource, 
-		cycleLengthSource, cycleSplitSource, signalGroupSource, ringSource,ringShareSource;
+		cycleLengthSource, cycleSplitSource, signalGroupSource, ringSource,ringShareSource,linkedMvmtSource;
 	private final PressureFunction pressureFunction;
 	private final Map<Integer, TravelSurveyZone> zones;
 	
@@ -100,6 +100,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		Path signalGroupSource,
 		Path ringSource,
 		Path ringShareSource,
+		Path linkedMvmtSource,
 		PressureFunction pressure
 			){
 		this.name = name;
@@ -119,6 +120,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		this.signalGroupSource = signalGroupSource;
 		this.ringSource = ringSource;
 		this.ringShareSource = ringShareSource;
+		this.linkedMvmtSource = linkedMvmtSource;
 		this.zones = zones;
 		this.pressureFunction = pressure;
 	}
@@ -281,7 +283,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 				cycleSplitSource = null,
 				signalGroupSource = null,
 				ringSource = null,
-				ringShareSource = null;
+				ringShareSource = null,
+				linkedMvmtSource = null;
 		try {
 		 cycleLengthSource = Paths.get(
 				props.getProperty("signalTimings.cycleLengths"));
@@ -296,8 +299,10 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 				 );
 		 ringShareSource = Paths.get(
 				 props.getProperty("signalTimings.ringShares"));
+		 linkedMvmtSource = Paths.get(props.getProperty("signalTimings.linkedMovements"));
+		 
 		} catch (Exception e) {
-			
+			e.printStackTrace();
 		}
 
 		return new BasicStaticAssigner<Bush>(
@@ -308,7 +313,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 				modes, 
 				containerSource, linkSource,
 				cycleLengthSource,cycleSplitSource,
-				signalGroupSource,ringSource, ringShareSource,
+				signalGroupSource,ringSource, ringShareSource,linkedMvmtSource,
 				pressureFunction);
 	}
 
@@ -337,18 +342,21 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 			Map<Integer, Map<Integer,Integer>> signalGroups = null;
 			Map<Integer, Map<Integer,Integer>> rings = null;
 			Map<Integer,Map<Integer,Double>> ringShares = null;
+			Map<Integer,Map<Integer,Integer[]>> linkedMvmts = null;
 			
 			if (cycleSplitSource != null 
 					&& cycleLengthSource != null
 					&& signalGroupSource != null
 					&& ringSource != null
 					&& ringShareSource != null
+					&& linkedMvmtSource != null
 					) {
 				greenShares = getSplits();
 				cycleLengths = getCycleLengths();
 				signalGroups = getSignalGroups();
 				rings = getRings();
 				ringShares = getRingShares();
+				linkedMvmts = getLinkedMvmts();
 			}
 			
 
@@ -359,7 +367,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 						linkFile, 
 						network, 
 						tollingPolicy, pressureFunction,
-						greenShares, cycleLengths, signalGroups, rings,ringShares);
+						greenShares, cycleLengths, signalGroups, rings,
+						ringShares, linkedMvmts);
 
 			
 			Files.createDirectories(containerSource
@@ -374,9 +383,35 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		this.containers = initializer.initializeContainers(network);
 	}
 	
+	private Map<Integer,Map<Integer,Integer[]>> getLinkedMvmts() throws IOException {
+		BufferedReader lf = Files.newBufferedReader(linkedMvmtSource);
+		lf.readLine();
+		return lf.lines().map(line -> line.split(",")).collect(
+				Collectors.groupingBy(args -> Integer.parseInt(args[0]), 
+						Collectors.toMap(args -> Integer.parseInt(args[1]), 
+								args-> {
+									Integer[] params = {
+											Integer.parseInt(args[2]),
+											Integer.parseInt(args[3]),
+											Integer.parseInt(args[4])};
+									return params;
+								}
+						)));
+//		List<Integer[]> ret = lf.lines().map(line -> line.split(","))
+//		.map(args -> new Integer[]{Integer.parseInt(args[0]),
+//		              Integer.parseInt(args[1]),
+//		              Integer.parseInt(args[2]),
+//		              Integer.parseInt(args[3]),
+//		              Integer.parseInt(args[4])})
+//		.collect(Collectors.toList());
+//		return ret.toArray(new Integer[ret.size()][]);
+		
+	}
+	
 	private Map<Integer, Map<Integer, Double>> getRingShares() throws IOException {
 		// TODO Auto-generated method stub
 		BufferedReader lf = Files.newBufferedReader(ringShareSource);
+		lf.readLine();
 		return lf.lines().parallel()
 				.map(line -> line.split(","))
 				.collect(Collectors.groupingBy(
@@ -389,6 +424,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	private Map<Integer, Map<Integer, Integer>> getRings() throws IOException {
 		// TODO Auto-generated method stub
 		BufferedReader lf = Files.newBufferedReader(ringSource);
+		lf.readLine();
 		return lf.lines().parallel()
 				.map(line->line.split(","))
 				.collect(Collectors.groupingBy(
@@ -403,6 +439,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 			throws IOException {
 //		// TODO Auto-generated method stub
 		BufferedReader lf = Files.newBufferedReader(signalGroupSource);
+		lf.readLine();
 		return lf.lines().parallel()
 				.map(line->line.split(","))
 				.collect(Collectors.groupingBy(

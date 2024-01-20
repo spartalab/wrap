@@ -43,8 +43,8 @@ public class wrap extends Application{
 		
 		// TODO Auto-generated method stub
 		primaryStage.setTitle("wrap");
-		primaryStage.getIcons().add(new Image("/edu/utexas/wrap/gui/wrap.png"));
-		URL url = getClass().getResource("/edu/utexas/wrap/gui/wrapConfig.fxml");
+		primaryStage.getIcons().add(new Image(getClass().getClassLoader().getResourceAsStream("wrap.png")));
+		URL url = getClass().getClassLoader().getResource("wrapConfig.fxml");
 	
 		FXMLLoader loader = new FXMLLoader();
 		loader.setLocation(url);

@@ -2,6 +2,7 @@ package edu.utexas.wrap.assignment;
 
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.SignalizedNode;
+import edu.utexas.wrap.net.TurningMovement;
 
 public class WLYM implements PressureFunction {
 	private final double vcLimit = 0.9;
@@ -39,18 +40,10 @@ public class WLYM implements PressureFunction {
 		return perVehicleDelay(link) * link.getCapacity();
 	}
 	
-	private double delayPrime(Link link, double x) {
-		if (link.getHead() instanceof SignalizedNode) {
-			SignalizedNode node = (SignalizedNode) link.getHead();
-			return (1-node.getGreenShare(link))
-					*node.getCycleLength()
-					*link.getCapacity()
-					/Math.pow(link.getCapacity() - x, 2);
-		} else return 0.;
-	}
-
 	@Override
-	public Double delayPrime(Link l) {
+	public Double delayPrime(TurningMovement tm,
+			double greenSharePrime, 
+			double cycleLengthPrime) {
 		// TODO Auto-generated method stub
 		if (l.getFlow() > l.getCapacity() * vcLimit)
 			return delayPrime(l,l.getCapacity() * vcLimit);

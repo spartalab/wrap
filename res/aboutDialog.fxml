@@ -17,7 +17,7 @@
          <children>
             <ImageView fitHeight="150.0" fitWidth="200.0" pickOnBounds="true" preserveRatio="true">
                <image>
-                  <Image url="@/edu/utexas/wrap/gui/wrap.png" />
+                  <Image url="@wrap.png" />
                </image>
             </ImageView>
             <VBox spacing="5.0">

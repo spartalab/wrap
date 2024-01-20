@@ -158,5 +158,6 @@ public abstract class Link implements Priced, BackVector {
 		return headIdx;
 	}
 	
+	
 
 }

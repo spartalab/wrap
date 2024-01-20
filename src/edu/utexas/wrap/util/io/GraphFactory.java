@@ -44,6 +44,7 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.CentroidConnector;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
+import edu.utexas.wrap.net.LinkedTurningMovement;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.Ring;
 import edu.utexas.wrap.net.SignalizedNode;
@@ -75,7 +76,8 @@ public class GraphFactory {
 			Map<Integer, Float> cycleLengths,
 			Map<Integer,Map<Integer, Integer>> signalGroups,
 			Map<Integer,Map<Integer, Integer>> ringMap,
-			Map<Integer,Map<Integer,Double>> turningMovementShares
+			Map<Integer,Map<Integer,Double>> turningMovementShares,
+			Map<Integer,Map<Integer,Integer[]>> linkedMovements
 			) throws FileNotFoundException, IOException {
 
 		try {
@@ -97,7 +99,6 @@ public class GraphFactory {
 			} while (!line.startsWith("~"));
 
 			int numLinks = 0;
-			AtomicInteger numTurningMovements = new AtomicInteger(0);
 			while (true) { // Iterate through each link (row)
 				line = lf.readLine();
 				if (line == null)
@@ -163,73 +164,175 @@ public class GraphFactory {
 			lf.close();
 			g.setMD5(md.digest());
 			g.complete();
+
 			
-			Map<Link,Collection<TurningMovement>> mvmts = g.getLinks().stream()
+			Map<Link,Collection<TurningMovement>> outgoingUnlinkedMvmts = g.getLinks().stream()
 			.collect(
 				Collectors.toMap(
 					Function.identity(),
-					inLink -> inLink.getHead() instanceof SignalizedNode?
+					inLink -> {return inLink.getHead() instanceof SignalizedNode?
 						// if it's a signalized node
 						Stream.of(inLink.getHead().forwardStar())
 						.filter(
 								//disallowing u-turns
 							outlink -> outlink.getHead() != inLink.getTail())
+						.filter(outlink -> {
+							return (!linkedMovements.containsKey(inLink.hashCode())) 
+								|| (!linkedMovements.get(inLink.hashCode()).containsKey(outlink.hashCode()))
+							// filter out linked movements
+						;}
+						)
 						.map(
-							outLink -> new TurningMovement(
-									inLink,outLink,
-									numTurningMovements.getAndIncrement()))
+							outLink -> ((SignalizedNode) inLink.getHead())
+											.newTurningMovement(
+												inLink,outLink))
 						.collect(Collectors.toSet())
 						
 						: //else
 							
-						Collections.emptySet()
+						Collections.emptySet();}
 					)
 					);
+			Map<Link,Collection<LinkedTurningMovement>> outgoingLinkedMvmts =
+					g.getLinks().stream().collect(
+							Collectors.toMap(
+							Function.identity(), 
+							inlink -> inlink.getHead() instanceof SignalizedNode? 
+									Stream.of(inlink.getHead().forwardStar())
+									.filter(outlink -> 
+									linkedMovements.containsKey(inlink.hashCode()) 
+									&& linkedMovements.get(inlink.hashCode())
+										.containsKey(outlink.hashCode())
+									)
+									.map(outlink -> 
+									((SignalizedNode) inlink.getHead()
+											).newLinkedTurningMovement(
+												inlink,
+												outlink,
+												linkedMovements.get(inlink.hashCode()).get(outlink.hashCode()))
+									)
+									.collect(Collectors.toSet())
+									: Collections.emptySet()
+							)
+						);
+			Stream.of(linkedMovements);
 			Map<TurningMovement,Double> ringShares = getRingShares(
-					mvmts.values().stream().flatMap(Collection::stream).collect(Collectors.toSet()),
+					outgoingUnlinkedMvmts.values().stream().flatMap(Collection::stream).collect(Collectors.toSet()),
 					turningMovementShares);
-			Map<TurningMovement,Ring> rings = getRings(mvmts,ringMap,ringShares);
+			Map<TurningMovement,Ring> rings = getRings(outgoingUnlinkedMvmts,ringMap,ringShares,outgoingLinkedMvmts);
+
 			g.setSignalTimings(greenShares, 
 					cycleLengths, 
 					signalGroups, 
-					mvmts, rings);
+					outgoingUnlinkedMvmts, rings, outgoingLinkedMvmts);
 
 		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
 
 	}
+	
+//	private static Map<Integer,Map<TurningMovement,Collection<TurningMovement>>>
+//	getLinkedMovements(Graph g, Map<Link,Collection<TurningMovement>> mvmts, Integer[][] linkedMovements){
+//		Map<Integer,Map<TurningMovement,Collection<TurningMovement>>> linked
+//			= new HashMap<Integer,Map<TurningMovement,Collection<TurningMovement>>>();
+//		Collection<Link> links = g.getLinks();
+//		for (Integer rowIdx = 0; rowIdx < linkedMovements.length;rowIdx++) {
+//			Integer rowIndex = rowIdx;
+//			Link inLink = links.stream()
+//				.filter(link -> link.hashCode() == linkedMovements[rowIndex][0])
+//				.findFirst().get();
+//			TurningMovement target = mvmts.get(inLink).stream()
+//				.filter(mvmt -> mvmt.getHead().hashCode() == linkedMovements[rowIndex][1])
+//				.findFirst().get();
+//			TurningMovement compatible = mvmts.get(inLink).stream()
+//				.filter(mvmt -> mvmt.getHead().hashCode() == linkedMovements[rowIndex][2])
+//				.findFirst().get();
+//			
+//			Link overlapLink = links.stream()
+//				.filter(link -> link.hashCode() == linkedMovements[rowIndex][3])
+//				.findFirst().get();
+//			
+//			TurningMovement overlapMvmt = mvmts.get(overlapLink).stream()
+//				.filter(mvmt -> mvmt.getHead().hashCode() == linkedMovements[rowIndex][4])
+//				.findFirst().get();
+//			
+//			Collection<TurningMovement> compats = new HashSet<TurningMovement>();
+//			compats.add(compatible);
+//			compats.add(overlapMvmt);
+//			
+//			Map<TurningMovement,Collection<TurningMovement>> toFill = 
+//					linked.getOrDefault(inLink.getHead().getID(), 
+//					new HashMap<TurningMovement,Collection<TurningMovement>>());
+//			
+//			toFill.put(target,compats);
+//			linked.put(inLink.getHead().getID(), toFill);
+//			
+//		}
+//		return linked;
+//		
+//	}
 
 	private static Map<TurningMovement, Double> getRingShares(
-			Set<TurningMovement> movements,
+			Set<TurningMovement> unlinkedMovements,
 			Map<Integer, Map<Integer, Double>> turningMovementShares) {
-		// TODO Auto-generated method stub
-		return movements.stream().collect(
+		
+		return unlinkedMovements.stream()
+				.collect(
 				Collectors.toMap(
 						Function.identity(), 
 						tm -> turningMovementShares.get(tm.getTail().hashCode())
-								.get(tm.getHead().hashCode())));
+								.get(tm.getHead().hashCode())
+				)
+			);
 	}
 
-	private static Map<TurningMovement, Ring> getRings(Map<Link, Collection<TurningMovement>> mvmts,
-			Map<Integer, Map<Integer, Integer>> ringMap,Map<TurningMovement,Double> ringShares) {
+	private static Map<TurningMovement, Ring> getRings(
+			Map<Link, Collection<TurningMovement>> unlinkedMvmts,
+			Map<Integer, Map<Integer, Integer>> ringMap,
+			Map<TurningMovement,Double> ringShares,
+			Map<Link,Collection<LinkedTurningMovement>> linkedMovements) {
+		
 		// TODO Auto-generated method stub
-		Map<SignalizedNode,Map<Integer,Ring>> nodeRings = new HashMap<SignalizedNode,Map<Integer,Ring>>();
-		return mvmts.values().stream().flatMap(Collection::stream)
-		.collect(
-			Collectors.toMap(
-					Function.identity(),
-					tm -> {
-						SignalizedNode intx = (SignalizedNode) tm.getTail().getHead();
-						nodeRings.putIfAbsent(intx, new HashMap<Integer,Ring>());
-						
-						Map<Integer,Ring> rings = nodeRings.get(intx);
-						int ringID = ringMap.get(tm.getTail().hashCode())
-								.get(tm.getHead().hashCode());
-						rings.putIfAbsent(ringID, new Ring(ringShares));
-						return rings.get(ringID);
-					}
-					));
+//		Map<SignalizedNode,Map<Integer,Ring>> nodeRings = new HashMap<SignalizedNode,Map<Integer,Ring>>();
+		
+		Map<SignalizedNode,Map<Integer, Ring>> signalRingMap = unlinkedMvmts.values().stream()
+			.flatMap(Collection::stream)
+			.map(TurningMovement::getTail)
+			.map(Link::getHead)
+			.distinct()
+			.filter(node -> node instanceof SignalizedNode)
+			.map(node -> (SignalizedNode) node)
+			.collect(Collectors.toMap(Function.identity(),signal -> Stream.of(signal.reverseStar())
+				.flatMap(link -> ringMap.get(link.hashCode()).values().stream())
+				.distinct()
+				.collect(
+					Collectors.toMap(Function.identity(), 
+						id -> new Ring(
+							ringShares.keySet().stream()
+							.filter(tm -> tm.getTail().getHead() == signal)
+							.filter(
+									tm -> ringMap.get(tm.getTail().hashCode())
+									.get(tm.getHead().hashCode()) == id
+									)
+							.collect(Collectors.toMap(
+									Function.identity(), tm -> ringShares.get(tm))),
+
+							id)
+
+						)
+					)
+				)
+			);
+		return unlinkedMvmts.values().stream().flatMap(Collection::stream)
+				.collect(
+					Collectors.toMap(Function.identity(), 
+					tm -> signalRingMap.get(tm.getTail().getHead())
+							.get(
+									ringMap.get(tm.getTail().hashCode())
+									.get(tm.getHead().hashCode()))
+					)
+				);
 	}
 
 	/**

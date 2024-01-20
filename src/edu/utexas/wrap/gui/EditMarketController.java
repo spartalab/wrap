@@ -403,7 +403,7 @@ public class EditMarketController {
 		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
 		try {
 			FXMLLoader loader = new FXMLLoader();
-			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/newDemographicDialog.fxml").openStream());
+			VBox vbox = loader.load(getClass().getClassLoader().getResource("newDemographicDialog.fxml").openStream());
 			NewDemographicController controller = loader.getController();
 			DialogPane pane = new DialogPane();
 			
@@ -516,7 +516,7 @@ public class EditMarketController {
 		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
 		try {
 			FXMLLoader loader = new FXMLLoader();
-			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/newFrictionFunctionDialog.fxml").openStream());
+			VBox vbox = loader.load(getClass().getClassLoader().getResource("newFrictionFunctionDialog.fxml").openStream());
 			NewFrictionFunctionController controller = loader.getController();
 			DialogPane pane = new DialogPane();
 			
@@ -618,7 +618,7 @@ public class EditMarketController {
 		BasicPurpose selected = purposeList.getSelectionModel().getSelectedItem();
 		try {
 			FXMLLoader loader = new FXMLLoader();
-			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/purposeDialog.fxml").openStream());
+			VBox vbox = loader.load(getClass().getClassLoader().getResource("purposeDialog.fxml").openStream());
 			
 			EditPurposeController controller = loader.getController();
 			controller.setPurpose(selected);
@@ -667,7 +667,7 @@ public class EditMarketController {
 		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
 		try {
 			FXMLLoader loader = new FXMLLoader();
-			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/attachPurposeDialog.fxml").openStream());
+			VBox vbox = loader.load(getClass().getClassLoader().getResource("attachPurposeDialog.fxml").openStream());
 			AttachPurposeController controller = loader.getController();
 			controller.setMarket(market);
 			DialogPane pane = new DialogPane();
@@ -731,7 +731,7 @@ public class EditMarketController {
 		Dialog<ButtonType> dialog = new Dialog<ButtonType>();
 		try {
 			FXMLLoader loader = new FXMLLoader();
-			VBox vbox = loader.load(getClass().getResource("/edu/utexas/wrap/gui/newPurposeDialog.fxml").openStream());
+			VBox vbox = loader.load(getClass().getClassLoader().getResource("newPurposeDialog.fxml").openStream());
 			NewPurposeController controller = loader.getController();
 			controller.setMarket(market);
 			DialogPane pane = new DialogPane();
