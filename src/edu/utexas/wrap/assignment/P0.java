@@ -1,37 +1,32 @@
 package edu.utexas.wrap.assignment;
 
-import edu.utexas.wrap.net.Link;
+import edu.utexas.wrap.net.SignalizedNode;
+import edu.utexas.wrap.net.TurningMovement;
 
 public class P0 implements PressureFunction {
 
 	@Override
-	public double stagePressure(Link link) {
-		// TODO Auto-generated method stub
-		return link.getCapacity() * getBottleneckDelay(link);
+	public double perVehicleDelay(TurningMovement tm) {
+		if (!(tm.getTail().getHead() instanceof SignalizedNode)) return 0;
+
+		SignalizedNode node = (SignalizedNode) tm.getTail().getHead();
+		
+		return tm.getTail().getFlow() /
+				(tm.getTail().getCapacity()*node.getGreenShare(tm));
 	}
 
-	public double getBottleneckDelay(Link l) {
-//		return getFlow()*(1-
-//			(getHead() instanceof SignalizedNode?
-//				((SignalizedNode) getHead())
-//				.getGreenShare(this).doubleValue()
-//				: 0.))
-//				*( getHead() instanceof SignalizedNode?
-//								((SignalizedNode) 
-//										getHead()).getCycleLength()
-//								: 0.
-//						)/(getCapacity() - getFlow())
+	@Override
+	public Double delayPrime(TurningMovement mvmt, double greenSharePrime, double cycleLengthPrime) {
+
+		SignalizedNode node = (SignalizedNode) mvmt.getTail().getHead();
+		Double flow = mvmt.getTail().getFlow();
 		
-//	return (((1.-getGreenShare(inLink))*cycleLength)
-//	*((1.-getGreenShare(inLink))*cycleLength + 1)
-//	
-//	/ (2.*cycleLength));
-		
-//		return getQueueLength()/(getCapacity()*getGreenShare());
-		
-		throw new RuntimeException("Not yet implemented")
-				//TODO address possible divide-by-zero or negative vals
-;
+		return (node.getGreenShare(mvmt) - flow*greenSharePrime)/
+				(
+						mvmt.getTail().getCapacity() *
+						Math.pow(node.getGreenShare(mvmt),2)
+				);
 	}
+
 	
 }

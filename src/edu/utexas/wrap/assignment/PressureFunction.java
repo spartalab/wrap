@@ -11,15 +11,40 @@ import edu.utexas.wrap.net.TurningMovement;
 
 public interface PressureFunction {
 
-	public double signalGroupPressure(SignalGroup sigGroup);
 	
-	public double perVehicleDelay(Link link);
+	public default double perVehicleDelay(Link link) {
+		if (!(link.getHead() instanceof SignalizedNode)) return 0;
 
+		SignalizedNode node = (SignalizedNode) link.getHead();
+		
+		/*for each turning movement from the link,
+		 * evaluate the per-vehicle delay for that movement
+		 * then take the logsumexp to get a smooth maximum
+		 * (this assumes spillback blocks the other movements)
+		 * */
+		return Math.log(node.getMovements(link).stream()
+			.mapToDouble(
+					mvmt -> 
+					Math.exp(perVehicleDelay(mvmt))
+					).sum());
+	}	
+
+	public double perVehicleDelay(TurningMovement mvmt);
+	
 	public Double delayPrime(TurningMovement mvmt, 
 			double greenSharePrime, double cycleLengthPrime);
 
-	public double turningMovementPressure(TurningMovement tm_a);
 
+	public default double turningMovementPressure(TurningMovement tm) {
+		// TODO Auto-generated method stub
+		return tm.getTail().getCapacity()*perVehicleDelay(tm.getTail());
+	}
+
+	public default double signalGroupPressure(SignalGroup sigGroup) {
+		return sigGroup.getLinks().stream()
+		.mapToDouble(link -> perVehicleDelay(link)*link.getCapacity()).sum();
+	}
+	
 	public default Map<SignalGroup, Double> getGreenShareChange(
 			Graph network, Double scalingFactor
 			) {
