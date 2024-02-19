@@ -237,6 +237,12 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 			case "Alexander":
 				pressureFunction = new Alexander();
 				break;
+			case "Alexander2":
+				pressureFunction = new Alexander2();
+				break;
+			case "Alexander3":
+				pressureFunction = new Alexander3();
+				break;
 			default:
 				throw new RuntimeException("Not yet implemented");
 			}

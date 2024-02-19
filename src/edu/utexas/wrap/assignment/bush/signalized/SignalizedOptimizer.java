@@ -25,7 +25,7 @@ implements AtomicOptimizer<Bush> {
 
 	private final PressureFunction pressureFunction;
 	private int completedIterations = 0;
-	private double scalingFactor = 0.000001;
+	private double scalingFactor;
 	private double maxPressure;
 	private final AlgorithmBOptimizer optimizer;
 	private Map<SignalGroup,Double> deltaG;

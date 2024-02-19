@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.ToDoubleFunction;
@@ -19,12 +20,18 @@ import java.util.stream.Stream;
 
 import edu.utexas.wrap.Project;
 import edu.utexas.wrap.TimePeriod;
+import edu.utexas.wrap.assignment.Alexander;
+import edu.utexas.wrap.assignment.Alexander2;
+import edu.utexas.wrap.assignment.Alexander3;
 import edu.utexas.wrap.assignment.Assigner;
+import edu.utexas.wrap.assignment.PressureFunction;
 import edu.utexas.wrap.assignment.StaticAssigner;
+import edu.utexas.wrap.assignment.WLYM;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.bush.BushForgetter;
 import edu.utexas.wrap.assignment.bush.BushReader;
 import edu.utexas.wrap.assignment.BasicStaticAssigner;
+import edu.utexas.wrap.assignment.P0;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.ODProfile;
 import edu.utexas.wrap.marketsegmentation.Market;
@@ -301,19 +308,50 @@ public class RunnerController extends Task<Integer> {
 			logger.info("Starting AssignerRunners");
 			assignerTable.getItems().stream().sequential().forEach(Task::run);
 			
-//			networks = assignerTable.getItems().stream().map(t -> {
-//				try {
-//					return t.get();
-//				} catch (InterruptedException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//					return null;
-//				} catch (ExecutionException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//					return null;
-//				}
-//			}).collect(Collectors.toSet());
+			Set<Graph> networks = assignerTable.getItems().stream().map(t -> {
+				try {
+					return t.get();
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					return null;
+				} catch (ExecutionException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					return null;
+				}
+			}).collect(Collectors.toSet());
+			Path linkOutputPath = project.metricOutputPath().resolveSibling("linkData.csv");
+			BufferedWriter linkOut = Files.newBufferedWriter(linkOutputPath, StandardOpenOption.WRITE,StandardOpenOption.CREATE,StandardOpenOption.TRUNCATE_EXISTING);
+			linkOut.write("LinkID,Capacity,Flow,PVD_A1,PVD_P0,PVD_WLYM,PVD_A2,PVD_A3,PVD_total\r\n");
+			
+			PressureFunction 
+					alexander = new Alexander(), 
+					alx2 = new Alexander2(),
+					alx3 = new Alexander3(),
+					p0 = new P0(),
+					wlym = new WLYM();
+			
+			networks.stream().flatMap(g -> g.getLinks().stream()).forEach(link ->{
+				String s = link.hashCode()+","
+						+ link.getCapacity()+','
+						+ link.getFlow()+","
+						+ alexander.perVehicleDelay(link)+","
+						+ p0.perVehicleDelay(link)+","
+						+ wlym.perVehicleDelay(link)+","
+						+ alx2.perVehicleDelay(link)+','
+						+ alx3.perVehicleDelay(link)+','
+						+ link.getTravelTime() 
+						+"\r\n"
+				;
+				try {
+					linkOut.write(s);
+					linkOut.flush();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			});
 			
 			if (isCancelled()) {
 				logger.warning("Run cancelled");
@@ -357,6 +395,10 @@ public class RunnerController extends Task<Integer> {
 
 		logger.info("Writing output metrics");
 		try {
+
+			
+			
+			
 			AtomicInteger completed = new AtomicInteger(0);
 			Path outputPath = project.metricOutputPath();
 			logger.info("Metric output path: "+outputPath);

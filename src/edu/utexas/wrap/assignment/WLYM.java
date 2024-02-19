@@ -41,9 +41,8 @@ public class WLYM implements PressureFunction {
 		
 		return (head.getCycleLength() * (
 						flow*(flow-capacity)*greenSharePrime 
-						+ capacity*(capacity-head.getGreenShare(tm))
+						+ capacity*(1-head.getGreenShare(tm))
 					)
-				+ flow * (1-head.getGreenShare(tm)) * (capacity - flow) * cycleLengthPrime
 				)
 				/ Math.pow(capacity - flow, 2);
 	}
