@@ -37,6 +37,7 @@ public class Alexander3 extends Alexander implements PressureFunction {
 		// TODO Auto-generated method stub
 		
 		double uniformPrime = super.delayPrime(mvmt, greenSharePrime, cycleLengthPrime);
+		if (!(mvmt.getTail().getHead() instanceof SignalizedNode)) return uniformPrime;
 		
 		SignalizedNode node = (SignalizedNode) mvmt.getTail().getHead();
 		
@@ -44,13 +45,13 @@ public class Alexander3 extends Alexander implements PressureFunction {
 				cycleLength = node.getCycleLength(),
 				capacity = mvmt.getTail().getCapacity();
 		
-		
+
 		double oversaturationPrime = flow < capacity? 0 :
 				
 				numCycles * cycleLength * (flow - capacity) * cycleLengthPrime
 				+
 				numCycles * Math.pow(cycleLength, 2);
-		
+
 		return uniformPrime + oversaturationPrime;
 //		throw new RuntimeException("not yet implemented");
 	}

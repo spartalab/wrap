@@ -94,9 +94,9 @@ implements AtomicOptimizer<Bush> {
 		Double sum = 0.;
 		Link nextLink = null;
 		Node merge = asp.merge();
-
+		
 		for (Link l : lpi) {
-			if (l.getHead() == merge && merge instanceof SignalizedNode) {
+			if ((l.getHead() == merge && merge instanceof SignalizedNode)||!(l.getHead() instanceof SignalizedNode)) {
 				sum += l.pricePrime(asp.getBush().valueOfTime()) + 1;
 
 			} else if (l.getHead() instanceof SignalizedNode){
@@ -117,10 +117,9 @@ implements AtomicOptimizer<Bush> {
 			}
 			nextLink = l;
 		}
-
 		nextLink = null;
 		for (Link l : spi) {
-			if (l.getHead() == merge && merge instanceof SignalizedNode) {
+			if ((l.getHead() == merge && merge instanceof SignalizedNode)||!(l.getHead() instanceof SignalizedNode)) {
 				sum += l.pricePrime(asp.getBush().valueOfTime()) + 1;
 			} else if (l.getHead() instanceof SignalizedNode){
 				// TODO get derivative for turning movement

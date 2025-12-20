@@ -100,7 +100,8 @@ public class SignalizedNode extends Node {
 	public LinkedTurningMovement newLinkedTurningMovement(Link inLink, Link outLink, Integer[] params) {
 		Set<TurningMovement> compats = new HashSet<TurningMovement>();
 		compats.add(unlinkedMovements.get(inLink.hashCode()).get(params[0]));
-		compats.add(unlinkedMovements.get(params[1]).get(params[2]));
+		if ((params[1] != null) && (params[2] != null))
+			compats.add(unlinkedMovements.get(params[1]).get(params[2]));
 		return new LinkedTurningMovement(inLink,outLink,numMovements++,compats);
 
 	}

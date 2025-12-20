@@ -28,6 +28,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.Function;
@@ -79,7 +80,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 	private ToDoubleFunction<Link> tollingPolicy;
 	private final Class<? extends Link> linkType;
 	private final Path containerSource, linkSource, 
-		cycleLengthSource, cycleSplitSource, signalGroupSource, ringSource,ringShareSource,linkedMvmtSource;
+		cycleLengthSource, cycleSplitSource, signalGroupSource, ringSource,ringShareSource,linkedMvmtSource,intxListSource;
 	private final PressureFunction pressureFunction;
 	private final Map<Integer, TravelSurveyZone> zones;
 	
@@ -101,6 +102,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		Path ringSource,
 		Path ringShareSource,
 		Path linkedMvmtSource,
+		Path intxListSource,
 		PressureFunction pressure
 			){
 		this.name = name;
@@ -121,6 +123,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		this.ringSource = ringSource;
 		this.ringShareSource = ringShareSource;
 		this.linkedMvmtSource = linkedMvmtSource;
+		this.intxListSource = intxListSource;
 		this.zones = zones;
 		this.pressureFunction = pressure;
 	}
@@ -290,7 +293,8 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 				signalGroupSource = null,
 				ringSource = null,
 				ringShareSource = null,
-				linkedMvmtSource = null;
+				linkedMvmtSource = null,
+				intxListSource = null;
 		try {
 		 cycleLengthSource = Paths.get(
 				props.getProperty("signalTimings.cycleLengths"));
@@ -306,7 +310,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 		 ringShareSource = Paths.get(
 				 props.getProperty("signalTimings.ringShares"));
 		 linkedMvmtSource = Paths.get(props.getProperty("signalTimings.linkedMovements"));
-		 
+		 intxListSource = Paths.get(props.getProperty("network.signalizedIntxs"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -319,7 +323,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 				modes, 
 				containerSource, linkSource,
 				cycleLengthSource,cycleSplitSource,
-				signalGroupSource,ringSource, ringShareSource,linkedMvmtSource,
+				signalGroupSource,ringSource, ringShareSource,linkedMvmtSource,intxListSource,
 				pressureFunction);
 	}
 
@@ -349,6 +353,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 			Map<Integer, Map<Integer,Integer>> rings = null;
 			Map<Integer,Map<Integer,Double>> ringShares = null;
 			Map<Integer,Map<Integer,Integer[]>> linkedMvmts = null;
+			List<Integer> intxList = null;
 			
 			if (cycleSplitSource != null 
 					&& cycleLengthSource != null
@@ -357,6 +362,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 					&& ringShareSource != null
 					&& linkedMvmtSource != null
 					) {
+				intxList = getIntxs();
 				greenShares = getSplits();
 				cycleLengths = getCycleLengths();
 				signalGroups = getSignalGroups();
@@ -374,7 +380,7 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 						network, 
 						tollingPolicy, pressureFunction,
 						greenShares, cycleLengths, signalGroups, rings,
-						ringShares, linkedMvmts);
+						ringShares, linkedMvmts, intxList);
 
 			
 			Files.createDirectories(containerSource
@@ -396,10 +402,17 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 				Collectors.groupingBy(args -> Integer.parseInt(args[0]), 
 						Collectors.toMap(args -> Integer.parseInt(args[1]), 
 								args-> {
-									Integer[] params = {
+									Integer[] params;
+									if (args.length >=4)
+									params = new Integer[]{
 											Integer.parseInt(args[2]),
 											Integer.parseInt(args[3]),
 											Integer.parseInt(args[4])};
+									else params = new Integer[] {
+											Integer.parseInt(args[2]),
+											null,
+											null
+									};
 									return params;
 								}
 						)));
@@ -412,6 +425,12 @@ public class BasicStaticAssigner<C extends AssignmentContainer> implements Stati
 //		.collect(Collectors.toList());
 //		return ret.toArray(new Integer[ret.size()][]);
 		
+	}
+	
+	private List<Integer> getIntxs() throws IOException {
+		BufferedReader lf = Files.newBufferedReader(intxListSource);
+		lf.readLine();
+		return lf.lines().map(line -> Integer.parseInt(line)).collect(Collectors.toUnmodifiableList());
 	}
 	
 	private Map<Integer, Map<Integer, Double>> getRingShares() throws IOException {

@@ -30,6 +30,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -77,7 +78,8 @@ public class GraphFactory {
 			Map<Integer,Map<Integer, Integer>> signalGroups,
 			Map<Integer,Map<Integer, Integer>> ringMap,
 			Map<Integer,Map<Integer,Double>> turningMovementShares,
-			Map<Integer,Map<Integer,Integer[]>> linkedMovements
+			Map<Integer,Map<Integer,Integer[]>> linkedMovements,
+			List<Integer> signalizedIntxs
 			) throws FileNotFoundException, IOException {
 
 		try {
@@ -117,7 +119,7 @@ public class GraphFactory {
 				// Create new node(s) if new, then add to map
 				if (!nodeIDs.containsKey(tail)) {
 					nodeIDs.put(tail, 
-						greenShares == null ?	
+						greenShares == null | !signalizedIntxs.contains(tail)?	
 							new Node(tail, nodeIdx.getAndIncrement(),g.getZone(tail)) :
 							new SignalizedNode(
 									tail, 
@@ -130,7 +132,7 @@ public class GraphFactory {
 
 				if (!nodeIDs.containsKey(head)) {
 					nodeIDs.put(head, 
-						greenShares == null ?
+						greenShares == null | !signalizedIntxs.contains(head)?
 							new Node(head, nodeIdx.getAndIncrement(),g.getZone(head)) :
 							new SignalizedNode(
 									head, 
