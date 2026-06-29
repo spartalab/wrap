@@ -26,6 +26,11 @@ import java.nio.file.StandardOpenOption;
 
 import edu.utexas.wrap.demand.DemandMap;
 
+/**
+ * Writes a {@link DemandMap} (zone-level demand values) to a CSV file.
+ *
+ * @author Will Alexander
+ */
 public class DemandMapCSVWriter {
 
 	public static void write(String outputDirectory, DemandMap map) {

@@ -22,14 +22,52 @@ import java.util.function.ToDoubleFunction;
 import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.net.Link;
 
+/**
+ * A specialization of {@link Assigner} for static (time-independent) traffic
+ * assignment. Static assigners operate within a single {@link TimePeriod} and
+ * seek a User Equilibrium solution where no traveler can unilaterally reduce
+ * their travel cost by switching routes.
+ *
+ * <p>In addition to the base Assigner capabilities, a StaticAssigner exposes
+ * configuration details such as the link type used for delay functions, the
+ * maximum number of iterations, and tolling policies.
+ *
+ * @param <C> the type of {@link AssignmentContainer} used by this assigner
+ * @author Will Alexander
+ * @see BasicStaticAssigner
+ */
 public interface StaticAssigner<C extends AssignmentContainer> extends Assigner<C> {
 
+	/**
+	 * Returns the time period for which this assigner performs assignment.
+	 *
+	 * @return the {@link TimePeriod} of this assignment
+	 */
 	public TimePeriod getTimePeriod();
 	
+	/**
+	 * Returns the concrete link class used to model delay functions
+	 * (e.g., BPR links or conic delay links).
+	 *
+	 * @return the {@link Link} subclass used by this assigner's network
+	 */
 	public Class<? extends Link> getLinkType();
 	
+	/**
+	 * Returns the maximum number of iterations before termination,
+	 * regardless of convergence.
+	 *
+	 * @return the iteration limit
+	 */
 	public Integer maxIterations();
 	
+	/**
+	 * Sets the tolling policy function, which maps each link to a
+	 * monetary toll value. This toll is incorporated into route cost
+	 * calculations during assignment.
+	 *
+	 * @param policy a function returning the toll for a given link
+	 */
 	public void setTollingPolicy(ToDoubleFunction<Link> policy);
 	
 }

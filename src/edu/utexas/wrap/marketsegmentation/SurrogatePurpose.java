@@ -59,7 +59,7 @@ import edu.utexas.wrap.util.io.ProductionAttractionFactory;
  * framework yet, but can be supplanted with demand containers
  * read from external sources.
  * 
- * @author William
+ * @author Will Alexander
  *
  */
 public class SurrogatePurpose implements Purpose {

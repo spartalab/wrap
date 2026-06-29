@@ -27,7 +27,7 @@ import java.util.stream.IntStream;
 
 /**Implementation of Demographic which maps TSZs to an in-memory Float array
  * 
- * @author William
+ * @author Will Alexander
  *
  */
 public class BasicDemographic implements Demographic {

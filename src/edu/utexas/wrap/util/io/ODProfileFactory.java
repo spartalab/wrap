@@ -37,6 +37,15 @@ import edu.utexas.wrap.marketsegmentation.Purpose;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
+/**
+ * Provides static methods to read OD profiles and OD matrices from files.
+ * Supports CSV and binary matrix formats, as well as pre-split time-period
+ * OD profiles.
+ *
+ * @author Will Alexander
+ * @see edu.utexas.wrap.demand.ODProfile
+ * @see edu.utexas.wrap.demand.ODMatrix
+ */
 public class ODProfileFactory {
 
 	public static ODProfile readFromFile(Path path, Mode mode, Map<TimePeriod,Float> vots, Map<Integer, TravelSurveyZone> zones, Purpose parent) throws IOException {
@@ -60,7 +69,7 @@ public class ODProfileFactory {
 								)
 						);
 		
-		
+		float multiplier = 0.4f;
 		in.lines().forEach(line ->{
 			String[] args = line.split(",");
 			
@@ -69,7 +78,8 @@ public class ODProfileFactory {
 			dest = zones.get(Integer.parseInt(args[1]));
 			
 			for (int i = 2; i < args.length; i++) {
-				matrices.get(idx.apply(i)).put(orig, dest, Float.parseFloat(args[i]));
+				
+				matrices.get(idx.apply(i)).put(orig, dest, multiplier*Float.parseFloat(args[i]));
 			}
 		});
 		

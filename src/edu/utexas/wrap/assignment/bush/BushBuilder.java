@@ -27,6 +27,16 @@ import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.util.FibonacciHeap;
 import edu.utexas.wrap.util.FibonacciLeaf;
 
+/**
+ * Constructs the initial shortest-path tree structure for a {@link Bush}.
+ * Uses Dijkstra's algorithm with a {@link FibonacciHeap} to compute
+ * shortest paths from the bush's origin zone to all reachable nodes,
+ * establishing the initial back-vector tree and topological ordering.
+ *
+ * @author Will Alexander
+ * @see Bush
+ * @see edu.utexas.wrap.assignment.AssignmentBuilder
+ */
 public class BushBuilder implements AssignmentBuilder<Bush> {
 	
 	private ToDoubleFunction<Link> costFunction;

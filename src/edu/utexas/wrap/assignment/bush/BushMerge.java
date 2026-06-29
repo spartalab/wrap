@@ -24,11 +24,16 @@ import java.util.stream.Stream;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 
-/**A way to represent the Links which merge at a given Node in a Bush,
- * namely, a set of Links with a longest and shortest path named and a
- * Map of each link's share of the total load
- * @author William
+/**A representation of the merging links at a node within a {@link Bush}.
+ * When multiple incoming links carry flow to the same node, a BushMerge
+ * tracks each link's proportional share of the total flow, as well as
+ * identifying the shortest-path and longest-path incoming links. This
+ * enables {@link AlternateSegmentPair} identification for flow shifting.
  *
+ * @author Will Alexander
+ * @see BackVector
+ * @see Bush
+ * @see AlternateSegmentPair
  */
 public class BushMerge implements BackVector {
 	private Double[] shares;

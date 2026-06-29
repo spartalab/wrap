@@ -26,7 +26,7 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  * is determined, and all zones may have the same
  * rate
  * 
- * @author William
+ * @author Will Alexander
  *
  */
 public interface GenerationRate {

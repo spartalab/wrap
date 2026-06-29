@@ -22,15 +22,19 @@ import java.util.Collection;
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 
-/**The default method of performing mode choice,
- * this method calculates mode shares as a function
- * of the distributed trip matrix (as opposed to just
- * raw, unlinked productions and attractions). This 
- * model assumes that trips are not bound to a given
- * mode, i.e. they are not captive riders.
- * 
- * @author William
+/**The standard method of performing mode choice in the four-step model.
+ * Trip-interchange mode choice operates on the distributed trip matrix,
+ * computing mode shares as a function of the travel characteristics
+ * (time, cost) for each origin-destination pair. This model assumes
+ * travelers can freely choose among all available modes (i.e., no
+ * captive riders bound to a particular mode).
  *
+ * <p>Implementations split an {@link AggregatePAMatrix} into a collection
+ * of mode-specific {@link ModalPAMatrix} instances.
+ * 
+ * @author Will Alexander
+ * @see FixedProportionSplitter
+ * @see TripEndSplitter
  */
 public interface TripInterchangeSplitter {
 	

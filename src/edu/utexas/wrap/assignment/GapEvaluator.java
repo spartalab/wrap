@@ -22,6 +22,24 @@ import java.util.concurrent.atomic.DoubleAdder;
 
 import edu.utexas.wrap.net.Graph;
 
+/**
+ * Evaluates the relative gap of a traffic assignment, defined as the ratio
+ * of (total incurred cost - cheapest possible cost) to cheapest possible cost.
+ * The relative gap is a standard convergence metric for user equilibrium
+ * traffic assignment: a gap of zero indicates perfect equilibrium where all
+ * used routes have equal and minimum cost.
+ *
+ * <p>For each container, this evaluator:
+ * <ol>
+ *   <li>Loads the container from storage via an {@link AssignmentProvider}</li>
+ *   <li>Computes the incurred cost (actual cost along used routes)</li>
+ *   <li>Computes the cheapest possible cost (shortest path cost times demand)</li>
+ *   <li>Writes/releases the container via an {@link AssignmentConsumer}</li>
+ * </ol>
+ *
+ * @param <T> the type of assignment container being evaluated
+ * @author Will Alexander
+ */
 public class GapEvaluator<T extends AssignmentContainer> implements AssignmentEvaluator<T> {
 	
 	private AssignmentProvider<T> provider;

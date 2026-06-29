@@ -27,6 +27,12 @@ import java.nio.file.StandardOpenOption;
 import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.demand.ODMatrix;
 
+/**
+ * Writes an {@link ODMatrix} to a CSV file organized by time period,
+ * mode, and value of time.
+ *
+ * @author Will Alexander
+ */
 public class ODMatrixCSVWriter {
 
 	public static void write(String outputDirectory, TimePeriod timePeriod, Float vot, ODMatrix matrix) {

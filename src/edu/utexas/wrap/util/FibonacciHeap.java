@@ -27,6 +27,16 @@ import java.util.Map;
 import java.util.Set;
 import edu.utexas.wrap.net.Node;
 
+/**
+ * A Fibonacci heap implementation used as a priority queue in Dijkstra's
+ * shortest path algorithm. Fibonacci heaps provide O(1) amortized time for
+ * insert and decrease-key operations, making them efficient for sparse graph
+ * shortest path computations.
+ *
+ * @author Will Alexander
+ * @see FibonacciLeaf
+ * @see SPAlgorithms
+ */
 public class FibonacciHeap extends AbstractQueue<FibonacciLeaf>{
 	private Integer n;
 	private FibonacciLeaf min;

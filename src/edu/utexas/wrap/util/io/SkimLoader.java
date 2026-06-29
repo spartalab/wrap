@@ -13,6 +13,15 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.concurrent.Task;
 
+/**
+ * A JavaFX {@link Task} that loads a network skim from a CSV file into
+ * a {@link NetworkSkim} instance. Reports progress as lines are read,
+ * enabling GUI progress bar updates.
+ *
+ * @author Will Alexander
+ * @see SkimFactory
+ * @see NetworkSkim
+ */
 public class SkimLoader extends Task<NetworkSkim> {
 	
 	private NetworkSkim skim;

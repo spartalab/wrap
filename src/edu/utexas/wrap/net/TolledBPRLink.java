@@ -23,10 +23,16 @@ import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.PressureFunction;
 import edu.utexas.wrap.modechoice.Mode;
 
-/**A tolled link whose travel time function is modeled using a BPR VDF
+/**A tolled link whose travel time function is modeled using a BPR
+ * (Bureau of Public Roads) volume-delay function. The BPR function
+ * computes travel time as {@code t = t0 * (1 + b * (v/c)^power)},
+ * where {@code t0} is free-flow time, {@code v} is volume, {@code c}
+ * is capacity, and {@code b} and {@code power} are calibration
+ * parameters. Additionally supports signal-induced delay via a
+ * {@link edu.utexas.wrap.assignment.PressureFunction}.
  * 
- * @author William
- *
+ * @author Will Alexander
+ * @see TolledEnhancedLink
  */
 public class TolledBPRLink extends TolledLink {
 	

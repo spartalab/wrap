@@ -5,6 +5,16 @@ import java.util.Collection;
 import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
+/**
+ * A pre-computed matrix of friction factor (impedance) values between all
+ * zone pairs. Constructed from a {@link NetworkSkim} and a
+ * {@link FrictionFactorMap}, this matrix caches the impedance values to
+ * avoid repeated lookups during gravity model distribution iterations.
+ *
+ * @author Will Alexander
+ * @see FrictionFactorMap
+ * @see GravityDistributor
+ */
 public class ImpedanceMatrix {
 	private Float[][] impedances;
 

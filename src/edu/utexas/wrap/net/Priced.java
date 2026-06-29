@@ -19,10 +19,15 @@ package edu.utexas.wrap.net;
 
 import edu.utexas.wrap.modechoice.Mode;
 
-/**A facility that incurs a price based on the mode of transport and the value of time
+/**A facility that incurs a generalized price based on the mode of transport
+ * and the traveler's value of time. The price combines monetary costs (tolls,
+ * fares, operating costs) with the time cost, where the value of time converts
+ * travel time into monetary units. This allows route choice algorithms to
+ * compare routes on a common generalized-cost basis.
  * 
- * @author William
- *
+ * @author Will Alexander
+ * @see Link
+ * @see edu.utexas.wrap.assignment.Path
  */
 public interface Priced {
 

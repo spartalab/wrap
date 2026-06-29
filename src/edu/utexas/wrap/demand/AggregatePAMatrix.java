@@ -17,13 +17,16 @@
  */
 package edu.utexas.wrap.demand;
 
-/**This will be used in trip interchange splitting to map
- * from a given zone to its production and attraction values,
- * as aggregated across all modes. This is the output of the
- * trip distribution step of the Four-Step model;
+/**A production-attraction matrix aggregated across all travel modes.
+ * This is the direct output of the trip distribution step of the
+ * four-step model, before mode choice has been applied. It maps
+ * origin-destination zone pairs to the total number of person-trips
+ * between them regardless of mode. Trip-interchange mode choice
+ * models split this into mode-specific {@link ModalPAMatrix} instances.
  * 
- * @author William
- *
+ * @author Will Alexander
+ * @see ModalPAMatrix
+ * @see edu.utexas.wrap.distribution.TripDistributor
  */
 public interface AggregatePAMatrix extends PAMatrix {
 

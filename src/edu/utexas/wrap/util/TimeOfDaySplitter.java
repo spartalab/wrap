@@ -28,6 +28,17 @@ import edu.utexas.wrap.demand.containers.SegmentedODProfile;
 import edu.utexas.wrap.demand.containers.TransposeODMatrix;
 import edu.utexas.wrap.marketsegmentation.Purpose;
 
+/**
+ * Splits daily OD matrices into time-period-specific matrices using departure
+ * and arrival rate factors. For each {@link TimePeriod}, the daily demand is
+ * multiplied by the departure rate (for the production-to-attraction direction)
+ * and the arrival rate (for the attraction-to-production direction) to produce
+ * directional OD matrices assembled into an {@link ODProfile}.
+ *
+ * @author Will Alexander
+ * @see edu.utexas.wrap.demand.ODProfile
+ * @see edu.utexas.wrap.demand.ODProfileProvider
+ */
 public class TimeOfDaySplitter {
 	final Map<TimePeriod,Float> depRates, arrRates,vots;
 

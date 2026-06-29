@@ -17,6 +17,16 @@
  */
 package edu.utexas.wrap.modechoice;
 
+/**
+ * An enumeration of the travel modes available in the transportation model.
+ * Each mode defines a vehicle occupancy rate used to convert person-trips
+ * to vehicle-trips. Modes range from single-occupancy vehicles (SOV) to
+ * high-occupancy vehicles (HOV) and commercial trucks of various sizes.
+ *
+ * @author Will Alexander
+ * @see edu.utexas.wrap.demand.ODMatrix
+ * @see edu.utexas.wrap.demand.ModalPAMatrix
+ */
 public enum Mode {
 	MED_TRUCK {
 		@Override

@@ -9,6 +9,25 @@ import edu.utexas.wrap.net.SignalGroup;
 import edu.utexas.wrap.net.SignalizedNode;
 import edu.utexas.wrap.net.TurningMovement;
 
+/**
+ * Defines a pressure-based signal timing optimization function for signalized
+ * intersections. Pressure functions compute per-vehicle delay at turning
+ * movements and their derivatives with respect to signal timing parameters
+ * (green share and cycle length). These derivatives drive the iterative
+ * adjustment of signal splits and phase allocations toward more efficient
+ * timings.
+ *
+ * <p>Implementations include:
+ * <ul>
+ *   <li>{@link P0} - ratio-based delay pressure</li>
+ *   <li>{@link WLYM} - Webster-like delay model with V/C limiting</li>
+ *   <li>{@link Alexander} - uniform delay-based pressure</li>
+ *   <li>{@link Alexander2} - flow-weighted uniform delay</li>
+ *   <li>{@link Alexander3} - uniform delay with oversaturation correction</li>
+ * </ul>
+ *
+ * @author Will Alexander
+ */
 public interface PressureFunction {
 
 	

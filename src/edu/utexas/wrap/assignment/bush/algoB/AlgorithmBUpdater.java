@@ -25,6 +25,16 @@ import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.assignment.bush.PathCostCalculator;
 import edu.utexas.wrap.net.Link;
 
+/**
+ * Updates a {@link Bush}'s topological structure by pruning unused links
+ * and adding new links that offer shorter paths. This "improvement" step
+ * ensures that the bush contains all potentially useful routes before
+ * the equilibration step shifts flow.
+ *
+ * @author Will Alexander
+ * @see AlgorithmBOptimizer
+ * @see Bush
+ */
 public class AlgorithmBUpdater {
 
 	public boolean update(Bush bush, PathCostCalculator pcc) {

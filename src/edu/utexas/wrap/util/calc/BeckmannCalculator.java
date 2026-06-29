@@ -19,6 +19,14 @@ package edu.utexas.wrap.util.calc;
 
 import edu.utexas.wrap.net.Graph;
 
+/**
+ * Computes the Beckmann objective function value for the current traffic
+ * assignment. The Beckmann function is the integral of the link cost
+ * functions from 0 to the current flow; its minimizer corresponds to
+ * user equilibrium.
+ *
+ * @author Will Alexander
+ */
 public class BeckmannCalculator extends Thread {
 	public Double val;
 	Graph graph;

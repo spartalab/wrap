@@ -29,6 +29,21 @@ import edu.utexas.wrap.assignment.bush.BushEvaluator;
 import edu.utexas.wrap.assignment.bush.PathCostCalculator;
 import edu.utexas.wrap.net.Graph;
 
+/**
+ * Implementation of Dial's Algorithm B for bush-based traffic assignment.
+ * For each bush, this optimizer loads the bush from storage, updates its
+ * structure (adding improving links, removing unused links), equilibrates
+ * flows by shifting demand between alternate segment pairs, and writes
+ * the result back to storage.
+ *
+ * <p>This optimizer processes bushes in parallel when used through the
+ * {@link ParallelizedOptimizer} interface.
+ *
+ * @author Will Alexander
+ * @see AlgorithmBEquilibrator
+ * @see AlgorithmBUpdater
+ * @see ParallelizedOptimizer
+ */
 public class AlgorithmBOptimizer implements ParallelizedOptimizer<Bush> {
 	private final AssignmentProvider<Bush> provider;
 	private final AssignmentConsumer<Bush> consumer; 

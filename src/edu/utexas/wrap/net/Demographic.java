@@ -36,7 +36,7 @@ package edu.utexas.wrap.net;
  * are 100 households which do not own a car, 250 which own one car, 50 which own
  * two cars, and 12 that own 3 cars.
  * 
- * @author William
+ * @author Will Alexander
  *
  */
 public interface Demographic {

@@ -26,6 +26,11 @@ import java.nio.file.StandardOpenOption;
 
 import edu.utexas.wrap.demand.PAMap;
 
+/**
+ * Writes a {@link PAMap} (productions and attractions per zone) to a CSV file.
+ *
+ * @author Will Alexander
+ */
 public class PAMapCSVWriter {
 
 	public static void write(String outputDirectory,PAMap map) {

@@ -20,6 +20,15 @@ package edu.utexas.wrap.assignment.bush;
 import edu.utexas.wrap.assignment.AssignmentConsumer;
 import edu.utexas.wrap.net.Graph;
 
+/**
+ * An {@link AssignmentConsumer} that releases a {@link Bush}'s in-memory
+ * structure without persisting it. Used after evaluation to free memory
+ * for bushes that have already been written to disk by a {@link BushWriter}.
+ *
+ * @author Will Alexander
+ * @see BushWriter
+ * @see BushReader
+ */
 public class BushForgetter implements AssignmentConsumer<Bush> {
 
 	@Override

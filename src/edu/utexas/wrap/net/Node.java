@@ -17,10 +17,17 @@
  */
 package edu.utexas.wrap.net;
 
-/**A node, as in graph theory, which connects to others via several Links
- * 
- * @author William
+/**A node, as in graph theory, which connects to others via several Links.
+ * Nodes represent intersections, interchanges, or zone centroids in the
+ * transportation network. Each node has a unique integer ID, a topological
+ * order index used for efficient graph traversal, and an optional association
+ * with a {@link TravelSurveyZone} (for centroid nodes that serve as trip
+ * origins and destinations).
  *
+ * @author Will Alexander
+ * @see Link
+ * @see TravelSurveyZone
+ * @see Graph
  */
 public class Node {
 

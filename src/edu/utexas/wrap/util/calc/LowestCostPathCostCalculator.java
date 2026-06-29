@@ -22,6 +22,14 @@ import java.util.Set;
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.net.Graph;
 
+/**
+ * Computes the total system cost if all demand were loaded onto the
+ * current shortest paths. This represents the theoretical minimum cost
+ * under the current link costs and is used as the denominator in
+ * relative gap calculations.
+ *
+ * @author Will Alexander
+ */
 public class LowestCostPathCostCalculator extends Thread {
 	public Graph graph;
 	public Set<AssignmentContainer> containers;

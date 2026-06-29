@@ -26,6 +26,11 @@ import java.nio.file.StandardOpenOption;
 
 import edu.utexas.wrap.demand.PAMatrix;
 
+/**
+ * Writes a {@link PAMatrix} (zone-to-zone trip table) to a CSV file.
+ *
+ * @author Will Alexander
+ */
 public class PAMatrixCSVWriter {
 
 	public static void write(String outputDirectory,PAMatrix matrix) {

@@ -29,6 +29,17 @@ import javafx.stage.WindowEvent;
 import javafx.application.Application;
 import javafx.event.EventHandler;
 
+/**
+ * The main entry point for the wrap application. This class extends
+ * {@link javafx.application.Application} and launches the JavaFX GUI,
+ * loading the configuration interface ({@link ConfigController}) from
+ * the {@code wrapConfig.fxml} layout file.
+ *
+ * <p>The application can optionally accept command-line parameters to
+ * specify a project file to load on startup.
+ *
+ * @author Will Alexander
+ */
 public class wrap extends Application{
 
 	public static void main(String[] args) {

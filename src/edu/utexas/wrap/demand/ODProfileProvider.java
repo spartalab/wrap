@@ -19,12 +19,13 @@ package edu.utexas.wrap.demand;
 
 import java.util.Collection;
 
-/**This interface defines the origin point for ODProfiles;
- * that is, any class implementing this interface must
- * provide a means to generate a Stream of ODProfiles
+/**Provides {@link ODProfile} instances from a collection of daily
+ * {@link ODMatrix} inputs. Implementations allocate daily vehicle-trips
+ * across {@link edu.utexas.wrap.TimePeriod}s using time-of-day factors,
+ * producing the final demand representation consumed by assigners.
  * 
- * @author William
- *
+ * @author Will Alexander
+ * @see edu.utexas.wrap.util.TimeOfDaySplitter
  */
 public interface ODProfileProvider {
 

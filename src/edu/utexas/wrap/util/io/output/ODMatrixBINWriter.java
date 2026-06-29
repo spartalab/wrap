@@ -37,7 +37,7 @@ import edu.utexas.wrap.modechoice.Mode;
  * 		0x4-0x7	DESTINATION ID	(int)
  * 		0x8-0xB	DEMAND			(float)
  * 
- * @author William
+ * @author Will Alexander
  *
  */
 public class ODMatrixBINWriter {

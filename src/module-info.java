@@ -15,6 +15,12 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+/**
+ * The wrap module: a free and open-source urban transportation modeling
+ * framework implementing the four-step travel demand model in Java.
+ * Provides trip generation, distribution, mode choice, and traffic
+ * assignment capabilities with a JavaFX GUI.
+ */
 module wrap {
 	requires java.base;
 	requires java.logging;

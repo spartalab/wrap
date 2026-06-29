@@ -28,11 +28,20 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 
-/**A pair of alternative paths for equilibration, consisting of two paths in
- * a bush, with at least one of the two being utilized already. Flow can be
- * shifted from one path to the other, allowing the assignment to be drawn
- * closer into equilibrium. 
- * @author William
+/**A pair of alternative path segments within a {@link Bush} used for
+ * flow equilibration. Each pair consists of a shorter (cheaper) path
+ * and a longer (more expensive) path between two diverge/merge points.
+ * Flow is shifted from the longer segment to the shorter one in
+ * proportion to the cost difference, bringing the assignment closer
+ * to user equilibrium.
+ *
+ * <p>The step size for flow shifting can be computed using the
+ * derivative sum of the segment pair's links.
+ *
+ * @author Will Alexander
+ * @see Bush
+ * @see BushMerge
+ */
  *
  */
 public class AlternateSegmentPair {
@@ -126,7 +135,7 @@ public class AlternateSegmentPair {
 	
 	/**An iterator that follows the shortest path backvector links until
 	 * the diverge node is reached
-	 * @author William
+	 * @author Will Alexander
 	 *
 	 */
 	private class ShortPathIterator implements Iterable<Link> {
@@ -160,7 +169,7 @@ public class AlternateSegmentPair {
 	
 	/**An iterator that follows the longest path backvector links until
 	 * the diverge node is reached
-	 * @author William
+	 * @author Will Alexander
 	 *
 	 */
 	private class LongPathIterator implements Iterable<Link>{
@@ -194,7 +203,7 @@ public class AlternateSegmentPair {
 	}
 	
 	/**Spliterator that encapsulates all Links in the longest path
-	 * @author William
+	 * @author Will Alexander
 	 *
 	 */
 	private class LongPathSpliterator implements Spliterator<Link>{
@@ -257,7 +266,7 @@ public class AlternateSegmentPair {
 	
 	
 	/**Spliterator that encapsulates all Links in the shortest path
-	 * @author William
+	 * @author Will Alexander
 	 *
 	 */
 	private class ShortPathSpliterator implements Spliterator<Link>{

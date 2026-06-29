@@ -43,6 +43,14 @@ import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.util.ODMatrixCollector;
 import edu.utexas.wrap.util.io.output.ODMatrixStreamWriter;
 
+/**
+ * A {@link StaticAssigner} that passes OD matrices to an external process
+ * via standard I/O streams rather than performing assignment internally.
+ * This allows wrap to interface with external assignment engines while
+ * maintaining the standard assigner lifecycle.
+ *
+ * @author Will Alexander
+ */
 public class StreamPassthroughAssigner implements StaticAssigner<Bush> {
 
 	private Map<ODMatrix,Float> disaggregatedMtxs;

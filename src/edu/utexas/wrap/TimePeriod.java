@@ -17,9 +17,19 @@
  */
 package edu.utexas.wrap;
 
-/**A set of time-frames among which trips will be dispersed and assigned 
- * @author William
- *
+/**A set of time-frames among which trips will be dispersed and assigned.
+ * Each time period represents a portion of the day with relatively
+ * homogeneous travel demand characteristics. These periods partition
+ * a typical weekday into five segments:
+ * <ul>
+ *   <li>{@link #EARLY_OP} - Early off-peak (e.g., midnight to 6 AM)</li>
+ *   <li>{@link #AM_PK} - Morning peak (e.g., 6 AM to 9 AM)</li>
+ *   <li>{@link #MID_OP} - Midday off-peak (e.g., 9 AM to 3 PM)</li>
+ *   <li>{@link #PM_PK} - Afternoon/evening peak (e.g., 3 PM to 7 PM)</li>
+ *   <li>{@link #LATE_OP} - Late off-peak (e.g., 7 PM to midnight)</li>
+ * </ul>
+ * 
+ * @author Will Alexander
  */
 public enum TimePeriod {
 	EARLY_OP,

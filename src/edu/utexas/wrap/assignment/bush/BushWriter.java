@@ -28,6 +28,15 @@ import edu.utexas.wrap.assignment.AssignmentConsumer;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 
+/**
+ * Writes a {@link Bush}'s back-vector structure to a binary file on disk.
+ * This is the {@link AssignmentConsumer} counterpart to {@link BushReader},
+ * persisting bush state after optimization so it can be reloaded later.
+ *
+ * @author Will Alexander
+ * @see BushReader
+ * @see BushForgetter
+ */
 public class BushWriter implements AssignmentConsumer<Bush> {
 	private Path outputPath;
 

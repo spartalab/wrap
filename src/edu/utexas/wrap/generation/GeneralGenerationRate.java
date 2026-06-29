@@ -23,7 +23,7 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 /**A GenerationRate implementation in which every TravelSurveyZone
  * has the same generation rate, regardless of any other factor
  * 
- * @author William
+ * @author Will Alexander
  *
  */
 public class GeneralGenerationRate implements GenerationRate {

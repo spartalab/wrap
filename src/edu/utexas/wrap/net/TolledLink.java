@@ -21,10 +21,14 @@ import java.util.function.ToDoubleFunction;
 
 import edu.utexas.wrap.modechoice.Mode;
 
-/**A roadway which charges a toll for various modes of travel
+/**A roadway link which charges a monetary toll for various modes of travel.
+ * The toll amount is determined by an externally-defined tolling policy
+ * function. Subclasses define the specific volume-delay function used
+ * to compute congested travel times (e.g., BPR or conic models).
  * 
- * @author William
- *
+ * @author Will Alexander
+ * @see TolledBPRLink
+ * @see TolledEnhancedLink
  */
 public abstract class TolledLink extends Link {
 	protected final ToDoubleFunction<Link> tollingPolicy;

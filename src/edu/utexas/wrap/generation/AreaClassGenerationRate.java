@@ -27,7 +27,7 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  * No other characteristic determines the rate associated with
  * a given zone.
  * 
- * @author William
+ * @author Will Alexander
  *
  */
 public class AreaClassGenerationRate implements GenerationRate {

@@ -33,6 +33,13 @@ import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
+/**
+ * A {@link Collector} that combines multiple {@link ODMatrix} instances
+ * with the same mode and time period into a single OD matrix by summing
+ * trip values. Used to aggregate OD matrices from multiple purposes.
+ *
+ * @author Will Alexander
+ */
 public class ODMatrixCollector implements Collector<ODMatrix, CombinedODMatrix, ODMatrix>{
 	private final Set<Characteristics> characteristics = new HashSet<Characteristics>(Arrays.asList(Collector.Characteristics.values()));
 	private TimePeriod tp;

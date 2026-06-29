@@ -17,15 +17,20 @@
  */
 package edu.utexas.wrap.net;
 
-/**Interface for defining a cost of travel between two zones
+/**Interface for defining a cost of travel between two zones.
  * 
- * This interface provides a mechanism for defining a matrix of costs
- * between any two TravelSurveyZones in a network. That is, given any
- * two TSZs, each implementation of this interface provides some arbitrary
- * cost of travel between the two TSZs.
+ * A NetworkSkim is a zone-to-zone impedance matrix that stores the generalized
+ * cost of travel (e.g., travel time, distance, or composite cost) between all
+ * pairs of {@link TravelSurveyZone}s in the network. Skims are computed from
+ * the current assigned network state and serve as inputs to trip distribution
+ * and mode choice models in subsequent iterations of the four-step process.
  * 
- * @author William
- *
+ * <p>Skims are typically updated after each traffic assignment iteration to
+ * reflect the latest congested travel times, enabling feedback between the
+ * assignment and demand modeling steps.
+ * 
+ * @author Will Alexander
+ * @see FixedSizeNetworkSkim
  */
 public interface NetworkSkim {
 

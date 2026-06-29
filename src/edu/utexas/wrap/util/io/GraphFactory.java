@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
@@ -54,7 +55,13 @@ import edu.utexas.wrap.net.TolledEnhancedLink;
 import edu.utexas.wrap.net.TurningMovement;
 
 /**
- * This class provides static methods to read Graph information
+ * Provides static methods to construct a {@link Graph} from input files.
+ * Supports reading TNTP-format link files (BPR delay functions) and
+ * conic delay function link files, optionally with signal timing data
+ * for signalized intersections.
+ *
+ * @author Will Alexander
+ * @see edu.utexas.wrap.net.Graph
  */
 public class GraphFactory {
 	/**

@@ -27,6 +27,13 @@ import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Node;
 
+/**
+ * Computes the relative gap considering only paths that currently carry
+ * flow (used paths), as opposed to all possible paths. This is the
+ * standard bush-based relative gap metric.
+ *
+ * @author Will Alexander
+ */
 public class UsedPathsRelativeGapCalculator extends Thread {
 	public Double val;
 	Graph graph;

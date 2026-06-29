@@ -26,6 +26,15 @@ import edu.utexas.wrap.demand.containers.FixedMultiplierPassthroughModalPAMatrix
 import edu.utexas.wrap.demand.containers.ODPassthroughMatrix;
 import edu.utexas.wrap.demand.containers.TransposeModalPAMatrix;
 
+/**
+ * Converts modal PA matrices into OD matrices by applying departure and
+ * arrival rate factors. The departure rate scales the production-to-attraction
+ * direction, while the arrival rate scales the attraction-to-production
+ * (transposed) direction. The sum of both directions yields the final OD matrix.
+ *
+ * @author Will Alexander
+ * @see edu.utexas.wrap.demand.DailyODMatrixProvider
+ */
 public class DepartureArrivalConverter {
 	
 	double departureRate, arrivalRate;

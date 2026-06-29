@@ -6,6 +6,21 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * A {@link Node} representing a signalized intersection. In addition to
+ * standard node properties, a SignalizedNode maintains signal timing
+ * parameters including cycle length, signal groups (phases), green share
+ * allocations, and turning movement definitions. These parameters are
+ * used by {@link edu.utexas.wrap.assignment.PressureFunction} implementations
+ * to compute signal-induced delays and optimize signal timings during
+ * traffic assignment.
+ *
+ * @author Will Alexander
+ * @see SignalGroup
+ * @see Ring
+ * @see TurningMovement
+ * @see edu.utexas.wrap.assignment.PressureFunction
+ */
 public class SignalizedNode extends Node {
 	
 

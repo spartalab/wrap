@@ -19,6 +19,13 @@ package edu.utexas.wrap.util.calc;
 
 import edu.utexas.wrap.net.Graph;
 
+/**
+ * Computes the total system travel time (TSTT), defined as the sum of
+ * flow times travel time over all links. TSTT is a standard measure
+ * of network performance.
+ *
+ * @author Will Alexander
+ */
 public class TotalSystemTravelTimeCalculator extends Thread {
 	public Double val;
 	Graph graph;

@@ -30,6 +30,16 @@ import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 
+/**
+ * Reads a {@link Bush}'s back-vector structure from a binary file on disk.
+ * This is the {@link AssignmentProvider} for bush-based assignment,
+ * enabling out-of-core processing where bushes are loaded on demand
+ * rather than kept entirely in memory.
+ *
+ * @author Will Alexander
+ * @see BushWriter
+ * @see BushForgetter
+ */
 public class BushReader implements AssignmentProvider<Bush> {
 	private Path inputPath;
 	

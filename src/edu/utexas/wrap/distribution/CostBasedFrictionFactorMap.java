@@ -20,14 +20,15 @@ package edu.utexas.wrap.distribution;
 import java.util.Map.Entry;
 import java.util.NavigableMap;
 
-/**A friction factor map that depends on a cost skim and
- * an ordered set of multiplication factors. The impedance
- * between two TSZs is determined by the travel cost between
- * the two, which is then used to determine the impedance
- * from a given set of pre-determined points.
+/**A {@link FrictionFactorMap} implementation that determines impedance
+ * from a discrete set of cost-factor pairs. Given a travel cost between
+ * two zones, the friction factor is determined by interpolating between
+ * the nearest pre-defined cost bins. This is the standard implementation
+ * used with network skim-based trip distribution.
  * 
- * @author William
- *
+ * @author Will Alexander
+ * @see FrictionFactorMap
+ * @see ImpedanceMatrix
  */
 public class CostBasedFrictionFactorMap implements FrictionFactorMap {
 

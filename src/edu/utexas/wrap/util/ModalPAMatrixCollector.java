@@ -33,6 +33,13 @@ import edu.utexas.wrap.demand.ModalPAMatrix;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
+/**
+ * A {@link Collector} that combines multiple {@link ModalPAMatrix} instances
+ * for the same mode into a single matrix by summing trip values. Used when
+ * multiple distribution components need to be merged before assignment.
+ *
+ * @author Will Alexander
+ */
 public class ModalPAMatrixCollector implements Collector<ModalPAMatrix,Collection<ModalPAMatrix>,ModalPAMatrix> {
 	private final Set<Characteristics> characteristics = new HashSet<Characteristics>(Arrays.asList(Collector.Characteristics.CONCURRENT,Collector.Characteristics.UNORDERED));
 

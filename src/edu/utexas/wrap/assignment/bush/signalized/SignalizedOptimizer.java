@@ -20,6 +20,17 @@ import edu.utexas.wrap.net.SignalGroup;
 import edu.utexas.wrap.net.SignalizedNode;
 import edu.utexas.wrap.net.TurningMovement;
 
+/**
+ * An {@link AtomicOptimizer} that alternates between route choice optimization
+ * (via {@link AlgorithmBOptimizer}) and signal timing optimization (via a
+ * {@link PressureFunction}). In each iteration, routes are first equilibrated
+ * under current signal timings, then signal green shares are adjusted based
+ * on movement pressure differentials to reduce overall delay.
+ *
+ * @author Will Alexander
+ * @see PressureFunction
+ * @see AlgorithmBOptimizer
+ */
 public class SignalizedOptimizer 
 implements AtomicOptimizer<Bush> {
 

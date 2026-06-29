@@ -31,17 +31,25 @@ import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-/**An interface for providing a full implementation of the UTMS
+/**An interface for providing a complete implementation of the Urban
+ * Transportation Modeling System (UTMS) demand pipeline.
  * 
- * A class implementing this interface should be able to provide
- * data for any step in the four-step Urban Transportation Modeling
- * System; that is, it should be able to provide a PAMap, an
- * AggregatePAMatrix, a collection of ModalPAMatrices, a collection
- * of daily ODMatrices, and a collection of ODProfiles, each developed
- * according to their respective model.
+ * A Purpose represents a reason for travel (e.g., home-based work,
+ * home-based shopping, non-home-based) and encapsulates the full
+ * four-step modeling chain for that trip type. Implementations must
+ * provide:
+ * <ol>
+ *   <li>A balanced PAMap (trip generation + balancing)</li>
+ *   <li>An AggregatePAMatrix (trip distribution)</li>
+ *   <li>Modal PA matrices (mode choice)</li>
+ *   <li>Daily OD matrices (PA-to-OD conversion)</li>
+ *   <li>OD profiles (time-of-day factoring)</li>
+ * </ol>
  * 
- * @author William
- *
+ * @author Will Alexander
+ * @see BasicPurpose
+ * @see SurrogatePurpose
+ * @see Market
  */
 public interface Purpose extends 
 							ODProfileProvider, 

@@ -17,11 +17,14 @@
  */
 package edu.utexas.wrap.demand;
 
-/**This interface defines the origin point of a PAMap;
- * that is, any class implementing this interface must
- * provide a means to generate a balanced PAMap
- * @author William
- *
+/**Provides a balanced {@link PAMap} representing the output of trip
+ * generation and balancing. Implementations combine a trip generator
+ * with a trip balancer to produce a PAMap where total productions
+ * equal total attractions.
+ * 
+ * @author Will Alexander
+ * @see edu.utexas.wrap.generation.TripGenerator
+ * @see edu.utexas.wrap.balancing.TripBalancer
  */
 public interface PAMapProvider {
 	

@@ -21,7 +21,25 @@ import java.io.IOException;
 
 import edu.utexas.wrap.net.Graph;
 
+/**
+ * Consumes (persists or deallocates) the structure of an {@link AssignmentContainer}
+ * after it has been processed. Implementations may write the container state to disk,
+ * release memory, or perform other cleanup operations.
+ *
+ * @param <C> the type of assignment container to consume
+ * @author Will Alexander
+ * @see BushWriter
+ * @see BushForgetter
+ */
 public interface AssignmentConsumer<C extends AssignmentContainer> {
 
+	/**
+	 * Consumes the given container's structure, typically by writing it
+	 * to persistent storage or releasing its in-memory representation.
+	 *
+	 * @param container the assignment container to consume
+	 * @param network the transportation network graph
+	 * @throws IOException if an I/O error occurs during consumption
+	 */
 	public void consumeStructure(C container, Graph network) throws IOException;
 }

@@ -19,13 +19,13 @@ package edu.utexas.wrap.demand;
 
 import java.util.Collection;
 
-/**This interface defines the origin point of daily ODMatrices;
- * that is, any class which implements this interface must define
- * a manner of generating a Stream of ODMatrices which have not
- * had their trips allocated to the various TimePeriods
+/**Provides daily (un-split-by-time-period) {@link ODMatrix} instances from
+ * a collection of {@link ModalPAMatrix} inputs. Implementations convert
+ * person-trips in PA format to vehicle-trips in OD format, accounting for
+ * vehicle occupancy and PA-to-OD transposition.
  * 
- * @author William
- *
+ * @author Will Alexander
+ * @see edu.utexas.wrap.util.PassengerVehicleTripConverter
  */
 public interface DailyODMatrixProvider {
 

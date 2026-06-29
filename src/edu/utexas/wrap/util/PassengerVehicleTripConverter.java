@@ -25,6 +25,17 @@ import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.demand.containers.FixedMultiplierPassthroughModalPAMatrix;
 import edu.utexas.wrap.demand.containers.ODPassthroughMatrix;
 
+/**
+ * Converts person-trip {@link ModalPAMatrix} instances into vehicle-trip
+ * {@link ODMatrix} instances by dividing by the mode's vehicle occupancy
+ * and transposing from PA to OD format. This implements the
+ * {@link edu.utexas.wrap.demand.DailyODMatrixProvider} step of the
+ * demand pipeline.
+ *
+ * @author Will Alexander
+ * @see edu.utexas.wrap.demand.DailyODMatrixProvider
+ * @see edu.utexas.wrap.modechoice.Mode#occupancy()
+ */
 public class PassengerVehicleTripConverter {
 
 

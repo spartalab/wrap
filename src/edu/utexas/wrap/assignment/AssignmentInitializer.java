@@ -22,9 +22,34 @@ import java.util.Collection;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.net.Graph;
 
+/**
+ * Initializes assignment containers for a given network. This interface
+ * is responsible for creating the initial set of containers (e.g., bushes
+ * rooted at each origin zone) and loading demand matrices into them.
+ *
+ * @param <T> the type of assignment container to initialize
+ * @author Will Alexander
+ * @see BushInitializer
+ */
 public interface AssignmentInitializer<T extends AssignmentContainer> {
 	
+	/**
+	 * Creates and returns the full set of initialized containers for the
+	 * given network. Should be called after all demand has been added via
+	 * {@link #add(Graph, ODMatrix, Float)}.
+	 *
+	 * @param network the transportation network graph
+	 * @return the collection of initialized assignment containers
+	 */
 	public Collection<T> initializeContainers(Graph network);
 	
+	/**
+	 * Adds an OD matrix with an associated value of time to the initializer.
+	 * Multiple matrices may be added before containers are initialized.
+	 *
+	 * @param network the transportation network graph
+	 * @param matrix the origin-destination demand matrix
+	 * @param vot the value of time for trips in this matrix ($/hr)
+	 */
 	public void add(Graph network, ODMatrix matrix, Float vot);
 }

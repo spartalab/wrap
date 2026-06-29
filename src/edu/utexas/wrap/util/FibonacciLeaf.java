@@ -21,6 +21,14 @@ import java.util.ArrayList;
 import java.util.List;
 import edu.utexas.wrap.net.Node;
 
+/**
+ * A node (leaf) in a {@link FibonacciHeap}, wrapping a graph {@link Node}
+ * with an associated key (cost) value. Used as the element type in the
+ * priority queue during shortest path computations.
+ *
+ * @author Will Alexander
+ * @see FibonacciHeap
+ */
 public class FibonacciLeaf{
 	public Node node;
 	public double key;

@@ -28,7 +28,7 @@ import edu.utexas.wrap.demand.DemandMap;
  * from a given purpose (can be unbalanced or balanced) as the 
  * base demographic for another trip purpose's generation step
  * 
- * @author William
+ * @author Will Alexander
  *
  */
 public class SecondaryDemographic implements Demographic {

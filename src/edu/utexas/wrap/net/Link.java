@@ -26,10 +26,21 @@ import edu.utexas.wrap.assignment.bush.BackVector;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.util.NegativeFlowException;
 
-/**A link, as in graph theory, between two nodes of a network, with arbitrary cost function
- * 
- * @author rahulpatel
+/**A link, as in graph theory, between two nodes of a transportation network.
+ * Each link has a direction (from tail node to head node), a capacity, a free-flow
+ * travel time, and a length. Subclasses implement specific volume-delay functions
+ * (VDFs) that determine how travel time increases with congestion, such as BPR
+ * or conic delay models.
  *
+ * <p>Links also serve as {@link BackVector}s in bush-based assignment, pointing
+ * back toward the origin along the shortest path tree. They implement
+ * {@link Priced} to support generalized cost computations that include tolls
+ * and operating costs.
+ *
+ * @author rahulpatel
+ * @see TolledBPRLink
+ * @see TolledEnhancedLink
+ * @see CentroidConnector
  */
 public abstract class Link implements Priced, BackVector {
 

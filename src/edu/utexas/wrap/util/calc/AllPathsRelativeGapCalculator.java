@@ -22,6 +22,13 @@ import java.util.Set;
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.net.Graph;
 
+/**
+ * Computes the all-paths relative gap, a convergence metric that considers
+ * the cost difference between all used paths and the shortest path for
+ * each origin-destination pair.
+ *
+ * @author Will Alexander
+ */
 public class AllPathsRelativeGapCalculator extends Thread {
 	public Double val;
 	Graph graph;

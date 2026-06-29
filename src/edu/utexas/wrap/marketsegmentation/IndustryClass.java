@@ -17,13 +17,14 @@
  */
 package edu.utexas.wrap.marketsegmentation;
 
-/**An enumeration of the different classifications of employment industries
+/**An enumeration of employment industry classifications used to
+ * characterize the economic composition of {@link edu.utexas.wrap.net.TravelSurveyZone}s.
+ * Different industry classes generate trips at different rates;
+ * for example, retail zones typically attract more trips per employee
+ * than basic (manufacturing/industrial) zones.
  * 
- * This is useful in characterizing the employment of a TravelSurveyZone
- * according to how many employees work in each industry, as each industry
- * class may generate trips at a different rate than the others.
- * @author William
- *
+ * @author Will Alexander
+ * @see edu.utexas.wrap.generation.GenerationRate
  */
 public enum IndustryClass {
 	BASIC,

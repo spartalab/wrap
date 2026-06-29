@@ -26,7 +26,7 @@ import java.util.Set;
  * of TravelSurveyZones, and the total trips produced by these zones must match the 
  * total number of trips attracted to these zones.
  * 
- * @author William
+ * @author Will Alexander
  *
  */
 public class RegionalAreaAnalysisZone {

@@ -29,6 +29,15 @@ import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 
 
+/**
+ * Utility class providing shortest path algorithms for transportation networks.
+ * Currently implements Dijkstra's algorithm using a standard priority queue
+ * for computing single-source shortest paths.
+ *
+ * @author Will Alexander
+ * @see FibonacciHeap
+ * @see edu.utexas.wrap.net.Graph
+ */
 public class SPAlgorithms {
 	public static Path dijkstra(Graph g, Node origin, Node destination) {
 		

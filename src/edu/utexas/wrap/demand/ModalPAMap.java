@@ -24,7 +24,7 @@ import edu.utexas.wrap.modechoice.Mode;
  * 
  * This will be used in trip-end splitting (not trip-interchange).
  * 
- * @author William
+ * @author Will Alexander
  *
  */
 public interface ModalPAMap extends PAMap {

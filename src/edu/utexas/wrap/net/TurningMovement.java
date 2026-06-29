@@ -1,5 +1,17 @@
 package edu.utexas.wrap.net;
 
+/**
+ * Represents a turning movement at an intersection, defined by the
+ * incoming (tail) link and outgoing (head) link. Turning movements
+ * are used in signalized intersection modeling to track which signal
+ * phases serve which vehicle movements, and to compute movement-specific
+ * delays and green time allocations.
+ *
+ * @author Will Alexander
+ * @see SignalGroup
+ * @see Ring
+ * @see LinkedTurningMovement
+ */
 public class TurningMovement {
 	private final Link tailLink, headLink;
 	private final int id;

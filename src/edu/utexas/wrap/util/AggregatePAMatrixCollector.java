@@ -33,6 +33,13 @@ import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
+/**
+ * A {@link Collector} that combines multiple {@link AggregatePAMatrix}
+ * instances into a single aggregate matrix by summing their trip values.
+ * Used in stream operations to merge component distribution matrices.
+ *
+ * @author Will Alexander
+ */
 public class AggregatePAMatrixCollector implements Collector<AggregatePAMatrix, Collection<AggregatePAMatrix>, AggregatePAMatrix> {
 	private final Set<Characteristics> characteristics = new HashSet<Characteristics>(Arrays.asList(Collector.Characteristics.CONCURRENT,Collector.Characteristics.UNORDERED));
 	

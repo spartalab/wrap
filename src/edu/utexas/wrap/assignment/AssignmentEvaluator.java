@@ -19,11 +19,37 @@ package edu.utexas.wrap.assignment;
 
 import edu.utexas.wrap.net.Graph;
 
+/**
+ * Evaluates the quality or convergence of a traffic assignment solution.
+ * Implementations compute metrics such as the relative gap between the
+ * current solution cost and the theoretical minimum cost. The evaluator
+ * processes individual containers and accumulates a network-wide measure.
+ *
+ * @param <T> the type of assignment container being evaluated
+ * @author Will Alexander
+ * @see GapEvaluator
+ */
 public interface AssignmentEvaluator<T extends AssignmentContainer> {
 
+	/**
+	 * Returns the current value of the evaluation metric (e.g., relative gap).
+	 * A value of zero indicates perfect equilibrium.
+	 *
+	 * @return the current evaluation metric value
+	 */
 	public double getValue();
 	
+	/**
+	 * Processes a single container, accumulating its contribution to the
+	 * overall evaluation metric.
+	 *
+	 * @param container the assignment container to evaluate
+	 * @param network the transportation network graph
+	 */
 	public void process(T container, Graph network);
 	
+	/**
+	 * Resets the evaluator state for a new evaluation pass.
+	 */
 	public void initialize();
 }

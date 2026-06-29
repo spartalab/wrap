@@ -4,6 +4,21 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Stream;
 
+/**
+ * Represents a signal group (phase) at a signalized intersection. A signal
+ * group contains a set of compatible turning movements that receive green
+ * time simultaneously. Each signal group is assigned a portion of the
+ * overall cycle length, and the movements within it further divide their
+ * allocated time through {@link Ring} sub-allocations.
+ *
+ * <p>Signal groups are identified by an integer ID and maintain mappings
+ * from incoming links to the turning movements they serve.
+ *
+ * @author Will Alexander
+ * @see SignalizedNode
+ * @see Ring
+ * @see TurningMovement
+ */
 public class SignalGroup {
 	
 	private final Map<Link,Collection<TurningMovement>> movements;

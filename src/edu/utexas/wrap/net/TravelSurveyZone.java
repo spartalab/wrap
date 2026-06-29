@@ -17,16 +17,23 @@
  */
 package edu.utexas.wrap.net;
 
-/**An area of land from and to which trips occur
+/**An area of land from and to which trips occur.
  * 
- * A TravelSurveyZone represents an area which has
- * had its demographics and travel behavior modeled.
- * Each TSZ is associated with a centroid Node,
- * an AreaClass, and may or may not be associated
- * with a parent RegionalAreaAnalysisZone.
+ * A TravelSurveyZone (TSZ) represents a geographic area whose demographics
+ * and travel behavior have been surveyed and modeled. TSZs are the fundamental
+ * spatial units for trip generation, distribution, and assignment in the
+ * four-step model. Each TSZ is associated with:
+ * <ul>
+ *   <li>A centroid {@link Node} through which all trips enter/exit the network</li>
+ *   <li>An {@link AreaClass} characterizing its land use (e.g., CBD, suburban, rural)</li>
+ *   <li>An optional parent {@link RegionalAreaAnalysisZone} for regional balancing</li>
+ *   <li>A topological order index for efficient matrix storage and lookup</li>
+ * </ul>
  * 
- * @author William
- *
+ * @author Will Alexander
+ * @see AreaClass
+ * @see RegionalAreaAnalysisZone
+ * @see Demographic
  */
 public class TravelSurveyZone {
 	private final int nodeID;

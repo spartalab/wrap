@@ -26,7 +26,7 @@ import edu.utexas.wrap.net.Demographic;
  * a number of trips produced or attracted to each
  * zone
  * 
- * @author William
+ * @author Will Alexander
  *
  */
 public interface TripGenerator {

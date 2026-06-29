@@ -10,6 +10,16 @@ import java.util.Map;
 
 import edu.utexas.wrap.net.TravelSurveyZone;
 
+/**
+ * A file-backed implementation of {@link DistributionWeights} that persists
+ * gravity model balancing weights (A and B factors) to a CSV file. Weights
+ * are loaded on construction and can be updated and saved after each
+ * distribution iteration to support warm-starting subsequent model runs.
+ *
+ * @author Will Alexander
+ * @see DistributionWeights
+ * @see GravityDistributor
+ */
 public class BasicDistributionWeights implements DistributionWeights {
 	
 	private final Path weightFile;

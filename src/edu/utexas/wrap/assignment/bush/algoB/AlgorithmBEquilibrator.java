@@ -34,6 +34,17 @@ import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.util.NegativeFlowException;
 
+/**
+ * Performs flow equilibration within a single {@link Bush} by identifying
+ * {@link AlternateSegmentPair}s (diverge-merge pairs with cost differences)
+ * and shifting flow from the more expensive path to the cheaper one. The
+ * step size is determined by a configurable function (typically based on
+ * the second derivative of the cost functions).
+ *
+ * @author Will Alexander
+ * @see AlgorithmBOptimizer
+ * @see AlternateSegmentPair
+ */
 public class AlgorithmBEquilibrator {
 	Integer numThreshold = 100;
 	

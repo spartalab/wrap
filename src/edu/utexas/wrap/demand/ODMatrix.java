@@ -23,14 +23,19 @@ import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.modechoice.Mode;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-/**A map from an origin-destination pair to the number
- * of <b>vehicle</b>-trips made. This is different from the PA
- * matrix in that it may account for multiple person-trips
- * inside a single vehicle-trip, i.e. passengers in a car
- * or bus.
- * 
- * @author William
+/**A mapping from an origin-destination zone pair to the number of
+ * <b>vehicle</b>-trips between them. Unlike a PA matrix which counts
+ * person-trips, an OD matrix accounts for vehicle occupancy (e.g.,
+ * carpooling), converting person-trips to vehicle-trips. OD matrices
+ * are the final demand representation fed into traffic assignment.
  *
+ * <p>Each ODMatrix is associated with a {@link Mode} and a
+ * {@link TimePeriod}, representing demand for a specific vehicle
+ * class during a specific time window.
+ * 
+ * @author Will Alexander
+ * @see ODProfile
+ * @see edu.utexas.wrap.util.PassengerVehicleTripConverter
  */
 public interface ODMatrix {
 	

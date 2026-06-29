@@ -28,11 +28,24 @@ import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
 /**A label indicating an object may be associated with a link flow in route 
- * choice. Examples include bushes and paths for bush- and path-based 
- * optimizers, respectively.
+ * choice. An AssignmentContainer represents a subset of total network demand
+ * (typically originating from a single zone or zone-VOT combination) and
+ * maintains the routing structure used to distribute that demand across the
+ * network. Examples include bushes for bush-based optimizers (where each bush
+ * is a directed acyclic subgraph rooted at an origin zone) and paths for
+ * path-based optimizers.
  * 
- * @author William
- *
+ * <p>Containers track:
+ * <ul>
+ *   <li>The vehicle class (mode) and value of time for their demand</li>
+ *   <li>The set of links currently carrying flow from this container</li>
+ *   <li>Per-link flow decompositions</li>
+ *   <li>The total cost incurred by the container's demand</li>
+ * </ul>
+ * 
+ * @author Will Alexander
+ * @see Bush
+ * @see Path
  */
 public interface AssignmentContainer {
 

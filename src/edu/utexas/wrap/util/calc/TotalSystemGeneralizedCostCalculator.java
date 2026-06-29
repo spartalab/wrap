@@ -23,6 +23,13 @@ import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.net.Graph;
 
+/**
+ * Computes the total system generalized cost, which is the sum of
+ * each container's incurred cost across all origins. This represents
+ * the actual total cost experienced by all travelers in the network.
+ *
+ * @author Will Alexander
+ */
 public class TotalSystemGeneralizedCostCalculator extends Thread {
 	public Double val;
 	Graph graph;

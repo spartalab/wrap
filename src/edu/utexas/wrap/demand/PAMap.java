@@ -21,16 +21,19 @@ import java.util.Collection;
 
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-/**A mapping from a TravelSurveyZone to the number of productions
- * and attractions that begin and end, respectively,
- * at that TravelSurveyZone. This is the result of the trip 
- * generation step of the four-step model.
+/**A mapping from a {@link TravelSurveyZone} to the number of productions
+ * and attractions that begin and end, respectively, at that zone. This is
+ * the primary output of the trip generation step of the four-step model.
  * 
- * Any PA Map should have a method of retrieving the
- * metadata that will be used in the mode-choice models.
+ * <p>Productions represent trips originating from a zone (typically the
+ * home end of a trip), while attractions represent trips destined for a
+ * zone (typically the non-home end). The PAMap is subsequently balanced
+ * (via a {@link edu.utexas.wrap.balancing.TripBalancer}) and fed into
+ * the trip distribution step.
  * 
- * @author William
- *
+ * @author Will Alexander
+ * @see edu.utexas.wrap.generation.TripGenerator
+ * @see edu.utexas.wrap.balancing.TripBalancer
  */
 public interface PAMap {
 

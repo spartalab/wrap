@@ -16,6 +16,15 @@ import javafx.concurrent.WorkerStateEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 
+/**
+ * A JavaFX {@link Task} that executes all {@link Purpose}s within a {@link Market},
+ * collecting the resulting {@link ODProfile}s. This runner coordinates the
+ * parallel execution of {@link PurposeRunner}s and reports progress to the GUI.
+ *
+ * @author Will Alexander
+ * @see PurposeRunner
+ * @see Market
+ */
 public class MarketRunner extends Task<Collection<ODProfile>> {
 	
 	private final Market market;

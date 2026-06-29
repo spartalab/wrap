@@ -30,16 +30,21 @@ import edu.utexas.wrap.demand.containers.FixedSizeDemandMap;
 import edu.utexas.wrap.marketsegmentation.Purpose;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-/**A trip distribution class that uses the traditional gravity
- * model to calculate trips. Given a friction factor map, this
- * class calculates iteratively the balanced A and B values for
- * each TSZ, then multiplies each TSZ pair's productions and
- * attractions by the A and B values for the producer and
- * attractor, respectively, and the friction (impedance) between
- * these two zones to get the distributed trip matrix.
- * 
- * @author William
+/**A trip distribution class implementing the doubly-constrained gravity
+ * model. The gravity model distributes trips between zones proportional to
+ * the product of the origin's productions, the destination's attractions,
+ * and a friction factor representing the impedance of travel between them.
  *
+ * <p>The distribution formula for trips from zone i to zone j is:
+ * {@code T_ij = A_i * P_i * B_j * Q_j * F_ij}
+ * where A_i and B_j are iteratively-computed balancing factors that ensure
+ * row sums match productions and column sums match attractions, P_i and Q_j
+ * are the productions and attractions, and F_ij is the friction factor.
+ * 
+ * @author Will Alexander
+ * @see FrictionFactorMap
+ * @see ImpedanceMatrix
+ * @see ModularGravityDistributor
  */
 public class GravityDistributor implements TripDistributor {
 	private final String id;

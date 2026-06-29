@@ -17,12 +17,15 @@
  */
 package edu.utexas.wrap.distribution;
 
-/**A class which returns the impedance for trips
- * between two TSZs based on the generic cost of
- * travel between the two
+/**Maps a travel cost (impedance) value to a friction factor used in
+ * gravity-model trip distribution. Higher friction factors indicate
+ * lower resistance to travel, resulting in more trips between zone
+ * pairs with that cost level. The mapping is typically derived from
+ * observed trip length frequency distributions.
  * 
- * @author William
- *
+ * @author Will Alexander
+ * @see CostBasedFrictionFactorMap
+ * @see ImpedanceMatrix
  */
 public interface FrictionFactorMap {
 

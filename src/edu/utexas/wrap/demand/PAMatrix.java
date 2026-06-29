@@ -21,19 +21,18 @@ import java.util.Collection;
 
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-/**A map from an origin and destination zone to the
- * number of trips between them. This may or may not
- * have a Mode associated with it. This is the output
- * of the trip distribution process (as an aggregate
- * matrix) and the mode choice process (as a modal
- * matrix)
- * 
- * Any PAMatrix should have the ability to retrieve
- * metadata which may be used in a trip-interchange
- * mode choice model.
- * 
- * @author William
+/**A matrix mapping origin-destination zone pairs to the number of
+ * person-trips between them. This is the base interface for both
+ * aggregate (all-mode) and modal (mode-specific) PA matrices produced
+ * by the trip distribution and mode choice steps, respectively.
  *
+ * <p>PA matrices preserve the production-attraction orientation of trips
+ * (as opposed to OD matrices which use origin-destination). The conversion
+ * from PA to OD format is handled by subsequent processing steps.
+ * 
+ * @author Will Alexander
+ * @see AggregatePAMatrix
+ * @see ModalPAMatrix
  */
 public interface PAMatrix {
 

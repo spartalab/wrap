@@ -22,9 +22,13 @@ import java.util.Map;
 
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-/**A simple map from a node to a demand level
- * @author William
+/**A mapping from a {@link TravelSurveyZone} to a scalar demand level.
+ * DemandMaps are used throughout the model to represent zone-level
+ * quantities such as trip productions, trip attractions, or demand
+ * associated with a particular origin zone in a bush-based assignment.
  *
+ * @author Will Alexander
+ * @see edu.utexas.wrap.demand.containers.FixedSizeDemandMap
  */
 public interface DemandMap {
 

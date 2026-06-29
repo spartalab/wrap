@@ -38,14 +38,25 @@ import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.io.FrictionFactorFactory;
 
-/**A grouping of people who make trips according to the same behavior model
+/**A grouping of people who make trips according to the same behavior model.
  * 
- * This class defines, for a group of people, the demographics associated with
- * the various TravelSurveyZones, the FrictionFactors used in modeling their
- * trip distribution, and the Purposes for which they travel.
- * 
- * @author William
+ * A Market defines a segment of the traveling population that shares common
+ * trip-making characteristics. Each market encapsulates:
+ * <ul>
+ *   <li>Demographics associated with TravelSurveyZones (e.g., population, employment)</li>
+ *   <li>Friction factor maps used in gravity-model trip distribution</li>
+ *   <li>A collection of {@link Purpose}s for which market members travel</li>
+ *   <li>Configuration properties loaded from a market file ({@code *.wrm})</li>
+ * </ul>
  *
+ * <p>Markets are defined in the {@link Project} configuration and run
+ * independently to produce {@link edu.utexas.wrap.demand.ODProfile}s that
+ * are then fed to the traffic assignment step.
+ * 
+ * @author Will Alexander
+ * @see Purpose
+ * @see BasicPurpose
+ * @see Project
  */
 public class Market {
 	private Properties props;

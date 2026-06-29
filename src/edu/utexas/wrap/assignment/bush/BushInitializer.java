@@ -29,6 +29,17 @@ import edu.utexas.wrap.assignment.AssignmentProvider;
 import edu.utexas.wrap.demand.ODMatrix;
 import edu.utexas.wrap.net.Graph;
 
+/**
+ * Initializes bushes for all origin zones that have positive demand.
+ * For each OD matrix, a {@link Bush} is created (or loaded from disk)
+ * for each origin zone, and demand is loaded into the bush. The
+ * initial bush structure is built using a {@link BushBuilder}.
+ *
+ * @author Will Alexander
+ * @see Bush
+ * @see BushBuilder
+ * @see edu.utexas.wrap.assignment.AssignmentInitializer
+ */
 public class BushInitializer implements AssignmentInitializer<Bush>{
 	
 	private AssignmentProvider<Bush> provider;

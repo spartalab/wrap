@@ -63,6 +63,24 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.io.GraphFactory;
 import edu.utexas.wrap.util.io.SkimFactory;
 
+/**
+ * The primary implementation of {@link StaticAssigner} for bush-based static
+ * traffic assignment. This class orchestrates the full assignment lifecycle:
+ * network construction, demand loading, iterative equilibration, convergence
+ * evaluation, and output of link flows. It is configured from a properties
+ * file ({@code *.wrapr}) that specifies the container type, optimizer,
+ * evaluator, link type, signal timing data, and convergence parameters.
+ *
+ * <p>Supported configurations include:
+ * <ul>
+ *   <li>Bush-based containers with Algorithm B or signalized optimization</li>
+ *   <li>BPR or conic (enhanced) link delay functions</li>
+ *   <li>Optional signal timing optimization with configurable {@link PressureFunction}</li>
+ * </ul>
+ *
+ * @param <C> the type of {@link AssignmentContainer} (typically {@link Bush})
+ * @author Will Alexander
+ */
 public class BasicStaticAssigner<C extends AssignmentContainer> implements StaticAssigner<C> {
 	private AssignmentEvaluator<C> evaluator;
 	private AssignmentOptimizer<C> optimizer;

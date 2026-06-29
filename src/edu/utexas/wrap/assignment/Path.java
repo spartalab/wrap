@@ -27,10 +27,17 @@ import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.Priced;
 
-/** A sequential list of {@link edu.utexas.wrap.net.Link} objects.
+/** A sequential list of {@link edu.utexas.wrap.net.Link} objects representing
+ * a route through the transportation network from an origin node to a
+ * destination node. Paths are used in path-based assignment algorithms and
+ * as intermediate representations when computing shortest routes.
  * 
- * @author William
- *
+ * <p>Paths implement the {@link Priced} interface, allowing computation of
+ * generalized cost (combining travel time and monetary costs) for the full route.
+ * 
+ * @author Will Alexander
+ * @see edu.utexas.wrap.net.Link
+ * @see edu.utexas.wrap.net.Priced
  */
 
 public class Path extends LinkedList<Link> implements Priced {

@@ -39,9 +39,19 @@ import edu.utexas.wrap.util.FibonacciHeap;
 import edu.utexas.wrap.util.FibonacciLeaf;
 
 /**A representation of links and nodes in an interconnected directed graph
+ * that models a transportation network. The graph maintains forward and
+ * reverse star representations for efficient traversal, supports topological
+ * ordering for acyclic subgraph operations, and provides shortest-path
+ * computations via Dijkstra's algorithm with Fibonacci heaps.
  * 
- * @author William
- *
+ * <p>The graph is constructed by adding {@link Link} objects, which implicitly
+ * register their head and tail {@link Node}s. Travel Survey Zones are mapped
+ * to graph nodes to connect demand origins/destinations to the network.
+ * 
+ * @author Will Alexander
+ * @see Link
+ * @see Node
+ * @see TravelSurveyZone
  */
 public class Graph {
 	

@@ -19,6 +19,16 @@ package edu.utexas.wrap.assignment.bush;
 
 import edu.utexas.wrap.net.Graph;
 
+/**
+ * Evaluates the convergence quality of a single {@link Bush} within the
+ * network. Unlike the network-wide {@link edu.utexas.wrap.assignment.AssignmentEvaluator},
+ * this interface operates on individual bushes and is used during
+ * per-bush optimization to determine when a bush has reached sufficient
+ * equilibrium.
+ *
+ * @author Will Alexander
+ * @see BushGapEvaluator
+ */
 public interface BushEvaluator {
 
 	public double getValue(Bush bush, Graph network);

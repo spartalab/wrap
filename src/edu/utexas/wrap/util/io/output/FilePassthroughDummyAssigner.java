@@ -44,6 +44,13 @@ import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.net.TravelSurveyZone;
 import edu.utexas.wrap.util.ODMatrixCollector;
 
+/**
+ * A {@link StaticAssigner} implementation that writes OD matrices directly
+ * to CSV files instead of performing actual traffic assignment. This is used
+ * for debugging or exporting demand data to external tools.
+ *
+ * @author Will Alexander
+ */
 public class FilePassthroughDummyAssigner implements StaticAssigner<Bush> {
 	final TimePeriod period;
 	final Path outPath;

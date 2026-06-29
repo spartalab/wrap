@@ -20,6 +20,14 @@ package edu.utexas.wrap.util;
 import edu.utexas.wrap.assignment.bush.Bush;
 import edu.utexas.wrap.net.Node;
 
+/**
+ * Thrown when a destination node cannot be reached from the origin of a
+ * bush during shortest path computation. This typically indicates a
+ * disconnected network or an error in the network topology.
+ *
+ * @author Will Alexander
+ * @see edu.utexas.wrap.assignment.bush.Bush
+ */
 public class UnreachableException extends Exception {
 
 	/**

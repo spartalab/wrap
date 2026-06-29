@@ -46,10 +46,15 @@ import edu.utexas.wrap.util.AggregatePAMatrixCollector;
 import edu.utexas.wrap.util.PassengerVehicleTripConverter;
 import edu.utexas.wrap.util.TimeOfDaySplitter;
 
-/**A basic implementation of Purpose which completes the full UTMS
- * 
- * @author William
+/**A full implementation of {@link Purpose} that executes the complete UTMS
+ * pipeline: trip generation, balancing, distribution, mode choice,
+ * PA-to-OD conversion, and time-of-day factoring. Configuration is
+ * loaded from a properties file that specifies generation rates,
+ * distribution parameters, mode shares, and time-of-day factors.
  *
+ * @author Will Alexander
+ * @see Purpose
+ * @see Market
  */
 public class BasicPurpose implements Purpose {
 

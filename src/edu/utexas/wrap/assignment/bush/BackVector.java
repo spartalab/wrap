@@ -20,10 +20,19 @@ package edu.utexas.wrap.assignment.bush;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 
-/** A BackVector is the object through which all
- * Links flowing into a Node from a Bush are enumerated
- * @author William
+/** A BackVector enumerates the incoming links at a node within a bush.
+ * At most nodes, the back-vector is a single link (the shortest path
+ * predecessor). At merge nodes where multiple paths converge, a
+ * {@link BushMerge} back-vector tracks multiple incoming links with
+ * their respective flow shares.
  *
+ * <p>Every back-vector provides access to the shortest-path link and
+ * the longest-path link, enabling identification of
+ * {@link AlternateSegmentPair}s for flow equilibration.
+ *
+ * @author Will Alexander
+ * @see BushMerge
+ * @see Bush
  */
 public interface BackVector {
 

@@ -3,6 +3,16 @@ package edu.utexas.wrap.assignment;
 import edu.utexas.wrap.net.SignalizedNode;
 import edu.utexas.wrap.net.TurningMovement;
 
+/**
+ * An extension of {@link Alexander} that adds an oversaturation delay
+ * component to the uniform delay. When demand exceeds capacity, a queue
+ * builds over multiple signal cycles, and the additional delay incurred
+ * by vehicles waiting in that queue is estimated. The number of cycles
+ * over which oversaturation accumulates is configurable (default: 100
+ * cycles, representing approximately 2.5 hours at typical cycle lengths).
+ *
+ * @author Will Alexander
+ */
 public class Alexander3 extends Alexander implements PressureFunction {
 
 	
@@ -26,6 +36,9 @@ public class Alexander3 extends Alexander implements PressureFunction {
 		
 		double oversaturationDelay = numCycles * head.getCycleLength() / 2;
 		
+		if (uniformDelay + oversaturationDelay > 700) System.out.println((
+				mvmt.getTail().getFlow() - mvmt.getTail().getCapacity()
+			));
 		return uniformDelay + oversaturationDelay;
 		
 		

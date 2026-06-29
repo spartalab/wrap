@@ -4,6 +4,16 @@ package edu.utexas.wrap.assignment;
 import edu.utexas.wrap.net.SignalizedNode;
 import edu.utexas.wrap.net.TurningMovement;
 
+/**
+ * A Webster-like delay model ({@link PressureFunction}) that accounts for
+ * signal-induced queuing. The delay formula is based on the classic Webster
+ * uniform delay equation, with a volume-to-capacity limit ({@code vcLimit})
+ * to prevent numerical instability at near-saturated conditions. When V/C
+ * exceeds the limit, the function linearizes the delay using the derivative
+ * at the limit point.
+ *
+ * @author Will Alexander
+ */
 public class WLYM implements PressureFunction {
 	private final double vcLimit = 0.9;
 

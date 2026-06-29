@@ -19,12 +19,13 @@ package edu.utexas.wrap.demand;
 
 import java.util.Collection;
 
-/**This interface defines the origin point of ModalPAMatrices;
- * that is, any class implementing this interface must provide
- * a means to generate a Stream of ModalPAMatrices
+/**Provides mode-specific {@link ModalPAMatrix} instances from an
+ * {@link AggregatePAMatrix}. Implementations apply a mode choice model
+ * to split aggregate person-trips into trips by specific travel modes
+ * (e.g., SOV, HOV, transit).
  * 
- * @author William
- *
+ * @author Will Alexander
+ * @see edu.utexas.wrap.modechoice.TripInterchangeSplitter
  */
 public interface ModalPAMatrixProvider {
 	

@@ -36,7 +36,13 @@ import edu.utexas.wrap.util.FibonacciHeap;
 import edu.utexas.wrap.util.FibonacciLeaf;
 
 /**
- * This class provides static methods to read information about Skim rates
+ * Provides static methods to compute and write network skims. Skim
+ * computation uses Dijkstra's algorithm with a Fibonacci heap to find
+ * shortest paths from each origin zone to all destination zones.
+ *
+ * @author Will Alexander
+ * @see SkimLoader
+ * @see edu.utexas.wrap.net.NetworkSkim
  */
 public class SkimFactory {
 

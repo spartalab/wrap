@@ -17,9 +17,15 @@
  */
 package edu.utexas.wrap.net;
 
-/**An enumeration of the different uses for which TravelSurveyZones may be assigned
- * @author William
+/**An enumeration of the different land-use categories to which
+ * {@link TravelSurveyZone}s may be assigned. Area classes affect
+ * trip generation rates, as zones in different land-use contexts
+ * tend to produce and attract trips at different rates per unit
+ * of demographic activity.
  *
+ * @author Will Alexander
+ * @see TravelSurveyZone
+ * @see edu.utexas.wrap.generation.AreaClassGenerationRate
  */
 public enum AreaClass {
 	CBD, //Central Business District

@@ -19,16 +19,16 @@ package edu.utexas.wrap.demand;
 
 import edu.utexas.wrap.modechoice.Mode;
 
-/**This is used after mode choice and distribution
- * to map from a zone to its production and attraction
- * values for a particular travel mode.
+/**A production-attraction matrix for a specific travel {@link Mode}.
+ * This is produced after both trip distribution and mode choice have
+ * been applied, representing the number of trips between zone pairs
+ * for a particular mode. The ModalPAMatrix carries metadata (such as
+ * value of time) needed for subsequent conversion to OD matrices and
+ * route choice.
  * 
- * Any ModalPAMatrix should be able to retrieve metadata
- * useful in subsequent steps, e.g. the VOT for route
- * choice.
- * 
- * @author William
- *
+ * @author Will Alexander
+ * @see AggregatePAMatrix
+ * @see edu.utexas.wrap.modechoice.TripInterchangeSplitter
  */
 public interface ModalPAMatrix extends AggregatePAMatrix {
 

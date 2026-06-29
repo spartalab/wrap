@@ -33,6 +33,13 @@ import java.util.stream.Collectors;
 import edu.utexas.wrap.demand.DemandMap;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
+/**
+ * A {@link Collector} that combines multiple {@link DemandMap} instances
+ * into a single map by summing demand values at each zone. Used to
+ * aggregate component demand maps from multi-rate trip generation.
+ *
+ * @author Will Alexander
+ */
 public class DemandMapCollector implements Collector<DemandMap, CombinedDemandMap, DemandMap> {
 	private final Set<Characteristics> characteristics = new HashSet<Characteristics>(Arrays.asList(Collector.Characteristics.values()));
 

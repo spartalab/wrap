@@ -19,9 +19,22 @@ package edu.utexas.wrap.assignment;
 
 
 
+/**
+ * Optimizes route choices within a traffic assignment by iteratively
+ * shifting flow from higher-cost to lower-cost routes. Implementations
+ * define the specific equilibration algorithm (e.g., Algorithm B,
+ * signalized optimization) and control the per-iteration convergence process.
+ *
+ * @param <T> the type of assignment container being optimized
+ * @author Will Alexander
+ * @see AtomicOptimizer
+ * @see AlgorithmBOptimizer
+ */
 public interface AssignmentOptimizer<T extends AssignmentContainer> {
 	
-	
+	/**
+	 * Initializes or resets the optimizer state before a new round of optimization.
+	 */
 	public void initialize();
 
 }

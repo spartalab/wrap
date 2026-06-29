@@ -20,10 +20,14 @@ package edu.utexas.wrap.modechoice;
 import edu.utexas.wrap.demand.ModalPAMap;
 import edu.utexas.wrap.demand.PAMap;
 
-/**An interface for performing mode choice before distribution
+/**An abstract class for performing mode choice at the trip-end level,
+ * i.e., before trip distribution. Trip-end mode choice models determine
+ * mode shares based only on the productions and attractions at each zone,
+ * without considering the specific origin-destination pair. This approach
+ * is simpler but less behaviorally realistic than trip-interchange models.
  * 
- * @author William
- *
+ * @author Will Alexander
+ * @see TripInterchangeSplitter
  */
 public abstract class TripEndSplitter {
 	

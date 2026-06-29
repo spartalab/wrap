@@ -30,11 +30,14 @@ import edu.utexas.wrap.net.TravelSurveyZone;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-/**A tweaked version of the GravityDistributor that allows for
- * on-demand iterations of fitting.
+/**A variant of {@link GravityDistributor} that supports on-demand,
+ * incremental fitting iterations. Unlike the standard distributor which
+ * runs to convergence internally, this class allows external control
+ * over the iteration loop, making it suitable for integration with
+ * GUI progress tracking and interactive convergence monitoring.
  * 
  * @author Carlin, William
- *
+ * @see GravityDistributor
  */
 public class ModularGravityDistributor extends GravityDistributor {
 	private final FrictionFactorMap friction;

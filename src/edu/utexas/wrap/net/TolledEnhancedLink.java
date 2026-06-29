@@ -22,10 +22,15 @@ import java.util.function.ToDoubleFunction;
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.modechoice.Mode;
 
-/**A tolled link whose travel time function is modeled by a conic VDF
+/**A tolled link whose travel time function is modeled by a conic
+ * volume-delay function (VDF). The conic delay model provides a
+ * smoother, more behaviorally realistic representation of congestion
+ * than the standard BPR function, particularly at high volume-to-capacity
+ * ratios. This link type also supports class-specific tolling and
+ * vehicle class restrictions.
  * 
- * @author William
- *
+ * @author Will Alexander
+ * @see TolledBPRLink
  */
 public class TolledEnhancedLink extends TolledLink {
 	private final float conicalParam, VDFshift, saturatedFlowRate, minDelay, operCost;

@@ -3,11 +3,21 @@ package edu.utexas.wrap.assignment;
 import edu.utexas.wrap.net.SignalizedNode;
 import edu.utexas.wrap.net.TurningMovement;
 
+/**
+ * A {@link PressureFunction} based on the uniform delay component of the
+ * Highway Capacity Manual delay formula. The per-vehicle delay is computed as
+ * {@code (1 - g)^2 * C / 2}, where {@code g} is the effective green share and
+ * {@code C} is the cycle length. This represents the average delay experienced
+ * by a vehicle arriving uniformly during a signal cycle.
+ *
+ * @author Will Alexander
+ */
 public class Alexander implements PressureFunction {
 
 	
 	@Override
 	public double perVehicleDelay(TurningMovement mvmt) {
+		if (!(mvmt.getTail().getHead() instanceof SignalizedNode)) return 0.;
 		SignalizedNode node = (SignalizedNode) mvmt.getTail().getHead();
 
 		return 

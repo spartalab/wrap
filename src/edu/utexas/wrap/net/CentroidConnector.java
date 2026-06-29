@@ -37,7 +37,7 @@ import edu.utexas.wrap.modechoice.Mode;
  * in trips, care must be taken that all trips assigned to this link either start
  * or end at one of the termini of the link.
  * 
- * @author William
+ * @author Will Alexander
  *
  */
 public class CentroidConnector extends TolledLink {

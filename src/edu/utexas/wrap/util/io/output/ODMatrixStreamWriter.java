@@ -29,6 +29,13 @@ import java.nio.ByteOrder;
 import java.util.Collection;
 import java.util.Map;
 
+/**
+ * Writes {@link ODMatrix} data to an output stream in binary format,
+ * suitable for piping to external processes. Used by
+ * {@link edu.utexas.wrap.assignment.bush.StreamPassthroughAssigner}.
+ *
+ * @author Will Alexander
+ */
 public class ODMatrixStreamWriter {
 
 

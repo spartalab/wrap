@@ -24,13 +24,18 @@ import edu.utexas.wrap.demand.containers.FixedMultiplierPassthroughModalPAMatrix
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.ModalPAMatrix;
 
-/**The purpose of this class is to return
- * a set of modal PA matrices that contain
- * the proportion of trips that are taken for
- * a particular mode.
+/**A {@link TripInterchangeSplitter} implementation that assigns fixed
+ * proportions of trips to each mode, regardless of travel conditions.
+ * Each mode is assigned a constant share (e.g., 70% SOV, 20% HOV, 10% truck),
+ * and the aggregate PA matrix is multiplied by these shares to produce
+ * the mode-specific matrices.
  *
- * @author Karthik & Rishabh
+ * <p>This is a simplified mode choice model suitable for scenarios where
+ * mode shares are known externally or when mode choice is not being
+ * actively modeled.
  *
+ * @author Karthik &amp; Rishabh
+ * @see TripInterchangeSplitter
  */
 public class FixedProportionSplitter implements TripInterchangeSplitter {
 

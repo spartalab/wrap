@@ -31,7 +31,7 @@ import edu.utexas.wrap.net.RegionalAreaAnalysisZone;
  * per-RAA basis; otherwise, the balancing is performed on a network-
  * wide basis
  * 
- * @author William
+ * @author Will Alexander
  *
  */
 public class Attr2ProdProportionalBalancer implements TripBalancer {

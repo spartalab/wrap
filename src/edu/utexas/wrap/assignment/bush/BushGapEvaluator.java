@@ -21,6 +21,15 @@ import edu.utexas.wrap.net.Graph;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 
+/**
+ * A {@link BushEvaluator} that computes the relative gap for a single bush.
+ * The bush gap is defined as (incurred cost / cheapest possible cost) - 1,
+ * where the cheapest possible cost is computed by loading all demand onto
+ * the current shortest path tree.
+ *
+ * @author Will Alexander
+ * @see BushEvaluator
+ */
 public class BushGapEvaluator implements BushEvaluator {
 	
 

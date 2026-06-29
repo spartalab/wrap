@@ -25,6 +25,15 @@ import java.util.stream.Collectors;
 import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 
+/**
+ * Computes shortest-path and longest-path costs for all nodes in a
+ * {@link Bush}. The computed costs are cached for efficient lookup
+ * during {@link AlternateSegmentPair} identification and flow shifting.
+ *
+ * @author Will Alexander
+ * @see Bush
+ * @see AlternateSegmentPair
+ */
 public class PathCostCalculator {
 	Double[] shortCache, longCache;
 	Bush bush;

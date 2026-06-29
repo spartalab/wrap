@@ -16,6 +16,16 @@ import edu.utexas.wrap.net.NetworkSkim;
 import edu.utexas.wrap.util.AggregatePAMatrixCollector;
 import javafx.concurrent.Task;
 
+/**
+ * A JavaFX {@link Task} that executes the demand modeling pipeline for a
+ * single {@link Purpose}, producing a collection of {@link ODProfile}s.
+ * This runner steps through generation, distribution, mode choice, and
+ * time-of-day factoring, reporting progress at each stage.
+ *
+ * @author Will Alexander
+ * @see MarketRunner
+ * @see Purpose
+ */
 public class PurposeRunner extends Task<Collection<ODProfile>> {
 
 	private final Purpose purpose;

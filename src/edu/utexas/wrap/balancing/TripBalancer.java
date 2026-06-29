@@ -23,7 +23,7 @@ import edu.utexas.wrap.demand.PAMap;
  * then returns a modified PAMap which guarantees that the number of productions is equal
  * to the number of attractions.
  * 
- * @author William
+ * @author Will Alexander
  *
  */
 public interface TripBalancer {

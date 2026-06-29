@@ -22,15 +22,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import edu.utexas.wrap.demand.AggregatePAMatrix;
 import edu.utexas.wrap.demand.PAMap;
 
-/**The second step in the Urban Transportation Modeling System
- * a.k.a. the four-step model, trip distributors use some means to
- * convert a Production-Attraction map to a corresponding matrix
- * where the trips are linked to both a producer and an attractor.
- * The trips leaving each producer and entering each attractor should
- * be the same as the number of trips generated and stored in the 
- * given PA Map
- * @author William
+/**The second step in the Urban Transportation Modeling System (four-step
+ * model). Trip distributors convert a balanced Production-Attraction map
+ * into a full origin-destination trip matrix, linking each trip to both
+ * a production zone and an attraction zone. The number of trips leaving
+ * each production zone and entering each attraction zone must equal the
+ * values specified in the input PAMap.
  *
+ * <p>Implementations typically use a gravity model or other spatial
+ * interaction model to determine the proportion of trips from each
+ * origin that travel to each destination.
+ * 
+ * @author Will Alexander
+ * @see GravityDistributor
+ * @see ModularGravityDistributor
  */
 public interface TripDistributor {
 

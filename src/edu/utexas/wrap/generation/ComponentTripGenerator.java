@@ -34,7 +34,7 @@ import edu.utexas.wrap.net.TravelSurveyZone;
  * values for each zone. Each rate-demographic dot product is then
  * stored as a DemandMap which forms a component of this generator.
  * 
- * @author William
+ * @author Will Alexander
  *
  */
 public class ComponentTripGenerator implements TripGenerator {

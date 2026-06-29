@@ -19,8 +19,25 @@ package edu.utexas.wrap.assignment;
 
 import edu.utexas.wrap.net.Graph;
 
+/**
+ * Constructs the internal data structures for an {@link AssignmentContainer}
+ * within a given transportation network. This is typically invoked during
+ * initialization to set up shortest-path trees, bush topologies, or
+ * other routing structures required before demand can be loaded.
+ *
+ * @param <T> the type of assignment container to build
+ * @author Will Alexander
+ * @see BushBuilder
+ */
 public interface AssignmentBuilder<T> {
 	
+	/**
+	 * Builds the internal routing structure for the given container
+	 * on the specified network graph.
+	 *
+	 * @param container the assignment container to populate
+	 * @param network the transportation network graph
+	 */
 	public void buildStructure(T container, Graph network);
 
 }

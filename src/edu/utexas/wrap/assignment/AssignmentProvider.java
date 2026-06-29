@@ -21,8 +21,25 @@ import java.io.IOException;
 
 import edu.utexas.wrap.net.Graph;
 
+/**
+ * Provides (loads) the structure of an {@link AssignmentContainer} from
+ * persistent storage into memory. This is the counterpart to
+ * {@link AssignmentConsumer}, which writes container state to storage.
+ *
+ * @param <C> the type of assignment container to load
+ * @author Will Alexander
+ * @see BushReader
+ */
 public interface AssignmentProvider<C extends AssignmentContainer> {
 	
+	/**
+	 * Loads the structure of the given container from persistent storage,
+	 * populating its in-memory representation.
+	 *
+	 * @param container the assignment container to populate
+	 * @param network the transportation network graph
+	 * @throws IOException if the container's data cannot be read
+	 */
 	public void getStructure(C container, Graph network) throws IOException;
 
 }

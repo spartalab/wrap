@@ -17,13 +17,13 @@
  */
 package edu.utexas.wrap.net;
 
-/**A NetworkSkim implementation which stores the full matrix in memory vectors
+/**A {@link NetworkSkim} implementation which stores the full zone-to-zone
+ * cost matrix in memory as a two-dimensional float array. This provides
+ * O(1) access time for cost lookups at the expense of O(n^2) memory usage,
+ * where n is the number of zones.
  * 
- * This implementation provides a re-writable matrix which stores cost data as
- * float vectors.
- * 
- * @author William
- *
+ * @author Will Alexander
+ * @see NetworkSkim
  */
 public class FixedSizeNetworkSkim implements NetworkSkim {
 	

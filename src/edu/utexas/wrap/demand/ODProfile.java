@@ -21,17 +21,19 @@ import edu.utexas.wrap.TimePeriod;
 import edu.utexas.wrap.marketsegmentation.Purpose;
 import edu.utexas.wrap.modechoice.Mode;
 
-/**An interface which contains travel demand over multiple
- * TimePeriods. The TimePeriods for which demand exists will
- * be associated with an ODMatrix of trips made during the
- * TimePeriod. The ODProfile also defines the mode used for
- * all trips, as well as a value of time for each TimePeriod.
- * Note that while the Mode is constant for a given ODProfile,
- * the value of time may (and most likely should) be dependent
- * on the TimePeriod
- * 
- * @author William
+/**An interface encapsulating travel demand across multiple {@link TimePeriod}s
+ * for a given mode and value-of-time class. An ODProfile associates each
+ * time period with an {@link ODMatrix} of trips and a value of time (VOT).
+ * Profiles are the final product of the demand modeling pipeline and serve
+ * as input to the {@link edu.utexas.wrap.assignment.Assigner}.
  *
+ * <p>While the {@link Mode} is constant across all time periods for a given
+ * profile, the value of time may vary by period (e.g., peak periods may
+ * have higher VOT reflecting more time-sensitive travelers).
+ * 
+ * @author Will Alexander
+ * @see ODMatrix
+ * @see edu.utexas.wrap.assignment.Assigner
  */
 public interface ODProfile {
 

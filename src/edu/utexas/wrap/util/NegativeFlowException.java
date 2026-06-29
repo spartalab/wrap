@@ -17,6 +17,14 @@
  */
 package edu.utexas.wrap.util;
 
+/**
+ * Thrown when a link flow becomes negative during traffic assignment,
+ * which indicates a numerical error in the flow shifting algorithm.
+ * Negative flows are physically impossible and typically result from
+ * shifting more flow off a path than is currently assigned to it.
+ *
+ * @author Will Alexander
+ */
 public class NegativeFlowException extends RuntimeException {
 
 	/**

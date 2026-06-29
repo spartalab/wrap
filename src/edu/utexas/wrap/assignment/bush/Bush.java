@@ -33,10 +33,20 @@ import edu.utexas.wrap.net.Link;
 import edu.utexas.wrap.net.Node;
 import edu.utexas.wrap.net.TravelSurveyZone;
 
-/** An instance of a {@link edu.utexas.wrap.assignment.AssignmentContainer}
- * that is used for bush-based assignment methods.
- * @author William
+/** An {@link AssignmentContainer} used in bush-based traffic assignment.
+ * A bush is a directed acyclic subgraph of the full network, rooted at a
+ * single origin zone, through which all trips from that origin are routed.
+ * Each bush maintains a topological ordering of nodes, back-vectors defining
+ * the shortest and longest path trees, and flow decompositions on its links.
  *
+ * <p>Bush-based methods (such as Algorithm B) iteratively improve bushes by
+ * adding cheaper links, removing unused links, and shifting flow from longer
+ * to shorter paths within each bush.
+ *
+ * @author Will Alexander
+ * @see BackVector
+ * @see BushMerge
+ * @see AlternateSegmentPair
  */
 public class Bush implements AssignmentContainer {
 

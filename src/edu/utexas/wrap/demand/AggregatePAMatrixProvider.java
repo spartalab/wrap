@@ -17,13 +17,13 @@
  */
 package edu.utexas.wrap.demand;
 
-/**This interface defines the origin point for AggregatePAMatrices;
- * that is, any class implementing this interface must provide a
- * means to generate an AggregatePAMatrix. The person-trips from
- * this matrix will not yet have been allocated to a particular Mode
+/**Provides {@link AggregatePAMatrix} instances from a balanced {@link PAMap}.
+ * Implementations apply a trip distribution model (e.g., gravity model) to
+ * convert zone-level productions and attractions into a full zone-to-zone
+ * trip matrix, aggregated across all modes.
  * 
- * @author William
- *
+ * @author Will Alexander
+ * @see edu.utexas.wrap.distribution.TripDistributor
  */
 public interface AggregatePAMatrixProvider {
 

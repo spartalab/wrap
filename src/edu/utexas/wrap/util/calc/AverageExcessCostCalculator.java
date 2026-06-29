@@ -22,6 +22,13 @@ import java.util.Set;
 import edu.utexas.wrap.assignment.AssignmentContainer;
 import edu.utexas.wrap.net.Graph;
 
+/**
+ * Computes the average excess cost metric, defined as the difference
+ * between total system generalized cost and the minimum possible cost
+ * (if all demand were on shortest paths), divided by total demand.
+ *
+ * @author Will Alexander
+ */
 public class AverageExcessCostCalculator extends Thread {
 	public Double val;
 	Graph graph;
